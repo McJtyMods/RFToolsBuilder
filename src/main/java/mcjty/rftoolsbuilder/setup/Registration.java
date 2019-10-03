@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.setup;
 
 
 import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
@@ -15,49 +16,22 @@ public class Registration {
 
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event) {
-//        event.getRegistry().register(new InformationScreenBlock());
-//        event.getRegistry().register(new PowerCellBlock(Tier.TIER1));
-//        event.getRegistry().register(new PowerCellBlock(Tier.TIER2));
-//        event.getRegistry().register(new PowerCellBlock(Tier.TIER3));
-//        event.getRegistry().register(new Block(Block.Properties.create(Material.IRON)).setRegistryName("celltextures"));
-//        if (CoalGeneratorConfig.ENABLED.get()) {
-//            event.getRegistry().register(CoalGeneratorTileEntity.createBlock());
-//        }
+        BuilderSetup.registerBlocks(event);
     }
 
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event) {
-//        Item.Properties properties = new Item.Properties().group(RFToolsBuilder.setup.getTab());
-//        event.getRegistry().register(new BaseBlockItem(ModBlocks.INFORMATION_SCREEN, properties));
-//        event.getRegistry().register(new BaseBlockItem(ModBlocks.CELL1, properties));
-//        event.getRegistry().register(new BaseBlockItem(ModBlocks.CELL2, properties));
-//        event.getRegistry().register(new BaseBlockItem(ModBlocks.CELL3, properties));
-//
-//        event.getRegistry().register(new PowerCoreItem("1"));
-//        event.getRegistry().register(new PowerCoreItem("2"));
-//        event.getRegistry().register(new PowerCoreItem("3"));
-//
-//        if (CoalGeneratorConfig.ENABLED.get()) {
-//            event.getRegistry().register(new BaseBlockItem(ModBlocks.COALGENERATOR, properties));
-//        }
+        BuilderSetup.registerItems(event);
     }
 
     @SubscribeEvent
     public static void registerTiles(RegistryEvent.Register<TileEntityType<?>> event) {
-//        event.getRegistry().register(TileEntityType.Builder.create(() -> new PowerCellTileEntity(Tier.TIER1), ModBlocks.CELL1).build(null).setRegistryName(ModBlocks.CELL1.getRegistryName()));
-//        event.getRegistry().register(TileEntityType.Builder.create(() -> new PowerCellTileEntity(Tier.TIER2), ModBlocks.CELL2).build(null).setRegistryName(ModBlocks.CELL2.getRegistryName()));
-//        event.getRegistry().register(TileEntityType.Builder.create(() -> new PowerCellTileEntity(Tier.TIER3), ModBlocks.CELL3).build(null).setRegistryName(ModBlocks.CELL3.getRegistryName()));
-//        event.getRegistry().register(TileEntityType.Builder.create(InformationScreenTileEntity::new, ModBlocks.INFORMATION_SCREEN).build(null).setRegistryName(ModBlocks.INFORMATION_SCREEN.getRegistryName()));
-//        if (CoalGeneratorConfig.ENABLED.get()) {
-//            event.getRegistry().register(TileEntityType.Builder.create(CoalGeneratorTileEntity::new, ModBlocks.COALGENERATOR).build(null).setRegistryName(ModBlocks.COALGENERATOR.getRegistryName()));
-//        }
+        BuilderSetup.registerTiles(event);
     }
 
     @SubscribeEvent
     public static void registerContainers(final RegistryEvent.Register<ContainerType<?>> event) {
-//        if (CoalGeneratorConfig.ENABLED.get()) {
-//            event.getRegistry().register(GenericContainer.createContainerType("coalgenerator"));
-//        }
+        BuilderSetup.registerContainers(event);
     }
 
 }

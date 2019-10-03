@@ -1,9 +1,13 @@
 package mcjty.rftoolsbuilder.setup;
 
 import mcjty.lib.compat.MainCompatHandler;
+import mcjty.lib.network.PacketHandler;
 import mcjty.lib.setup.DefaultModSetup;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public class ModSetup extends DefaultModSetup {
@@ -15,9 +19,14 @@ public class ModSetup extends DefaultModSetup {
     @Override
     public void init(FMLCommonSetupEvent e) {
         super.init(e);
-
-//        RFToolsBuilderMessages.registerMessages("rftoolsbuilder");
+        RFToolsBuilderMessages.registerMessages("rftoolsbuilder");
+        PacketHandler.registerMessageHandler(RFToolsBuilder.MODID, RFToolsBuilderMessages.INSTANCE);
     }
+
+    public void initClient(FMLClientSetupEvent e) {
+        ClientCommandHandler.registerCommands();
+    }
+
 
     @Override
     protected void setupModCompat() {
