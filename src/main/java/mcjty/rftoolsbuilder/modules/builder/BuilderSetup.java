@@ -4,8 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.BaseBlockItem;
-import mcjty.lib.blocks.RotationType;
-import mcjty.lib.builder.BlockBuilder;
+import mcjty.lib.container.GenericContainer;
 import mcjty.lib.varia.BlockTools;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
@@ -40,6 +39,9 @@ public class BuilderSetup {
 
     @ObjectHolder("rftoolsbuilder:builder")
     public static TileEntityType<?> TYPE_BUILDER;
+
+    @ObjectHolder("rftoolsbuilder:builder")
+    public static ContainerType<GenericContainer> CONTAINER_BUILDER;
 
 //    @ObjectHolder("rftools:composer")
 //    public static TileEntityType<?> TYPE_COMPOSER;
@@ -79,9 +81,11 @@ public class BuilderSetup {
     }
 
     public static void registerTiles(final RegistryEvent.Register<TileEntityType<?>> event) {
+        event.getRegistry().register(TileEntityType.Builder.create(BuilderTileEntity::new, BUILDER).build(null).setRegistryName("builder"));
     }
 
     public static void registerContainers(final RegistryEvent.Register<ContainerType<?>> event) {
+        event.getRegistry().register(GenericContainer.createContainerType("builder"));
     }
 
     public static void init() {

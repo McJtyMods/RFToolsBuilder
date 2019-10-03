@@ -1,7 +1,10 @@
 package mcjty.rftoolsbuilder.setup;
 
 
+import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
+import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelBakeEvent;
@@ -15,15 +18,7 @@ public class ClientRegistration {
 
     @SubscribeEvent
     public static void init(FMLClientSetupEvent event) {
-//        InformationScreenRenderer.register();
-//
-//        if (CoalGeneratorConfig.ENABLED.get()) {
-//            ScreenManager.IScreenFactory<GenericContainer, GuiCoalGenerator> factory = (container, inventory, title) -> {
-//                TileEntity te = McJtyLib.proxy.getClientWorld().getTileEntity(container.getPos());
-//                return Tools.safeMap(te, (CoalGeneratorTileEntity i) -> new GuiCoalGenerator(i, container, inventory), "Invalid tile entity!");
-//            };
-//            ScreenManager.registerFactory(ModBlocks.CONTAINER_COALGENERATOR, factory);
-//        }
+        GenericGuiContainer.register(BuilderSetup.CONTAINER_BUILDER, GuiBuilder::new);
     }
 
     @SubscribeEvent
