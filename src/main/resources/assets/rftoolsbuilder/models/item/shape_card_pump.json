@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "rftools:items/shapecardpumpitem"
+    "layer0": "rftoolsbuilder:item/shapecardpumpitem"
   }
 }

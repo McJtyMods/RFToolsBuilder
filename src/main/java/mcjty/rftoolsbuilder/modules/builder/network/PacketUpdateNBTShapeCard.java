@@ -1,4 +1,4 @@
-package mcjty.rftoolsbuilder.shapes;
+package mcjty.rftoolsbuilder.modules.builder.network;
 
 import mcjty.lib.network.TypedMapTools;
 import mcjty.lib.typed.Key;

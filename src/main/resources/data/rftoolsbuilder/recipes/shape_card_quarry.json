@@ -1,0 +1,28 @@
+{
+  "type": "mcjtylib:copy_nbt",
+  "pattern": [
+    "rpr",
+    "iMi",
+    "rsr"
+  ],
+  "key": {
+    "p": {
+      "item": "minecraft:diamond_pickaxe"
+    },
+    "s": {
+      "item": "minecraft:diamond_shovel"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    },
+    "i": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
+      "item": "rftoolsbuilder:shape_card_def"
+    }
+  },
+  "result": {
+    "item": "rftoolsbuilder:shape_card_quarry"
+  }
+}

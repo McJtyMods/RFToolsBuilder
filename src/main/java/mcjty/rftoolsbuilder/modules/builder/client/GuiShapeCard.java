@@ -21,7 +21,7 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTItemInventoryShape;
 import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.shapes.IShapeParentGui;
-import mcjty.rftoolsbuilder.shapes.PacketUpdateNBTShapeCard;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTShapeCard;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
 import net.minecraft.block.Block;
@@ -155,7 +155,8 @@ public class GuiShapeCard extends Screen implements IShapeParentGui {
             return;
         }
 
-        isQuarryCard = ShapeCardType.fromDamage(heldItem.getDamage()).isQuarry();   // @todo 1.14 damage is not the way
+        ShapeCardType type = ShapeCardItem.getType(heldItem);
+        isQuarryCard = type.isQuarry();
         if (isQuarryCard) {
             ySize = 160 + 28;
         }
@@ -377,12 +378,13 @@ public class GuiShapeCard extends Screen implements IShapeParentGui {
         }
     }
 
-    // @todo 1.14
-//    @Override
-//    protected void mouseClicked(int x, int y, int button) throws IOException {
-//        super.mouseClicked(x, y, button);
-//        window.mouseClicked(x, y, button);
-//    }
+    @Override
+    public boolean mouseClicked(double x, double y, int button) {
+        boolean rc = super.mouseClicked(x, y, button);
+        window.mouseClicked((int)x, (int)y, button);
+        return rc;
+    }
+
 //
 //    @Override
 //    public void handleMouseInput() throws IOException {
@@ -396,18 +398,24 @@ public class GuiShapeCard extends Screen implements IShapeParentGui {
 //
 //        getShapeRenderer().handleShapeDragging(x, y);
 //    }
-//
-//    @Override
-//    protected void mouseReleased(int mouseX, int mouseY, int state) {
-//        super.mouseReleased(mouseX, mouseY, state);
-//        window.mouseMovedOrUp(mouseX, mouseY, state);
-//    }
-//
-//    @Override
-//    protected void keyTyped(char typedChar, int keyCode) throws IOException {
-//        super.keyTyped(typedChar, keyCode);
-//        window.keyTyped(typedChar, keyCode);
-//    }
+
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int state) {
+        boolean rc = super.mouseReleased(mouseX, mouseY, state);
+        window.mouseMovedOrUp((int)mouseX, (int)mouseY, state);
+        return rc;
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        boolean rc = false;
+        if (!window.keyTyped(keyCode, scanCode)) {
+            rc = super.keyPressed(keyCode, scanCode, modifiers);
+        }
+        return rc;
+    }
+
 
     private static int updateCounter = 20;
 
@@ -496,6 +504,10 @@ public class GuiShapeCard extends Screen implements IShapeParentGui {
         GlStateManager.enableTexture();
         GlStateManager.enableDepthTest();
         GlStateManager.disableBlend();
+    }
+
+    public static void open() {
+        Minecraft.getInstance().displayGuiScreen(new GuiShapeCard(false));
     }
 
 }

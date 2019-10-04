@@ -1,0 +1,19 @@
+{
+  "type": "mcjtylib:copy_nbt",
+  "pattern": [
+    "ggg",
+    "gMg",
+    "ggg"
+  ],
+  "key": {
+    "g": {
+      "item": "minecraft:dirt"
+    },
+    "M": {
+      "item": "rftoolsbuilder:shape_card_quarry_clear"
+    }
+  },
+  "result": {
+    "item": "rftoolsbuilder:shape_card_quarry"
+  }
+}

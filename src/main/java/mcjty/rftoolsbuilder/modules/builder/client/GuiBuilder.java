@@ -10,8 +10,8 @@ import mcjty.lib.gui.widgets.ImageChoiceLabel;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
-import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
+import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
@@ -95,7 +95,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
 
     private boolean isShapeCard() {
         ItemStack card = tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY);
-        return !card.isEmpty() && card.getItem() == BuilderSetup.SHAPE_CARD;
+        return !card.isEmpty() && card.getItem() instanceof ShapeCardItem;
     }
 
     @Override
@@ -106,7 +106,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         ItemStack card = tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY);
         if (card.isEmpty()) {
             window.setFlag("!validcard");
-        } else if (card.getItem() == BuilderSetup.SHAPE_CARD) {
+        } else if (card.getItem() instanceof ShapeCardItem) {
             window.setFlag("!validcard");
         } else {
             window.setFlag("validcard");

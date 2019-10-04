@@ -15,28 +15,27 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.items.IItemHandler;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public enum ShapeCardType {
-    CARD_UNKNOWN(-2),          // Not known yet
-    CARD_SPACE(-1),            // Not a shape card but a space card instead
+    CARD_UNKNOWN(),          // Not known yet
+    CARD_SPACE(),            // Not a shape card but a space card instead
 
-    CARD_SHAPE(0, "def", false, false, false, BuilderTileEntity::buildBlock, null,
+    CARD_SHAPE("def", false, false, false, BuilderTileEntity::buildBlock, null,
             () -> BuilderConfiguration.builderRfPerOperation.get(),
             "This item can be configured as a shape. You",
             "can then use it in the shield projector to make",
             "a shield of that shape or in the builder to",
             "actually build the shape") {
         @Override
-        public void addHudLog(List<String> list, InventoryHelper inventoryHelper) {
+        public void addHudLog(List<String> list, IItemHandler inventory) {
             list.add("    Shape card");
-            ItemStack shapeCard = inventoryHelper.getStackInSlot(BuilderTileEntity.SLOT_TAB);
+            ItemStack shapeCard = inventory.getStackInSlot(BuilderTileEntity.SLOT_TAB);
             if (!shapeCard.isEmpty()) {
                 Shape shape = ShapeCardItem.getShape(shapeCard);
                 if (shape != null) {
@@ -46,61 +45,61 @@ public enum ShapeCardType {
         }
     },
 
-    CARD_VOID(1, "void", false, false, false, BuilderTileEntity::voidBlock, "    Void mode",
+    CARD_VOID("void", false, false, false, BuilderTileEntity::voidBlock, "    Void mode",
             () -> (BuilderConfiguration.builderRfPerQuarry.get() * (int) (double) BuilderConfiguration.voidShapeCardFactor.get()),
             "This item will cause the builder to void",
             "all blocks in the configured space."),
 
-    CARD_QUARRY(2, "quarry", true, false, false, BuilderTileEntity::quarryBlock, "    Normal quarry",
+    CARD_QUARRY("quarry", true, false, false, BuilderTileEntity::quarryBlock, "    Normal quarry",
             () -> BuilderConfiguration.builderRfPerQuarry.get(),
             "This item will cause the builder to quarry",
             "all blocks in the configured space and replace",
             "them with " + getDirtOrCobbleName() + "."),
 
-    CARD_QUARRY_SILK(3, "quarry_silk", true, false, false, BuilderTileEntity::silkQuarryBlock, "    Silktouch quarry",
+    CARD_QUARRY_SILK("quarry_silk", true, false, false, BuilderTileEntity::silkQuarryBlock, "    Silktouch quarry",
             () -> (int) (BuilderConfiguration.builderRfPerQuarry.get() * BuilderConfiguration.silkquarryShapeCardFactor.get()),
             "This item will cause the builder to quarry",
             "all blocks in the configured space and replace",
             "them with " + getDirtOrCobbleName() + ".",
             "Blocks are harvested with silk touch"),
 
-    CARD_QUARRY_FORTUNE(4, "quarry_fortune", true, false, true, BuilderTileEntity::quarryBlock, "    Fortune quarry",
+    CARD_QUARRY_FORTUNE("quarry_fortune", true, false, true, BuilderTileEntity::quarryBlock, "    Fortune quarry",
             () -> (int) (BuilderConfiguration.builderRfPerQuarry.get() * BuilderConfiguration.fortunequarryShapeCardFactor.get()),
             "This item will cause the builder to quarry",
             "all blocks in the configured space and replace",
             "them with " + getDirtOrCobbleName() + ".",
             "Blocks are harvested with fortune"),
 
-    CARD_QUARRY_CLEAR(5, "quarry_clear", true, true, false, BuilderTileEntity::quarryBlock, "    Normal quarry",
+    CARD_QUARRY_CLEAR("quarry_clear", true, true, false, BuilderTileEntity::quarryBlock, "    Normal quarry",
             () -> BuilderConfiguration.builderRfPerQuarry.get(),
             "This item will cause the builder to quarry",
             "all blocks in the configured space"),
 
-    CARD_QUARRY_CLEAR_SILK(6, "quarry_clear_silk", true, true, false, BuilderTileEntity::silkQuarryBlock, "    Silktouch quarry",
+    CARD_QUARRY_CLEAR_SILK("quarry_clear_silk", true, true, false, BuilderTileEntity::silkQuarryBlock, "    Silktouch quarry",
             () -> (int) (BuilderConfiguration.builderRfPerQuarry.get() * BuilderConfiguration.silkquarryShapeCardFactor.get()),
             "This item will cause the builder to quarry",
             "all blocks in the configured space.",
             "Blocks are harvested with silk touch"),
 
-    CARD_QUARRY_CLEAR_FORTUNE(7, "quarry_clear_fortune", true, true, true, BuilderTileEntity::quarryBlock, "    Fortune quarry",
+    CARD_QUARRY_CLEAR_FORTUNE("quarry_clear_fortune", true, true, true, BuilderTileEntity::quarryBlock, "    Fortune quarry",
             () -> (int) (BuilderConfiguration.builderRfPerQuarry.get() * BuilderConfiguration.fortunequarryShapeCardFactor.get()),
             "This item will cause the builder to quarry",
             "all blocks in the configured space.",
             "Blocks are harvested with fortune"),
 
-    CARD_PUMP(8, "pump", false, false, false, BuilderTileEntity::pumpBlock, "    Pump",
+    CARD_PUMP("pump", false, false, false, BuilderTileEntity::pumpBlock, "    Pump",
             () -> BuilderConfiguration.builderRfPerLiquid.get(),
             "This item will cause the builder to collect",
             "all liquids in the configured space.",
             "The liquid will be replaced with " + getDirtOrCobbleName() + "."),
 
-    CARD_PUMP_CLEAR(9, "pump_clear", false, true, false, BuilderTileEntity::pumpBlock, "    Pump",
+    CARD_PUMP_CLEAR("pump_clear", false, true, false, BuilderTileEntity::pumpBlock, "    Pump",
             () -> BuilderConfiguration.builderRfPerLiquid.get(),
             "This item will cause the builder to collect",
             "all liquids in the configured space.",
             "The liquid will be removed from the world"),
 
-    CARD_PUMP_LIQUID(10, "liquid", false, false, false, BuilderTileEntity::placeLiquidBlock, "    Place liquids",
+    CARD_PUMP_LIQUID("liquid", false, false, false, BuilderTileEntity::placeLiquidBlock, "    Place liquids",
             () -> BuilderConfiguration.builderRfPerLiquid.get(),
             "This item will cause the builder to place",
             "liquids from an tank on top/bottom into the world.");
@@ -117,33 +116,33 @@ public enum ShapeCardType {
         }
     }
 
-    private final int damage;
     private final Supplier<Integer> rfNeeded;
     private final ModelResourceLocation modelResourceLocation;
     private final SingleBlockHandler singleBlockHandler;
     private final String hudLogEntry;
     private final boolean quarry, clearing, fortune;
     private final List<ITextComponent> information;
+    private final String resourceSuffix;
 
-    private static final Map<Integer, ShapeCardType> SHAPE_TYPE_MAP;
+//    private static final Map<Integer, ShapeCardType> SHAPE_TYPE_MAP;
+//
+//    static {
+//        SHAPE_TYPE_MAP = new HashMap<>(ShapeCardType.values().length);
+//        for (ShapeCardType type : ShapeCardType.values()) {
+//            SHAPE_TYPE_MAP.put(type.damage, type);
+//        }
+//    }
+//
+//    public static ShapeCardType fromDamage(int damage) {
+//        return SHAPE_TYPE_MAP.get(damage);
+//    }
 
-    static {
-        SHAPE_TYPE_MAP = new HashMap<>(ShapeCardType.values().length);
-        for (ShapeCardType type : ShapeCardType.values()) {
-            SHAPE_TYPE_MAP.put(type.damage, type);
-        }
+    private ShapeCardType() {
+        this(null, false, false, false, BuilderTileEntity::suspend, null, () -> 0);
     }
 
-    public static ShapeCardType fromDamage(int damage) {
-        return SHAPE_TYPE_MAP.get(damage);
-    }
-
-    private ShapeCardType(int damage) {
-        this(damage, null, false, false, false, BuilderTileEntity::suspend, null, () -> 0);
-    }
-
-    private ShapeCardType(int damage, String resourceSuffix, boolean quarry, boolean clearing, boolean fortune, SingleBlockHandler singleBlockHandler, String hudLogEntry, Supplier<Integer> rfNeeded, String... information) {
-        this.damage = damage;
+    private ShapeCardType(String resourceSuffix, boolean quarry, boolean clearing, boolean fortune, SingleBlockHandler singleBlockHandler, String hudLogEntry, Supplier<Integer> rfNeeded, String... information) {
+        this.resourceSuffix = resourceSuffix;
         this.modelResourceLocation = resourceSuffix == null ? null : new ModelResourceLocation(RFToolsBuilder.MODID + ":shape_card_" + resourceSuffix, "inventory");
         this.quarry = quarry;
         this.clearing = clearing;
@@ -154,8 +153,12 @@ public enum ShapeCardType {
         this.information = Arrays.stream(information).map(a -> new StringTextComponent(TextFormatting.WHITE.toString() + a)).collect(Collectors.toList());
     }
 
-    public int getDamage() {
-        return damage;
+    public boolean isItem() {
+        return resourceSuffix != null;
+    }
+
+    public String getResourceSuffix() {
+        return resourceSuffix;
     }
 
     public boolean isQuarry() {
@@ -178,7 +181,7 @@ public enum ShapeCardType {
         return modelResourceLocation;
     }
 
-    public void addHudLog(List<String> list, InventoryHelper inventoryHelper) {
+    public void addHudLog(List<String> list, IItemHandler inventoryHelper) {
         if(hudLogEntry != null) {
             list.add(hudLogEntry);
         }

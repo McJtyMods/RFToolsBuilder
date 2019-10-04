@@ -52,18 +52,18 @@
                 hint(4,18,17,17)
                 tooltips('Suppress the placement/breaking sound','when moving blocks')
                 border(true)
-                image('rftoolsbuilder:textures/gui/guielements.png')
+                image('rftoolsbase:textures/gui/guielements.png')
                 dim(176,48,256,256)
                 choices {
                     choice('off') {
                         uv(176,48)
                         tooltips('Moving blocks make sound')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                     choice('on') {
                         uv(160,48)
                         tooltips('Block sounds are muted')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                 }
             }
@@ -72,18 +72,18 @@
                 hint(22,18,17,17)
                 tooltips('Use supporting blocks when moving.','Useful for liquids, gravel, ...')
                 border(true)
-                image('rftoolsbuilder:textures/gui/guielements.png')
+                image('rftoolsbase:textures/gui/guielements.png')
                 dim(112,48,256,256)
                 choices {
                     choice('off') {
                         uv(112,48)
                         tooltips('Support/preview mode disabled')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                     choice('on') {
                         uv(96,48)
                         tooltips('Support/preview mode enabled')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                 }
             }
@@ -92,18 +92,18 @@
                 hint(4,37,17,17)
                 tooltips('Move entities')
                 border(true)
-                image('rftoolsbuilder:textures/gui/guielements.png')
+                image('rftoolsbase:textures/gui/guielements.png')
                 dim(144,48,256,256)
                 choices {
                     choice('off') {
                         uv(144,48)
                         tooltips('Entities are not moved')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                     choice('on') {
                         uv(128,48)
                         tooltips('Entities are moved')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                 }
             }
@@ -112,18 +112,18 @@
                 hint(22,37,17,17)
                 tooltips('Loop mode')
                 border(true)
-                image('rftoolsbuilder:textures/gui/guielements.png')
+                image('rftoolsbase:textures/gui/guielements.png')
                 dim(208,48,256,256)
                 choices {
                     choice('off') {
                         uv(208,48)
                         tooltips('Do a single run and stop')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                     choice('on') {
                         uv(192,48)
                         tooltips('Keep running with redstone signal')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                 }
             }
@@ -131,18 +131,18 @@
                 hint(40,18,17,17)
                 tooltips('Wait mode')
                 border(true)
-                image('rftoolsbuilder:textures/gui/guielements.png')
+                image('rftoolsbase:textures/gui/guielements.png')
                 dim(96,80,256,256)
                 choices {
                     choice('off') {
                         uv(112,80)
                         tooltips('Don\'t wait on a position if','the operation is not possible')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                     choice('on') {
                         uv(96,80)
                         tooltips('If the operation is not possible','wait on the current position')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                 }
             }
@@ -151,18 +151,18 @@
                 hint(40,37,17,17)
                 tooltips('Hilight mode')
                 border(true)
-                image('rftoolsbuilder:textures/gui/guielements.png')
+                image('rftoolsbase:textures/gui/guielements.png')
                 dim(144,80,256,256)
                 choices {
                     choice('off') {
                         uv(144,80)
                         tooltips('No hilighting')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                     choice('on') {
                         uv(128,80)
                         tooltips('Visually hilight the position','the Builder is working on')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                 }
             }
@@ -188,18 +188,18 @@
                 hint(4,37,17,17)
                 tooltips('Set the anchor where you want to','place the blocks in front of the','builder')
                 border(true)
-                image('rftoolsbuilder:textures/gui/guielements.png')
+                image('rftoolsbase:textures/gui/guielements.png')
                 dim(96,64,256,256)
                 choices {
                     choice('off') {
                         uv(112,64)
                         tooltips('Builder at south west corner')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                     choice('on') {
                         uv(96,64)
                         tooltips('Builder at south west corner')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                 }
             }
@@ -208,18 +208,18 @@
                 hint(23,37,17,17)
                 tooltips('Set the anchor where you want to','place the blocks in front of the','builder')
                 border(true)
-                image('rftoolsbuilder:textures/gui/guielements.png')
+                image('rftoolsbase:textures/gui/guielements.png')
                 dim(144,64,256,256)
                 choices {
                     choice('off') {
                         uv(144,64)
                         tooltips('Builder at south east corner')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                     choice('on') {
                         uv(128,64)
                         tooltips('Builder at south east corner')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                 }
             }
@@ -228,18 +228,18 @@
                 hint(4,18,17,17)
                 tooltips('Set the anchor where you want to','place the blocks in front of the','builder')
                 border(true)
-                image('rftoolsbuilder:textures/gui/guielements.png')
+                image('rftoolsbase:textures/gui/guielements.png')
                 dim(176,64,256,256)
                 choices {
                     choice('off') {
                         uv(176,64)
                         tooltips('Builder at north west corner')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                     choice('on') {
                         uv(160,64)
                         tooltips('Builder at north west corner')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                 }
             }
@@ -248,18 +248,18 @@
                 hint(23,18,17,17)
                 tooltips('Set the anchor where you want to','place the blocks in front of the','builder')
                 border(true)
-                image('rftoolsbuilder:textures/gui/guielements.png')
+                image('rftoolsbase:textures/gui/guielements.png')
                 dim(208,64,256,256)
                 choices {
                     choice('off') {
                         uv(208,64)
                         tooltips('Builder at north east corner')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                     choice('on') {
                         uv(192,64)
                         tooltips('Builder at north east corner')
-                        image('rftoolsbuilder:textures/gui/guielements.png')
+                        image('rftoolsbase:textures/gui/guielements.png')
                     }
                 }
             }
@@ -276,23 +276,23 @@
         }
         imagechoicelabel('redstone') {
             hint(106,46,16,16)
-            image('rftoolsbuilder:textures/gui/guielements.png')
+            image('rftoolsbase:textures/gui/guielements.png')
             dim(32,0,256,256)
             choices {
                 choice('Ignored') {
                     uv(0,0)
                     tooltips('Redstone mode:','Ignored')
-                    image('rftoolsbuilder:textures/gui/guielements.png')
+                    image('rftoolsbase:textures/gui/guielements.png')
                 }
                 choice('Off') {
                     uv(16,0)
                     tooltips('Redstone mode:','Off to activate')
-                    image('rftoolsbuilder:textures/gui/guielements.png')
+                    image('rftoolsbase:textures/gui/guielements.png')
                 }
                 choice('On') {
                     uv(32,0)
                     tooltips('Redstone mode:','On to activate')
-                    image('rftoolsbuilder:textures/gui/guielements.png')
+                    image('rftoolsbase:textures/gui/guielements.png')
                 }
             }
         }

@@ -11,6 +11,7 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
+import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
@@ -64,8 +65,29 @@ public class BuilderSetup {
     //    public static SpaceChamberCardItem spaceChamberCardItem;
     @ObjectHolder("rftoolsbuilder:space_chamber_card")
     public static Item SPACE_CHAMBER_CARD;    // @todo 1.14
-    @ObjectHolder("rftoolsbuilder:shape_card")
-    public static ShapeCardItem SHAPE_CARD;
+
+    @ObjectHolder("rftoolsbuilder:shape_card_def")
+    public static ShapeCardItem SHAPE_CARD_DEF;
+    @ObjectHolder("rftoolsbuilder:shape_card_liquid")
+    public static ShapeCardItem SHAPE_CARD_LIQUID;
+    @ObjectHolder("rftoolsbuilder:shape_card_pump")
+    public static ShapeCardItem SHAPE_CARD_PUMP;
+    @ObjectHolder("rftoolsbuilder:shape_card_pump_clear")
+    public static ShapeCardItem SHAPE_CARD_PUMP_CLEAR;
+    @ObjectHolder("rftoolsbuilder:shape_card_quarry")
+    public static ShapeCardItem SHAPE_CARD_QUARRY;
+    @ObjectHolder("rftoolsbuilder:shape_card_quarry_clear")
+    public static ShapeCardItem SHAPE_CARD_QUARRY_CLEAR;
+    @ObjectHolder("rftoolsbuilder:shape_card_quarry_clear_fortune")
+    public static ShapeCardItem SHAPE_CARD_QUARRY_CLEAR_FORTUNE;
+    @ObjectHolder("rftoolsbuilder:shape_card_quarry_clear_silk")
+    public static ShapeCardItem SHAPE_CARD_QUARRY_CLEAR_SILK;
+    @ObjectHolder("rftoolsbuilder:shape_card_quarry_fortune")
+    public static ShapeCardItem SHAPE_CARD_QUARRY_FORTUNE;
+    @ObjectHolder("rftoolsbuilder:shape_card_quarry_silk")
+    public static ShapeCardItem SHAPE_CARD_QUARRY_SILK;
+    @ObjectHolder("rftoolsbuilder:shape_card_void")
+    public static ShapeCardItem SHAPE_CARD_VOID;
 
     private static Map<String,BlockInformation> blockInformationMap = new HashMap<>();
 
@@ -75,7 +97,11 @@ public class BuilderSetup {
     }
 
     public static void registerItems(final RegistryEvent.Register<Item> event) {
-        event.getRegistry().register(new ShapeCardItem());
+        for (ShapeCardType type : ShapeCardType.values()) {
+            if (type.isItem()) {
+                event.getRegistry().register(new ShapeCardItem(type));
+            }
+        }
         Item.Properties properties = new Item.Properties().group(RFToolsBuilder.setup.getTab());
         event.getRegistry().register(new BaseBlockItem(BUILDER, properties));
     }

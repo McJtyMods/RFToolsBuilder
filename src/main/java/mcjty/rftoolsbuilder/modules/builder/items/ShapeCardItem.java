@@ -9,6 +9,7 @@ import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
+import mcjty.rftoolsbuilder.modules.builder.client.GuiShapeCard;
 import mcjty.rftoolsbuilder.shapes.*;
 import mcjty.rftoolsbuilder.varia.RLE;
 import net.minecraft.block.Block;
@@ -41,15 +42,18 @@ import java.util.*;
 
 public class ShapeCardItem extends Item implements INBTPreservingIngredient {
 
+    private final ShapeCardType type;
+
     public static final int MAXIMUM_COUNT = 50000000;
 
     public static final int MODE_NONE = 0;
     public static final int MODE_CORNER1 = 1;
     public static final int MODE_CORNER2 = 2;
 
-    public ShapeCardItem() {
+    public ShapeCardItem(ShapeCardType type) {
         super(new Properties().maxStackSize(1).defaultMaxDamage(0).group(RFToolsBuilder.setup.getTab()));
-        setRegistryName("shape_card");
+        setRegistryName("shape_card_" + type.getResourceSuffix());
+        this.type = type;
     }
 
 //    @SideOnly(Side.CLIENT)
@@ -134,7 +138,8 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
 
     @Override
     public Collection<String> getTagsToPreserve() {
-        return Collections.emptyList(); // @todo 1.14
+        return Arrays.asList("mod_op", "mod_flipy", "mod_rot", "ghost_block", "children", "dimX", "dimY", "dimZ",
+                "offsetX", "offsetY", "offsetZ", "mode");
     }
 
     public static void setData(CompoundNBT tagCompound, int scanID) {
@@ -263,7 +268,6 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
     public void addInformation(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
         super.addInformation(itemStack, world, list, flag);
 
-        ShapeCardType type = ShapeCardType.fromDamage(itemStack.getDamage());   // @todo 1.14, should not use damage here!
         if (!BuilderConfiguration.shapeCardAllowed.get()) {
             list.add(new StringTextComponent(TextFormatting.RED + "Disabled in config!"));
         } else if (type != ShapeCardType.CARD_SHAPE) {
@@ -309,8 +313,15 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
      * @return
      */
     public static boolean isNormalShapeCard(ItemStack stack) {
-        int damage = stack.getDamage(); // @todo 1.14 WRONG!
-        return damage == ShapeCardType.CARD_SHAPE.getDamage() || damage == ShapeCardType.CARD_PUMP_LIQUID.getDamage();
+        ShapeCardType type = getType(stack);
+        return type == ShapeCardType.CARD_SHAPE || type == ShapeCardType.CARD_PUMP_LIQUID;
+    }
+
+    public static ShapeCardType getType(ItemStack stack) {
+        if (stack.getItem() instanceof ShapeCardItem) {
+            return ((ShapeCardItem) stack.getItem()).type;
+        }
+        return ShapeCardType.CARD_UNKNOWN;
     }
 
     private static void addBlocks(Set<Block> blocks, Block block, boolean oredict) {
@@ -589,8 +600,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
     public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
         ItemStack stack = player.getHeldItem(hand);
         if (world.isRemote) {
-            // @todo 1.14
-//            player.openGui(RFTools.instance, GuiProxy.GUI_SHAPECARD, player.getEntityWorld(), (int) player.posX, (int) player.posY, (int) player.posZ);
+            GuiShapeCard.open();
             return new ActionResult<>(ActionResultType.SUCCESS, stack);
         }
         return new ActionResult<>(ActionResultType.SUCCESS, stack);

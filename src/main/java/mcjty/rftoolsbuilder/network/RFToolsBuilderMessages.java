@@ -5,6 +5,9 @@ import mcjty.lib.network.PacketSendClientCommand;
 import mcjty.lib.network.PacketSendServerCommand;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTItemInventoryShape;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTShapeCard;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -32,10 +35,11 @@ public class RFToolsBuilderMessages {
         INSTANCE = net;
 
         // Server side
-//        net.registerMessage(id(), PacketGetTransmitters.class, PacketGetTransmitters::toBytes, PacketGetTransmitters::new, PacketGetTransmitters::handle);
+        net.registerMessage(id(), PacketUpdateNBTShapeCard.class, PacketUpdateNBTShapeCard::toBytes, PacketUpdateNBTShapeCard::new, PacketUpdateNBTShapeCard::handle);
+        net.registerMessage(id(), PacketUpdateNBTItemInventoryShape.class, PacketUpdateNBTItemInventoryShape::toBytes, PacketUpdateNBTItemInventoryShape::new, PacketUpdateNBTItemInventoryShape::handle);
 
         // Client side
-//        net.registerMessage(id(), PacketAllReceiversReady.class, PacketAllReceiversReady::toBytes, PacketAllReceiversReady::new, PacketAllReceiversReady::handle);
+        net.registerMessage(id(), PacketChamberInfoReady.class, PacketChamberInfoReady::toBytes, PacketChamberInfoReady::new, PacketChamberInfoReady::handle);
 
         PacketHandler.registerStandardMessages(net);
     }

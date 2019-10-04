@@ -1,0 +1,19 @@
+{
+  "type": "mcjtylib:copy_nbt",
+  "pattern": [
+    "ggg",
+    "gMg",
+    "ggg"
+  ],
+  "key": {
+    "g": {
+      "item": "minecraft:glass"
+    },
+    "M": {
+      "item": "rftoolsbuilder:shape_card_quarry_fortune"
+    }
+  },
+  "result": {
+    "item": "rftoolsbuilder:shape_card_quarry_clear_fortune"
+  }
+}

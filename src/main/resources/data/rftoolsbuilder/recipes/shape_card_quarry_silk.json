@@ -1,0 +1,25 @@
+{
+  "type": "mcjtylib:copy_nbt",
+  "pattern": [
+    "RnR",
+    "dMd",
+    "RdR"
+  ],
+  "key": {
+    "R": {
+      "item": "rftoolsbase:dimensionalshard"
+    },
+    "d": {
+      "item": "minecraft:diamond"
+    },
+    "n": {
+      "item": "minecraft:nether_star"
+    },
+    "M": {
+      "item": "rftoolsbuilder:shape_card_quarry"
+    }
+  },
+  "result": {
+    "item": "rftoolsbuilder:shape_card_quarry_silk"
+  }
+}
