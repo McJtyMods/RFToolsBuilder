@@ -1,6 +1,8 @@
 package mcjty.rftoolsbuilder.modules.builder.blocks;
 
 import com.mojang.authlib.GameProfile;
+import mcjty.lib.api.container.CapabilityContainerProvider;
+import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.infusable.CapabilityInfusable;
 import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
@@ -14,10 +16,7 @@ import mcjty.lib.bindings.IValue;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
-import mcjty.lib.container.ContainerFactory;
-import mcjty.lib.container.InventoryHelper;
-import mcjty.lib.container.NoDirectionItemHander;
-import mcjty.lib.container.SlotDefinition;
+import mcjty.lib.container.*;
 import mcjty.lib.gui.widgets.ChoiceLabel;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.GenericTileEntity;
@@ -45,6 +44,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -191,6 +191,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(this::createItemHandler);
     private LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(
             this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get()));
+    private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
+            .containerSupplier((windowId,player) -> new GenericContainer(BuilderSetup.CONTAINER_BUILDER, windowId, CONTAINER_FACTORY, getPos(), BuilderTileEntity.this))
+            .itemHandler(itemHandler)
+            .energyHandler(energyHandler));
     private LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(BuilderTileEntity.this));
     private LazyOptional<IModuleSupport> moduleSupportHandler = LazyOptional.of(() -> new DefaultModuleSupport(SLOT_TAB) {
         @Override
@@ -2423,9 +2427,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (cap == CapabilityEnergy.ENERGY) {
             return energyHandler.cast();
         }
-//        if (cap == CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY) {
-//            return screenHandler.cast();
-//        }
+        if (cap == CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY) {
+            return screenHandler.cast();
+        }
         if (cap == CapabilityInfusable.INFUSABLE_CAPABILITY) {
             return infusableHandler.cast();
         }
