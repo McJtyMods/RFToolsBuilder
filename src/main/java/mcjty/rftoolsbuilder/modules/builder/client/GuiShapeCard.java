@@ -3,6 +3,7 @@ package mcjty.rftoolsbuilder.modules.builder.client;
 import com.mojang.blaze3d.platform.GlStateManager;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.RenderHelper;
+import mcjty.lib.gui.IKeyReceiver;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.layout.HorizontalLayout;
@@ -45,7 +46,7 @@ import org.lwjgl.opengl.GL11;
 import java.awt.*;
 import java.util.List;
 
-public class GuiShapeCard extends Screen implements IShapeParentGui {
+public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceiver {
 
     /** The X size of the window in pixels. */
     protected int xSize = 360;
@@ -416,6 +417,28 @@ public class GuiShapeCard extends Screen implements IShapeParentGui {
         return rc;
     }
 
+    @Override
+    public Window getWindow() {
+        return window;
+    }
+
+    @Override
+    public void keyTypedFromEvent(int keyCode, int scanCode) {
+        if (window != null) {
+            if (window.keyTyped(keyCode, scanCode)) {
+                super.keyPressed(keyCode, scanCode, 0); // @todo 1.14: modifiers?
+            }
+        }
+    }
+
+    @Override
+    public void charTypedFromEvent(char codePoint) {
+        if (window != null) {
+            if (window.charTyped(codePoint)) {
+                super.charTyped(codePoint, 0); // @todo 1.14: modifiers?
+            }
+        }
+    }
 
     private static int updateCounter = 20;
 
