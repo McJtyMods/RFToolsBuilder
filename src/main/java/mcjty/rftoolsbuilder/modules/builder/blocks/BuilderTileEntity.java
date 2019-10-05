@@ -1119,7 +1119,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         }
 
         if (clear) {
-            world.setBlockState(spos, Blocks.AIR.getDefaultState());
+            world.setBlockState(spos, Blocks.AIR.getDefaultState(), 2);
         } else {
             world.setBlockState(spos, getReplacementBlock(), 2);       // No block update!
         }
