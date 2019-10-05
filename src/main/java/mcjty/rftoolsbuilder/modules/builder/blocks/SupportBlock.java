@@ -39,10 +39,6 @@ public class SupportBlock extends Block {
 //        return block.onBlockActivated(world, pos, state, player, hand, facing, hitX, hitY, hitZ);
 //    }
 
-    public static Collection<IProperty<?>> getPropertyKeys(BlockState state) {
-        return state.getProperties();
-    }
-
 //    public void initModel() {
 //        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(getRegistryName(), "inventory"));
 //    }
