@@ -46,7 +46,10 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.*;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
@@ -1157,28 +1160,16 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return commonQuarryBlock(false, rfNeeded, srcPos, srcState);
     }
 
-    private static ItemStack createHarvester(boolean silk, int fortune) {
+    private static ItemStack getHarvesterTool(boolean silk, int fortune) {
         if (silk) {
-            if (TOOL_SILK == null) {
-                ToolItem item = new ToolItem(1000.0f, 1000.0f, ItemTier.DIAMOND, Collections.emptySet(), new Item.Properties()) {
-                    @Override
-                    public boolean canHarvestBlock(BlockState state) {
-                        return true;
-                    }
-                };
-                TOOL_SILK = new ItemStack(item);
+            if (TOOL_SILK == null || TOOL_SILK.isEmpty()) {
+                TOOL_SILK = new ItemStack(BuilderSetup.SUPER_HARVESTING_TOOL);
                 TOOL_SILK.addEnchantment(Enchantments.SILK_TOUCH, 1);
             }
             return TOOL_SILK;
         } else {
-            if (TOOL_NORMAL == null) {
-                ToolItem item = new ToolItem(1000.0f, 1000.0f, ItemTier.DIAMOND, Collections.emptySet(), new Item.Properties()) {
-                    @Override
-                    public boolean canHarvestBlock(BlockState state) {
-                        return true;
-                    }
-                };
-                TOOL_NORMAL = new ItemStack(item);
+            if (TOOL_NORMAL == null || TOOL_NORMAL.isEmpty()) {
+                TOOL_NORMAL = new ItemStack(BuilderSetup.SUPER_HARVESTING_TOOL);
             }
             return TOOL_NORMAL;
         }
@@ -1234,46 +1225,11 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     LootContext.Builder builder = new LootContext.Builder((ServerWorld) world)
                             .withRandom(world.rand)
                             .withParameter(LootParameters.POSITION, srcPos)
-                            .withParameter(LootParameters.TOOL, createHarvester(silk, fortune));
-
+                            .withParameter(LootParameters.TOOL, getHarvesterTool(silk, fortune));
                     if (fortune > 0) {
                         builder.withLuck(fortune);
                     }
                     List<ItemStack> drops = srcState.getDrops(builder);
-
-                    // @todo 1.14 silk touch?
-//                    if (silk && block.canSilkHarvest(world, srcPos, srcState, fakePlayer)) {
-//                        ItemStack drop;
-//                        try {
-//                            drop = (ItemStack) ModSetup.Block_getSilkTouch.invoke(block, srcState);
-//                        } catch (IllegalAccessException|InvocationTargetException e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                        drops = new ArrayList<>();
-//                        if (!drop.isEmpty()) {
-//                            drops.add(drop);
-//                        }
-//                        net.minecraftforge.event.ForgeEventFactory.fireBlockHarvesting(drops, world, srcPos, srcState, 0, 1.0f, true, fakePlayer);
-//                    } else {
-//                        int fortune = getCardType().isFortune() ? 3 : 0;
-//                        if (block instanceof BlockShulkerBox) {
-//                            // Shulker boxes drop in setBlockState, rather than anywhere sensible. Work around this.
-//                            drops = new ArrayList<>();
-//                            TileEntity te = world.getTileEntity(srcPos);
-//                            if (te instanceof TileEntityShulkerBox) {
-//                                TileEntityShulkerBox teShulkerBox = (TileEntityShulkerBox)te;
-//                                ItemStack stack = new ItemStack(Item.getItemFromBlock(block));
-//                                teShulkerBox.saveToNbt(stack.getOrCreateSubCompound("BlockEntityTag"));
-//                                if (teShulkerBox.hasCustomName()) {
-//                                    stack.setStackDisplayName(teShulkerBox.getName());
-//                                }
-//                                drops.add(stack);
-//                            }
-//                        } else {
-//                            drops = block.getDrops(world, srcPos, srcState, fortune);
-//                        }
-//                        net.minecraftforge.event.ForgeEventFactory.fireBlockHarvesting(drops, world, srcPos, srcState, fortune, 1.0f, false, fakePlayer);
-//                    }
                     if (checkValidItems(block, drops) && !insertItems(drops)) {
                         overflowItems = drops;
                         clearOrDirtBlock(rfNeeded, srcPos, srcState, clear);
@@ -1283,7 +1239,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 clearOrDirtBlock(rfNeeded, srcPos, srcState, clear);
             }
         }
-        return silk ? skip() : false;
+        return false;
     }
 
     private static boolean isFluidBlock(Block block) {

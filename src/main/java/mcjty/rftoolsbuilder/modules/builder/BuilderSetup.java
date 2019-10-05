@@ -12,6 +12,7 @@ import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
+import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
@@ -89,6 +90,9 @@ public class BuilderSetup {
     @ObjectHolder("rftoolsbuilder:shape_card_void")
     public static ShapeCardItem SHAPE_CARD_VOID;
 
+    @ObjectHolder("rftoolsbuilder:superharvestingtool")
+    public static Item SUPER_HARVESTING_TOOL;
+
     private static Map<String,BlockInformation> blockInformationMap = new HashMap<>();
 
     public static void registerBlocks(final RegistryEvent.Register<Block> event) {
@@ -104,6 +108,7 @@ public class BuilderSetup {
         }
         Item.Properties properties = new Item.Properties().group(RFToolsBuilder.setup.getTab());
         event.getRegistry().register(new BaseBlockItem(BUILDER, properties));
+        event.getRegistry().register(new SuperHarvestingTool());
     }
 
     public static void registerTiles(final RegistryEvent.Register<TileEntityType<?>> event) {
@@ -114,6 +119,7 @@ public class BuilderSetup {
         event.getRegistry().register(GenericContainer.createContainerType("builder"));
     }
 
+    // @todo 1.14 call me?
     public static void init() {
         readBuilderBlocksInternal();
         readBuilderBlocksConfig();
