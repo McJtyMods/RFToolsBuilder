@@ -5,16 +5,16 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.state.IProperty;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
 import java.util.ArrayDeque;
-import java.util.Collection;
 import java.util.Deque;
 
 public class SupportBlock extends Block {
@@ -26,56 +26,19 @@ public class SupportBlock extends Block {
     public static IntegerProperty STATUS = IntegerProperty.create("status", 0, 2);
 
     public SupportBlock() {
-        super(Properties.create(Material.GLASS)
-
-        );
-        // @todo 1.14
-//        super(Material.GLASS, MapColor.CYAN);
+        super(Properties.create(Material.GLASS));
         setRegistryName("support_block");
-//        setCreativeTab(RFTools.setup.getTab());
     }
 
-//    public static boolean activateBlock(Block block, World world, BlockPos pos, BlockState state, PlayerEntity player, Hand hand, Direction facing, float hitX, float hitY, float hitZ) {
-//        return block.onBlockActivated(world, pos, state, player, hand, facing, hitX, hitY, hitZ);
-//    }
+    @Override
+    public BlockRenderLayer getRenderLayer() {
+        return BlockRenderLayer.TRANSLUCENT;
+    }
 
-//    public void initModel() {
-//        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(getRegistryName(), "inventory"));
-//    }
-
-    // @todo 1.14
-//    @Override
-//    public boolean isOpaqueCube(BlockState state) {
-//        return false;
-//    }
-//
-//    @SideOnly(Side.CLIENT)
-//    @Override
-//    public BlockRenderLayer getBlockLayer() {
-//        return BlockRenderLayer.TRANSLUCENT;
-//    }
-//
-//    @Override
-//    public boolean isBlockNormalCube(BlockState state) {
-//        return false;
-//    }
-
-    // @todo 1.14 loot tables
-//    @Override
-//    public Item getItemDropped(BlockState state, Random rand, int fortune) {
-//        return null;
-//    }
-
-//    @Override
-//    public int quantityDropped(Random random) {
-//        return 0;
-//    }
-//
-//    @Override
-//    public boolean canSilkHarvest(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-//        return false;
-//    }
-
+    @Override
+    public boolean isNormalCube(BlockState state, IBlockReader reader, BlockPos pos) {
+        return false;
+    }
 
     @Override
     public boolean onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {

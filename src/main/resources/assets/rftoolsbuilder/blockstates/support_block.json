@@ -1,14 +1,7 @@
 {
-  "forge_marker": 1,
-  "defaults": {
-    "model": "block/cube_all",
-    "textures": { "all": "rftoolsbuilder:block/supportblock" }
-  },
   "variants": {
-    "status" : {
-      "0": { "textures": { "all": "rftoolsbuilder:block/supportblock" }},
-      "1": { "textures": { "all": "rftoolsbuilder:block/supportyellowblock" }},
-      "2": { "textures": { "all": "rftoolsbuilder:block/supportredblock" }}
-    }
+    "status=0": { "model": "rftoolsbuilder:block/supportblock_status0" },
+    "status=1": { "model": "rftoolsbuilder:block/supportblock_status1" },
+    "status=2": { "model": "rftoolsbuilder:block/supportblock_status2" }
   }
 }
