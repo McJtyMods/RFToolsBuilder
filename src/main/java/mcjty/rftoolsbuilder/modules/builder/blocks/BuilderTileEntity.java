@@ -35,7 +35,10 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
 import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.setup.ClientCommandHandler;
 import mcjty.rftoolsbuilder.shapes.Shape;
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.FlowingFluidBlock;
 import net.minecraft.block.material.Material;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -55,7 +58,6 @@ import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.ShulkerBoxTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Rotation;
@@ -1113,14 +1115,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private void clearOrDirtBlock(int rfNeeded, BlockPos spos, BlockState srcState, boolean clear) {
-        // @todo 1.14 is this hack still needed in 1.14?
-        if (srcState.getBlock() instanceof ShulkerBoxBlock) {
-            TileEntity te = world.getTileEntity(spos);
-            if(te instanceof ShulkerBoxTileEntity) {
-                ((ShulkerBoxTileEntity)te).clear(); // We already collected a drop before we called this. Clear to make sure setBlockState doesn't spawn another.
-            }
-        }
-
         if (clear) {
             world.setBlockState(spos, Blocks.AIR.getDefaultState(), 2);
         } else {
@@ -1225,7 +1219,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     LootContext.Builder builder = new LootContext.Builder((ServerWorld) world)
                             .withRandom(world.rand)
                             .withParameter(LootParameters.POSITION, srcPos)
-                            .withParameter(LootParameters.TOOL, getHarvesterTool(silk, fortune));
+                            .withParameter(LootParameters.TOOL, getHarvesterTool(silk, fortune))
+                            .withNullableParameter(LootParameters.BLOCK_ENTITY, world.getTileEntity(srcPos));
                     if (fortune > 0) {
                         builder.withLuck(fortune);
                     }
