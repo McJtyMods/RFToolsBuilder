@@ -85,6 +85,7 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.Pair;
@@ -744,8 +745,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private void checkStateServer() {
-        if (overflowItems != null && insertItems(overflowItems)) {
+        if (overflowItems != null) {
+            List<ItemStack> toInsert = overflowItems;
             overflowItems = null;
+            insertItems(toInsert);
         }
 
         if (!isMachineEnabled() && loopMode) {
@@ -1226,7 +1229,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     }
                     List<ItemStack> drops = srcState.getDrops(builder);
                     if (checkValidItems(block, drops) && !insertItems(drops)) {
-                        overflowItems = drops;
                         clearOrDirtBlock(rfNeeded, srcPos, srcState, clear);
                         return waitOrSkip("Not enough room!\nor no usable storage\non top or below!");    // Not enough room. Wait
                     }
@@ -1465,14 +1467,46 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return false;
     }
 
+    private List<ItemStack> couldntHandle = new ArrayList<>();
+
     private boolean insertItems(List<ItemStack> items) {
         TileEntity te = world.getTileEntity(getPos().up());
-        boolean ok = InventoryHelper.insertItemsAtomic(items, te, Direction.DOWN);
-        if (!ok) {
-            te = world.getTileEntity(getPos().down());
-            ok = InventoryHelper.insertItemsAtomic(items, te, Direction.UP);
+        if (te != null) {
+            te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.DOWN).ifPresent(h -> {
+                for (ItemStack item : items) {
+                    ItemStack overflow = ItemHandlerHelper.insertItem(h, item, false);
+                    if (!overflow.isEmpty()) {
+                        couldntHandle.add(overflow);
+                    }
+                }
+            });
         }
-        return ok;
+        if (couldntHandle.isEmpty()) {
+            return true;
+        }
+        te = world.getTileEntity(getPos().down());
+        if (te != null) {
+            te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.UP).ifPresent(h -> {
+                for (ItemStack item : couldntHandle) {
+                    ItemStack overflow = ItemHandlerHelper.insertItem(h, item, false);
+                    if (!overflow.isEmpty()) {
+                        if (overflowItems == null) {
+                            overflowItems = new ArrayList<>();
+                        }
+                        overflowItems.add(overflow);
+                    }
+                }
+                couldntHandle.clear();
+            });
+        }
+        if (!couldntHandle.isEmpty()) {
+            if (overflowItems == null) {
+                overflowItems = new ArrayList<>();
+            }
+            overflowItems.addAll(couldntHandle);
+            couldntHandle.clear();
+        }
+        return overflowItems == null;
     }
 
     // Return what could not be inserted
