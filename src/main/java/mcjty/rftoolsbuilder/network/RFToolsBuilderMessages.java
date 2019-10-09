@@ -8,6 +8,8 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTItemInventoryShape;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTShapeCard;
+import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
+import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnShapeData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -37,9 +39,11 @@ public class RFToolsBuilderMessages {
         // Server side
         net.registerMessage(id(), PacketUpdateNBTShapeCard.class, PacketUpdateNBTShapeCard::toBytes, PacketUpdateNBTShapeCard::new, PacketUpdateNBTShapeCard::handle);
         net.registerMessage(id(), PacketUpdateNBTItemInventoryShape.class, PacketUpdateNBTItemInventoryShape::toBytes, PacketUpdateNBTItemInventoryShape::new, PacketUpdateNBTItemInventoryShape::handle);
+        net.registerMessage(id(), PacketRequestShapeData.class, PacketRequestShapeData::toBytes, PacketRequestShapeData::new, PacketRequestShapeData::handle);
 
         // Client side
         net.registerMessage(id(), PacketChamberInfoReady.class, PacketChamberInfoReady::toBytes, PacketChamberInfoReady::new, PacketChamberInfoReady::handle);
+        net.registerMessage(id(), PacketReturnShapeData.class, PacketReturnShapeData::toBytes, PacketReturnShapeData::new, PacketReturnShapeData::handle);
 
         PacketHandler.registerStandardMessages(net);
     }

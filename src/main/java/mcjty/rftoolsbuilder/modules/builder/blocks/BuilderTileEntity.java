@@ -47,6 +47,7 @@ import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.BlockItem;
@@ -1279,38 +1280,53 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     public boolean pumpBlock(int rfNeeded, BlockPos srcPos, BlockState srcState, BlockState pickState) {
         Block block = srcState.getBlock();
-        // @todo 1.14
-//        Fluid fluid = FluidRegistry.lookupFluidForBlock(block);
-//        if (fluid == null) {
-//            return skip();
-//        }
+
+        IFluidState fluidState = world.getFluidState(srcPos);
+
+        if (fluidState == null) {
+            return skip();
+        }
+
+        if (!fluidState.isSource()) {
+            return skip();
+        }
+
+        FluidStack fluidStack = FluidTools.pickupFluidBlock(world, srcPos, s -> false, () -> {});
+        if (fluidStack.isEmpty()) {
+            return skip();
+        }
+
+        // @todo 1.14, probably no longer needed?
 //        if (!isFluidBlock(block)) {
 //            return skip();
 //        }
-//
+
+        // @todo 1.14, probably no longer needed?
 //        if (getFluidLevel(srcState) != 0) {
 //            return skip();
 //        }
-//
-//        if (block.getBlockHardness(srcState, world, srcPos) >= 0) {
-//            FakePlayer fakePlayer = getHarvester();
-//            if (allowedToBreak(srcState, world, srcPos, fakePlayer)) {
-//                if (checkAndInsertFluids(fluid)) {
-//                    consumeEnergy(rfNeeded);
-//                    boolean clear = getCardType().isClearing();
-//                    if (clear) {
-//                        world.setBlockToAir(srcPos);
-//                    } else {
-//                        world.setBlockState(srcPos, getReplacementBlock(), 2);       // No block update!
-//                    }
-//                    if (!silent) {
-//                        SoundTools.playSound(world, block.getSoundType(srcState, world, srcPos, fakePlayer).getBreakSound(), srcPos.getX(), srcPos.getY(), srcPos.getZ(), 1.0f, 1.0f);
-//                    }
-//                    return skip();
-//                }
-//                return waitOrSkip("No room for liquid\nor no usable tank\nabove or below!");    // No room in tanks or not a valid tank: wait
-//            }
-//        }
+
+        if (block.getBlockHardness(srcState, world, srcPos) >= 0) {
+            FakePlayer fakePlayer = getHarvester();
+            if (allowedToBreak(srcState, world, srcPos, fakePlayer)) {
+                if (checkAndInsertFluids(fluidStack)) {
+                    energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
+                    boolean clear = getCardType().isClearing();
+                    FluidTools.pickupFluidBlock(world, srcPos, s -> true, () -> {
+                        if (clear) {
+                            world.setBlockState(srcPos, Blocks.AIR.getDefaultState(), 2);
+                        } else {
+                            world.setBlockState(srcPos, getReplacementBlock(), 2);       // No block update!
+                        }
+                    });
+                    if (!silent) {
+                        SoundTools.playSound(world, block.getSoundType(srcState, world, srcPos, fakePlayer).getBreakSound(), srcPos.getX(), srcPos.getY(), srcPos.getZ(), 1.0f, 1.0f);
+                    }
+                    return skip();
+                }
+                return waitOrSkip("No room for liquid\nor no usable tank\nabove or below!");    // No room in tanks or not a valid tank: wait
+            }
+        }
         return skip();
     }
 
@@ -1441,7 +1457,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return true;
     }
 
-    private boolean checkAndInsertFluids(Fluid fluid) {
+    private boolean checkAndInsertFluids(FluidStack fluid) {
         if (checkFluidTank(fluid, getPos().up(), Direction.DOWN)) {
             return true;
         }
@@ -1451,11 +1467,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return false;
     }
 
-    private boolean checkFluidTank(Fluid fluid, BlockPos up, Direction side) {
+    private boolean checkFluidTank(FluidStack fluidStack, BlockPos up, Direction side) {
         TileEntity te = world.getTileEntity(up);
         if (te != null) {
             return te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side).map(h -> {
-                FluidStack fluidStack = new FluidStack(fluid, 1000);
                 int amount = h.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
                 if (amount == 1000) {
                     h.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);

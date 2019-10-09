@@ -3,6 +3,7 @@ package mcjty.rftoolsbuilder.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
+import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.common.Mod;
 
@@ -22,6 +23,7 @@ public class Config {
     static {
         setupGeneralConfig();
         BuilderConfiguration.init(COMMON_BUILDER, CLIENT_BUILDER);
+        ScannerConfiguration.init(COMMON_BUILDER, CLIENT_BUILDER);
 
         COMMON_CONFIG = COMMON_BUILDER.build();
         CLIENT_CONFIG = CLIENT_BUILDER.build();

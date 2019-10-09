@@ -4,6 +4,7 @@ package mcjty.rftoolsbuilder.setup;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
+import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderRenderer;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
@@ -19,6 +20,7 @@ public class ClientRegistration {
     @SubscribeEvent
     public static void init(FMLClientSetupEvent event) {
         GenericGuiContainer.register(BuilderSetup.CONTAINER_BUILDER, GuiBuilder::new);
+        BuilderRenderer.register();
     }
 
     @SubscribeEvent

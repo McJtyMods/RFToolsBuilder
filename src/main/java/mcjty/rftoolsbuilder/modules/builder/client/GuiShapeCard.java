@@ -20,11 +20,13 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTItemInventoryShape;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTShapeCard;
+import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.shapes.IShapeParentGui;
-import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTShapeCard;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
+import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
@@ -87,7 +89,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     public static Screen returnGui = null;
 
     private ShapeID shapeID = null;
-//    private ShapeRenderer shapeRenderer = null;
+    private ShapeRenderer shapeRenderer = null;
 
 
     public GuiShapeCard(boolean fromTE) {
@@ -95,20 +97,19 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         this.fromTE = fromTE;
     }
 
-    // @todo 1.14
-//    private ShapeRenderer getShapeRenderer() {
-//        if (shapeID == null) {
-//            shapeID = getShapeID();
-//        } else if (!shapeID.equals(getShapeID())) {
-//            shapeID = getShapeID();
-//            shapeRenderer = null;
-//        }
-//        if (shapeRenderer == null) {
-//            shapeRenderer = new ShapeRenderer(shapeID);
-//            shapeRenderer.initView(getPreviewLeft(), guiTop);
-//        }
-//        return shapeRenderer;
-//    }
+    private ShapeRenderer getShapeRenderer() {
+        if (shapeID == null) {
+            shapeID = getShapeID();
+        } else if (!shapeID.equals(getShapeID())) {
+            shapeID = getShapeID();
+            shapeRenderer = null;
+        }
+        if (shapeRenderer == null) {
+            shapeRenderer = new ShapeRenderer(shapeID);
+            shapeRenderer.initView(getPreviewLeft(), guiTop);
+        }
+        return shapeRenderer;
+    }
 
     private ShapeID getShapeID() {
         ItemStack stackToEdit = getStackToEdit();
@@ -162,8 +163,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
             ySize = 160 + 28;
         }
 
-        // @todo 1.14
-//        getShapeRenderer().initView(getPreviewLeft(), guiTop);
+        getShapeRenderer().initView(getPreviewLeft(), guiTop);
 
         shapeLabel = new ChoiceLabel(minecraft, this).setDesiredWidth(100).setDesiredHeight(16).addChoices(
                 Shape.SHAPE_BOX.getDescription(),
@@ -292,9 +292,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         int dx = parseInt(dimX.getText());
         int dy = parseInt(dimY.getText());
         int dz = parseInt(dimZ.getText());
-        // @todo 1.14
-//        int max = Math.max(ScannerConfiguration.maxScannerDimension.get(), BuilderConfiguration.maxBuilderDimension.get());
-        int max = Math.max(255, BuilderConfiguration.maxBuilderDimension.get());
+        int max = Math.max(ScannerConfiguration.maxScannerDimension.get(), BuilderConfiguration.maxBuilderDimension.get());
         if (dx < 0) {
             dx = 0;
         } else if (dx > max) {
@@ -386,19 +384,19 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         return rc;
     }
 
-//
-//    @Override
-//    public void handleMouseInput() throws IOException {
-//        super.handleMouseInput();
-//        window.handleMouseInput();
-//
-//        int x = Mouse.getEventX() * width / mc.displayWidth;
-//        int y = height - Mouse.getEventY() * height / mc.displayHeight - 1;
-//        x -= guiLeft;
-//        y -= guiTop;
-//
-//        getShapeRenderer().handleShapeDragging(x, y);
-//    }
+    @Override
+    // @todo 1.14 is this the right method?
+    public void mouseMoved(double xx, double yy) {
+        window.handleMouseInput(0); // @todo 1.14 is this right? What button?
+
+        MouseHelper mouse = getMinecraft().mouseHelper;
+        int x = (int)mouse.getMouseX() * width / getMinecraft().mainWindow.getWidth();
+        int y = height - (int)mouse.getMouseY() * height / getMinecraft().mainWindow.getHeight() - 1;
+        x -= guiLeft;
+        y -= guiTop;
+
+        getShapeRenderer().handleShapeDragging(x, y);
+    }
 
 
     @Override
@@ -445,8 +443,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     @Override
     public void render(int xSize_lo, int ySize_lo, float par3) {
 
-        // @todo 1.14
-//        getShapeRenderer().handleMouseWheel();
+        getShapeRenderer().handleMouseWheel();
 
         super.render(xSize_lo, ySize_lo, par3);
 
@@ -455,13 +452,12 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         updateCounter--;
         if (updateCounter <= 0) {
             updateCounter = 10;
-            // @todo 1.14
-//            int count = getShapeRenderer().getCount();
-//            if (count >= ShapeCardItem.MAXIMUM_COUNT) {
-//                blocksLabel.setText("#Blocks: ++" + count);
-//            } else {
-//                blocksLabel.setText("#Blocks: " + count);
-//            }
+            int count = getShapeRenderer().getCount();
+            if (count >= ShapeCardItem.MAXIMUM_COUNT) {
+                blocksLabel.setText("#Blocks: ++" + count);
+            } else {
+                blocksLabel.setText("#Blocks: " + count);
+            }
         }
 
         window.draw();
@@ -482,8 +478,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
         ItemStack stack = getStackToEdit();
         if (!stack.isEmpty()) {
-            // @todo 1.14
-//            getShapeRenderer().renderShape(this, stack, guiLeft, guiTop, true, true, true, false);
+            getShapeRenderer().renderShape(this, stack, guiLeft, guiTop, true, true, true, false);
         }
 
         List<String> tooltips = window.getTooltips();
