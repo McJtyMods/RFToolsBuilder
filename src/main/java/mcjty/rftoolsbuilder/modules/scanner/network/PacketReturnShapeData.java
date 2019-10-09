@@ -7,11 +7,14 @@ import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
 import mcjty.rftoolsbuilder.varia.RLE;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.function.Supplier;
 
@@ -71,7 +74,8 @@ public class PacketReturnShapeData {
                 String r = NetworkTools.readString(buf);
 //                int m = buf.readInt();    // @todo 1.14 no meta!
 //                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));
-//                statePalette.add(block.getStateFromMeta(m));
+                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));
+                statePalette.add(block.getDefaultState());
                 size--;
             }
         }

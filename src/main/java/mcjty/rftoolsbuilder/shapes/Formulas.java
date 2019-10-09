@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.lib.varia.Check32;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
+import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
@@ -68,8 +69,7 @@ public class Formulas {
             ShapeCardItem.getLocalChecksum(tc, crc);
             int scanId = tc.getInt("scanid");
             crc.add(scanId);
-            // @todo 1.14 scanner
-//            crc.add(ScanDataManagerClient.getScansClient().getScanDirtyCounterClient(scanId));
+            crc.add(ScanDataManagerClient.getScansClient().getScanDirtyCounterClient(scanId));
         }
 
         @Override
@@ -97,26 +97,25 @@ public class Formulas {
 
             int scanId = card.getInt("scanid");
             if (scanId != 0) {
-                // @todo 1.14
-//                Scan scan = ScanDataManager.get().loadScan(scanId);
-//                palette = new ArrayList<>(scan.getMaterialPalette());
-//                byte[] datas = scan.getRledata();
-//                data = new byte[dx * dy * dz];
-//                int j = 0;
-//                for (int i = 0; i < datas.length / 2; i++) {
-//                    int cnt = (datas[i * 2]) & 0xff;
-//                    int c = datas[i * 2 + 1] & 0xff;
-//                    if (c == 255) {
-//                        c = 0;
-//                    }
-//                    while (cnt > 0 && j < data.length) {
-//                        data[j++] = (byte) c;
-//                        cnt--;
-//                    }
-//                    if (j >= data.length) {
-//                        break;
-//                    }
-//                }
+                Scan scan = ScanDataManager.get().loadScan(scanId);
+                palette = new ArrayList<>(scan.getMaterialPalette());
+                byte[] datas = scan.getRledata();
+                data = new byte[dx * dy * dz];
+                int j = 0;
+                for (int i = 0; i < datas.length / 2; i++) {
+                    int cnt = (datas[i * 2]) & 0xff;
+                    int c = datas[i * 2 + 1] & 0xff;
+                    if (c == 255) {
+                        c = 0;
+                    }
+                    while (cnt > 0 && j < data.length) {
+                        data[j++] = (byte) c;
+                        cnt--;
+                    }
+                    if (j >= data.length) {
+                        break;
+                    }
+                }
             }
         }
 
@@ -221,11 +220,8 @@ public class Formulas {
                 ShapeRotation rotation = ShapeRotation.getByName(rot);
                 modifiers.add(new ShapeModifier(operation, flip, rotation));
 
-                // @todo 1.14 scanner
-//                BlockPos dim = ShapeCardItem.getClampedDimension(childTag, ScannerConfiguration.maxScannerDimension.get());
-//                BlockPos off = ShapeCardItem.getClampedOffset(childTag, ScannerConfiguration.maxScannerOffset.get());
-                BlockPos dim = ShapeCardItem.getClampedDimension(childTag, 255);
-                BlockPos off = ShapeCardItem.getClampedOffset(childTag, 255);
+                BlockPos dim = ShapeCardItem.getClampedDimension(childTag, ScannerConfiguration.maxScannerDimension.get());
+                BlockPos off = ShapeCardItem.getClampedOffset(childTag, ScannerConfiguration.maxScannerOffset.get());
                 BlockPos o = off.add(offset);
                 formula.setup(thisCoord, dim, o, childTag);
                 formulas.add(formula);

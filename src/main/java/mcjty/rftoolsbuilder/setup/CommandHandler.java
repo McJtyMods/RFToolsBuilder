@@ -5,6 +5,7 @@ import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTools;
+import mcjty.rftoolsbuilder.shapes.ShaperTools;
 import net.minecraft.util.math.BlockPos;
 
 public class CommandHandler {
@@ -20,18 +21,15 @@ public class CommandHandler {
 
     public static void registerCommands() {
         McJtyLib.registerCommand(RFToolsBuilder.MODID, CMD_REQUEST_SHAPE_DATA, (player, arguments) -> {
-            // @todo 1.14
-//            ShaperTools.requestExtraShapeData(player, arguments.get(PARAM_ID));
+            ShaperTools.requestExtraShapeData(player, arguments.get(PARAM_ID));
             return true;
         });
         McJtyLib.registerCommand(RFToolsBuilder.MODID, CMD_REQUEST_SCAN_DIRTY, (player, arguments) -> {
-            // @todo 1.14
-//            ShaperTools.requestScanDirty(player, arguments.get(PARAM_ID));
+            ShaperTools.requestScanDirty(player, arguments.get(PARAM_ID));
             return true;
         });
         McJtyLib.registerCommand(RFToolsBuilder.MODID, CMD_REQUEST_LOCATOR_ENERGY, (player, arguments) -> {
-            // @todo 1.14
-//            ShaperTools.requestLocatorEnergyConsumption(player, arguments.get(PARAM_POS));
+            ShaperTools.requestLocatorEnergyConsumption(player, arguments.get(PARAM_POS));
             return true;
         });
         McJtyLib.registerCommand(RFToolsBuilder.MODID, CMD_GET_CHAMBER_INFO, (player, arguments) -> {

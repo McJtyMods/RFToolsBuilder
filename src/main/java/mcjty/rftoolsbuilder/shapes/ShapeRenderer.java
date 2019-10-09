@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.shapes;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import mcjty.lib.McJtyLib;
 import mcjty.lib.varia.Check32;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
@@ -9,6 +10,7 @@ import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHelper;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
@@ -90,28 +92,27 @@ public class ShapeRenderer {
     }
 
     public void handleShapeDragging(int x, int y) {
+        MouseHelper mouse = Minecraft.getInstance().mouseHelper;
         if (x >= 100 && y <= 120) {
-            // @todo 1.14
-//            if (McJtyLib.proxy.isShiftKeyDown()) {
-//                if (prevX != -1 && Mouse.isButtonDown(0)) {
-//                    dx += (x - prevX);
-//                    dy += (y - prevY);
-//                }
-//            } else {
-//                if (prevX != -1 && Mouse.isButtonDown(0)) {
-//                    yangle -= (x - prevX);
-//                    xangle += (y - prevY);
-//                }
-//            }
+            if (McJtyLib.proxy.isShiftKeyDown()) {
+                if (prevX != -1 && mouse.isLeftDown()) {
+                    dx += (x - prevX);
+                    dy += (y - prevY);
+                }
+            } else {
+                if (prevX != -1 && mouse.isLeftDown()) {
+                    yangle -= (x - prevX);
+                    xangle += (y - prevY);
+                }
+            }
             prevX = x;
             prevY = y;
         }
 
-        // @todo 1.14
-//        if (Mouse.isButtonDown(2)) {
-//            xangle = 0.0f;
-//            yangle = 0.0f;
-//        }
+        if (mouse.isRightDown()) {
+            xangle = 0.0f;
+            yangle = 0.0f;
+        }
     }
 
     public void handleMouseWheel() {
