@@ -438,12 +438,16 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         }
     }
 
+    @Override
+    public boolean mouseScrolled(double x, double y, double wheel) {
+        getShapeRenderer().handleMouseWheel(wheel);
+        return super.mouseScrolled(x, y, wheel);
+    }
+
     private static int updateCounter = 20;
 
     @Override
     public void render(int xSize_lo, int ySize_lo, float par3) {
-
-        getShapeRenderer().handleMouseWheel();
 
         super.render(xSize_lo, ySize_lo, par3);
 

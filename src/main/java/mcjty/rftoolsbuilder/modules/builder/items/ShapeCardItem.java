@@ -10,7 +10,10 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiShapeCard;
-import mcjty.rftoolsbuilder.shapes.*;
+import mcjty.rftoolsbuilder.shapes.IFormula;
+import mcjty.rftoolsbuilder.shapes.Shape;
+import mcjty.rftoolsbuilder.shapes.ShapeModifier;
+import mcjty.rftoolsbuilder.shapes.StatePalette;
 import mcjty.rftoolsbuilder.varia.RLE;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -55,23 +58,6 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
         setRegistryName("shape_card_" + type.getResourceSuffix());
         this.type = type;
     }
-
-//    @SideOnly(Side.CLIENT)
-//    @Override
-//    public void initModel() {
-//        for(ShapeCardType type : ShapeCardType.values()) {
-//            ModelResourceLocation modelResourceLocation = type.getModelResourceLocation();
-//            if(modelResourceLocation != null) {
-//                ModelLoader.setCustomModelResourceLocation(this, type.getDamage(), modelResourceLocation);
-//            }
-//        }
-//    }
-
-//    @Override
-//    public int getMaxItemUseDuration(ItemStack stack) {
-//        return 1;
-//    }
-
 
     @Override
     public ActionResultType onItemUse(ItemUseContext context) {
@@ -394,19 +380,11 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
         if (tagCompound == null) {
             return Shape.SHAPE_BOX;
         }
-        if (!tagCompound.contains("shape") && !tagCompound.contains("shapenew")) {
+        if (!tagCompound.contains("shape")) {
             return Shape.SHAPE_BOX;
         }
-        Shape shape;
-        if (tagCompound.contains("shapenew")) {
-            String sn = tagCompound.getString("shapenew");
-            shape = Shape.getShape(sn);
-        } else {
-            int shapedeprecated = tagCompound.getInt("shape");
-            ShapeDeprecated sd = ShapeDeprecated.getShape(shapedeprecated);
-            shape = sd.getNewshape();
-        }
-
+        String sn = tagCompound.getString("shape");
+        Shape shape = Shape.getShape(sn);
         if (shape == null) {
             return Shape.SHAPE_BOX;
         }
@@ -425,15 +403,10 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
         if (tagCompound == null) {
             return true;
         }
-        if (!tagCompound.contains("shape") && !tagCompound.contains("shapenew")) {
-            return true;
-        }
-        if (tagCompound.contains("shapenew")) {
+        if (tagCompound.contains("shape")) {
             return tagCompound.getBoolean("solid");
         } else {
-            int shapedeprecated = tagCompound.getInt("shape");
-            ShapeDeprecated sd = ShapeDeprecated.getShape(shapedeprecated);
-            return sd.isSolid();
+            return false;
         }
     }
 
@@ -515,7 +488,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
             // Nothing happens
             return;
         }
-        tagCompound.putString("shapenew", shape.getDescription());
+        tagCompound.putString("shape", shape.getDescription());
         tagCompound.putBoolean("solid", solid);
     }
 

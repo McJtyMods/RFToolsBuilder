@@ -115,17 +115,15 @@ public class ShapeRenderer {
         }
     }
 
-    public void handleMouseWheel() {
-        // @todo 1.14
-//        int dwheel = Mouse.getDWheel();
-//        if (dwheel < 0) {
-//            scale *= .6;
-//            if (scale <= 0.1) {
-//                scale = .1f;
-//            }
-//        } else if (dwheel > 0) {
-//            scale *= 1.4;
-//        }
+    public void handleMouseWheel(double dwheel) {
+        if (dwheel < 0) {
+            scale *= .6;
+            if (scale <= 0.1) {
+                scale = .1f;
+            }
+        } else if (dwheel > 0) {
+            scale *= 1.4;
+        }
     }
 
     public boolean renderShapeInWorld(ItemStack stack, double x, double y, double z, float offset, float scale, float angle,

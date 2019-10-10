@@ -12,6 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
@@ -36,7 +37,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
 
     public void save(int scanId) {
         World world = WorldTools.getOverworld();
-        File dataDir = null; // @todo 1.14 new File(((ServerWorld) world).getChunkSaveLocation(), "rftoolsscans");
+        File dataDir = new File(((ServerWorld)world).getSaveHandler().getWorldDirectory(), "rftoolsscans");
         dataDir.mkdirs();
         File file = new File(dataDir, "scan" + scanId);
         Scan scan = getOrCreateScan(scanId);
@@ -87,7 +88,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
             if (scan == null) {
                 scan = new Scan();
             }
-            File dataDir = null; // @todo 1.14 new File(((ServerWorld) world).getChunkSaveLocation(), "rftoolsscans");
+            File dataDir = new File(((ServerWorld)world).getSaveHandler().getWorldDirectory(), "rftoolsscans");
             dataDir.mkdirs();
             File file = new File(dataDir, "scan" + id);
             if (file.exists()) {
