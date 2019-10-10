@@ -6,9 +6,11 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderRenderer;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
+import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -57,5 +59,10 @@ public class ClientRegistration {
 //                    event.getModelRegistry().put(new ModelResourceLocation(block.getRegistryName(), "lower=true,upper=false"), model);
 //                    event.getModelRegistry().put(new ModelResourceLocation(block.getRegistryName(), "lower=true,upper=true"), model);
 //                });
+    }
+
+    @SubscribeEvent
+    public static void onRenderWorldLastEvent(RenderWorldLastEvent event) {
+        ShapeDataManagerClient.cleanupOldRenderers();
     }
 }

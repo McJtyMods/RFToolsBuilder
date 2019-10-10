@@ -7,6 +7,7 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
@@ -19,6 +20,8 @@ public class ModSetup extends DefaultModSetup {
     @Override
     public void init(FMLCommonSetupEvent e) {
         super.init(e);
+        MinecraftForge.EVENT_BUS.register(new ForgeEventHandlers());
+        CommandHandler.registerCommands();
         RFToolsBuilderMessages.registerMessages("rftoolsbuilder");
         PacketHandler.registerMessageHandler(RFToolsBuilder.MODID, RFToolsBuilderMessages.INSTANCE);
     }

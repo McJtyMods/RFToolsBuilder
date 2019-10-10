@@ -1,14 +1,11 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,14 +69,7 @@ public class Scan {
         tagCompound.putByteArray("data", rledata == null ? new byte[0] : rledata);
         ListNBT pal = new ListNBT();
         for (BlockState state : materialPalette) {
-            CompoundNBT tc = new CompoundNBT();
-            Block block = state.getBlock();
-            // @todo 1.14 need to serialize blockstate now that meta is gone!
-            if (block == null || block.getRegistryName() == null) {
-                tc.putString("r", Blocks.STONE.getRegistryName().toString());
-            } else {
-                tc.putString("r", block.getRegistryName().toString());
-            }
+            CompoundNBT tc = NBTUtil.writeBlockState(state);
             pal.add(tc);
         }
         tagCompound.put("scanpal", pal);
@@ -103,12 +93,8 @@ public class Scan {
         ListNBT list = tagCompound.getList("scanpal", Constants.NBT.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundNBT tc = list.getCompound(i);
-            Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(tc.getString("r")));
-            if (block == null) {
-                block = Blocks.STONE;
-            }
-            // @todo 1.14 deserialize blockstate now that meta is gone
-//            materialPalette.add(block.getStateFromMeta(tc.getInteger("m")));
+            BlockState state = NBTUtil.readBlockState(tc);
+            materialPalette.add(state);
         }
         rledata = tagCompound.getByteArray("data");
         dataDim = new BlockPos(tagCompound.getInt("scandimx"), tagCompound.getInt("scandimy"), tagCompound.getInt("scandimz"));
