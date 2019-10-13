@@ -377,32 +377,35 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         }
     }
 
+    private boolean buttons[] = new boolean[10];    // @todo ugly hack to get mouse buttons?
+
+    @Override
+    public void mouseMoved(double xx, double yy) {
+        window.handleMouseInput(0); // @todo 1.14 is this right? What button?
+
+        MouseHelper mouse = getMinecraft().mouseHelper;
+        int x = (int)mouse.getMouseX() * width / getMinecraft().mainWindow.getWidth();
+        int y = (int)mouse.getMouseY() * height / getMinecraft().mainWindow.getHeight();
+        x -= guiLeft;
+        y -= guiTop;
+
+        getShapeRenderer().handleShapeDragging(x, y, buttons);
+    }
+
+
     @Override
     public boolean mouseClicked(double x, double y, int button) {
+        buttons[button] = true;
         boolean rc = super.mouseClicked(x, y, button);
         window.mouseClicked((int)x, (int)y, button);
         return rc;
     }
 
     @Override
-    // @todo 1.14 is this the right method?
-    public void mouseMoved(double xx, double yy) {
-        window.handleMouseInput(0); // @todo 1.14 is this right? What button?
-
-        MouseHelper mouse = getMinecraft().mouseHelper;
-        int x = (int)mouse.getMouseX() * width / getMinecraft().mainWindow.getWidth();
-        int y = height - (int)mouse.getMouseY() * height / getMinecraft().mainWindow.getHeight() - 1;
-        x -= guiLeft;
-        y -= guiTop;
-
-        getShapeRenderer().handleShapeDragging(x, y);
-    }
-
-
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int state) {
-        boolean rc = super.mouseReleased(mouseX, mouseY, state);
-        window.mouseMovedOrUp((int)mouseX, (int)mouseY, state);
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        buttons[button] = false;
+        boolean rc = super.mouseReleased(mouseX, mouseY, button);
+        window.mouseMovedOrUp((int)mouseX, (int)mouseY, button);
         return rc;
     }
 

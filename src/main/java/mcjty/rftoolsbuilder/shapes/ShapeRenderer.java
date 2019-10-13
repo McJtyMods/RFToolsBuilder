@@ -91,16 +91,16 @@ public class ShapeRenderer {
         this.dy = (float) (vy/mainWindow.getGuiScaleFactor());
     }
 
-    public void handleShapeDragging(int x, int y) {
+    public void handleShapeDragging(int x, int y, boolean[] buttons) {
         MouseHelper mouse = Minecraft.getInstance().mouseHelper;
         if (x >= 100 && y <= 120) {
             if (McJtyLib.proxy.isShiftKeyDown()) {
-                if (prevX != -1 && mouse.isLeftDown()) {
+                if (prevX != -1 && buttons[0]) {
                     dx += (x - prevX);
                     dy += (y - prevY);
                 }
             } else {
-                if (prevX != -1 && mouse.isLeftDown()) {
+                if (prevX != -1 && buttons[0]) {
                     yangle -= (x - prevX);
                     xangle += (y - prevY);
                 }
@@ -109,7 +109,7 @@ public class ShapeRenderer {
             prevY = y;
         }
 
-        if (mouse.isRightDown()) {
+        if (buttons[2]) {
             xangle = 0.0f;
             yangle = 0.0f;
         }
