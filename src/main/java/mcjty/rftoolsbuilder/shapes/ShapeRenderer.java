@@ -168,6 +168,7 @@ public class ShapeRenderer {
         GlStateManager.disableBlend();
         GlStateManager.disableCull();
         GlStateManager.disableTexture();
+        GlStateManager.disableLighting();
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
