@@ -395,7 +395,9 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     @Override
     public boolean mouseClicked(double x, double y, int button) {
-        buttons[button] = true;
+        if (button < buttons.length) {
+            buttons[button] = true;
+        }
         boolean rc = super.mouseClicked(x, y, button);
         window.mouseClicked((int)x, (int)y, button);
         return rc;
@@ -403,7 +405,9 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        buttons[button] = false;
+        if (button < buttons.length) {
+            buttons[button] = false;
+        }
         boolean rc = super.mouseReleased(mouseX, mouseY, button);
         window.mouseMovedOrUp((int)mouseX, (int)mouseY, button);
         return rc;
