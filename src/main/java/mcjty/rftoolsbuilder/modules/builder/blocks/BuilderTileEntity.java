@@ -240,7 +240,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public static Block createBlock() {
         return new BaseBlock("builder", new BlockBuilder()
                 .tileEntitySupplier(BuilderTileEntity::new)
-//                .flags(BlockFlags.REDSTONE_CHECK)
                 .infusable()
                 .info("message.rftoolsbuilder.shiftmessage")
                 .infoExtended("message.rftoolsbuilder.builder")) {
