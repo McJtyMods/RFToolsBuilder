@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.scanner.network;
 
-import mcjty.lib.network.NetworkTools;
 import mcjty.rftoolsbuilder.shapes.BeaconType;
 import mcjty.rftoolsbuilder.shapes.ScanDataManagerClient;
 import mcjty.rftoolsbuilder.shapes.ScanExtraData;
@@ -24,7 +23,7 @@ public class PacketReturnExtraData {
             List<ScanExtraData.Beacon> beacons = data.getBeacons();
             buf.writeInt(beacons.size());
             for (ScanExtraData.Beacon beacon : beacons) {
-                NetworkTools.writePos(buf, beacon.getPos());
+                buf.writeBlockPos(beacon.getPos());
                 buf.writeByte(beacon.getType().ordinal());
                 buf.writeBoolean(beacon.isDoBeacon());
             }
@@ -42,7 +41,7 @@ public class PacketReturnExtraData {
         } else {
             data = new ScanExtraData();
             for (int i = 0; i < size; i++) {
-                BlockPos pos = NetworkTools.readPos(buf);
+                BlockPos pos = buf.readBlockPos();
                 BeaconType type = BeaconType.VALUES[buf.readByte()];
                 boolean doBeacon = buf.readBoolean();
                 data.addBeacon(pos, type, doBeacon);

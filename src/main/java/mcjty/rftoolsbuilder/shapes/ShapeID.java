@@ -1,7 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import io.netty.buffer.ByteBuf;
-import mcjty.lib.network.NetworkTools;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.dimension.DimensionType;
 
@@ -23,12 +22,12 @@ public final class ShapeID {
         this.solid = solid;
     }
 
-    public ShapeID(ByteBuf buf) {
+    public ShapeID(PacketBuffer buf) {
         int dim = 0;
         BlockPos p = null;
         if (buf.readBoolean()) {
             dim = buf.readInt();
-            p = NetworkTools.readPos(buf);
+            p = buf.readBlockPos();
         }
         scanId = buf.readInt();
         grayscale = buf.readBoolean();
@@ -37,13 +36,13 @@ public final class ShapeID {
         pos = p;
     }
 
-    public void toBytes(ByteBuf buf) {
+    public void toBytes(PacketBuffer buf) {
         if (getPos() == null) {
             buf.writeBoolean(false);
         } else {
             buf.writeBoolean(true);
             buf.writeInt(getDimension().getId());
-            NetworkTools.writePos(buf, getPos());
+            buf.writeBlockPos(getPos());
         }
         buf.writeInt(scanId);
         buf.writeBoolean(grayscale);

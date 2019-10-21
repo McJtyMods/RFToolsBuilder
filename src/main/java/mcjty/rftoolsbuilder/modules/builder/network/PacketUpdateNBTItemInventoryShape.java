@@ -23,7 +23,7 @@ public class PacketUpdateNBTItemInventoryShape {
     }
 
     public PacketUpdateNBTItemInventoryShape(PacketBuffer buf) {
-        pos = NetworkTools.readPos(buf);
+        pos = buf.readBlockPos();
         slotIndex = buf.readInt();
         tagCompound = NetworkTools.readTag(buf);
     }
@@ -39,7 +39,7 @@ public class PacketUpdateNBTItemInventoryShape {
     }
 
     public void toBytes(PacketBuffer buf) {
-        NetworkTools.writePos(buf, pos);
+        buf.writeBlockPos(pos);
         buf.writeInt(slotIndex);
         NetworkTools.writeTag(buf, tagCompound);
     }

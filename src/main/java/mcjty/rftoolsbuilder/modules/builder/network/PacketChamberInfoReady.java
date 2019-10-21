@@ -39,7 +39,7 @@ public class PacketChamberInfoReady {
             buf.writeInt(costs.get(bm));
             if (stacks.containsKey(bm)) {
                 buf.writeBoolean(true);
-                NetworkTools.writeItemStack(buf, stacks.get(bm));
+                buf.writeItemStack(stacks.get(bm));
             } else {
                 buf.writeBoolean(false);
             }
@@ -97,7 +97,7 @@ public class PacketChamberInfoReady {
             blocks.put(bm, count);
             costs.put(bm, cost);
             if (buf.readBoolean()) {
-                ItemStack stack = NetworkTools.readItemStack(buf);
+                ItemStack stack = buf.readItemStack();
                 stacks.put(bm, stack);
             }
         }

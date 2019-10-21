@@ -32,7 +32,7 @@ public class PacketReturnShapeData {
         buf.writeInt(count);
         buf.writeInt(offsetY);
         NetworkTools.writeStringUTF8(buf, msg);
-        NetworkTools.writePos(buf, dimension);
+        buf.writeBlockPos(dimension);
 
         if (statePalette == null) {
             buf.writeInt(0);
@@ -63,7 +63,7 @@ public class PacketReturnShapeData {
         count = buf.readInt();
         offsetY = buf.readInt();
         msg = NetworkTools.readStringUTF8(buf);
-        dimension = NetworkTools.readPos(buf);
+        dimension = buf.readBlockPos();
 
         int size = buf.readInt();
         if (size == 0) {

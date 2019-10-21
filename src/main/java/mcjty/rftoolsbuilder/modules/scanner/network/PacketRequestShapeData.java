@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.scanner.network;
 
-import mcjty.lib.network.NetworkTools;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.shapes.IFormula;
 import mcjty.rftoolsbuilder.shapes.Shape;
@@ -18,7 +17,7 @@ public class PacketRequestShapeData {
     private ShapeID id;
 
     public void toBytes(PacketBuffer buf) {
-        NetworkTools.writeItemStack(buf, card);
+        buf.writeItemStack(card);
         id.toBytes(buf);
     }
 
@@ -26,7 +25,7 @@ public class PacketRequestShapeData {
     }
 
     public PacketRequestShapeData(PacketBuffer buf) {
-        card = NetworkTools.readItemStack(buf);
+        card = buf.readItemStack();
         id = new ShapeID(buf);
     }
 
