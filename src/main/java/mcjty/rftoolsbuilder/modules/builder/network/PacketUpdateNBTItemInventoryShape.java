@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
-import mcjty.lib.network.NetworkTools;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -25,7 +24,7 @@ public class PacketUpdateNBTItemInventoryShape {
     public PacketUpdateNBTItemInventoryShape(PacketBuffer buf) {
         pos = buf.readBlockPos();
         slotIndex = buf.readInt();
-        tagCompound = NetworkTools.readTag(buf);
+        tagCompound = buf.readCompoundTag();
     }
 
     public PacketUpdateNBTItemInventoryShape(BlockPos pos, int slotIndex, CompoundNBT tagCompound) {
@@ -41,7 +40,7 @@ public class PacketUpdateNBTItemInventoryShape {
     public void toBytes(PacketBuffer buf) {
         buf.writeBlockPos(pos);
         buf.writeInt(slotIndex);
-        NetworkTools.writeTag(buf, tagCompound);
+        buf.writeCompoundTag(tagCompound);
     }
 
     public void handle(Supplier<NetworkEvent.Context> supplier) {

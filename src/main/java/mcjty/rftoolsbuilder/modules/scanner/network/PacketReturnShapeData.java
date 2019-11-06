@@ -42,8 +42,8 @@ public class PacketReturnShapeData {
                 if (state.getBlock().getRegistryName() == null) {
                     state = Blocks.STONE.getDefaultState();
                 }
-                NetworkTools.writeString(buf, state.getBlock().getRegistryName().toString());
-//                buf.writeInt(state.getBlock().getMetaFromState(state));   // @todo 1.14 persist blockstate here!
+                buf.writeString(state.getBlock().getRegistryName().toString());
+                //                buf.writeInt(state.getBlock().getMetaFromState(state));   // @todo 1.14 persist blockstate here!
             }
         }
 
@@ -71,7 +71,7 @@ public class PacketReturnShapeData {
         } else {
             statePalette = new StatePalette();
             while (size > 0) {
-                String r = NetworkTools.readString(buf);
+                String r = buf.readString();
 //                int m = buf.readInt();    // @todo 1.14 no meta!
 //                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));
                 Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));

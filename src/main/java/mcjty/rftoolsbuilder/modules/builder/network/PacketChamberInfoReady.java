@@ -1,7 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
 import mcjty.lib.McJtyLib;
-import mcjty.lib.network.NetworkTools;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiChamberDetails;
 import net.minecraft.block.Block;
@@ -47,7 +46,7 @@ public class PacketChamberInfoReady {
         buf.writeInt(entities.size());
         for (Map.Entry<String, Integer> entry : entities.entrySet()) {
             String name = entry.getKey();
-            NetworkTools.writeString(buf, name);
+            buf.writeString(name);
             buf.writeInt(entry.getValue());
             buf.writeInt(entityCosts.get(name));
             if (realEntities.containsKey(name)) {
@@ -56,7 +55,7 @@ public class PacketChamberInfoReady {
                     buf.writeByte(ENTITY_PLAYER);
                     int entityId = entity.getEntityId();
                     buf.writeInt(entityId);
-                    NetworkTools.writeString(buf, entity.getDisplayName().getFormattedText());
+                    buf.writeString(entity.getDisplayName().getFormattedText());
                 } else {
                     buf.writeByte(ENTITY_NORMAL);
                     CompoundNBT nbt = entity.serializeNBT();
@@ -108,7 +107,7 @@ public class PacketChamberInfoReady {
         realEntities = new HashMap<>();
         playerNames = new HashMap<>();
         for (int i = 0 ; i < size ; i++) {
-            String className = NetworkTools.readString(buf);
+            String className = buf.readString();
             int count = buf.readInt();
             int cost = buf.readInt();
             entities.put(className, count);
@@ -126,7 +125,7 @@ public class PacketChamberInfoReady {
 //                realEntities.put(className, entity);
             } else if (how == ENTITY_PLAYER) {
                 int entityId = buf.readInt();
-                String entityName = NetworkTools.readString(buf);
+                String entityName = buf.readString();
                 Entity entity = McJtyLib.proxy.getClientWorld().getEntityByID(entityId);
                 if (entity != null) {
                     realEntities.put(className, entity);
