@@ -26,7 +26,6 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
 import mcjty.rftoolsbase.api.client.IHudSupport;
 import mcjty.rftoolsbase.network.PacketGetHudLog;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
@@ -61,6 +60,7 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.IntReferenceHolder;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -102,9 +102,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     public static final String CMD_SETANCHOR = "builder.setAnchor";
     public static final Key<Integer> PARAM_ANCHOR_INDEX = new Key<>("anchorIndex", Type.INTEGER);
-
-    public static final String CMD_GETLEVEL = "getLevel";
-    public static final Key<Integer> PARAM_LEVEL = new Key<>("level", Type.INTEGER);
 
     public static final int SLOT_TAB = 0;
     public static final int SLOT_FILTER = 1;
@@ -202,7 +199,19 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
             .containerSupplier((windowId,player) -> new GenericContainer(BuilderSetup.CONTAINER_BUILDER, windowId, CONTAINER_FACTORY, getPos(), BuilderTileEntity.this))
             .itemHandler(itemHandler)
-            .energyHandler(energyHandler));
+            .energyHandler(energyHandler)
+            .shortListener(new IntReferenceHolder() {
+                @Override
+                public int get() {
+                    return scan == null ? -1 : scan.getY();
+                }
+
+                @Override
+                public void set(int val) {
+                    currentLevel = val;
+                }
+            })
+    );
     private LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(BuilderTileEntity.this));
     private LazyOptional<IModuleSupport> moduleSupportHandler = LazyOptional.of(() -> new DefaultModuleSupport(SLOT_TAB) {
         @Override
@@ -2309,11 +2318,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         BlockPosTools.write(infoTag, "maxBox", maxBox);
     }
 
-    // Request the current scan level.
-    public void requestCurrentLevel() {
-        requestDataFromServer(RFToolsBuilder.MODID, CMD_GETLEVEL, TypedMap.EMPTY);
-    }
-
     public static int getCurrentLevelClientSide() {
         return currentLevel;
     }
@@ -2367,31 +2371,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return false;
     }
 
-
-    @Override
-    public TypedMap executeWithResult(String command, TypedMap args) {
-        TypedMap rc = super.executeWithResult(command, args);
-        if (rc != null) {
-            return rc;
-        }
-        if (CMD_GETLEVEL.equals(command)) {
-            return TypedMap.builder().put(PARAM_LEVEL, scan == null ? -1 : scan.getY()).build();
-        }
-        return null;
-    }
-
-    @Override
-    public boolean receiveDataFromServer(String command, @Nonnull TypedMap result) {
-        boolean rc = super.receiveDataFromServer(command, result);
-        if (rc) {
-            return true;
-        }
-        if (CMD_GETLEVEL.equals(command)) {
-            currentLevel = result.get(PARAM_LEVEL);
-            return true;
-        }
-        return false;
-    }
 
     @Override
     public void onReplaced(World world, BlockPos pos, BlockState state) {

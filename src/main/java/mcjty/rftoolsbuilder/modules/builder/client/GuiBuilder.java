@@ -40,8 +40,6 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
 
         initializeFields();
         setupEvents();
-
-        tileEntity.requestCurrentLevel();   // @todo 1.14, use the new container integer system
     }
 
     private void setupEvents() {
@@ -119,6 +117,5 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
             energyBar.setMaxValue(((GenericEnergyStorage)e).getCapacity());
             energyBar.setValue(((GenericEnergyStorage)e).getEnergy());
         });
-        tileEntity.requestCurrentLevel();   // @todo 1.14, new system
     }
 }
