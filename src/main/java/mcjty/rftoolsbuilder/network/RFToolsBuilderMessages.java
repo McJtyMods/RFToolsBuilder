@@ -1,8 +1,6 @@
 package mcjty.rftoolsbuilder.network;
 
-import mcjty.lib.network.PacketHandler;
-import mcjty.lib.network.PacketSendClientCommand;
-import mcjty.lib.network.PacketSendServerCommand;
+import mcjty.lib.network.*;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
@@ -46,6 +44,9 @@ public class RFToolsBuilderMessages {
         net.registerMessage(id(), PacketChamberInfoReady.class, PacketChamberInfoReady::toBytes, PacketChamberInfoReady::new, PacketChamberInfoReady::handle);
         net.registerMessage(id(), PacketReturnShapeData.class, PacketReturnShapeData::toBytes, PacketReturnShapeData::new, PacketReturnShapeData::handle);
         net.registerMessage(id(), PacketReturnExtraData.class, PacketReturnExtraData::toBytes, PacketReturnExtraData::new, PacketReturnExtraData::handle);
+
+        net.registerMessage(id(), PacketRequestDataFromServer.class, PacketRequestDataFromServer::toBytes, PacketRequestDataFromServer::new,
+                new ChannelBoundHandler<>(net, PacketRequestDataFromServer::handle));
 
         PacketHandler.registerStandardMessages(net);
     }

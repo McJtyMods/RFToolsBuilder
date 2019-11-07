@@ -1,9 +1,7 @@
 package mcjty.rftoolsbuilder.setup;
 
 import mcjty.lib.compat.MainCompatHandler;
-import mcjty.lib.network.PacketHandler;
 import mcjty.lib.setup.DefaultModSetup;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
@@ -23,7 +21,6 @@ public class ModSetup extends DefaultModSetup {
         MinecraftForge.EVENT_BUS.register(new ForgeEventHandlers());
         CommandHandler.registerCommands();
         RFToolsBuilderMessages.registerMessages("rftoolsbuilder");
-        PacketHandler.registerMessageHandler(RFToolsBuilder.MODID, RFToolsBuilderMessages.INSTANCE);
     }
 
     public void initClient(FMLClientSetupEvent e) {
