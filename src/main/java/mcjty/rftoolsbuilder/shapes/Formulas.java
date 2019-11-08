@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -73,7 +74,7 @@ public class Formulas {
         }
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             data = null;
 
             if (card == null) {
@@ -97,7 +98,7 @@ public class Formulas {
 
             int scanId = card.getInt("scanid");
             if (scanId != 0) {
-                Scan scan = ScanDataManager.get().loadScan(scanId);
+                Scan scan = ScanDataManager.get(world).loadScan(scanId);
                 palette = new ArrayList<>(scan.getMaterialPalette());
                 byte[] datas = scan.getRledata();
                 data = new byte[dx * dy * dz];
@@ -194,7 +195,7 @@ public class Formulas {
         private List<BlockState> blockStates = new ArrayList<>();
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             this.thisCoord = thisCoord;
 
             if (card == null) {
@@ -223,7 +224,7 @@ public class Formulas {
                 BlockPos dim = ShapeCardItem.getClampedDimension(childTag, ScannerConfiguration.maxScannerDimension.get());
                 BlockPos off = ShapeCardItem.getClampedOffset(childTag, ScannerConfiguration.maxScannerOffset.get());
                 BlockPos o = off.add(offset);
-                formula.setup(thisCoord, dim, o, childTag);
+                formula.setup(world, thisCoord, dim, o, childTag);
                 formulas.add(formula);
 
                 dim = rotation.transformDimension(dim);
@@ -366,7 +367,7 @@ public class Formulas {
         private float centerz;
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -398,7 +399,7 @@ public class Formulas {
         private int dz;
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             dx = dimension.getX();
             dy = dimension.getY();
             dz = dimension.getZ();
@@ -433,7 +434,7 @@ public class Formulas {
         private int davg;
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -468,7 +469,7 @@ public class Formulas {
         private int davg;
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -506,7 +507,7 @@ public class Formulas {
         private int davg;
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -543,7 +544,7 @@ public class Formulas {
         private int z2;
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -580,7 +581,7 @@ public class Formulas {
         private int y2;
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -617,7 +618,7 @@ public class Formulas {
         private int davg;
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -650,7 +651,7 @@ public class Formulas {
         private int davg;
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -683,7 +684,7 @@ public class Formulas {
         private int z2;
 
         @Override
-        public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();

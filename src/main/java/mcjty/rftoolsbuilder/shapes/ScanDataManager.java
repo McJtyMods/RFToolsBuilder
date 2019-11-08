@@ -66,8 +66,8 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
         return data;
     }
 
-    public static ScanDataManager get() {
-        return getData(ScanDataManager::new, SCANDATA_NETWORK_NAME);
+    public static ScanDataManager get(World world) {
+        return getData(world, ScanDataManager::new, SCANDATA_NETWORK_NAME);
     }
 
     @Nonnull
@@ -104,7 +104,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
     }
 
     public static void listScans(PlayerEntity sender) {
-        ScanDataManager scans = get();
+        ScanDataManager scans = get(sender.getEntityWorld());
         for (Map.Entry<Integer, Scan> entry : scans.scans.entrySet()) {
             Integer scanid = entry.getKey();
             scans.loadScan(scanid);

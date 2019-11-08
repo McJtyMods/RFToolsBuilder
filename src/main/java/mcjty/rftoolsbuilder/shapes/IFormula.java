@@ -5,10 +5,11 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public interface IFormula {
 
-    void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card);
+    void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card);
 
     default void getCheckSumClient(CompoundNBT cardTag, Check32 crc) {
         ShapeCardItem.getLocalChecksum(cardTag, crc);
@@ -60,8 +61,8 @@ public interface IFormula {
         } else {
             return new IFormula() {
                 @Override
-                public void setup(BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
-                    IFormula.this.setup(thisCoord, dimension, offset, card);
+                public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+                    IFormula.this.setup(world, thisCoord, dimension, offset, card);
                 }
 
                 @Override

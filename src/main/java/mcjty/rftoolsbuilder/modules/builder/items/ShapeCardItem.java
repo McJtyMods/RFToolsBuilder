@@ -667,7 +667,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
 
 
     // Used for saving
-    public static int getDataPositions(ItemStack stack, Shape shape, boolean solid, RLE positions, StatePalette statePalette) {
+    public static int getDataPositions(World world, ItemStack stack, Shape shape, boolean solid, RLE positions, StatePalette statePalette) {
         BlockPos dimension = ShapeCardItem.getDimension(stack);
         BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 256), Math.min(dimension.getZ(), 512));
 
@@ -677,7 +677,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
         int dz = clamped.getZ();
 
         formula = formula.correctFormula(solid);
-        formula.setup(new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), stack != null ? stack.getTag() : null);
+        formula.setup(world, new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), stack != null ? stack.getTag() : null);
 
         // For saving shape cards we need to do X/Z/Y (scanner order) instead of the usual Y/X/Z (render order)
         int cnt = 0;
@@ -715,7 +715,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
         BlockPos tl = new BlockPos(xCoord - dx/2 + offset.getX(), yCoord - dy/2 + offset.getY(), zCoord - dz/2 + offset.getZ());
 
         formula = formula.correctFormula(solid);
-        formula.setup(thisCoord, dimension, offset, shapeCard != null ? shapeCard.getTag() : null);
+        formula.setup(worldObj, thisCoord, dimension, offset, shapeCard != null ? shapeCard.getTag() : null);
 
         for (int ox = 0 ; ox < dx ; ox++) {
             int x = tl.getX() + ox;
@@ -779,7 +779,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
 
         RLE positions = new RLE();
         StatePalette statePalette = new StatePalette();
-        int cnt = getDataPositions(card, shape, solid, positions, statePalette);
+        int cnt = getDataPositions(player.getEntityWorld(), card, shape, solid, positions, statePalette);
 
         byte[] data = positions.getData();
 

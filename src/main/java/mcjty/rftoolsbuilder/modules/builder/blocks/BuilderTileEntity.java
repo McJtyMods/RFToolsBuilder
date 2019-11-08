@@ -711,7 +711,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private void calculateBox(CompoundNBT cardCompound) {
         int channel = cardCompound.getInt("channel");
 
-        SpaceChamberRepository repository = SpaceChamberRepository.get();
+        SpaceChamberRepository repository = SpaceChamberRepository.get(world);
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = repository.getChannel(channel);
         BlockPos minCorner = chamberChannel.getMinCorner();
         BlockPos maxCorner = chamberChannel.getMaxCorner();
@@ -977,7 +977,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             return null;
         }
 
-        SpaceChamberRepository repository = SpaceChamberRepository.get();
+        SpaceChamberRepository repository = SpaceChamberRepository.get(world);
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = repository.getChannel(channel);
         if (chamberChannel == null) {
             return null;

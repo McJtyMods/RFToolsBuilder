@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.util.Constants;
 
@@ -24,8 +25,8 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
         super(SPACECHAMBER_CHANNELS_NAME);
     }
 
-    public static SpaceChamberRepository get() {
-        return getData(SpaceChamberRepository::new, SPACECHAMBER_CHANNELS_NAME);
+    public static SpaceChamberRepository get(World world) {
+        return getData(world, SpaceChamberRepository::new, SPACECHAMBER_CHANNELS_NAME);
     }
 
     public SpaceChamberChannel getOrCreateChannel(int id) {

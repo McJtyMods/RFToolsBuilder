@@ -14,7 +14,7 @@ import net.minecraftforge.fml.network.NetworkDirection;
 public class ShaperTools {
 
     public static void requestExtraShapeData(PlayerEntity player, int scanId) {
-        ScanExtraData extraData = ScanDataManager.get().getExtraData(scanId);
+        ScanExtraData extraData = ScanDataManager.get(player.getEntityWorld()).getExtraData(scanId);
         RFToolsBuilderMessages.INSTANCE.sendTo(new PacketReturnExtraData(scanId, extraData), ((ServerPlayerEntity) player).connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
     }
 
@@ -30,7 +30,7 @@ public class ShaperTools {
     }
 
     public static void requestScanDirty(PlayerEntity player, int scanId) {
-        int counter = ScanDataManager.get().loadScan(scanId).getDirtyCounter();
+        int counter = ScanDataManager.get(player.getEntityWorld()).loadScan(scanId).getDirtyCounter();
         RFToolsBuilderMessages.sendToClient(player, ClientCommandHandler.CMD_RETURN_SCAN_DIRTY,
                 TypedMap.builder().put(ClientCommandHandler.PARAM_SCANID, scanId).put(ClientCommandHandler.PARAM_COUNTER, counter));
     }
