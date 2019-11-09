@@ -1,3 +1,8 @@
+1.2.7:
+- Updates to the latest McJtyLib
+- Better creative tab icon (uses the builder now instead of dirt)
+- The Builder will now use the container int tracking system to communicate the current level
+
 1.2.3:
 - Update to latest Forge
 
