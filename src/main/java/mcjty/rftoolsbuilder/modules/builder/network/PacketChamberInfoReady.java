@@ -107,7 +107,7 @@ public class PacketChamberInfoReady {
         realEntities = new HashMap<>();
         playerNames = new HashMap<>();
         for (int i = 0 ; i < size ; i++) {
-            String className = buf.readString();
+            String className = buf.readString(32767);
             int count = buf.readInt();
             int cost = buf.readInt();
             entities.put(className, count);
@@ -125,7 +125,7 @@ public class PacketChamberInfoReady {
 //                realEntities.put(className, entity);
             } else if (how == ENTITY_PLAYER) {
                 int entityId = buf.readInt();
-                String entityName = buf.readString();
+                String entityName = buf.readString(32767);
                 Entity entity = McJtyLib.proxy.getClientWorld().getEntityByID(entityId);
                 if (entity != null) {
                     realEntities.put(className, entity);

@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a networking problem on servers
+
 1.2.7:
 - Updates to the latest McJtyLib
 - Better creative tab icon (uses the builder now instead of dirt)

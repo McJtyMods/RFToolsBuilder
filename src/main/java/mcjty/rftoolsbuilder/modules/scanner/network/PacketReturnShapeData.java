@@ -71,7 +71,7 @@ public class PacketReturnShapeData {
         } else {
             statePalette = new StatePalette();
             while (size > 0) {
-                String r = buf.readString();
+                String r = buf.readString(32767);
 //                int m = buf.readInt();    // @todo 1.14 no meta!
 //                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));
                 Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));
