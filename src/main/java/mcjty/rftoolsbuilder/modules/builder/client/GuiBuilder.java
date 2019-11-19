@@ -30,7 +30,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private ImageChoiceLabel anchor[] = new ImageChoiceLabel[4];
 
     public GuiBuilder(BuilderTileEntity builderTileEntity, GenericContainer container, PlayerInventory inventory) {
-        super(RFToolsBuilder.instance, RFToolsBuilderMessages.INSTANCE, builderTileEntity, container, inventory, 0 /* @todo 1.14 GuiProxy.GUI_MANUAL_SHAPE*/, "builder");
+        super(RFToolsBuilder.instance, builderTileEntity, container, inventory, 0 /* @todo 1.14 GuiProxy.GUI_MANUAL_SHAPE*/, "builder");
     }
 
     @Override
@@ -78,7 +78,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private void selectAnchor(String name) {
         int index = name.charAt(name.length()-1)-48;
         updateAnchorSettings(index);
-        sendServerCommand(RFToolsBuilderMessages.INSTANCE, CMD_SETANCHOR, TypedMap.builder().put(PARAM_ANCHOR_INDEX, index).build());
+        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, CMD_SETANCHOR, TypedMap.builder().put(PARAM_ANCHOR_INDEX, index).build());
     }
 
     private void updateAnchorSettings(int index) {
