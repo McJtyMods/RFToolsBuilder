@@ -2373,7 +2373,11 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
 
     @Override
-    public void onReplaced(World world, BlockPos pos, BlockState state) {
+    public void onReplaced(World world, BlockPos pos, BlockState state, BlockState newstate) {
+        if (state.getBlock() == newstate.getBlock()) {
+            return;
+        }
+
         if (hasSupportMode()) {
             clearSupportBlocks();
         }
