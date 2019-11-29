@@ -1,3 +1,6 @@
+1.2.10:
+- Updates to latest McJtyLib
+
 1.2.9:
 - Fixed a serious networking problem which could cause 'invalid discriminator spam' on servers
 
