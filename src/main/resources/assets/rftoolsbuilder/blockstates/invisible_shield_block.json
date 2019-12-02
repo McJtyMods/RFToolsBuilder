@@ -1,0 +1,9 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "model": "rftoolsbase:block/empty_model"
+  },
+  "variants": {
+    "": [{}]
+  }
+}

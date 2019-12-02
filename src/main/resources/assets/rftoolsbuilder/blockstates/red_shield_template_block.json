@@ -1,0 +1,8 @@
+{
+  "forge_marker": 1,
+  "variants": {
+    "": {
+      "model": "rftoolsbuilder:block/shield_template_block_red"
+    }
+  }
+}

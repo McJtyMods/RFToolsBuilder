@@ -3,6 +3,7 @@ package mcjty.rftoolsbuilder.setup;
 
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
+import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
@@ -17,21 +18,25 @@ public class Registration {
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event) {
         BuilderSetup.registerBlocks(event);
+        ShieldSetup.registerBlocks(event);
     }
 
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event) {
         BuilderSetup.registerItems(event);
+        ShieldSetup.registerItems(event);
     }
 
     @SubscribeEvent
     public static void registerTiles(RegistryEvent.Register<TileEntityType<?>> event) {
         BuilderSetup.registerTiles(event);
+        ShieldSetup.registerTiles(event);
     }
 
     @SubscribeEvent
     public static void registerContainers(final RegistryEvent.Register<ContainerType<?>> event) {
         BuilderSetup.registerContainers(event);
+        ShieldSetup.registerContainers(event);
     }
 
 }

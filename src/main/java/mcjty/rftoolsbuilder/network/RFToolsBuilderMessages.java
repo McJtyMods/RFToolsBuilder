@@ -9,6 +9,8 @@ import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTShapeCard;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnExtraData;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnShapeData;
+import mcjty.rftoolsbuilder.modules.shield.network.PacketFiltersReady;
+import mcjty.rftoolsbuilder.modules.shield.network.PacketGetFilters;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -40,11 +42,11 @@ public class RFToolsBuilderMessages {
         PacketHandler.debugRegister("RFTools Builder", net, id(), PacketUpdateNBTShapeCard.class, PacketUpdateNBTShapeCard::toBytes, PacketUpdateNBTShapeCard::new, PacketUpdateNBTShapeCard::handle);
         PacketHandler.debugRegister("RFTools Builder", net, id(), PacketUpdateNBTItemInventoryShape.class, PacketUpdateNBTItemInventoryShape::toBytes, PacketUpdateNBTItemInventoryShape::new, PacketUpdateNBTItemInventoryShape::handle);
         PacketHandler.debugRegister("RFTools Builder", net, id(), PacketRequestShapeData.class, PacketRequestShapeData::toBytes, PacketRequestShapeData::new, PacketRequestShapeData::handle);
-
-        // Client side
         PacketHandler.debugRegister("RFTools Builder", net, id(), PacketChamberInfoReady.class, PacketChamberInfoReady::toBytes, PacketChamberInfoReady::new, PacketChamberInfoReady::handle);
         PacketHandler.debugRegister("RFTools Builder", net, id(), PacketReturnShapeData.class, PacketReturnShapeData::toBytes, PacketReturnShapeData::new, PacketReturnShapeData::handle);
         PacketHandler.debugRegister("RFTools Builder", net, id(), PacketReturnExtraData.class, PacketReturnExtraData::toBytes, PacketReturnExtraData::new, PacketReturnExtraData::handle);
+        PacketHandler.debugRegister("RFTools Builder", net, id(), PacketFiltersReady.class, PacketFiltersReady::toBytes, PacketFiltersReady::new, PacketFiltersReady::handle);
+        PacketHandler.debugRegister("RFTools Builder", net, id(), PacketGetFilters.class, PacketGetFilters::toBytes, PacketGetFilters::new, PacketGetFilters::handle);
 
         PacketHandler.debugRegister("RFTools Builder", net, id(), PacketRequestDataFromServer.class, PacketRequestDataFromServer::toBytes, PacketRequestDataFromServer::new,
                 new ChannelBoundHandler<>(net, PacketRequestDataFromServer::handle));
