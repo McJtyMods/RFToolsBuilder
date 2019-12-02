@@ -193,7 +193,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private FakePlayer harvester = null;
 
-    private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(this::createItemHandler);
+    private NoDirectionItemHander items = createItemHandler();
+    private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
+    private LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
+
     private LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(
             this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get()));
     private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
@@ -304,9 +307,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         List<String> list = new ArrayList<>();
         list.add(TextFormatting.BLUE + "Mode:");
         if (isShapeCard()) {
-            itemHandler.ifPresent(h -> {
-                getCardType().addHudLog(list, h);
-            });
+            getCardType().addHudLog(list, items);
         } else {
             list.add("    Space card: " + new String[]{"copy", "move", "swap", "back", "collect"}[mode]);
         }
@@ -348,29 +349,27 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private boolean isShapeCard() {
-        return itemHandler.map(h -> h.getStackInSlot(SLOT_TAB).getItem() instanceof ShapeCardItem).orElse(false);
+        return items.getStackInSlot(SLOT_TAB).getItem() instanceof ShapeCardItem;
     }
 
     private CompoundNBT hasCard() {
-        return itemHandler.map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY).getTag();
+        return items.getStackInSlot(SLOT_TAB).getTag();
     }
 
     private void makeSupportBlocksShaped() {
-        itemHandler.ifPresent(h -> {
-            ItemStack shapeCard = h.getStackInSlot(SLOT_TAB);
-            BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
-            BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
-            Shape shape = ShapeCardItem.getShape(shapeCard);
-            Map<BlockPos, BlockState> blocks = new HashMap<>();
-            ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), world, getPos(), dimension, offset, blocks, BuilderConfiguration.maxBuilderDimension.get() * 256 * BuilderConfiguration.maxBuilderDimension.get(), false, false, null);
-            BlockState state = BuilderSetup.SUPPORT.getDefaultState().with(SupportBlock.STATUS, SupportBlock.STATUS_OK);
-            for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
-                BlockPos p = entry.getKey();
-                if (world.isAirBlock(p)) {
-                    world.setBlockState(p, state, 2);
-                }
+        ItemStack shapeCard = items.getStackInSlot(SLOT_TAB);
+        BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
+        BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
+        Shape shape = ShapeCardItem.getShape(shapeCard);
+        Map<BlockPos, BlockState> blocks = new HashMap<>();
+        ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), world, getPos(), dimension, offset, blocks, BuilderConfiguration.maxBuilderDimension.get() * 256 * BuilderConfiguration.maxBuilderDimension.get(), false, false, null);
+        BlockState state = BuilderSetup.SUPPORT.getDefaultState().with(SupportBlock.STATUS, SupportBlock.STATUS_OK);
+        for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
+            BlockPos p = entry.getKey();
+            if (world.isAirBlock(p)) {
+                world.setBlockState(p, state, 2);
             }
-        });
+        }
     }
 
     private void makeSupportBlocks() {
@@ -420,20 +419,18 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private void clearSupportBlocksShaped() {
-        itemHandler.ifPresent(h -> {
-            ItemStack shapeCard = h.getStackInSlot(SLOT_TAB);
-            BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
-            BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
-            Shape shape = ShapeCardItem.getShape(shapeCard);
-            Map<BlockPos, BlockState> blocks = new HashMap<>();
-            ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), world, getPos(), dimension, offset, blocks, BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get(), false, false, null);
-            for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
-                BlockPos p = entry.getKey();
-                if (world.getBlockState(p).getBlock() == BuilderSetup.SUPPORT) {
-                    world.setBlockState(p, Blocks.AIR.getDefaultState());
-                }
+        ItemStack shapeCard = items.getStackInSlot(SLOT_TAB);
+        BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
+        BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
+        Shape shape = ShapeCardItem.getShape(shapeCard);
+        Map<BlockPos, BlockState> blocks = new HashMap<>();
+        ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), world, getPos(), dimension, offset, blocks, BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get(), false, false, null);
+        for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
+            BlockPos p = entry.getKey();
+            if (world.getBlockState(p).getBlock() == BuilderSetup.SUPPORT) {
+                world.setBlockState(p, Blocks.AIR.getDefaultState());
             }
-        });
+        }
     }
 
     public void clearSupportBlocks() {
@@ -585,17 +582,15 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         if (isShapeCard()) {
             // If there is a shape card we modify it for the new settings.
-            itemHandler.ifPresent(h -> {
-                ItemStack shapeCard = h.getStackInSlot(SLOT_TAB);
-                BlockPos dimension = ShapeCardItem.getDimension(shapeCard);
-                BlockPos minBox = positionBox(dimension);
-                int dx = dimension.getX();
-                int dy = dimension.getY();
-                int dz = dimension.getZ();
+            ItemStack shapeCard = items.getStackInSlot(SLOT_TAB);
+            BlockPos dimension = ShapeCardItem.getDimension(shapeCard);
+            BlockPos minBox = positionBox(dimension);
+            int dx = dimension.getX();
+            int dy = dimension.getY();
+            int dz = dimension.getZ();
 
-                BlockPos offset = new BlockPos(minBox.getX() + (int) Math.ceil(dx / 2), minBox.getY() + (int) Math.ceil(dy / 2), minBox.getZ() + (int) Math.ceil(dz / 2));
-                ShapeCardItem.setOffset(shapeCard, offset.getX(), offset.getY(), offset.getZ());
-            });
+            BlockPos offset = new BlockPos(minBox.getX() + (int) Math.ceil(dx / 2), minBox.getY() + (int) Math.ceil(dy / 2), minBox.getZ() + (int) Math.ceil(dz / 2));
+            ShapeCardItem.setOffset(shapeCard, offset.getX(), offset.getY(), offset.getZ());
         }
 
         if (supportMode) {
@@ -926,44 +921,42 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private void calculateBoxShaped() {
-        itemHandler.ifPresent(h -> {
-            ItemStack shapeCard = h.getStackInSlot(SLOT_TAB);
-            if (shapeCard.isEmpty()) {
+        ItemStack shapeCard = items.getStackInSlot(SLOT_TAB);
+        if (shapeCard.isEmpty()) {
+            return;
+        }
+        BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
+        BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
+
+        BlockPos minCorner = ShapeCardItem.getMinCorner(getPos(), dimension, offset);
+        BlockPos maxCorner = ShapeCardItem.getMaxCorner(getPos(), dimension, offset);
+        if (minCorner.getY() < 0) {
+            minCorner = new BlockPos(minCorner.getX(), 0, minCorner.getZ());
+        } else if (minCorner.getY() > 255) {
+            minCorner = new BlockPos(minCorner.getX(), 255, minCorner.getZ());
+        }
+        if (maxCorner.getY() < 0) {
+            maxCorner = new BlockPos(maxCorner.getX(), 0, maxCorner.getZ());
+        } else if (maxCorner.getY() > 255) {
+            maxCorner = new BlockPos(maxCorner.getX(), 255, maxCorner.getZ());
+        }
+
+        if (boxValid) {
+            // Double check if the box is indeed still valid.
+            if (minCorner.equals(minBox) && maxCorner.equals(maxBox)) {
                 return;
             }
-            BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
-            BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
+        }
 
-            BlockPos minCorner = ShapeCardItem.getMinCorner(getPos(), dimension, offset);
-            BlockPos maxCorner = ShapeCardItem.getMaxCorner(getPos(), dimension, offset);
-            if (minCorner.getY() < 0) {
-                minCorner = new BlockPos(minCorner.getX(), 0, minCorner.getZ());
-            } else if (minCorner.getY() > 255) {
-                minCorner = new BlockPos(minCorner.getX(), 255, minCorner.getZ());
-            }
-            if (maxCorner.getY() < 0) {
-                maxCorner = new BlockPos(maxCorner.getX(), 0, maxCorner.getZ());
-            } else if (maxCorner.getY() > 255) {
-                maxCorner = new BlockPos(maxCorner.getX(), 255, maxCorner.getZ());
-            }
+        boxValid = true;
+        cardType = ShapeCardItem.getType(shapeCard);
 
-            if (boxValid) {
-                // Double check if the box is indeed still valid.
-                if (minCorner.equals(minBox) && maxCorner.equals(maxBox)) {
-                    return;
-                }
-            }
-
-            boxValid = true;
-            cardType = ShapeCardItem.getType(shapeCard);
-
-            cachedBlocks = null;
-            cachedChunk = null;
-            cachedVoidableBlocks = null;
-            minBox = minCorner;
-            maxBox = maxCorner;
-            restartScan();
-        });
+        cachedBlocks = null;
+        cachedChunk = null;
+        cachedVoidableBlocks = null;
+        minBox = minCorner;
+        maxBox = maxCorner;
+        restartScan();
     }
 
     private SpaceChamberRepository.SpaceChamberChannel calculateBox() {
@@ -998,16 +991,14 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         if (cachedBlocks == null) {
             cachedBlocks = new HashMap<>();
-            itemHandler.ifPresent(h -> {
-                ItemStack shapeCard = h.getStackInSlot(SLOT_TAB);
-                Shape shape = ShapeCardItem.getShape(shapeCard);
-                boolean solid = ShapeCardItem.isSolid(shapeCard);
-                BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
-                BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
-                boolean forquarry = !ShapeCardItem.isNormalShapeCard(shapeCard);
-                ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), world, getPos(), dimension, offset, cachedBlocks, BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get(), solid, forquarry, chunk);
-                cachedChunk = chunk;
-            });
+            ItemStack shapeCard = items.getStackInSlot(SLOT_TAB);
+            Shape shape = ShapeCardItem.getShape(shapeCard);
+            boolean solid = ShapeCardItem.isSolid(shapeCard);
+            BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
+            BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
+            boolean forquarry = !ShapeCardItem.isNormalShapeCard(shapeCard);
+            ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), world, getPos(), dimension, offset, cachedBlocks, BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get(), solid, forquarry, chunk);
+            cachedChunk = chunk;
         }
         return cachedBlocks;
     }
@@ -1032,7 +1023,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private ShapeCardType getCardType() {
         if (cardType == ShapeCardType.CARD_UNKNOWN) {
-            return itemHandler.map(h -> ShapeCardItem.getType(h.getStackInSlot(SLOT_TAB))).orElse(ShapeCardType.CARD_UNKNOWN);
+            return ShapeCardItem.getType(items.getStackInSlot(SLOT_TAB));
         }
         return cardType;
     }
@@ -1114,14 +1105,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private Set<Block> getCachedVoidableBlocks() {
         if (cachedVoidableBlocks == null) {
-            itemHandler.ifPresent(h -> {
-                ItemStack card = h.getStackInSlot(SLOT_TAB);
-                if (!card.isEmpty() && card.getItem() instanceof ShapeCardItem) {
-                    cachedVoidableBlocks = ShapeCardItem.getVoidedBlocks(card);
-                } else {
-                    cachedVoidableBlocks = Collections.emptySet();
-                }
-            });
+            ItemStack card = items.getStackInSlot(SLOT_TAB);
+            if (!card.isEmpty() && card.getItem() instanceof ShapeCardItem) {
+                cachedVoidableBlocks = ShapeCardItem.getVoidedBlocks(card);
+            } else {
+                cachedVoidableBlocks = Collections.emptySet();
+            }
         }
         return cachedVoidableBlocks;
     }
@@ -1209,7 +1198,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
             FakePlayer fakePlayer = getHarvester();
             if (allowedToBreak(srcState, world, srcPos, fakePlayer)) {
-                ItemStack filter = itemHandler.map(h -> h.getStackInSlot(SLOT_FILTER)).orElse(ItemStack.EMPTY);
+                ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
                     getFilterCache();
 // @todo 1.14
@@ -1353,7 +1342,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         FakePlayer fakePlayer = getHarvester();
         if (allowedToBreak(srcState, world, srcPos, fakePlayer)) {
             if (block.getBlockHardness(srcState, world, srcPos) >= 0) {
-                ItemStack filter = itemHandler.map(h -> h.getStackInSlot(SLOT_FILTER)).orElse(ItemStack.EMPTY);
+                ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
                     getFilterCache();
 // @todo 1.14
@@ -2457,7 +2446,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction facing) {
         if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return itemHandler.cast();
+            return automationItemHandler.cast();
         }
         if (cap == CapabilityEnergy.ENERGY) {
             return energyHandler.cast();
