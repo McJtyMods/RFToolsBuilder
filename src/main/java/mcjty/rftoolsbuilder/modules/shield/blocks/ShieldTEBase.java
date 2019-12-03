@@ -795,11 +795,10 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             NoTickShieldBlockTileEntity shieldBlockTileEntity = (NoTickShieldBlockTileEntity) te;
             if (c.getState() != -1) {
                 BlockState state = blockStateTable.get(c.getState());
-                // @todo VERY DIRTY! Don't use ID
-                // @todo 1.14
-//                int id = Block.getIdFromBlock(state.getBlock());
-//                shieldBlockTileEntity.setCamoBlock(id, state.getBlock().getMetaFromState(state), 0);
+                shieldBlockTileEntity.setCamoBlock(state);
             } else {
+                // @todo 1.14 check? Is this right?
+                shieldBlockTileEntity.setCamoBlock(ForgeRegistries.BLOCKS.getValue(camoId).getDefaultState());
 //                shieldBlockTileEntity.setCamoBlock(camoId[0], camoId[1], camoId[2]);
             }
             shieldBlockTileEntity.setShieldBlock(getPos());
@@ -958,12 +957,8 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
                     templateState = ShieldSetup.TEMPLATE_YELLOW.getDefaultState();
                     break;
             }
-        } else if (tagCompound.contains("templateMeta")) {
-            // Deprecated @todo remove with 1.14 find other way to store blockstate
-            int meta = tagCompound.getInt("templateMeta");
-//            templateState = ShieldSetup.shieldTemplateBlock.getStateFromMeta(meta);
         } else {
-//            templateState = Blocks.AIR.getDefaultState();
+            templateState = Blocks.AIR.getDefaultState();
         }
 
         shieldRenderingMode = ShieldRenderingMode.values()[tagCompound.getInt("visMode")];
@@ -1025,12 +1020,8 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
                         templateState = ShieldSetup.TEMPLATE_YELLOW.getDefaultState();
                         break;
                 }
-            } else if (tagCompound.contains("templateMeta")) {
-                // Deprecated @todo remove with 1.14
-                int meta = tagCompound.getInt("templateMeta");
-//                templateState = ShieldSetup.shieldTemplateBlock.getStateFromMeta(meta);
             } else {
-//                templateState = Blocks.AIR.getDefaultState();
+                templateState = Blocks.AIR.getDefaultState();
             }
         } else {
             templateState = Blocks.AIR.getDefaultState();
@@ -1129,7 +1120,6 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
         for (BlockState state : blockStateTable) {
             CompoundNBT tc = new CompoundNBT();
             tc.putString("b", state.getBlock().getRegistryName().toString());
-//            tc.putInt("m", state.getBlock().getMetaFromState(state)); // @todo 1.14 meta
             list.add(tc);
         }
         tagCompound.put("gstates", list);

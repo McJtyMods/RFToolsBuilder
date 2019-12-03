@@ -87,6 +87,7 @@ public class ShieldBlock extends BaseBlock implements INBTPreservingIngredient
     public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 // @todo 1.14
         //        restoreBlockFromNBT(world, pos, stack);
+        super.onBlockPlacedBy(world, pos, state, placer, stack);
         setOwner(world, pos, placer);
     }
 
