@@ -34,7 +34,6 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -420,23 +419,23 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
         }
         if (ShieldConfiguration.allowInvisibleShield.get() && ShieldRenderingMode.MODE_INVISIBLE.equals(shieldRenderingMode)) {
             if (damageBits == 0) {
-                return blockLight ? ShieldSetup.noTickInvisibleShieldBlockOpaque : ShieldSetup.noTickInvisibleShieldBlock;
+                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE_NOTICK : ShieldSetup.SHIELD_INVISIBLE_NOTICK;
             } else {
-                return blockLight ? ShieldSetup.invisibleShieldBlockOpaque : ShieldSetup.invisibleShieldBlock;
+                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE : ShieldSetup.SHIELD_INVISIBLE;
             }
         }
 
         if (camoId == null) {
             if (damageBits == 0) {
-                return blockLight ? ShieldSetup.noTickSolidShieldBlockOpaque : ShieldSetup.noTickSolidShieldBlock;
+                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE_NOTICK : ShieldSetup.SHIELD_SOLID_NOTICK;
             } else {
-                return blockLight ? ShieldSetup.solidShieldBlockOpaque : ShieldSetup.solidShieldBlock;
+                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE : ShieldSetup.SHIELD_SOLID;
             }
         } else {
             if (damageBits == 0) {
-                return blockLight ? ShieldSetup.noTickCamoShieldBlockOpaque : ShieldSetup.noTickCamoShieldBlock;
+                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE_NOTICK : ShieldSetup.SHIELD_CAMO_NOTICK;
             } else {
-                return blockLight ? ShieldSetup.camoShieldBlockOpaque : ShieldSetup.camoShieldBlock;
+                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE : ShieldSetup.SHIELD_CAMO;
             }
         }
     }
@@ -947,16 +946,16 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
             switch (color) {
                 case BLUE:
-                    templateState = ShieldSetup.blueShieldTemplateBlock.getDefaultState();
+                    templateState = ShieldSetup.TEMPLATE_BLUE.getDefaultState();
                     break;
                 case RED:
-                    templateState = ShieldSetup.redShieldTemplateBlock.getDefaultState();
+                    templateState = ShieldSetup.TEMPLATE_RED.getDefaultState();
                     break;
                 case GREEN:
-                    templateState = ShieldSetup.greenShieldTemplateBlock.getDefaultState();
+                    templateState = ShieldSetup.TEMPLATE_GREEN.getDefaultState();
                     break;
                 case YELLOW:
-                    templateState = ShieldSetup.yellowShieldTemplateBlock.getDefaultState();
+                    templateState = ShieldSetup.TEMPLATE_YELLOW.getDefaultState();
                     break;
             }
         } else if (tagCompound.contains("templateMeta")) {
@@ -1014,16 +1013,16 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
                 ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
                 switch (color) {
                     case BLUE:
-                        templateState = ShieldSetup.blueShieldTemplateBlock.getDefaultState();
+                        templateState = ShieldSetup.TEMPLATE_BLUE.getDefaultState();
                         break;
                     case RED:
-                        templateState = ShieldSetup.redShieldTemplateBlock.getDefaultState();
+                        templateState = ShieldSetup.TEMPLATE_RED.getDefaultState();
                         break;
                     case GREEN:
-                        templateState = ShieldSetup.greenShieldTemplateBlock.getDefaultState();
+                        templateState = ShieldSetup.TEMPLATE_GREEN.getDefaultState();
                         break;
                     case YELLOW:
-                        templateState = ShieldSetup.yellowShieldTemplateBlock.getDefaultState();
+                        templateState = ShieldSetup.TEMPLATE_YELLOW.getDefaultState();
                         break;
                 }
             } else if (tagCompound.contains("templateMeta")) {

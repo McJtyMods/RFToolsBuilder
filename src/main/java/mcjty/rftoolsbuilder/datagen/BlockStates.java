@@ -16,6 +16,6 @@ public class BlockStates extends BlockStateProvider {
     @Override
     protected void registerStatesAndModels() {
         ModelFile blueTemplateModel = cubeAll("blue_shield_template", modLoc("block/shieldtemplate"));
-        simpleBlock(ShieldSetup.blueShieldTemplateBlock, blueTemplateModel);
+        simpleBlock(ShieldSetup.TEMPLATE_BLUE, blueTemplateModel);
     }
 }
