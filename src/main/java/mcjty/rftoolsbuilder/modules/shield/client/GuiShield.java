@@ -17,6 +17,7 @@ import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.RedstoneMode;
+import mcjty.rftoolsbase.RFToolsBase;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.DamageTypeMode;
 import mcjty.rftoolsbuilder.modules.shield.ShieldConfiguration;
@@ -74,23 +75,7 @@ public class GuiShield extends GenericGuiContainer<ShieldTEBase, GenericContaine
     }
 
     private static final ResourceLocation iconLocation = new ResourceLocation(RFToolsBuilder.MODID, "textures/gui/shieldprojector.png");
-    private static final ResourceLocation iconGuiElements = new ResourceLocation(RFToolsBuilder.MODID, "textures/gui/guielements.png");
-
-//    public GuiShield(ShieldTileEntity shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
-//        this((ShieldTEBase) shieldTileEntity, container, inventory);
-//    }
-//
-//    public GuiShield(ShieldTileEntity2 shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
-//        this((ShieldTEBase) shieldTileEntity, container, inventory);
-//    }
-//
-//    public GuiShield(ShieldTileEntity3 shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
-//        this((ShieldTEBase) shieldTileEntity, container, inventory);
-//    }
-//
-//    public GuiShield(ShieldTileEntity4 shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
-//        this((ShieldTEBase) shieldTileEntity, container, inventory);
-//    }
+    private static final ResourceLocation iconGuiElements = new ResourceLocation(RFToolsBase.MODID, "textures/gui/guielements.png");
 
     public GuiShield(ShieldTEBase shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
         super(RFToolsBuilder.instance, shieldTileEntity, container, inventory, 0 /* @todo 1.14. GuiProxy.GUI_MANUAL_SHAPE*/, "shield");

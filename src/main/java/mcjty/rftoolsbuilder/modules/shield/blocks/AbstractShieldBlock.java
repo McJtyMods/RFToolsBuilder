@@ -179,7 +179,10 @@ public abstract class AbstractShieldBlock extends Block {
             }
         }
 
-        shieldBlockTileEntity.handleDamage(entity);
+        // @todo 1.14 this null check shouldn't be needed! Check what's up!
+        if (shieldBlockTileEntity != null) {
+            shieldBlockTileEntity.handleDamage(entity);
+        }
     }
 
     // @todo 1.14

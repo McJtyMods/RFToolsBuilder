@@ -1,6 +1,8 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
 import com.mojang.authlib.GameProfile;
+import mcjty.lib.api.container.CapabilityContainerProvider;
+import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.information.CapabilityPowerInformation;
 import mcjty.lib.api.information.IPowerInformation;
 import mcjty.lib.api.infusable.CapabilityInfusable;
@@ -9,9 +11,7 @@ import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.api.smartwrench.ISmartWrenchSelector;
 import mcjty.lib.bindings.DefaultValue;
 import mcjty.lib.bindings.IValue;
-import mcjty.lib.container.ContainerFactory;
-import mcjty.lib.container.NoDirectionItemHander;
-import mcjty.lib.container.SlotDefinition;
+import mcjty.lib.container.*;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.Key;
@@ -33,6 +33,8 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -141,10 +143,16 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
         }
     };
 
-    private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(this::createItemHandler);
+    private NoDirectionItemHander items = createItemHandler();
+    private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
+    private LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
+    private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
+            .containerSupplier((windowId,player) -> new GenericContainer(ShieldSetup.CONTAINER_SHIELD, windowId, CONTAINER_FACTORY, getPos(), ShieldTEBase.this))
+            .itemHandler(itemHandler));
+
     private LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick()));
     private LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldTEBase.this));
-    private LazyOptional<IPowerInformation> powerInfoHandler = LazyOptional.of(() -> createPowerInfo());
+    private LazyOptional<IPowerInformation> powerInfoHandler = LazyOptional.of(this::createPowerInfo);
 
     public ShieldTEBase(TileEntityType<?> type) {
         super(type);
@@ -516,19 +524,17 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
                 killer.setWorld(world);
                 killer.setPosition(pos.getX(), pos.getY(), pos.getZ());
                 FakePlayer fakePlayer = killer;
-                itemHandler.ifPresent(ih -> {
-                    ItemStack shards = ih.getStackInSlot(SLOT_SHARD);
-                    if (!shards.isEmpty() && shards.getCount() >= ShieldConfiguration.shardsPerLootingKill.get()) {
-                        ih.extractItem(SLOT_SHARD, ShieldConfiguration.shardsPerLootingKill.get(), false);
-                        if (lootingSword.isEmpty()) {
-                            lootingSword = createEnchantedItem(Items.DIAMOND_SWORD, Enchantments.LOOTING, ShieldConfiguration.lootingKillBonus.get());
-                        }
-                        lootingSword.setDamage(0);
-                        fakePlayer.setHeldItem(Hand.MAIN_HAND, lootingSword);
-                    } else {
-                        fakePlayer.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
+                ItemStack shards = items.getStackInSlot(SLOT_SHARD);
+                if (!shards.isEmpty() && shards.getCount() >= ShieldConfiguration.shardsPerLootingKill.get()) {
+                    items.extractItem(SLOT_SHARD, ShieldConfiguration.shardsPerLootingKill.get(), false);
+                    if (lootingSword.isEmpty()) {
+                        lootingSword = createEnchantedItem(Items.DIAMOND_SWORD, Enchantments.LOOTING, ShieldConfiguration.lootingKillBonus.get());
                     }
-                });
+                    lootingSword.setDamage(0);
+                    fakePlayer.setHeldItem(Hand.MAIN_HAND, lootingSword);
+                } else {
+                    fakePlayer.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
+                }
                 source = DamageSource.causePlayerDamage(fakePlayer);
             }
 
@@ -637,7 +643,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             // Special shaped mode.
             templateState = Blocks.AIR.getDefaultState();
 
-            ItemStack shapeItem = itemHandler.map(h -> h.getStackInSlot(SLOT_SHAPE)).orElse(ItemStack.EMPTY);
+            ItemStack shapeItem = items.getStackInSlot(SLOT_SHAPE);
             Shape shape = ShapeCardItem.getShape(shapeItem);
             boolean solid = ShapeCardItem.isSolid(shapeItem);
             BlockPos dimension = ShapeCardItem.getClampedDimension(shapeItem, ShieldConfiguration.maxShieldDimension.get());
@@ -681,7 +687,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
     }
 
     private boolean isShapedShield() {
-        return !itemHandler.map(h -> h.getStackInSlot(SLOT_SHAPE)).orElse(ItemStack.EMPTY).isEmpty();
+        return !items.getStackInSlot(SLOT_SHAPE).isEmpty();
     }
 
     private boolean findTemplateState() {
@@ -780,11 +786,10 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
         int zCoord = getPos().getZ();
         BlockPos pp = new BlockPos(xCoord + c.getDx(), yCoord + c.getDy(), zCoord + c.getDz());
         BlockState oldState = getWorld().getBlockState(pp);
-        // @todo 1.14 what to do  with isReplaceable
-//        if ((!oldState.getBlock().isReplaceable(getWorld(), pp)) && oldState.getBlock() != ShieldSetup.shieldTemplateBlock) {
-//            return;
-//        }
-//        getWorld().setBlockState(pp, block.getStateFromMeta(camoId[1]), 2);
+        if ((!oldState.getMaterial().isReplaceable()) && !(oldState.getBlock() instanceof ShieldTemplateBlock)) {
+            return;
+        }
+        world.setBlockState(pp, block.getDefaultState(), Constants.BlockFlags.BLOCK_UPDATE);
 
         TileEntity te = getWorld().getTileEntity(pp);
         if (te instanceof NoTickShieldBlockTileEntity) {
@@ -1264,14 +1269,14 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction facing) {
         if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return itemHandler.cast();
+            return automationItemHandler.cast();
         }
         if (cap == CapabilityEnergy.ENERGY) {
             return energyHandler.cast();
         }
-//        if (cap == CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY) {
-//            return screenHandler.cast();
-//        }
+        if (cap == CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY) {
+            return screenHandler.cast();
+        }
         if (cap == CapabilityInfusable.INFUSABLE_CAPABILITY) {
             return infusableHandler.cast();
         }

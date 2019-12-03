@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "rftoolsbuilder:block/shieldtemplate3s"
+    "all": "rftoolsbuilder:block/shieldtemplate3"
   }
 }
