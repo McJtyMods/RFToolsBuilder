@@ -18,7 +18,7 @@ import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
-import mcjty.rftoolsbase.items.ModItems;
+import mcjty.rftoolsbase.modules.various.VariousSetup;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.shield.*;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
@@ -137,7 +137,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
         protected void setup() {
             slot(SlotDefinition.input(), CONTAINER_CONTAINER, SLOT_BUFFER, 26, 142);
             slot(SlotDefinition.specific(s -> s.getItem() instanceof ShapeCardItem), CONTAINER_CONTAINER, SLOT_SHAPE, 26, 200);
-            slot(SlotDefinition.specific(s -> s.getItem() == ModItems.DIMENSIONALSHARD), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118);
+            slot(SlotDefinition.specific(s -> s.getItem() == VariousSetup.DIMENSIONALSHARD.get()), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118);
             playerSlots(85, 142);
         }
     };

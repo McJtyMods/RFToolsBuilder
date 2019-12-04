@@ -2,7 +2,7 @@ package mcjty.rftoolsbuilder.datagen;
 
 import mcjty.lib.crafting.CopyNBTRecipeBuilder;
 import mcjty.lib.datagen.BaseRecipeProvider;
-import mcjty.rftoolsbase.items.ModItems;
+import mcjty.rftoolsbase.modules.various.VariousSetup;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
@@ -19,15 +19,15 @@ public class Recipes extends BaseRecipeProvider {
 
     public Recipes(DataGenerator generatorIn) {
         super(generatorIn);
-        add('F', ModItems.MACHINE_FRAME);
-        add('s', ModItems.DIMENSIONALSHARD);
+        add('F', VariousSetup.MACHINE_FRAME.get());
+        add('s', VariousSetup.DIMENSIONALSHARD.get());
         group("rftools");
     }
 
     @Override
     protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
         build(consumer, ShapedRecipeBuilder.shapedRecipe(BuilderSetup.BUILDER.get())
-                        .addCriterion("machine_frame", InventoryChangeTrigger.Instance.forItems(ModItems.MACHINE_FRAME)),
+                        .addCriterion("machine_frame", InventoryChangeTrigger.Instance.forItems(VariousSetup.MACHINE_FRAME.get())),
                 "BoB", "rFr", "BrB");
         build(consumer, ShapedRecipeBuilder.shapedRecipe(BuilderSetup.SHAPE_CARD_DEF.get())
                         .addCriterion("iron_ingot", InventoryChangeTrigger.Instance.forItems(Items.IRON_INGOT)),
