@@ -26,6 +26,7 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
 import mcjty.rftoolsbase.api.client.IHudSupport;
 import mcjty.rftoolsbase.network.PacketGetHudLog;
+import mcjty.rftoolsbuilder.modules.builder.BlockInformation;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
@@ -200,7 +201,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(
             this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get()));
     private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
-            .containerSupplier((windowId,player) -> new GenericContainer(BuilderSetup.CONTAINER_BUILDER, windowId, CONTAINER_FACTORY, getPos(), BuilderTileEntity.this))
+            .containerSupplier((windowId,player) -> new GenericContainer(BuilderSetup.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY, getPos(), BuilderTileEntity.this))
             .itemHandler(itemHandler)
             .energyHandler(energyHandler)
             .shortListener(new IntReferenceHolder() {
@@ -224,7 +225,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     });
 
     public BuilderTileEntity() {
-        super(BuilderSetup.TYPE_BUILDER);
+        super(BuilderSetup.TYPE_BUILDER.get());
         setRSMode(RedstoneMode.REDSTONE_ONREQUIRED);
     }
 
@@ -249,8 +250,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         };
     }
 
-    public static Block createBlock() {
-        return new BaseBlock("builder", new BlockBuilder()
+    public static BaseBlock createBlock() {
+        return new BaseBlock(new BlockBuilder()
                 .tileEntitySupplier(BuilderTileEntity::new)
                 .infusable()
                 .info("message.rftoolsbuilder.shiftmessage")
@@ -286,7 +287,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     @Override
     public Direction getBlockOrientation() {
         BlockState state = world.getBlockState(pos);
-        if (state.getBlock() == BuilderSetup.BUILDER) {
+        if (state.getBlock() == BuilderSetup.BUILDER.get()) {
             return OrientationTools.getOrientationHoriz(state);
         } else {
             return null;
@@ -363,7 +364,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         Shape shape = ShapeCardItem.getShape(shapeCard);
         Map<BlockPos, BlockState> blocks = new HashMap<>();
         ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), world, getPos(), dimension, offset, blocks, BuilderConfiguration.maxBuilderDimension.get() * 256 * BuilderConfiguration.maxBuilderDimension.get(), false, false, null);
-        BlockState state = BuilderSetup.SUPPORT.getDefaultState().with(SupportBlock.STATUS, SupportBlock.STATUS_OK);
+        BlockState state = BuilderSetup.SUPPORT.get().getDefaultState().with(SupportBlock.STATUS, SupportBlock.STATUS_OK);
         for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
             BlockPos p = entry.getKey();
             if (world.isAirBlock(p)) {
@@ -407,10 +408,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                             error = Math.max(error1, error2);
                         }
                         if (isEmpty(srcState, srcBlock) && !isEmpty(dstState, dstBlock)) {
-                            world.setBlockState(src, BuilderSetup.SUPPORT.getDefaultState().with(SupportBlock.STATUS, error), 3);
+                            world.setBlockState(src, BuilderSetup.SUPPORT.get().getDefaultState().with(SupportBlock.STATUS, error), 3);
                         }
                         if (isEmpty(dstState, dstBlock) && !isEmpty(srcState, srcBlock)) {
-                            world.setBlockState(dest, BuilderSetup.SUPPORT.getDefaultState().with(SupportBlock.STATUS, error), 3);
+                            world.setBlockState(dest, BuilderSetup.SUPPORT.get().getDefaultState().with(SupportBlock.STATUS, error), 3);
                         }
                     }
                 }
@@ -427,7 +428,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), world, getPos(), dimension, offset, blocks, BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get(), false, false, null);
         for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
             BlockPos p = entry.getKey();
-            if (world.getBlockState(p).getBlock() == BuilderSetup.SUPPORT) {
+            if (world.getBlockState(p).getBlock() == BuilderSetup.SUPPORT.get()) {
                 world.setBlockState(p, Blocks.AIR.getDefaultState());
             }
         }
@@ -457,13 +458,13 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                         src.setPos(x, y, z);
                         if (world != null) {
                             Block srcBlock = world.getBlockState(src).getBlock();
-                            if (srcBlock == BuilderSetup.SUPPORT) {
+                            if (srcBlock == BuilderSetup.SUPPORT.get()) {
                                 world.setBlockState(src, Blocks.AIR.getDefaultState());
                             }
                         }
                         sourceToDest(src, dest);
                         Block dstBlock = world.getBlockState(dest).getBlock();
-                        if (dstBlock == BuilderSetup.SUPPORT) {
+                        if (dstBlock == BuilderSetup.SUPPORT.get()) {
                             world.setBlockState(dest, Blocks.AIR.getDefaultState());
                         }
                     }
@@ -1158,13 +1159,13 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private static ItemStack getHarvesterTool(boolean silk, int fortune) {
         if (silk) {
             if (TOOL_SILK == null || TOOL_SILK.isEmpty()) {
-                TOOL_SILK = new ItemStack(BuilderSetup.SUPER_HARVESTING_TOOL);
+                TOOL_SILK = new ItemStack(BuilderSetup.SUPER_HARVESTING_TOOL.get());
                 TOOL_SILK.addEnchantment(Enchantments.SILK_TOUCH, 1);
             }
             return TOOL_SILK;
         } else {
             if (TOOL_NORMAL == null || TOOL_NORMAL.isEmpty()) {
-                TOOL_NORMAL = new ItemStack(BuilderSetup.SUPER_HARVESTING_TOOL);
+                TOOL_NORMAL = new ItemStack(BuilderSetup.SUPER_HARVESTING_TOOL.get());
             }
             return TOOL_NORMAL;
         }
@@ -1650,29 +1651,29 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return b;
     }
 
-    public static BuilderSetup.BlockInformation getBlockInformation(PlayerEntity fakePlayer, World world, BlockPos pos, Block block, TileEntity tileEntity) {
+    public static BlockInformation getBlockInformation(PlayerEntity fakePlayer, World world, BlockPos pos, Block block, TileEntity tileEntity) {
         BlockState state = world.getBlockState(pos);
         if (isEmpty(state, block)) {
-            return BuilderSetup.BlockInformation.FREE;
+            return BlockInformation.FREE;
         }
 
         if (!allowedToBreak(state, world, pos, fakePlayer)) {
-            return BuilderSetup.BlockInformation.INVALID;
+            return BlockInformation.INVALID;
         }
 
-        BuilderSetup.BlockInformation blockInformation = BuilderSetup.getBlockInformation(block);
+        BlockInformation blockInformation = BlockInformation.getBlockInformation(block);
         if (tileEntity != null) {
             switch (BuilderConfiguration.teMode.get()) {
                 case MOVE_FORBIDDEN:
-                    return BuilderSetup.BlockInformation.INVALID;
+                    return BlockInformation.INVALID;
                 case MOVE_WHITELIST:
                     if (blockInformation == null || blockInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
-                        return BuilderSetup.BlockInformation.INVALID;
+                        return BlockInformation.INVALID;
                     }
                     break;
                 case MOVE_BLACKLIST:
                     if (blockInformation != null && blockInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
-                        return BuilderSetup.BlockInformation.INVALID;
+                        return BlockInformation.INVALID;
                     }
                     break;
                 case MOVE_ALLOWED:
@@ -1682,7 +1683,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (blockInformation != null) {
             return blockInformation;
         }
-        return BuilderSetup.BlockInformation.OK;
+        return BlockInformation.OK;
     }
 
     private int isMovable(World world, BlockPos pos, Block block, TileEntity tileEntity) {
@@ -1707,7 +1708,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (block.getMaterial(state) == Material.AIR) {
             return true;
         }
-        if (block == BuilderSetup.SUPPORT) {
+        if (block == BuilderSetup.SUPPORT.get()) {
             return true;
         }
         return false;
@@ -1715,7 +1716,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private void clearBlock(World world, BlockPos pos) {
         if (supportMode) {
-            world.setBlockState(pos, BuilderSetup.SUPPORT.getDefaultState(), 3);
+            world.setBlockState(pos, BuilderSetup.SUPPORT.get().getDefaultState(), 3);
         } else {
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
         }
@@ -1883,7 +1884,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 return;
             }
             TileEntity srcTileEntity = srcWorld.getTileEntity(srcPos);
-            BuilderSetup.BlockInformation srcInformation = getBlockInformation(getHarvester(), srcWorld, srcPos, srcBlock, srcTileEntity);
+            BlockInformation srcInformation = getBlockInformation(getHarvester(), srcWorld, srcPos, srcBlock, srcTileEntity);
             if (srcInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
                 return;
             }
@@ -1948,12 +1949,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             return;
         }
 
-        BuilderSetup.BlockInformation srcInformation = getBlockInformation(getHarvester(), srcWorld, srcPos, srcBlock, srcTileEntity);
+        BlockInformation srcInformation = getBlockInformation(getHarvester(), srcWorld, srcPos, srcBlock, srcTileEntity);
         if (srcInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
             return;
         }
 
-        BuilderSetup.BlockInformation dstInformation = getBlockInformation(getHarvester(), destWorld, dstPos, dstBlock, dstTileEntity);
+        BlockInformation dstInformation = getBlockInformation(getHarvester(), destWorld, dstPos, dstBlock, dstTileEntity);
         if (dstInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
             return;
         }

@@ -8,8 +8,8 @@ import javax.annotation.Nullable;
 
 public class NoTickSolidShieldBlock extends SolidShieldBlock {
 
-    public NoTickSolidShieldBlock(String registryName, String unlocName, boolean opaque) {
-        super(registryName, unlocName, opaque);
+    public NoTickSolidShieldBlock(boolean opaque) {
+        super(opaque);
     }
 
     @Nullable

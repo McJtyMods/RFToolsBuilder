@@ -7,13 +7,11 @@ import net.minecraft.world.IBlockReader;
 
 import javax.annotation.Nullable;
 
-import static mcjty.rftoolsbuilder.modules.shield.ShieldSetup.TYPE_SHIELD_INV_BLOCK;
-
 
 public class InvisibleShieldBlock extends AbstractShieldBlock {
 
-    public InvisibleShieldBlock(String registryName, String unlocName, boolean opaque) {
-        super(registryName, unlocName, opaque);
+    public InvisibleShieldBlock(boolean opaque) {
+        super(opaque);
     }
 
     @Nullable

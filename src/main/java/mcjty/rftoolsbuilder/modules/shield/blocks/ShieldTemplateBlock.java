@@ -27,9 +27,8 @@ public class ShieldTemplateBlock extends Block {
 //        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 3, new ModelResourceLocation(getRegistryName() + "_yellow", "inventory"));
 //    }
 
-    public ShieldTemplateBlock(String name, TemplateColor color) {
+    public ShieldTemplateBlock(TemplateColor color) {
         super(Properties.create(Material.GLASS));
-        setRegistryName(name);
 //        setCreativeTab(RFTools.setup.getTab());
         this.color = color;
     }

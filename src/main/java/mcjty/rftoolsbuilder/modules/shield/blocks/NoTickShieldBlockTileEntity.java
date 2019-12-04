@@ -32,7 +32,7 @@ public class NoTickShieldBlockTileEntity extends TileEntity {
     protected AxisAlignedBB beamBox = null;
 
     public NoTickShieldBlockTileEntity() {
-        super(TYPE_SHIELD_INV_NO_TICK_BLOCK);
+        super(TYPE_SHIELD_INV_NO_TICK_BLOCK.get());
     }
 
     public NoTickShieldBlockTileEntity(TileEntityType<?> type) {

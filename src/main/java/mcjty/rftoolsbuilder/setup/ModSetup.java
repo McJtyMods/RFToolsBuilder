@@ -13,7 +13,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 public class ModSetup extends DefaultModSetup {
 
     public ModSetup() {
-        createTab("rftoolsbuilder", () -> new ItemStack(BuilderSetup.BUILDER));
+        createTab("rftoolsbuilder", () -> new ItemStack(BuilderSetup.BUILDER.get()));
     }
 
     @Override

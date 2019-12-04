@@ -1,8 +1,8 @@
 package mcjty.rftoolsbuilder.modules.builder.blocks;
 
 import mcjty.lib.varia.Counter;
+import mcjty.rftoolsbuilder.modules.builder.BlockInformation;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
-import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
 import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
@@ -113,7 +113,7 @@ public class BuilderTools {
                         }
 
                         TileEntity te = world.getTileEntity(p);
-                        BuilderSetup.BlockInformation info = BuilderTileEntity.getBlockInformation(harvester, world, p, block, te);
+                        BlockInformation info = BuilderTileEntity.getBlockInformation(harvester, world, p, block, te);
                         if (info.getBlockLevel() == SupportBlock.STATUS_ERROR) {
                             costs.put(state, -1);
                         } else {

@@ -14,7 +14,7 @@ public class LootTables extends BaseLootTableProvider {
 
     @Override
     protected void addTables() {
-        lootTables.put(BuilderSetup.BUILDER, createStandardTable("builder", BuilderSetup.BUILDER));
+        lootTables.put(BuilderSetup.BUILDER.get(), createStandardTable("builder", BuilderSetup.BUILDER.get()));
     }
 
     @Override

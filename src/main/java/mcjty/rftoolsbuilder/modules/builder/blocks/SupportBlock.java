@@ -27,7 +27,6 @@ public class SupportBlock extends Block {
 
     public SupportBlock() {
         super(Properties.create(Material.GLASS));
-        setRegistryName("support_block");
     }
 
     @Override

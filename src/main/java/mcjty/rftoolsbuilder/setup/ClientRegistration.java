@@ -28,8 +28,8 @@ public class ClientRegistration {
 
     @SubscribeEvent
     public static void init(FMLClientSetupEvent event) {
-        GenericGuiContainer.register(BuilderSetup.CONTAINER_BUILDER, GuiBuilder::new);
-        GenericGuiContainer.register(ShieldSetup.CONTAINER_SHIELD, GuiShield::new);
+        GenericGuiContainer.register(BuilderSetup.CONTAINER_BUILDER.get(), GuiBuilder::new);
+        GenericGuiContainer.register(ShieldSetup.CONTAINER_SHIELD.get(), GuiShield::new);
         BuilderRenderer.register();
     }
 

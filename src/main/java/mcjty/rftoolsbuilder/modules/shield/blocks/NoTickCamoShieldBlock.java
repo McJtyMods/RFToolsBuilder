@@ -8,8 +8,8 @@ import javax.annotation.Nullable;
 
 public class NoTickCamoShieldBlock extends CamoShieldBlock {
 
-    public NoTickCamoShieldBlock(String registryName, String unlocName, boolean opaque) {
-        super(registryName, unlocName, opaque);
+    public NoTickCamoShieldBlock(boolean opaque) {
+        super(opaque);
     }
 
     @Nullable

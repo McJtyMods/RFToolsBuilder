@@ -1,178 +1,79 @@
 package mcjty.rftoolsbuilder.modules.shield;
 
-import mcjty.lib.blocks.BaseBlockItem;
+import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.container.GenericContainer;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.*;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import static mcjty.rftoolsbuilder.RFToolsBuilder.MODID;
 
 
 public class ShieldSetup {
 
-    @ObjectHolder("rftoolsbuilder:shield_block1")
-    public static ShieldBlock SHIELD_BLOCK1;
-    @ObjectHolder("rftoolsbuilder:shield_block2")
-    public static ShieldBlock SHIELD_BLOCK2;
-    @ObjectHolder("rftoolsbuilder:shield_block3")
-    public static ShieldBlock SHIELD_BLOCK3;
-    @ObjectHolder("rftoolsbuilder:shield_block4")
-    public static ShieldBlock SHIELD_BLOCK4;
+    public static final DeferredRegister<Item> ITEMS = new DeferredRegister<>(ForgeRegistries.ITEMS, MODID);
+    public static final DeferredRegister<Block> BLOCKS = new DeferredRegister<>(ForgeRegistries.BLOCKS, MODID);
+    public static final DeferredRegister<TileEntityType<?>> TILES = new DeferredRegister<>(ForgeRegistries.TILE_ENTITIES, MODID);
+    public static final DeferredRegister<ContainerType<?>> CONTAINERS = new DeferredRegister<>(ForgeRegistries.CONTAINERS, MODID);
 
-    @ObjectHolder("rftoolsbuilder:invisible_shield_block")
-    public static InvisibleShieldBlock SHIELD_INVISIBLE;
-    @ObjectHolder("rftoolsbuilder:notick_invisible_shield_block")
-    public static NoTickInvisibleShieldBlock SHIELD_INVISIBLE_NOTICK;
-    @ObjectHolder("rftoolsbuilder:invisible_shield_block_opaque")
-    public static InvisibleShieldBlock SHIELD_INVISIBLE_OPAQUE;
-    @ObjectHolder("rftoolsbuilder:notick_invisible_shield_block_opaque")
-    public static NoTickInvisibleShieldBlock SHIELD_INVISIBLE_OPAQUE_NOTICK;
-
-    @ObjectHolder("rftoolsbuilder:solid_shield_block")
-    public static SolidShieldBlock SHIELD_SOLID;
-    @ObjectHolder("rftoolsbuilder:notick_solid_shield_block")
-    public static NoTickSolidShieldBlock SHIELD_SOLID_NOTICK;
-    @ObjectHolder("rftoolsbuilder:camo_shield_block")
-    public static CamoShieldBlock SHIELD_CAMO;
-    @ObjectHolder("rftoolsbuilder:notick_camo_shield_block")
-    public static NoTickCamoShieldBlock SHIELD_CAMO_NOTICK;
-
-    @ObjectHolder("rftoolsbuilder:solid_shield_block_opaque")
-    public static SolidShieldBlock SHIELD_SOLID_OPAQUE;
-    @ObjectHolder("rftoolsbuilder:notick_solid_shield_block_opaque")
-    public static NoTickSolidShieldBlock SHIELD_SOLID_OPAQUE_NOTICK;
-    @ObjectHolder("rftoolsbuilder:camo_shield_block_opaque")
-    public static CamoShieldBlock SHIELD_CAMO_OPAQUE;
-    @ObjectHolder("rftoolsbuilder:notick_camo_shield_block_opaque")
-    public static NoTickCamoShieldBlock SHIELD_CAMO_OPAQUE_NOTICK;
-
-    @ObjectHolder("rftoolsbuilder:blue_shield_template_block")
-    public static ShieldTemplateBlock TEMPLATE_BLUE;
-    @ObjectHolder("rftoolsbuilder:red_shield_template_block")
-    public static ShieldTemplateBlock TEMPLATE_RED;
-    @ObjectHolder("rftoolsbuilder:green_shield_template_block")
-    public static ShieldTemplateBlock TEMPLATE_GREEN;
-    @ObjectHolder("rftoolsbuilder:yellow_shield_template_block")
-    public static ShieldTemplateBlock TEMPLATE_YELLOW;
-
-    @ObjectHolder("rftoolsbuilder:shield_inv_block")
-    public static TileEntityType<?> TYPE_SHIELD_INV_BLOCK;
-    @ObjectHolder("rftoolsbuilder:shield_inv_no_tickblock")
-    public static TileEntityType<?> TYPE_SHIELD_INV_NO_TICK_BLOCK;
-    @ObjectHolder("rftoolsbuilder:shield_solid_no_tickblock")
-    public static TileEntityType<?> TYPE_SHIELD_SOLID_NO_TICK_BLOCK;
-    @ObjectHolder("rftoolsbuilder:shield_camo_block")
-    public static TileEntityType<?> TYPE_SHIELD_CAMO_BLOCK;
-
-//    @ObjectHolder("rftoolsbuilder:shield_solid")
-//    public static TileEntityTyp  e<?> TYPE_SHIELD_SOLID;
-    @ObjectHolder("rftoolsbuilder:shield_block1")
-    public static TileEntityType<?> TYPE_SHIELD_BLOCK1;
-    @ObjectHolder("rftoolsbuilder:shield_block2")
-    public static TileEntityType<?> TYPE_SHIELD_BLOCK2;
-    @ObjectHolder("rftoolsbuilder:shield_block3")
-    public static TileEntityType<?> TYPE_SHIELD_BLOCK3;
-    @ObjectHolder("rftoolsbuilder:shield_block4")
-    public static TileEntityType<?> TYPE_SHIELD_BLOCK4;
-
-    @ObjectHolder("rftoolsbuilder:shield")
-    public static ContainerType<GenericContainer> CONTAINER_SHIELD;
-
-    public static void registerBlocks(RegistryEvent.Register<Block> event) {
-        event.getRegistry().register(new ShieldBlock("shield_block1", ShieldTileEntity.class, ShieldConfiguration.maxShieldSize.get()));
-        event.getRegistry().register(new ShieldBlock("shield_block2", ShieldTileEntity2.class, ShieldConfiguration.maxShieldSize.get() * 4));
-        event.getRegistry().register(new ShieldBlock("shield_block3", ShieldTileEntity3.class, ShieldConfiguration.maxShieldSize.get() * 16));
-        event.getRegistry().register(new ShieldBlock("shield_block4", ShieldTileEntity4.class, ShieldConfiguration.maxShieldSize.get() * 128));
-
-        event.getRegistry().register(new ShieldTemplateBlock("blue_shield_template_block", ShieldTemplateBlock.TemplateColor.BLUE));
-        event.getRegistry().register(new ShieldTemplateBlock("red_shield_template_block", ShieldTemplateBlock.TemplateColor.RED));
-        event.getRegistry().register(new ShieldTemplateBlock("green_shield_template_block", ShieldTemplateBlock.TemplateColor.GREEN));
-        event.getRegistry().register(new ShieldTemplateBlock("yellow_shield_template_block", ShieldTemplateBlock.TemplateColor.BLUE));
-
-        event.getRegistry().register(new InvisibleShieldBlock("invisible_shield_block", "rftoolsbuilder.invisible_shield_block", false));
-        event.getRegistry().register(new NoTickInvisibleShieldBlock("notick_invisible_shield_block", "rftoolsbuilder.notick_invisible_shield_block", false));
-        event.getRegistry().register(new InvisibleShieldBlock("invisible_shield_block_opaque", "rftoolsbuilder.invisible_shield_block", true));
-        event.getRegistry().register(new NoTickInvisibleShieldBlock("notick_invisible_shield_block_opaque", "rftoolsbuilder.notick_invisible_shield_block", true));
-
-        event.getRegistry().register(new SolidShieldBlock("solid_shield_block", "rftoolsbuilder.solid_shield_block", false));
-        event.getRegistry().register(new NoTickSolidShieldBlock("notick_solid_shield_block", "rftoolsbuilder.notick_solid_shield_block", false));
-        event.getRegistry().register(new CamoShieldBlock("camo_shield_block", "rftoolsbuilder.camo_shield_block", false));
-        event.getRegistry().register(new NoTickCamoShieldBlock("notick_camo_shield_block", "rftoolsbuilder.notick_camo_shield_block", false));
-
-        event.getRegistry().register(new SolidShieldBlock("solid_shield_block_opaque", "rftoolsbuilder.solid_shield_block", true));
-        event.getRegistry().register(new NoTickSolidShieldBlock("notick_solid_shield_block_opaque", "rftoolsbuilder.notick_solid_shield_block", true));
-        event.getRegistry().register(new CamoShieldBlock("camo_shield_block_opaque", "rftoolsbuilder.camo_shield_block", true));
-        event.getRegistry().register(new NoTickCamoShieldBlock("notick_camo_shield_block_opaque", "rftoolsbuilder.notick_camo_shield_block", true));
+    public static void register() {
+        BLOCKS.register(FMLJavaModLoadingContext.get().getModEventBus());
+        ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+        TILES.register(FMLJavaModLoadingContext.get().getModEventBus());
+        CONTAINERS.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
-    public static void registerItems(RegistryEvent.Register<Item> event) {
-        Item.Properties properties = new Item.Properties().group(RFToolsBuilder.setup.getTab());
-        event.getRegistry().register(new BaseBlockItem(SHIELD_BLOCK1, properties));
-        event.getRegistry().register(new BaseBlockItem(SHIELD_BLOCK2, properties));
-        event.getRegistry().register(new BaseBlockItem(SHIELD_BLOCK3, properties));
-        event.getRegistry().register(new BaseBlockItem(SHIELD_BLOCK4, properties));
-        event.getRegistry().register(new BaseBlockItem(TEMPLATE_BLUE, properties));
-        event.getRegistry().register(new BaseBlockItem(TEMPLATE_RED, properties));
-        event.getRegistry().register(new BaseBlockItem(TEMPLATE_GREEN, properties));
-        event.getRegistry().register(new BaseBlockItem(TEMPLATE_YELLOW, properties));
-    }
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK1 = BLOCKS.register("shield_block1", () -> new ShieldBlock(ShieldTileEntity.class, ShieldConfiguration.maxShieldSize.get()));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK2 = BLOCKS.register("shield_block2", () -> new ShieldBlock(ShieldTileEntity.class, ShieldConfiguration.maxShieldSize.get() * 4));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK3 = BLOCKS.register("shield_block3", () -> new ShieldBlock(ShieldTileEntity.class, ShieldConfiguration.maxShieldSize.get() * 16));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK4 = BLOCKS.register("shield_block4", () -> new ShieldBlock(ShieldTileEntity.class, ShieldConfiguration.maxShieldSize.get() * 128));
+    public static final RegistryObject<Item> SHIELD_BLOCK1_ITEM = ITEMS.register("shield_block1", () -> new BlockItem(SHIELD_BLOCK1.get(), RFToolsBuilder.createStandardProperties()));
+    public static final RegistryObject<Item> SHIELD_BLOCK2_ITEM = ITEMS.register("shield_block2", () -> new BlockItem(SHIELD_BLOCK2.get(), RFToolsBuilder.createStandardProperties()));
+    public static final RegistryObject<Item> SHIELD_BLOCK3_ITEM = ITEMS.register("shield_block3", () -> new BlockItem(SHIELD_BLOCK3.get(), RFToolsBuilder.createStandardProperties()));
+    public static final RegistryObject<Item> SHIELD_BLOCK4_ITEM = ITEMS.register("shield_block4", () -> new BlockItem(SHIELD_BLOCK4.get(), RFToolsBuilder.createStandardProperties()));
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK1 = TILES.register("shield_block1", () -> TileEntityType.Builder.create(ShieldTileEntity::new, SHIELD_BLOCK1.get()).build(null));
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK2 = TILES.register("shield_block2", () -> TileEntityType.Builder.create(ShieldTileEntity2::new, SHIELD_BLOCK2.get()).build(null));
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK3 = TILES.register("shield_block3", () -> TileEntityType.Builder.create(ShieldTileEntity3::new, SHIELD_BLOCK3.get()).build(null));
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK4 = TILES.register("shield_block4", () -> TileEntityType.Builder.create(ShieldTileEntity4::new, SHIELD_BLOCK4.get()).build(null));
+    public static final RegistryObject<ContainerType<GenericContainer>> CONTAINER_SHIELD = CONTAINERS.register("shield", GenericContainer::createContainerType);
 
-    public static void registerTiles(RegistryEvent.Register<TileEntityType<?>> event) {
-        event.getRegistry().register(TileEntityType.Builder.create(ShieldTileEntity::new, SHIELD_BLOCK1).build(null).setRegistryName("shield_block1"));
-        event.getRegistry().register(TileEntityType.Builder.create(ShieldTileEntity2::new, SHIELD_BLOCK2).build(null).setRegistryName("shield_block2"));
-        event.getRegistry().register(TileEntityType.Builder.create(ShieldTileEntity3::new, SHIELD_BLOCK3).build(null).setRegistryName("shield_block3"));
-        event.getRegistry().register(TileEntityType.Builder.create(ShieldTileEntity4::new, SHIELD_BLOCK4).build(null).setRegistryName("shield_block4"));
+    public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_BLUE = BLOCKS.register("blue_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.BLUE));
+    public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_RED = BLOCKS.register("red_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.RED));
+    public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_GREEN = BLOCKS.register("green_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.GREEN));
+    public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_YELLOW = BLOCKS.register("yellow_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.YELLOW));
+    public static final RegistryObject<Item> TEMPLATE_BLUE_ITEM = ITEMS.register("blue_shield_template_block", () -> new BlockItem(TEMPLATE_BLUE.get(), RFToolsBuilder.createStandardProperties()));
+    public static final RegistryObject<Item> TEMPLATE_RED_ITEM = ITEMS.register("red_shield_template_block", () -> new BlockItem(TEMPLATE_RED.get(), RFToolsBuilder.createStandardProperties()));
+    public static final RegistryObject<Item> TEMPLATE_GREEN_ITEM = ITEMS.register("green_shield_template_block", () -> new BlockItem(TEMPLATE_GREEN.get(), RFToolsBuilder.createStandardProperties()));
+    public static final RegistryObject<Item> TEMPLATE_YELLOW_ITEM = ITEMS.register("yellow_shield_template_block", () -> new BlockItem(TEMPLATE_YELLOW.get(), RFToolsBuilder.createStandardProperties()));
 
-        event.getRegistry().register(TileEntityType.Builder.create(TickShieldBlockTileEntity::new, SHIELD_INVISIBLE).build(null).setRegistryName("shield_inv_block"));
-        event.getRegistry().register(TileEntityType.Builder.create(NoTickShieldBlockTileEntity::new, SHIELD_INVISIBLE_NOTICK).build(null).setRegistryName("shield_inv_no_tickblock"));
-        event.getRegistry().register(TileEntityType.Builder.create(TickShieldSolidBlockTileEntity::new, SHIELD_SOLID).build(null).setRegistryName("solid_shield_block"));
-        event.getRegistry().register(TileEntityType.Builder.create(NoTickShieldSolidBlockTileEntity::new, SHIELD_SOLID_NOTICK).build(null).setRegistryName("notick_solid_shield_block"));
+    public static final RegistryObject<InvisibleShieldBlock> SHIELD_INVISIBLE = BLOCKS.register("invisible_shield_block", () -> new InvisibleShieldBlock(false));
+    public static final RegistryObject<NoTickInvisibleShieldBlock> SHIELD_INVISIBLE_NOTICK = BLOCKS.register("notick_invisible_shield_block", () -> new NoTickInvisibleShieldBlock(false));
+    public static final RegistryObject<InvisibleShieldBlock> SHIELD_INVISIBLE_OPAQUE = BLOCKS.register("invisible_shield_block_opaque", () -> new InvisibleShieldBlock(true));
+    public static final RegistryObject<NoTickInvisibleShieldBlock> SHIELD_INVISIBLE_OPAQUE_NOTICK = BLOCKS.register("notick_invisible_shield_block_opaque", () -> new NoTickInvisibleShieldBlock(true));
 
-/*
-    public static TileEntityType<?> TYPE_SHIELD_INV_BLOCK;
-    public static TileEntityType<?> TYPE_SHIELD_INV_NO_TICK_BLOCK;
-    public static TileEntityType<?> TYPE_SHIELD_SOLID_NO_TICK_BLOCK;
-    public static TileEntityType<?> TYPE_SHIELD_CAMO_BLOCK;
-    public static TileEntityType<?> TYPE_SHIELD_SOLID;
-    public static TileEntityType<?> TYPE_SHIELD_BLOCK1;
-    public static TileEntityType<?> TYPE_SHIELD_BLOCK2;
-    public static TileEntityType<?> TYPE_SHIELD_BLOCK3;
-    public static TileEntityType<?> TYPE_SHIELD_BLOCK4;
+    public static final RegistryObject<SolidShieldBlock> SHIELD_SOLID = BLOCKS.register("solid_shield_block", () -> new SolidShieldBlock(false));
+    public static final RegistryObject<NoTickSolidShieldBlock> SHIELD_SOLID_NOTICK = BLOCKS.register("notick_solid_shield_block", () -> new NoTickSolidShieldBlock(false));
+    public static final RegistryObject<CamoShieldBlock> SHIELD_CAMO = BLOCKS.register("camo_shield_block", () -> new CamoShieldBlock(false));
+    public static final RegistryObject<NoTickCamoShieldBlock> SHIELD_CAMO_NOTICK = BLOCKS.register("notick_camo_shield_block", () -> new NoTickCamoShieldBlock(false));
 
- */
-    }
+    public static final RegistryObject<SolidShieldBlock> SHIELD_SOLID_OPAQUE = BLOCKS.register("solid_shield_block_opaque", () -> new SolidShieldBlock(true));
+    public static final RegistryObject<NoTickSolidShieldBlock> SHIELD_SOLID_OPAQUE_NOTICK = BLOCKS.register("notick_solid_shield_block_opaque", () -> new NoTickSolidShieldBlock(true));
+    public static final RegistryObject<CamoShieldBlock> SHIELD_CAMO_OPAQUE = BLOCKS.register("camo_shield_block_opaque", () -> new CamoShieldBlock(true));
+    public static final RegistryObject<NoTickCamoShieldBlock> SHIELD_CAMO_OPAQUE_NOTICK = BLOCKS.register("notick_camo_shield_block_opaque", () -> new NoTickCamoShieldBlock(true));
 
-    public static void registerContainers(RegistryEvent.Register<ContainerType<?>> event) {
-        event.getRegistry().register(GenericContainer.createContainerType("shield"));
-    }
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_INV_BLOCK = TILES.register("shield_inv_block", () -> TileEntityType.Builder.create(TickShieldBlockTileEntity::new, SHIELD_INVISIBLE.get()).build(null));
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_INV_NO_TICK_BLOCK = TILES.register("shield_inv_no_tickblock", () -> TileEntityType.Builder.create(NoTickShieldBlockTileEntity::new, SHIELD_INVISIBLE_NOTICK.get()).build(null));
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_SOLID_NO_TICK_BLOCK = TILES.register("shield_solid_no_tickblock", () -> TileEntityType.Builder.create(NoTickShieldSolidBlockTileEntity::new, SHIELD_SOLID_NOTICK.get()).build(null));
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_CAMO_BLOCK = TILES.register("shield_camo_block", () -> TileEntityType.Builder.create(NoTickShieldSolidBlockTileEntity::new, SHIELD_CAMO.get()).build(null));
 
-    // @todo 1.14
-//    @SideOnly(Side.CLIENT)
-//    public static void initClient() {
-//        shieldBlock1.initModel();
-//        shieldBlock2.initModel();
-//        shieldBlock3.initModel();
-//        shieldBlock4.initModel();
-//        shieldTemplateBlock.initModel();
-//        invisibleShieldBlock.initModel();
-//        noTickInvisibleShieldBlock.initModel();
-//        invisibleShieldBlockOpaque.initModel();
-//        noTickInvisibleShieldBlockOpaque.initModel();
-//        if (!ShieldConfiguration.disableShieldBlocksToUncorruptWorld.get()) {
-//            solidShieldBlock.initModel();
-//            noTickSolidShieldBlock.initModel();
-//            camoShieldBlock.initModel();
-//            noTickCamoShieldBlock.initModel();
-//            solidShieldBlockOpaque.initModel();
-//            noTickSolidShieldBlockOpaque.initModel();
-//            camoShieldBlockOpaque.initModel();
-//            noTickCamoShieldBlockOpaque.initModel();
-//        }
-//    }
 //
 //    @SideOnly(Side.CLIENT)
 //    public static void initClientPost() {

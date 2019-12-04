@@ -11,7 +11,6 @@ public class SuperHarvestingTool extends ToolItem {
 
     public SuperHarvestingTool() {
         super(1000.0f, 1000.0f, ItemTier.DIAMOND, Collections.emptySet(), new Item.Properties());
-        setRegistryName("superharvestingtool");
     }
 
     @Override

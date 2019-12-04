@@ -36,8 +36,8 @@ public class ShieldBlock extends BaseBlock implements INBTPreservingIngredient
 
     private final int max;
 
-    public ShieldBlock(String blockName, Class<? extends ShieldTEBase> clazz, int max) {
-        super(blockName, new BlockBuilder()
+    public ShieldBlock(Class<? extends ShieldTEBase> clazz, int max) {
+        super(new BlockBuilder()
             .tileEntitySupplier(ShieldTileEntity::new));
         this.max = max;
     }

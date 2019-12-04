@@ -14,8 +14,8 @@ public class CamoShieldBlock extends AbstractShieldBlock {
     public static final String CAMO = "camo";
     public static final ModelProperty<BlockState> CAMO_PROPERTY = new ModelProperty<>();
 
-    public CamoShieldBlock(String registryName, String unlocName, boolean opaque) {
-        super(registryName, unlocName, opaque);
+    public CamoShieldBlock(boolean opaque) {
+        super(opaque);
     }
 
     // @todo 1.14

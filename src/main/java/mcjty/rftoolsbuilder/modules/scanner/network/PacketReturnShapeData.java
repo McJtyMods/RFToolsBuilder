@@ -112,7 +112,7 @@ public class PacketReturnShapeData {
             RenderData.RenderPlane plane = null;
 
             if (rle != null) {
-                BlockState dummy = BuilderSetup.SUPPORT.getDefaultState();
+                BlockState dummy = BuilderSetup.SUPPORT.get().getDefaultState();
 
                 rle.reset();
 //                for (int oy = 0; oy < dy; oy++) {

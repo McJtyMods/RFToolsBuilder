@@ -5,6 +5,6 @@ import static mcjty.rftoolsbuilder.modules.shield.ShieldSetup.TYPE_SHIELD_SOLID_
 
 public class NoTickShieldSolidBlockTileEntity extends NoTickShieldBlockTileEntity {
     public NoTickShieldSolidBlockTileEntity() {
-        super(TYPE_SHIELD_SOLID_NO_TICK_BLOCK);
+        super(TYPE_SHIELD_SOLID_NO_TICK_BLOCK.get());
     }
 }

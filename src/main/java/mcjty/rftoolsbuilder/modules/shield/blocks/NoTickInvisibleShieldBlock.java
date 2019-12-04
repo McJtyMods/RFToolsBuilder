@@ -10,13 +10,13 @@ import static mcjty.rftoolsbuilder.modules.shield.ShieldSetup.TYPE_SHIELD_INV_NO
 
 public class NoTickInvisibleShieldBlock extends InvisibleShieldBlock {
 
-    public NoTickInvisibleShieldBlock(String registryName, String unlocName, boolean opaque) {
-        super(registryName, unlocName, opaque);
+    public NoTickInvisibleShieldBlock(boolean opaque) {
+        super(opaque);
     }
 
     @Nullable
     @Override
     public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return new NoTickShieldBlockTileEntity(TYPE_SHIELD_INV_NO_TICK_BLOCK);
+        return new NoTickShieldBlockTileEntity(TYPE_SHIELD_INV_NO_TICK_BLOCK.get());
     }
 }

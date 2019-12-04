@@ -55,7 +55,6 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
 
     public ShapeCardItem(ShapeCardType type) {
         super(new Properties().maxStackSize(1).defaultMaxDamage(0).group(RFToolsBuilder.setup.getTab()));
-        setRegistryName("shape_card_" + type.getResourceSuffix());
         this.type = type;
     }
 

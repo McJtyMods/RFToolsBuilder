@@ -13,6 +13,6 @@ public class Languages extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
-        add(BuilderSetup.BUILDER, "Builder");
+        add(BuilderSetup.BUILDER.get(), "Builder");
     }
 }

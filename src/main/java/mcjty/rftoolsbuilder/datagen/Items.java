@@ -15,17 +15,17 @@ public class Items extends BaseItemModelProvider {
 
     @Override
     protected void registerModels() {
-        parentedBlock(ShieldSetup.TEMPLATE_BLUE, "block/blue_shield_template");
-        parentedBlock(ShieldSetup.TEMPLATE_RED, "block/red_shield_template");
-        parentedBlock(ShieldSetup.TEMPLATE_YELLOW, "block/yellow_shield_template");
-        parentedBlock(ShieldSetup.TEMPLATE_GREEN, "block/green_shield_template");
+        parentedBlock(ShieldSetup.TEMPLATE_BLUE.get(), "block/blue_shield_template");
+        parentedBlock(ShieldSetup.TEMPLATE_RED.get(), "block/red_shield_template");
+        parentedBlock(ShieldSetup.TEMPLATE_YELLOW.get(), "block/yellow_shield_template");
+        parentedBlock(ShieldSetup.TEMPLATE_GREEN.get(), "block/green_shield_template");
 
-        parentedBlock(ShieldSetup.SHIELD_BLOCK1, "block/shield_block1");
-        parentedBlock(ShieldSetup.SHIELD_BLOCK2, "block/shield_block2");
-        parentedBlock(ShieldSetup.SHIELD_BLOCK3, "block/shield_block3");
-        parentedBlock(ShieldSetup.SHIELD_BLOCK4, "block/shield_block4");
+        parentedBlock(ShieldSetup.SHIELD_BLOCK1.get(), "block/shield_block1");
+        parentedBlock(ShieldSetup.SHIELD_BLOCK2.get(), "block/shield_block2");
+        parentedBlock(ShieldSetup.SHIELD_BLOCK3.get(), "block/shield_block3");
+        parentedBlock(ShieldSetup.SHIELD_BLOCK4.get(), "block/shield_block4");
 
-        parentedBlock(BuilderSetup.BUILDER,"block/builder");
+        parentedBlock(BuilderSetup.BUILDER.get(),"block/builder");
     }
 
     @Override

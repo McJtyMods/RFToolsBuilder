@@ -15,7 +15,7 @@ import static mcjty.rftoolsbuilder.modules.shield.ShieldSetup.TYPE_SHIELD_INV_BL
 public class TickShieldBlockTileEntity extends NoTickShieldBlockTileEntity {
 
     public TickShieldBlockTileEntity() {
-        super(TYPE_SHIELD_INV_BLOCK);
+        super(TYPE_SHIELD_INV_BLOCK.get());
     }
 
     public TickShieldBlockTileEntity(TileEntityType<?> type) {

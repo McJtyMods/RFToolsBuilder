@@ -26,13 +26,12 @@ public abstract class AbstractShieldBlock extends Block {
     public static final int META_PLAYERS = 8;           // If set the blocked for (some) players
     public static final AxisAlignedBB COLLISION_BOX = new AxisAlignedBB(0.002, 0.002, 0.002, 0.998, 0.998, 0.998);
 
-    public AbstractShieldBlock(String registryName, String unlocName, boolean opaque) {
+    public AbstractShieldBlock(boolean opaque) {
         super(Properties.create(Material.GLASS)
                 .hardnessAndResistance(-1.0F, 3600000.0F)
                 .noDrops()
             );
 //        this.lightOpacity = opaque ? 255 : 0; // @todo 1.14
-        setRegistryName(registryName);
     }
 
 

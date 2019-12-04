@@ -146,7 +146,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
     private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
     private LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
     private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
-            .containerSupplier((windowId,player) -> new GenericContainer(ShieldSetup.CONTAINER_SHIELD, windowId, CONTAINER_FACTORY, getPos(), ShieldTEBase.this))
+            .containerSupplier((windowId,player) -> new GenericContainer(ShieldSetup.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY, getPos(), ShieldTEBase.this))
             .itemHandler(itemHandler));
 
     private LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick()));
@@ -419,23 +419,23 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
         }
         if (ShieldConfiguration.allowInvisibleShield.get() && ShieldRenderingMode.MODE_INVISIBLE.equals(shieldRenderingMode)) {
             if (damageBits == 0) {
-                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE_NOTICK : ShieldSetup.SHIELD_INVISIBLE_NOTICK;
+                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE_NOTICK .get(): ShieldSetup.SHIELD_INVISIBLE_NOTICK.get();
             } else {
-                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE : ShieldSetup.SHIELD_INVISIBLE;
+                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE .get(): ShieldSetup.SHIELD_INVISIBLE.get();
             }
         }
 
         if (camoId == null) {
             if (damageBits == 0) {
-                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE_NOTICK : ShieldSetup.SHIELD_SOLID_NOTICK;
+                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE_NOTICK .get(): ShieldSetup.SHIELD_SOLID_NOTICK.get();
             } else {
-                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE : ShieldSetup.SHIELD_SOLID;
+                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE .get(): ShieldSetup.SHIELD_SOLID.get();
             }
         } else {
             if (damageBits == 0) {
-                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE_NOTICK : ShieldSetup.SHIELD_CAMO_NOTICK;
+                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE_NOTICK .get(): ShieldSetup.SHIELD_CAMO_NOTICK.get();
             } else {
-                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE : ShieldSetup.SHIELD_CAMO;
+                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE .get(): ShieldSetup.SHIELD_CAMO.get();
             }
         }
     }
@@ -945,16 +945,16 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
             switch (color) {
                 case BLUE:
-                    templateState = ShieldSetup.TEMPLATE_BLUE.getDefaultState();
+                    templateState = ShieldSetup.TEMPLATE_BLUE.get().getDefaultState();
                     break;
                 case RED:
-                    templateState = ShieldSetup.TEMPLATE_RED.getDefaultState();
+                    templateState = ShieldSetup.TEMPLATE_RED.get().getDefaultState();
                     break;
                 case GREEN:
-                    templateState = ShieldSetup.TEMPLATE_GREEN.getDefaultState();
+                    templateState = ShieldSetup.TEMPLATE_GREEN.get().getDefaultState();
                     break;
                 case YELLOW:
-                    templateState = ShieldSetup.TEMPLATE_YELLOW.getDefaultState();
+                    templateState = ShieldSetup.TEMPLATE_YELLOW.get().getDefaultState();
                     break;
             }
         } else {
@@ -1008,16 +1008,16 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
                 ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
                 switch (color) {
                     case BLUE:
-                        templateState = ShieldSetup.TEMPLATE_BLUE.getDefaultState();
+                        templateState = ShieldSetup.TEMPLATE_BLUE.get().getDefaultState();
                         break;
                     case RED:
-                        templateState = ShieldSetup.TEMPLATE_RED.getDefaultState();
+                        templateState = ShieldSetup.TEMPLATE_RED.get().getDefaultState();
                         break;
                     case GREEN:
-                        templateState = ShieldSetup.TEMPLATE_GREEN.getDefaultState();
+                        templateState = ShieldSetup.TEMPLATE_GREEN.get().getDefaultState();
                         break;
                     case YELLOW:
-                        templateState = ShieldSetup.TEMPLATE_YELLOW.getDefaultState();
+                        templateState = ShieldSetup.TEMPLATE_YELLOW.get().getDefaultState();
                         break;
                 }
             } else {

@@ -7,7 +7,7 @@ import static mcjty.rftoolsbuilder.modules.shield.ShieldSetup.TYPE_SHIELD_BLOCK3
 public class ShieldTileEntity3 extends ShieldTEBase {
 
     public ShieldTileEntity3() {
-        super(TYPE_SHIELD_BLOCK3);
+        super(TYPE_SHIELD_BLOCK3.get());
         setSupportedBlocks(ShieldConfiguration.maxShieldSize.get() * 16);
         setDamageFactor(4.0f);
         setCostFactor(2.0f);

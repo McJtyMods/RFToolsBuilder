@@ -7,6 +7,6 @@ import static mcjty.rftoolsbuilder.modules.shield.ShieldSetup.TYPE_SHIELD_CAMO_B
 public class TickShieldSolidBlockTileEntity extends TickShieldBlockTileEntity {
 
     public TickShieldSolidBlockTileEntity() {
-        super(TYPE_SHIELD_CAMO_BLOCK);
+        super(TYPE_SHIELD_CAMO_BLOCK.get());
     }
 }

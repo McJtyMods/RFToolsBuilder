@@ -15,8 +15,8 @@ public class SolidShieldBlock extends AbstractShieldBlock {
     public static final IntegerProperty ICON_TOPDOWN = IntegerProperty.create("icontopdown", 0, 5);
     public static final IntegerProperty ICON_SIDE = IntegerProperty.create("iconside", 0, 5);
 
-    public SolidShieldBlock(String registryName, String unlocName, boolean opaque) {
-        super(registryName, unlocName, opaque);
+    public SolidShieldBlock(boolean opaque) {
+        super(opaque);
     }
 
     // @todo 1.14
