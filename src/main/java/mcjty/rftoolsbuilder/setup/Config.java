@@ -1,4 +1,4 @@
-package mcjty.rftoolsbuilder.config;
+package mcjty.rftoolsbuilder.setup;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;

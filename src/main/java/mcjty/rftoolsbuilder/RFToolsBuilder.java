@@ -1,7 +1,7 @@
 package mcjty.rftoolsbuilder;
 
 import mcjty.lib.base.ModBase;
-import mcjty.rftoolsbuilder.config.Config;
+import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
 import mcjty.rftoolsbuilder.setup.ModSetup;
