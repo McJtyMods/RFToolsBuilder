@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
-import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderRenderer;
+import mcjty.rftoolsbuilder.modules.builder.client.BuilderRenderer;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
 import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
 import mcjty.rftoolsbuilder.modules.shield.client.CamoBakedModel;

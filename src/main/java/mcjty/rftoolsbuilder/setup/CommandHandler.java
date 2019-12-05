@@ -4,7 +4,7 @@ import mcjty.lib.McJtyLib;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
-import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTools;
+import mcjty.rftoolsbuilder.modules.builder.BuilderTools;
 import mcjty.rftoolsbuilder.shapes.ShaperTools;
 import net.minecraft.util.math.BlockPos;
 

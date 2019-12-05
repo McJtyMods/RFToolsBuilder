@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
-import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntityMode;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.ResourceLocation;

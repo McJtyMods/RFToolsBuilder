@@ -1,7 +1,8 @@
-package mcjty.rftoolsbuilder.modules.builder.blocks;
+package mcjty.rftoolsbuilder.modules.builder.client;
 
 import mcjty.rftoolsbase.client.HudRenderer;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
+import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 
