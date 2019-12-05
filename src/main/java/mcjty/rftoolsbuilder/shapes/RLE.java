@@ -1,6 +1,4 @@
-package mcjty.rftoolsbuilder.varia;
-
-import mcjty.rftoolsbuilder.shapes.FastByteArray;
+package mcjty.rftoolsbuilder.shapes;
 
 public class RLE {
 

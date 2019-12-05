@@ -1,4 +1,4 @@
-package mcjty.rftoolsbuilder.network;
+package mcjty.rftoolsbuilder.setup;
 
 import mcjty.lib.network.*;
 import mcjty.lib.typed.TypedMap;

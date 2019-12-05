@@ -3,8 +3,6 @@ package mcjty.rftoolsbuilder.setup;
 import mcjty.lib.compat.MainCompatHandler;
 import mcjty.lib.setup.DefaultModSetup;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
-import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
-import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;

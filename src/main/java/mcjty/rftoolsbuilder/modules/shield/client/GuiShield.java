@@ -25,7 +25,7 @@ import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldTEBase;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import mcjty.rftoolsbuilder.modules.shield.network.PacketGetFilters;
-import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;

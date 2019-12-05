@@ -6,7 +6,7 @@ import mcjty.lib.varia.Check32;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
-import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;

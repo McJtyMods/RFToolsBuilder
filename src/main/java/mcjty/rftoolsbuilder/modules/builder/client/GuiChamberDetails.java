@@ -11,7 +11,7 @@ import mcjty.lib.gui.widgets.*;
 import mcjty.lib.gui.widgets.Label;
 import mcjty.lib.gui.widgets.Panel;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
-import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.setup.CommandHandler;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;

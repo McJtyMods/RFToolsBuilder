@@ -1,13 +1,10 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
 import mcjty.lib.varia.Counter;
-import mcjty.rftoolsbuilder.modules.builder.BlockInformation;
-import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
-import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
-import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;

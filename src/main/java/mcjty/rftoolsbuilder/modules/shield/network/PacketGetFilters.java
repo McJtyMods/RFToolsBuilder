@@ -7,7 +7,7 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldTEBase;
 import mcjty.rftoolsbuilder.modules.shield.filters.ShieldFilter;
-import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;

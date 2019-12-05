@@ -22,7 +22,7 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTItemInventoryShape;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTShapeCard;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
-import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.shapes.IShapeParentGui;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeID;

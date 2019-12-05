@@ -1,7 +1,7 @@
 package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.lib.typed.TypedMap;
-import mcjty.rftoolsbuilder.network.RFToolsBuilderMessages;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.setup.CommandHandler;
 
 import javax.annotation.Nonnull;
