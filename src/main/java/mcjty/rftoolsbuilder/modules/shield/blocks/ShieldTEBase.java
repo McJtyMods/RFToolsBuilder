@@ -419,23 +419,23 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
         }
         if (ShieldConfiguration.allowInvisibleShield.get() && ShieldRenderingMode.MODE_INVISIBLE.equals(shieldRenderingMode)) {
             if (damageBits == 0) {
-                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE_NOTICK .get(): ShieldSetup.SHIELD_INVISIBLE_NOTICK.get();
+                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE_NOTICK.get(): ShieldSetup.SHIELD_INVISIBLE_NOTICK.get();
             } else {
-                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE .get(): ShieldSetup.SHIELD_INVISIBLE.get();
+                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE.get(): ShieldSetup.SHIELD_INVISIBLE.get();
             }
         }
 
         if (camoId == null) {
             if (damageBits == 0) {
-                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE_NOTICK .get(): ShieldSetup.SHIELD_SOLID_NOTICK.get();
+                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE_NOTICK.get(): ShieldSetup.SHIELD_SOLID_NOTICK.get();
             } else {
-                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE .get(): ShieldSetup.SHIELD_SOLID.get();
+                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE.get(): ShieldSetup.SHIELD_SOLID.get();
             }
         } else {
             if (damageBits == 0) {
-                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE_NOTICK .get(): ShieldSetup.SHIELD_CAMO_NOTICK.get();
+                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE_NOTICK.get(): ShieldSetup.SHIELD_CAMO_NOTICK.get();
             } else {
-                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE .get(): ShieldSetup.SHIELD_CAMO.get();
+                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE.get(): ShieldSetup.SHIELD_CAMO.get();
             }
         }
     }

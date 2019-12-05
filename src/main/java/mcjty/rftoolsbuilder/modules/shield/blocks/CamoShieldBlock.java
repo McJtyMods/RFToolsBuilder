@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 public class CamoShieldBlock extends AbstractShieldBlock {
 
     public static final String CAMO = "camo";
-    public static final ModelProperty<BlockState> CAMO_PROPERTY = new ModelProperty<>();
 
     public CamoShieldBlock(boolean opaque) {
         super(opaque);

@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.modules.shield.client;
 
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.CamoShieldBlock;
+import mcjty.rftoolsbuilder.modules.shield.blocks.NoTickShieldBlockTileEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.model.*;
@@ -39,7 +40,7 @@ public class CamoBakedModel implements IDynamicBakedModel {
     @Nonnull
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
-        BlockState camo = extraData.getData(CamoShieldBlock.CAMO_PROPERTY);
+        BlockState camo = extraData.getData(NoTickShieldBlockTileEntity.CAMO_PROPERTY);
         if (camo == null) {
             return Collections.emptyList();
         }

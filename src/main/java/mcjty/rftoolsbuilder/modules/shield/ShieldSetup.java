@@ -59,15 +59,15 @@ public class ShieldSetup {
     public static final RegistryObject<InvisibleShieldBlock> SHIELD_INVISIBLE_OPAQUE = BLOCKS.register("invisible_shield_block_opaque", () -> new InvisibleShieldBlock(true));
     public static final RegistryObject<NoTickInvisibleShieldBlock> SHIELD_INVISIBLE_OPAQUE_NOTICK = BLOCKS.register("notick_invisible_shield_block_opaque", () -> new NoTickInvisibleShieldBlock(true));
 
-    public static final RegistryObject<SolidShieldBlock> SHIELD_SOLID = BLOCKS.register("solid_shield_block", () -> new SolidShieldBlock(false));
-    public static final RegistryObject<NoTickSolidShieldBlock> SHIELD_SOLID_NOTICK = BLOCKS.register("notick_solid_shield_block", () -> new NoTickSolidShieldBlock(false));
     public static final RegistryObject<CamoShieldBlock> SHIELD_CAMO = BLOCKS.register("camo_shield_block", () -> new CamoShieldBlock(false));
     public static final RegistryObject<NoTickCamoShieldBlock> SHIELD_CAMO_NOTICK = BLOCKS.register("notick_camo_shield_block", () -> new NoTickCamoShieldBlock(false));
-
-    public static final RegistryObject<SolidShieldBlock> SHIELD_SOLID_OPAQUE = BLOCKS.register("solid_shield_block_opaque", () -> new SolidShieldBlock(true));
-    public static final RegistryObject<NoTickSolidShieldBlock> SHIELD_SOLID_OPAQUE_NOTICK = BLOCKS.register("notick_solid_shield_block_opaque", () -> new NoTickSolidShieldBlock(true));
     public static final RegistryObject<CamoShieldBlock> SHIELD_CAMO_OPAQUE = BLOCKS.register("camo_shield_block_opaque", () -> new CamoShieldBlock(true));
     public static final RegistryObject<NoTickCamoShieldBlock> SHIELD_CAMO_OPAQUE_NOTICK = BLOCKS.register("notick_camo_shield_block_opaque", () -> new NoTickCamoShieldBlock(true));
+
+    public static final RegistryObject<SolidShieldBlock> SHIELD_SOLID = BLOCKS.register("solid_shield_block", () -> new SolidShieldBlock(false));
+    public static final RegistryObject<NoTickSolidShieldBlock> SHIELD_SOLID_NOTICK = BLOCKS.register("notick_solid_shield_block", () -> new NoTickSolidShieldBlock(false));
+    public static final RegistryObject<SolidShieldBlock> SHIELD_SOLID_OPAQUE = BLOCKS.register("solid_shield_block_opaque", () -> new SolidShieldBlock(true));
+    public static final RegistryObject<NoTickSolidShieldBlock> SHIELD_SOLID_OPAQUE_NOTICK = BLOCKS.register("notick_solid_shield_block_opaque", () -> new NoTickSolidShieldBlock(true));
 
     public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_INV_BLOCK = TILES.register("shield_inv_block", () -> TileEntityType.Builder.create(TickShieldBlockTileEntity::new, SHIELD_INVISIBLE.get()).build(null));
     public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_INV_NO_TICK_BLOCK = TILES.register("shield_inv_no_tickblock", () -> TileEntityType.Builder.create(NoTickShieldBlockTileEntity::new, SHIELD_INVISIBLE_NOTICK.get()).build(null));
