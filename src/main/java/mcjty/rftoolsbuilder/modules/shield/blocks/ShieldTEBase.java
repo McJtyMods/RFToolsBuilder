@@ -404,7 +404,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
         }
         LazyOptional<ResourceLocation> map = getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
                 .map(h -> h.getStackInSlot(SLOT_BUFFER))
-                .filter(stack -> !stack.isEmpty() && stack.getItem() != null)
+                .filter(stack -> !stack.isEmpty())
                 .map(stack -> stack.getItem().getRegistryName());
         if (map.isPresent()) {
             return map.orElseThrow(RuntimeException::new);

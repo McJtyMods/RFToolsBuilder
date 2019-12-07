@@ -5,6 +5,7 @@ import mcjty.lib.container.GenericContainer;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.*;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -13,6 +14,9 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static mcjty.rftoolsbuilder.RFToolsBuilder.MODID;
 
@@ -73,6 +77,30 @@ public class ShieldSetup {
     public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_INV_NO_TICK_BLOCK = TILES.register("shield_inv_no_tickblock", () -> TileEntityType.Builder.create(NoTickShieldBlockTileEntity::new, SHIELD_INVISIBLE_NOTICK.get()).build(null));
     public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_SOLID_NO_TICK_BLOCK = TILES.register("shield_solid_no_tickblock", () -> TileEntityType.Builder.create(NoTickShieldSolidBlockTileEntity::new, SHIELD_SOLID_NOTICK.get()).build(null));
     public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_CAMO_BLOCK = TILES.register("shield_camo_block", () -> TileEntityType.Builder.create(NoTickShieldSolidBlockTileEntity::new, SHIELD_CAMO.get()).build(null));
+
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BASE;
+    public static final List<RegistryObject<BaseShieldBlock>> SHIELD_BASE_BLOCKS = new ArrayList<>();
+
+    static {
+        Block.Properties properties = Block.Properties.create(Material.GLASS)
+                .hardnessAndResistance(-1.0F, 3600000.0F)
+                .noDrops();
+
+        for (int i = 0; i < 256; i++) {
+            int finalI = i;
+            SHIELD_BASE_BLOCKS.add(BLOCKS.register("shield_base" + i, () -> new BaseShieldBlock(properties, finalI)));
+        }
+        TYPE_SHIELD_BASE = TILES.register("shield_base", () -> {
+            Block[] blocksWithTE = new Block[128];
+            int idx = 0;
+            for (int i = 0; i < 256; i++) {
+                if ((i % BaseShieldBlock.FILTERS_NEEDED) != 0) {
+                    blocksWithTE[idx++] = (SHIELD_BASE_BLOCKS.get(i).get());
+                }
+            }
+            return TileEntityType.Builder.create(BaseShieldTileEntity::new, blocksWithTE).build(null);
+        });
+    }
 
 //
 //    @SideOnly(Side.CLIENT)

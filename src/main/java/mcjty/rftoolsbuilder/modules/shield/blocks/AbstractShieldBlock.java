@@ -48,14 +48,15 @@ public abstract class AbstractShieldBlock extends Block {
 //        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(getRegistryName(), "inventory"));
 //    }
 
+    @Override
+    public boolean isNormalCube(BlockState state, IBlockReader worldIn, BlockPos pos) {
+        return false;
+    }
+
+
     // @todo 1.14
 //    @Override
 //    public boolean isOpaqueCube(BlockState state) {
-//        return false;
-//    }
-//
-//    @Override
-//    public boolean isBlockNormalCube(BlockState state) {
 //        return false;
 //    }
 
