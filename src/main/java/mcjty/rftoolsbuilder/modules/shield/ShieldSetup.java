@@ -78,28 +78,17 @@ public class ShieldSetup {
     public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_SOLID_NO_TICK_BLOCK = TILES.register("shield_solid_no_tickblock", () -> TileEntityType.Builder.create(NoTickShieldSolidBlockTileEntity::new, SHIELD_SOLID_NOTICK.get()).build(null));
     public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_CAMO_BLOCK = TILES.register("shield_camo_block", () -> TileEntityType.Builder.create(NoTickShieldSolidBlockTileEntity::new, SHIELD_CAMO.get()).build(null));
 
-    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BASE;
-    public static final List<RegistryObject<BaseShieldBlock>> SHIELD_BASE_BLOCKS = new ArrayList<>();
+    public static final List<RegistryObject<ShieldingBlock>> SHIELD_BASE_BLOCKS = new ArrayList<>();
 
     static {
         Block.Properties properties = Block.Properties.create(Material.GLASS)
                 .hardnessAndResistance(-1.0F, 3600000.0F)
                 .noDrops();
 
-        for (int i = 0; i < 256; i++) {
+        for (int i = 0; i < 128; i++) {
             int finalI = i;
-            SHIELD_BASE_BLOCKS.add(BLOCKS.register("shield_base" + i, () -> new BaseShieldBlock(properties, finalI)));
+            SHIELD_BASE_BLOCKS.add(BLOCKS.register("shield_base" + i, () -> new ShieldingBlock(properties, finalI)));
         }
-        TYPE_SHIELD_BASE = TILES.register("shield_base", () -> {
-            Block[] blocksWithTE = new Block[128];
-            int idx = 0;
-            for (int i = 0; i < 256; i++) {
-                if ((i % BaseShieldBlock.FILTERS_NEEDED) != 0) {
-                    blocksWithTE[idx++] = (SHIELD_BASE_BLOCKS.get(i).get());
-                }
-            }
-            return TileEntityType.Builder.create(BaseShieldTileEntity::new, blocksWithTE).build(null);
-        });
     }
 
 //

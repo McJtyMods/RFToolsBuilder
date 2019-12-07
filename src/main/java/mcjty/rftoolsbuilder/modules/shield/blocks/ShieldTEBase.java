@@ -22,6 +22,7 @@ import mcjty.rftoolsbase.modules.various.VariousSetup;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.shield.*;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
+import mcjty.rftoolsbuilder.modules.shield.data.ShieldWorldInfo;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.block.Block;
@@ -679,6 +680,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             }
             shieldBlocks.add(new RelCoordinateShield(c.getX() - xCoord, c.getY() - yCoord, c.getZ() - zCoord, st));
             getWorld().setBlockState(c, Blocks.AIR.getDefaultState());
+            ShieldWorldInfo.get(world).decomposeShield(pos, c);
         }
 
         shieldComposed = true;
@@ -746,6 +748,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             //@todo
             shieldBlocks.remove(new RelCoordinate(pos.getX() - xCoord, pos.getY() - yCoord, pos.getZ() - zCoord));
             getWorld().setBlockState(pos, templateState, 2);
+            ShieldWorldInfo.get(world).decomposeShield(this.pos, pos);
         } else {
             Logging.message(player, TextFormatting.YELLOW + "The selected shield can't do anything with this block!");
             return;
@@ -771,6 +774,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
                 BlockState oldState = getWorld().getBlockState(pos);
                 if (oldState.getBlock() instanceof AbstractShieldBlock) {
                     getWorld().setBlockState(pos, Blocks.AIR.getDefaultState());
+                    ShieldWorldInfo.get(world).decomposeShield(this.pos, pos);
                 }
             } else {
                 updateShieldBlock(camoId, cddata, damageBits, block, c);
@@ -789,6 +793,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             return;
         }
         world.setBlockState(pp, block.getDefaultState(), Constants.BlockFlags.BLOCK_UPDATE);
+        ShieldWorldInfo.get(world).composeShield(this.pos, pp);
 
         TileEntity te = getWorld().getTileEntity(pp);
         if (te instanceof NoTickShieldBlockTileEntity) {
@@ -822,6 +827,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             Block block = getWorld().getBlockState(pp).getBlock();
             if (getWorld().isAirBlock(pp) || block instanceof AbstractShieldBlock) {
                 getWorld().setBlockState(new BlockPos(pp), templateState, 2);
+                ShieldWorldInfo.get(world).decomposeShield(this.pos, pp);
             } else if (templateState.getMaterial() != Material.AIR){
                 if (!isShapedShield()) {
                     // No room, just spawn the block

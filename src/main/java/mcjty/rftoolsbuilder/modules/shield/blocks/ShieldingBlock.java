@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
+import mcjty.rftoolsbuilder.modules.shield.data.ShieldWorldInfo;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -18,10 +19,10 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import java.util.List;
 
-public class BaseShieldBlock extends Block {
+public class ShieldingBlock extends Block {
 
     public static final int BLOCKED_ITEMS = 1;             // If set then blocked for items
     public static final int BLOCKED_PASSIVE = 2;           // If set the blocked for passive mobs
@@ -30,7 +31,6 @@ public class BaseShieldBlock extends Block {
     public static final int DAMAGE_PASSIVE = 16;           // If set then damage for passive mobs
     public static final int DAMAGE_HOSTILE = 32;           // If set then damage for hostile mobs
     public static final int DAMAGE_PLAYERS = 64;           // If set then damage for (some) players
-    public static final int FILTERS_NEEDED = 128;           // If this is set we need filters (and a TE)
 
     public static final int DAMAGE_MASK = (DAMAGE_HOSTILE + DAMAGE_PASSIVE + DAMAGE_PLAYERS);
 
@@ -38,23 +38,9 @@ public class BaseShieldBlock extends Block {
 
     private final int flags;
 
-    public BaseShieldBlock(Properties properties, int flags) {
+    public ShieldingBlock(Properties properties, int flags) {
         super(properties);
         this.flags = flags;
-    }
-
-    @Override
-    public boolean hasTileEntity(BlockState state) {
-        return (flags & FILTERS_NEEDED) != 0;
-    }
-
-    @Nullable
-    @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        if (hasTileEntity(state)) {
-            return new BaseShieldTileEntity();
-        }
-        return null;
     }
 
     @Override
@@ -160,7 +146,7 @@ public class BaseShieldBlock extends Block {
         if (!(entity instanceof LivingEntity)) {
             if ((flags & BLOCKED_ITEMS) == 0) {
                 // Items should be able to pass through. We just move the entity to below this block.
-                entity.setPosition(entity.posX, entity.posY-1, entity.posZ);
+                entity.setPosition(entity.posX, entity.posY - 1, entity.posZ);
             }
         }
         handleDamage(world, pos, entity);
@@ -171,44 +157,38 @@ public class BaseShieldBlock extends Block {
             return;
         }
 
-        AxisAlignedBB beamBox = null;
-        if (beamBox == null) {
-            int xCoord = pos.getX();
-            int yCoord = pos.getY();
-            int zCoord = pos.getZ();
-            beamBox = new AxisAlignedBB(xCoord - .4, yCoord - .4, zCoord - .4, xCoord + 1.4, yCoord + 2.0, zCoord + 1.4);
-        }
+        int xCoord = pos.getX();
+        int yCoord = pos.getY();
+        int zCoord = pos.getZ();
+        AxisAlignedBB beamBox = new AxisAlignedBB(xCoord - .4, yCoord - .4, zCoord - .4, xCoord + 1.4, yCoord + 2.0, zCoord + 1.4);
 
         if (entity.getBoundingBox().intersects(beamBox)) {
             ShieldTEBase shieldTileEntity = null;
-            if ((flags & FILTERS_NEEDED) != 0) {
-                TileEntity tileEntity = world.getTileEntity(pos);
-                if (tileEntity instanceof BaseShieldTileEntity) {
-                    BlockPos shieldBlock = ((BaseShieldTileEntity) tileEntity).getShieldBlock();
-                    TileEntity shieldTE = world.getTileEntity(shieldBlock);
-                    if (shieldTE instanceof ShieldTEBase) {
-                        shieldTileEntity = (ShieldTEBase) shieldTE;
-                    }
-                }
-            }
+            BlockPos shieldBlock = ShieldWorldInfo.get(world).getShieldProjector(pos);
+            if (shieldBlock != null) {
+                TileEntity shieldTE = world.getTileEntity(shieldBlock);
+                if (shieldTE instanceof ShieldTEBase) {
+                    shieldTileEntity = (ShieldTEBase) shieldTE;
 
-            if ((flags & AbstractShieldBlock.META_HOSTILE) != 0 && entity instanceof IMob) {
-                if (checkEntityDamage(shieldTileEntity, HostileFilter.HOSTILE)) {
-                    shieldTileEntity.applyDamageToEntity(entity);
-                }
-            } else if ((flags & AbstractShieldBlock.META_PASSIVE) != 0 && entity instanceof AnimalEntity) {
-                if (checkEntityDamage(shieldTileEntity, AnimalFilter.ANIMAL)) {
-                    shieldTileEntity.applyDamageToEntity(entity);
-                }
-            } else if ((flags & AbstractShieldBlock.META_PLAYERS) != 0 && entity instanceof PlayerEntity) {
-                if (checkPlayerDamage(shieldTileEntity, (PlayerEntity) entity)) {
-                    shieldTileEntity.applyDamageToEntity(entity);
+                    if ((flags & AbstractShieldBlock.META_HOSTILE) != 0 && entity instanceof IMob) {
+                        if (checkEntityDamage(shieldTileEntity, HostileFilter.HOSTILE)) {
+                            shieldTileEntity.applyDamageToEntity(entity);
+                        }
+                    } else if ((flags & AbstractShieldBlock.META_PASSIVE) != 0 && entity instanceof AnimalEntity) {
+                        if (checkEntityDamage(shieldTileEntity, AnimalFilter.ANIMAL)) {
+                            shieldTileEntity.applyDamageToEntity(entity);
+                        }
+                    } else if ((flags & AbstractShieldBlock.META_PLAYERS) != 0 && entity instanceof PlayerEntity) {
+                        if (checkPlayerDamage(shieldTileEntity, (PlayerEntity) entity)) {
+                            shieldTileEntity.applyDamageToEntity(entity);
+                        }
+                    }
                 }
             }
         }
     }
 
-    private boolean checkEntityDamage(@Nullable ShieldTEBase shieldTileEntity, String filterName) {
+    private boolean checkEntityDamage(@Nonnull ShieldTEBase shieldTileEntity, String filterName) {
         List<ShieldFilter> filters = shieldTileEntity.getFilters();
         for (ShieldFilter filter : filters) {
             if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
@@ -220,7 +200,7 @@ public class BaseShieldBlock extends Block {
         return false;
     }
 
-    private boolean checkPlayerDamage(@Nullable ShieldTEBase shieldTileEntity, PlayerEntity entity) {
+    private boolean checkPlayerDamage(@Nonnull ShieldTEBase shieldTileEntity, PlayerEntity entity) {
         List<ShieldFilter> filters = shieldTileEntity.getFilters();
         for (ShieldFilter filter : filters) {
             if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
