@@ -14,7 +14,7 @@ import mcjty.rftoolsbuilder.shapes.IFormula;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeModifier;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
-import mcjty.rftoolsbuilder.shapes.RLE;
+import mcjty.lib.varia.RLE;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;

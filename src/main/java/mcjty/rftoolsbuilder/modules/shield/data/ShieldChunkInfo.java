@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.shield.data;
 
+import mcjty.lib.varia.RLE;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.IntArrayNBT;
@@ -26,6 +27,19 @@ public class ShieldChunkInfo {
         for (int i = 0 ; i < chunkMask.length ; i++) {
             chunkMask[i] = -1;
         }
+    }
+
+    // Return the data of this subchunk as an RLE
+    public RLE createDataRLE() {
+        RLE data = new RLE();
+        for (byte b : chunkMask) {
+            data.add(b);
+        }
+        return data;
+    }
+
+    public List<BlockPos> getShieldProjectors() {
+        return shieldProjectors;
     }
 
     // Return true if the entire mask is empty (everything set to -1)

@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public class ShieldWorldInfo extends AbstractLocalWorldData<ShieldWorldInfo> {
 
-    private static final String NAME = "XNetBlobData";
+    private static final String NAME = "RFToolsShieldData";
 
     private Map<SubChunkIndex, ShieldChunkInfo> shieldData = new HashMap<>();
 
@@ -31,6 +31,10 @@ public class ShieldWorldInfo extends AbstractLocalWorldData<ShieldWorldInfo> {
     @Nonnull
     public static ShieldWorldInfo get(World world) {
         return getData(world, () -> new ShieldWorldInfo(NAME), NAME);
+    }
+
+    public Map<SubChunkIndex, ShieldChunkInfo> getShieldData() {
+        return shieldData;
     }
 
     // Call this when an individual shielding block is decomposed
@@ -86,7 +90,7 @@ public class ShieldWorldInfo extends AbstractLocalWorldData<ShieldWorldInfo> {
     }
 
 
-    private SubChunkIndex calculateSubChunkIndex(BlockPos pos) {
+    public static SubChunkIndex calculateSubChunkIndex(BlockPos pos) {
         return new SubChunkIndex(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
     }
 

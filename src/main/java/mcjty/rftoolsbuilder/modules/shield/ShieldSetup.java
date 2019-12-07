@@ -35,10 +35,10 @@ public class ShieldSetup {
         CONTAINERS.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK1 = BLOCKS.register("shield_block1", () -> new ShieldBlock(ShieldTileEntity.class, ShieldConfiguration.maxShieldSize.get()));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK2 = BLOCKS.register("shield_block2", () -> new ShieldBlock(ShieldTileEntity.class, ShieldConfiguration.maxShieldSize.get() * 4));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK3 = BLOCKS.register("shield_block3", () -> new ShieldBlock(ShieldTileEntity.class, ShieldConfiguration.maxShieldSize.get() * 16));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK4 = BLOCKS.register("shield_block4", () -> new ShieldBlock(ShieldTileEntity.class, ShieldConfiguration.maxShieldSize.get() * 128));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK1 = BLOCKS.register("shield_block1", () -> new ShieldBlock(ShieldTileEntity::new, ShieldConfiguration.maxShieldSize.get()));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK2 = BLOCKS.register("shield_block2", () -> new ShieldBlock(ShieldTileEntity2::new, ShieldConfiguration.maxShieldSize.get() * 4));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK3 = BLOCKS.register("shield_block3", () -> new ShieldBlock(ShieldTileEntity3::new, ShieldConfiguration.maxShieldSize.get() * 16));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK4 = BLOCKS.register("shield_block4", () -> new ShieldBlock(ShieldTileEntity4::new, ShieldConfiguration.maxShieldSize.get() * 128));
     public static final RegistryObject<Item> SHIELD_BLOCK1_ITEM = ITEMS.register("shield_block1", () -> new BlockItem(SHIELD_BLOCK1.get(), RFToolsBuilder.createStandardProperties()));
     public static final RegistryObject<Item> SHIELD_BLOCK2_ITEM = ITEMS.register("shield_block2", () -> new BlockItem(SHIELD_BLOCK2.get(), RFToolsBuilder.createStandardProperties()));
     public static final RegistryObject<Item> SHIELD_BLOCK3_ITEM = ITEMS.register("shield_block3", () -> new BlockItem(SHIELD_BLOCK3.get(), RFToolsBuilder.createStandardProperties()));

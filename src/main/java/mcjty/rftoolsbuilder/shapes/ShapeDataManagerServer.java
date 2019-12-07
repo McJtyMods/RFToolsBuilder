@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import mcjty.lib.varia.RLE;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnShapeData;

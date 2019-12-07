@@ -6,7 +6,7 @@ import mcjty.rftoolsbuilder.shapes.RenderData;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
-import mcjty.rftoolsbuilder.shapes.RLE;
+import mcjty.lib.varia.RLE;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;

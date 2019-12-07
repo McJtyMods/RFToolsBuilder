@@ -28,6 +28,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
 //@Optional.InterfaceList({
 //        @Optional.Interface(iface = "crazypants.enderio.api.redstone.IRedstoneConnectable", modid = "EnderIO")})
@@ -36,9 +37,9 @@ public class ShieldBlock extends BaseBlock implements INBTPreservingIngredient
 
     private final int max;
 
-    public ShieldBlock(Class<? extends ShieldTEBase> clazz, int max) {
+    public ShieldBlock(Supplier<TileEntity> te, int max) {
         super(new BlockBuilder()
-            .tileEntitySupplier(ShieldTileEntity::new));
+            .tileEntitySupplier(te));
         this.max = max;
     }
 
