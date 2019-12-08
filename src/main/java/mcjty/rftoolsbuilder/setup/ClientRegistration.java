@@ -50,8 +50,9 @@ public class ClientRegistration {
     @SubscribeEvent
     public static void onModelBake(ModelBakeEvent event) {
         CamoBakedModel model = new CamoBakedModel(DefaultVertexFormats.BLOCK);
-        Lists.newArrayList("shield_camo_block").stream()
+        Lists.newArrayList("shielding").stream()
                 .forEach(name -> {
+                    // @todo
                     ResourceLocation rl = new ResourceLocation(RFToolsBuilder.MODID, name);
                     event.getModelRegistry().put(new ModelResourceLocation(rl, ""), model);
                 });

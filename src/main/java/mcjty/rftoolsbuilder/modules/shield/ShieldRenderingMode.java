@@ -1,14 +1,16 @@
 package mcjty.rftoolsbuilder.modules.shield;
 
+import net.minecraft.util.IStringSerializable;
+
 import java.util.HashMap;
 import java.util.Map;
 
-public enum ShieldRenderingMode {
-    MODE_INVISIBLE("Invisible"),
-    MODE_SHIELD("Shield"),
-    MODE_MIMIC("Mimic"),
-    MODE_TRANSP("Transp"),
-    MODE_SOLID("Solid"),
+public enum ShieldRenderingMode implements IStringSerializable {
+    INVISIBLE("Invisible"),
+    SHIELD("Shield"),
+    MIMIC("Mimic"),
+    TRANSP("Transp"),
+    SOLID("Solid"),
     ;
 
     private static final Map<String,ShieldRenderingMode> modeToMode = new HashMap<>();
@@ -23,6 +25,8 @@ public enum ShieldRenderingMode {
         return description;
     }
 
+
+
     public static ShieldRenderingMode getMode(String mode) {
         return modeToMode.get(mode);
     }
@@ -33,4 +37,8 @@ public enum ShieldRenderingMode {
         }
     }
 
+    @Override
+    public String getName() {
+        return name().toLowerCase();
+    }
 }

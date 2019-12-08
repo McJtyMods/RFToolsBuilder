@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;

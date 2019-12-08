@@ -6,6 +6,7 @@ import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
@@ -17,20 +18,40 @@ import java.util.Map;
  * Keeps track of where shield blocks are so that a shield block can
  * find the shield projector
  */
-public class ShieldWorldInfo extends AbstractLocalWorldData<ShieldWorldInfo> {
+public class ShieldWorldInfo extends AbstractLocalWorldData<ShieldWorldInfo> implements IShieldWorldInfo {
 
     private static final String NAME = "RFToolsShieldData";
 
     private Map<SubChunkIndex, ShieldChunkInfo> shieldData = new HashMap<>();
+
+    private static ClientShieldWorldInfo clientShieldWorldInfo = null;
+    private static DimensionType clientDimensionType = null;
 
 
     public ShieldWorldInfo(String name) {
         super(name);
     }
 
+    /// Only works server-side
     @Nonnull
     public static ShieldWorldInfo get(World world) {
         return getData(world, () -> new ShieldWorldInfo(NAME), NAME);
+    }
+
+    /// Works server and client-side
+    @Nonnull
+    public static IShieldWorldInfo getI(World world) {
+        if (world.isRemote) {
+            if (world.getDimension().getType() != clientDimensionType) {
+                clientShieldWorldInfo = null;
+            }
+            if (clientShieldWorldInfo == null) {
+                clientShieldWorldInfo = new ClientShieldWorldInfo();
+                clientDimensionType = world.getDimension().getType();
+            }
+            return clientShieldWorldInfo;
+        }
+        return get(world);
     }
 
     public Map<SubChunkIndex, ShieldChunkInfo> getShieldData() {
@@ -79,6 +100,7 @@ public class ShieldWorldInfo extends AbstractLocalWorldData<ShieldWorldInfo> {
     }
 
     // Get the position of the shield projector given a shielding block
+    @Override
     @Nullable
     public BlockPos getShieldProjector(BlockPos shieldingPos) {
         SubChunkIndex index = calculateSubChunkIndex(shieldingPos);

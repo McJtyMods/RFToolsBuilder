@@ -5,8 +5,6 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ExistingFileHelper;
 import net.minecraftforge.client.model.generators.ModelFile;
 
@@ -31,19 +29,19 @@ public class BlockStates extends BaseBlockStateProvider {
         simpleBlock(ShieldSetup.SHIELD_BLOCK3.get(), shieldModel);
         simpleBlock(ShieldSetup.SHIELD_BLOCK4.get(), shieldModel);
 
-        ModelFile.UncheckedModelFile emptyModel = new ModelFile.UncheckedModelFile(new ResourceLocation("rftoolsbase", "block/empty_model"));
-        simpleBlock(ShieldSetup.SHIELD_INVISIBLE.get(), emptyModel);
-        simpleBlock(ShieldSetup.SHIELD_INVISIBLE_NOTICK.get(), emptyModel);
-        simpleBlock(ShieldSetup.SHIELD_INVISIBLE_OPAQUE.get(), emptyModel);
-        simpleBlock(ShieldSetup.SHIELD_INVISIBLE_OPAQUE_NOTICK.get(), emptyModel);
-        simpleBlock(ShieldSetup.SHIELD_SOLID.get(), emptyModel);
-        simpleBlock(ShieldSetup.SHIELD_SOLID_NOTICK.get(), emptyModel);
-        simpleBlock(ShieldSetup.SHIELD_SOLID_OPAQUE.get(), emptyModel);
-        simpleBlock(ShieldSetup.SHIELD_SOLID_OPAQUE_NOTICK.get(), emptyModel);
-        simpleBlock(ShieldSetup.SHIELD_CAMO.get(), emptyModel);
-        simpleBlock(ShieldSetup.SHIELD_CAMO_NOTICK.get(), emptyModel);
-        simpleBlock(ShieldSetup.SHIELD_CAMO_OPAQUE.get(), emptyModel);
-        simpleBlock(ShieldSetup.SHIELD_CAMO_OPAQUE_NOTICK.get(), emptyModel);
+//        ModelFile.UncheckedModelFile emptyModel = new ModelFile.UncheckedModelFile(new ResourceLocation("rftoolsbase", "block/empty_model"));
+//        simpleBlock(ShieldSetup.SHIELD_INVISIBLE.get(), emptyModel);
+//        simpleBlock(ShieldSetup.SHIELD_INVISIBLE_NOTICK.get(), emptyModel);
+//        simpleBlock(ShieldSetup.SHIELD_INVISIBLE_OPAQUE.get(), emptyModel);
+//        simpleBlock(ShieldSetup.SHIELD_INVISIBLE_OPAQUE_NOTICK.get(), emptyModel);
+//        simpleBlock(ShieldSetup.SHIELD_SOLID.get(), emptyModel);
+//        simpleBlock(ShieldSetup.SHIELD_SOLID_NOTICK.get(), emptyModel);
+//        simpleBlock(ShieldSetup.SHIELD_SOLID_OPAQUE.get(), emptyModel);
+//        simpleBlock(ShieldSetup.SHIELD_SOLID_OPAQUE_NOTICK.get(), emptyModel);
+//        simpleBlock(ShieldSetup.SHIELD_CAMO.get(), emptyModel);
+//        simpleBlock(ShieldSetup.SHIELD_CAMO_NOTICK.get(), emptyModel);
+//        simpleBlock(ShieldSetup.SHIELD_CAMO_OPAQUE.get(), emptyModel);
+//        simpleBlock(ShieldSetup.SHIELD_CAMO_OPAQUE_NOTICK.get(), emptyModel);
 
     }
 }

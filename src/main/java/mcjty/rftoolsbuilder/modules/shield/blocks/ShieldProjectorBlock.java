@@ -32,12 +32,12 @@ import java.util.function.Supplier;
 
 //@Optional.InterfaceList({
 //        @Optional.Interface(iface = "crazypants.enderio.api.redstone.IRedstoneConnectable", modid = "EnderIO")})
-public class ShieldBlock extends BaseBlock implements INBTPreservingIngredient
+public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIngredient
         /*, IRedstoneConnectable*/ {
 
     private final int max;
 
-    public ShieldBlock(Supplier<TileEntity> te, int max) {
+    public ShieldProjectorBlock(Supplier<TileEntity> te, int max) {
         super(new BlockBuilder()
             .tileEntitySupplier(te));
         this.max = max;

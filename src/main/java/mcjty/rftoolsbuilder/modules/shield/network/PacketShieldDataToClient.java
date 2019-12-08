@@ -52,7 +52,7 @@ public class PacketShieldDataToClient {
             ShieldChunkInfo chunkInfo = entry.getValue();
             SubChunkClientData clientData = new SubChunkClientData();
             clientData.shieldData = chunkInfo.createDataRLE();
-    // @todo
+            clientData.shields = new ArrayList<>(chunkInfo.getShieldProjectors());
             shieldData.put(entry.getKey(), clientData);
         }
     }

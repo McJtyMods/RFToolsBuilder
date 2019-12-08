@@ -324,18 +324,18 @@ public class GuiShield extends GenericGuiContainer<ShieldTEBase, GenericContaine
                 .setName("visibility")
                 .setLayoutHint(25, 161, 54, 14);
         for (ShieldRenderingMode m : ShieldRenderingMode.values()) {
-            if ((!ShieldConfiguration.allowInvisibleShield.get()) && m == ShieldRenderingMode.MODE_INVISIBLE) {
+            if ((!ShieldConfiguration.allowInvisibleShield.get()) && m == ShieldRenderingMode.INVISIBLE) {
                 continue;
             }
             visibilityOptions.addChoices(m.getDescription());
         }
         if (ShieldConfiguration.allowInvisibleShield.get()) {
-            visibilityOptions.setChoiceTooltip(ShieldRenderingMode.MODE_INVISIBLE.getDescription(), "Shield is completely invisible");
+            visibilityOptions.setChoiceTooltip(ShieldRenderingMode.INVISIBLE.getDescription(), "Shield is completely invisible");
         }
-        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.MODE_SHIELD.getDescription(), "Default shield texture");
-        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.MODE_TRANSP.getDescription(), "Transparent shield texture");
-        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.MODE_SOLID.getDescription(), "Solid shield texture");
-        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.MODE_MIMIC.getDescription(), "Use the texture from the supplied block");
+        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.SHIELD.getDescription(), "Default shield texture");
+        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.TRANSP.getDescription(), "Transparent shield texture");
+        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.SOLID.getDescription(), "Solid shield texture");
+        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.MIMIC.getDescription(), "Use the texture from the supplied block");
     }
 
     private void initActionOptions() {

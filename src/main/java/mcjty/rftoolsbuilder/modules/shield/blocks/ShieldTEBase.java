@@ -22,7 +22,6 @@ import mcjty.rftoolsbase.modules.various.VariousSetup;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.shield.*;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
-import mcjty.rftoolsbuilder.modules.shield.data.ShieldWorldInfo;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.block.Block;
@@ -61,6 +60,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+
+import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
 
 public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWrenchSelector, ITickableTileEntity { // @todo }, IPeripheral {
 
@@ -124,7 +125,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
     // Filter list.
     private final List<ShieldFilter> filters = new ArrayList<>();
 
-    private ShieldRenderingMode shieldRenderingMode = ShieldRenderingMode.MODE_SHIELD;
+    private ShieldRenderingMode shieldRenderingMode = ShieldRenderingMode.SHIELD;
 
     private List<RelCoordinateShield> shieldBlocks = new ArrayList<>();
     private List<BlockState> blockStateTable = new ArrayList<>();
@@ -400,7 +401,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
 
     @Nullable
     private ResourceLocation calculateCamoId() {
-        if (!ShieldRenderingMode.MODE_MIMIC.equals(shieldRenderingMode)) {
+        if (!ShieldRenderingMode.MIMIC.equals(shieldRenderingMode)) {
             return null;
         }
         LazyOptional<ResourceLocation> map = getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
@@ -414,71 +415,62 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
         }
     }
 
-    private Block calculateShieldBlock(int damageBits, ResourceLocation camoId, boolean blockLight) {
+    private BlockState calculateShieldBlock(ResourceLocation camoId, boolean blockLight) {
         if (!shieldActive || powerTimeout > 0) {
-            return Blocks.AIR;
-        }
-        if (ShieldConfiguration.allowInvisibleShield.get() && ShieldRenderingMode.MODE_INVISIBLE.equals(shieldRenderingMode)) {
-            if (damageBits == 0) {
-                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE_NOTICK.get(): ShieldSetup.SHIELD_INVISIBLE_NOTICK.get();
-            } else {
-                return blockLight ? ShieldSetup.SHIELD_INVISIBLE_OPAQUE.get(): ShieldSetup.SHIELD_INVISIBLE.get();
-            }
+            return Blocks.AIR.getDefaultState();
         }
 
-        if (camoId == null) {
-            if (damageBits == 0) {
-                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE_NOTICK.get(): ShieldSetup.SHIELD_SOLID_NOTICK.get();
-            } else {
-                return blockLight ? ShieldSetup.SHIELD_SOLID_OPAQUE.get(): ShieldSetup.SHIELD_SOLID.get();
-            }
-        } else {
-            if (damageBits == 0) {
-                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE_NOTICK.get(): ShieldSetup.SHIELD_CAMO_NOTICK.get();
-            } else {
-                return blockLight ? ShieldSetup.SHIELD_CAMO_OPAQUE.get(): ShieldSetup.SHIELD_CAMO.get();
-            }
+        BlockState shielding = ShieldSetup.SHIELDING.get().getDefaultState();
+        if (blockLight) {
+            shielding = shielding.with(FLAG_OPAQUE, true);
         }
+        if (ShieldConfiguration.allowInvisibleShield.get() && ShieldRenderingMode.INVISIBLE.equals(shieldRenderingMode)) {
+            shielding = shielding.with(RENDER_MODE, ShieldRenderingMode.INVISIBLE);
+        }
+        if (camoId != null) {
+            shielding = shielding.with(RENDER_MODE, ShieldRenderingMode.MIMIC);
+        }
+        shielding = calculateShieldCollisionData(shielding);
+        shielding = calculateDamageBits(shielding);
+        return shielding;
     }
 
-    private int calculateDamageBits() {
-        int bits = 0;
+    private BlockState calculateDamageBits(BlockState shielding) {
         for (ShieldFilter filter : filters) {
             if ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0) {
                 if (ItemFilter.ITEM.equals(filter.getFilterName())) {
-                    bits |= AbstractShieldBlock.META_ITEMS;
+                    shielding = shielding.with(DAMAGE_ITEMS, true);
                 } else if (AnimalFilter.ANIMAL.equals(filter.getFilterName())) {
-                    bits |= AbstractShieldBlock.META_PASSIVE;
+                    shielding = shielding.with(DAMAGE_PASSIVE, true);
                 } else if (HostileFilter.HOSTILE.equals(filter.getFilterName())) {
-                    bits |= AbstractShieldBlock.META_HOSTILE;
+                    shielding = shielding.with(DAMAGE_HOSTILE, true);
                 } else if (PlayerFilter.PLAYER.equals(filter.getFilterName())) {
-                    bits |= AbstractShieldBlock.META_PLAYERS;
+                    shielding = shielding.with(DAMAGE_PLAYERS, true);
                 } else if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
-                    bits |= AbstractShieldBlock.META_ITEMS | AbstractShieldBlock.META_PASSIVE | AbstractShieldBlock.META_HOSTILE | AbstractShieldBlock.META_PLAYERS;
+                    shielding = shielding.with(DAMAGE_ITEMS, true).with(DAMAGE_PASSIVE, true).with(DAMAGE_HOSTILE, true).with(DAMAGE_PLAYERS, true);
                 }
             }
         }
-        return bits;
+        return shielding;
     }
 
-    private int calculateShieldCollisionData() {
-        int cd = 0;
+    private BlockState calculateShieldCollisionData(BlockState shielding) {
         for (ShieldFilter filter : filters) {
             if ((filter.getAction() & ShieldFilter.ACTION_SOLID) != 0) {
                 if (ItemFilter.ITEM.equals(filter.getFilterName())) {
-                    cd |= AbstractShieldBlock.META_ITEMS;
+                    shielding = shielding.with(BLOCKED_ITEMS, true);
                 } else if (AnimalFilter.ANIMAL.equals(filter.getFilterName())) {
-                    cd |= AbstractShieldBlock.META_PASSIVE;
+                    shielding = shielding.with(BLOCKED_PASSIVE, true);
                 } else if (HostileFilter.HOSTILE.equals(filter.getFilterName())) {
-                    cd |= AbstractShieldBlock.META_HOSTILE;
+                    shielding = shielding.with(BLOCKED_HOSTILE, true);
                 } else if (PlayerFilter.PLAYER.equals(filter.getFilterName())) {
-                    cd |= AbstractShieldBlock.META_PLAYERS;
+                    shielding = shielding.with(BLOCKED_PLAYERS, true);
                 } else if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
-                    cd |= AbstractShieldBlock.META_ITEMS | AbstractShieldBlock.META_PASSIVE | AbstractShieldBlock.META_HOSTILE | AbstractShieldBlock.META_PLAYERS;
+                    shielding = shielding.with(BLOCKED_ITEMS, true).with(BLOCKED_PASSIVE, true).with(BLOCKED_HOSTILE, true).with(BLOCKED_PLAYERS, true);
                 }
             }
         }
-        return cd;
+        return shielding;
     }
 
     private int calculateRfPerTick() {
@@ -490,9 +482,9 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             s = 10;
         }
         int rf = ShieldConfiguration.rfBase.get() * s / 10;
-        if (ShieldRenderingMode.MODE_SHIELD.equals(shieldRenderingMode)) {
+        if (ShieldRenderingMode.SHIELD.equals(shieldRenderingMode)) {
             rf += ShieldConfiguration.rfShield.get() * s / 10;
-        } else if (ShieldRenderingMode.MODE_MIMIC.equals(shieldRenderingMode)) {
+        } else if (ShieldRenderingMode.MIMIC.equals(shieldRenderingMode)) {
             rf += ShieldConfiguration.rfCamo.get() * s / 10;
         }
         return rf;
@@ -680,7 +672,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             }
             shieldBlocks.add(new RelCoordinateShield(c.getX() - xCoord, c.getY() - yCoord, c.getZ() - zCoord, st));
             getWorld().setBlockState(c, Blocks.AIR.getDefaultState());
-            ShieldWorldInfo.get(world).decomposeShield(pos, c);
+//            ShieldWorldInfo.get(world).decomposeShield(pos, c);
         }
 
         shieldComposed = true;
@@ -734,21 +726,19 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             findTemplateBlocks(templateBlocks, state, false, pos);
 
             ResourceLocation camoId = calculateCamoId();
-            int cddata = calculateShieldCollisionData();
-            int damageBits = calculateDamageBits();
-            Block block = calculateShieldBlock(damageBits, camoId, blockLight);
+            BlockState shielding = calculateShieldBlock(camoId, blockLight);
 
             for (Map.Entry<BlockPos, BlockState> entry : templateBlocks.entrySet()) {
                 BlockPos templateBlock = entry.getKey();
                 RelCoordinateShield relc = new RelCoordinateShield(templateBlock.getX() - xCoord, templateBlock.getY() - yCoord, templateBlock.getZ() - zCoord, -1);
                 shieldBlocks.add(relc);
-                updateShieldBlock(camoId, cddata, damageBits, block, relc);
+                updateShieldBlock(camoId, shielding, relc);
             }
-        } else if (origBlock instanceof AbstractShieldBlock) {
+        } else if (origBlock instanceof ShieldingBlock) {
             //@todo
             shieldBlocks.remove(new RelCoordinate(pos.getX() - xCoord, pos.getY() - yCoord, pos.getZ() - zCoord));
             getWorld().setBlockState(pos, templateState, 2);
-            ShieldWorldInfo.get(world).decomposeShield(this.pos, pos);
+//            ShieldWorldInfo.get(world).decomposeShield(this.pos, pos);
         } else {
             Logging.message(player, TextFormatting.YELLOW + "The selected shield can't do anything with this block!");
             return;
@@ -761,29 +751,27 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
      */
     private void updateShield() {
         ResourceLocation camoId = calculateCamoId();
-        int cddata = calculateShieldCollisionData();
-        int damageBits = calculateDamageBits();
-        Block block = calculateShieldBlock(damageBits, camoId, blockLight);
+        BlockState shielding = calculateShieldBlock(camoId, blockLight);
         int xCoord = getPos().getX();
         int yCoord = getPos().getY();
         int zCoord = getPos().getZ();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (RelCoordinateShield c : shieldBlocks) {
-            if (Blocks.AIR.equals(block)) {
+            if (Blocks.AIR.equals(shielding.getBlock())) {
                 pos.setPos(xCoord + c.getDx(), yCoord + c.getDy(), zCoord + c.getDz());
                 BlockState oldState = getWorld().getBlockState(pos);
-                if (oldState.getBlock() instanceof AbstractShieldBlock) {
+                if (oldState.getBlock() instanceof ShieldingBlock) {
                     getWorld().setBlockState(pos, Blocks.AIR.getDefaultState());
-                    ShieldWorldInfo.get(world).decomposeShield(this.pos, pos);
+//                    ShieldWorldInfo.get(world).decomposeShield(this.pos, pos);
                 }
             } else {
-                updateShieldBlock(camoId, cddata, damageBits, block, c);
+                updateShieldBlock(camoId, shielding, c);
             }
         }
         markDirtyClient();
     }
 
-    private void updateShieldBlock(ResourceLocation camoId, int cddata, int damageBits, Block block, RelCoordinateShield c) {
+    private void updateShieldBlock(ResourceLocation camoId, BlockState shielding, RelCoordinateShield c) {
         int xCoord = getPos().getX();
         int yCoord = getPos().getY();
         int zCoord = getPos().getZ();
@@ -792,25 +780,23 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
         if ((!oldState.getMaterial().isReplaceable()) && !(oldState.getBlock() instanceof ShieldTemplateBlock)) {
             return;
         }
-        world.setBlockState(pp, block.getDefaultState(), Constants.BlockFlags.BLOCK_UPDATE);
-        ShieldWorldInfo.get(world).composeShield(this.pos, pp);
+        world.setBlockState(pp, shielding, Constants.BlockFlags.BLOCK_UPDATE);
+//        ShieldWorldInfo.get(world).composeShield(this.pos, pp);
 
         TileEntity te = getWorld().getTileEntity(pp);
-        if (te instanceof NoTickShieldBlockTileEntity) {
-            NoTickShieldBlockTileEntity shieldBlockTileEntity = (NoTickShieldBlockTileEntity) te;
+        if (te instanceof ShieldingTileEntity) {
+            ShieldingTileEntity shieldBlockTileEntity = (ShieldingTileEntity) te;
             if (c.getState() != -1) {
                 BlockState state = blockStateTable.get(c.getState());
-                shieldBlockTileEntity.setCamoBlock(state);
+                shieldBlockTileEntity.setCamo(state);
             } else {
                 // @todo 1.14 check? Is this right?
-                shieldBlockTileEntity.setCamoBlock(ForgeRegistries.BLOCKS.getValue(camoId).getDefaultState());
-//                shieldBlockTileEntity.setCamoBlock(camoId[0], camoId[1], camoId[2]);
+                shieldBlockTileEntity.setCamo(ForgeRegistries.BLOCKS.getValue(camoId).getDefaultState());
             }
-            shieldBlockTileEntity.setShieldBlock(getPos());
-            shieldBlockTileEntity.setDamageBits(damageBits);
-            shieldBlockTileEntity.setCollisionData(cddata);
-            shieldBlockTileEntity.setShieldColor(shieldColor);
-            shieldBlockTileEntity.setShieldRenderingMode(shieldRenderingMode);
+            shieldBlockTileEntity.setShieldProjector(pos);
+            // @todo 1.14
+//            shieldBlockTileEntity.setShieldColor(shieldColor);
+//            shieldBlockTileEntity.setShieldRenderingMode(shieldRenderingMode);
         }
     }
 
@@ -825,9 +811,9 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
             int cz = zCoord + c.getDz();
             pp.setPos(cx, cy, cz);
             Block block = getWorld().getBlockState(pp).getBlock();
-            if (getWorld().isAirBlock(pp) || block instanceof AbstractShieldBlock) {
+            if (getWorld().isAirBlock(pp) || block instanceof ShieldingBlock) {
                 getWorld().setBlockState(new BlockPos(pp), templateState, 2);
-                ShieldWorldInfo.get(world).decomposeShield(this.pos, pp);
+//                ShieldWorldInfo.get(world).decomposeShield(this.pos, pp);
             } else if (templateState.getMaterial() != Material.AIR){
                 if (!isShapedShield()) {
                     // No room, just spawn the block
