@@ -3,6 +3,7 @@ package mcjty.rftoolsbuilder.setup;
 
 import com.google.common.collect.Lists;
 import mcjty.lib.gui.GenericGuiContainer;
+import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.builder.client.BuilderRenderer;
@@ -22,6 +23,8 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+
+import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
 
 @Mod.EventBusSubscriber(modid = RFToolsBuilder.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ClientRegistration {
@@ -52,9 +55,12 @@ public class ClientRegistration {
         CamoBakedModel model = new CamoBakedModel(DefaultVertexFormats.BLOCK);
         Lists.newArrayList("shielding").stream()
                 .forEach(name -> {
-                    // @todo
                     ResourceLocation rl = new ResourceLocation(RFToolsBuilder.MODID, name);
                     event.getModelRegistry().put(new ModelResourceLocation(rl, ""), model);
+                    Tools.permutateProperties(s -> event.getModelRegistry().put(new ModelResourceLocation(rl, s), model),
+                            BLOCKED_HOSTILE, BLOCKED_ITEMS, BLOCKED_PASSIVE, BLOCKED_PLAYERS,
+                            DAMAGE_HOSTILE, DAMAGE_ITEMS, DAMAGE_PASSIVE, DAMAGE_PLAYERS,
+                            FLAG_OPAQUE, RENDER_MODE);
                 });
     }
 
