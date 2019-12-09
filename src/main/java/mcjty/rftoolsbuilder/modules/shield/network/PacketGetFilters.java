@@ -5,7 +5,7 @@ import mcjty.lib.network.TypedMapTools;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.Logging;
-import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldTEBase;
+import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity;
 import mcjty.rftoolsbuilder.modules.shield.filters.ShieldFilter;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.network.PacketBuffer;
@@ -49,8 +49,8 @@ public class PacketGetFilters {
                 return;
             }
             ICommandHandler commandHandler = (ICommandHandler) te;
-            List<ShieldFilter> list = commandHandler.executeWithResultList(ShieldTEBase.CMD_GETFILTERS, params, Type.create(ShieldFilter.class));
-            RFToolsBuilderMessages.INSTANCE.sendTo(new PacketFiltersReady(pos, ShieldTEBase.CLIENTCMD_GETFILTERS, list),
+            List<ShieldFilter> list = commandHandler.executeWithResultList(ShieldProjectorTileEntity.CMD_GETFILTERS, params, Type.create(ShieldFilter.class));
+            RFToolsBuilderMessages.INSTANCE.sendTo(new PacketFiltersReady(pos, ShieldProjectorTileEntity.CLIENTCMD_GETFILTERS, list),
                     ctx.getSender().connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
         });
         ctx.setPacketHandled(true);

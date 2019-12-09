@@ -36,13 +36,14 @@ public class CamoBakedModel implements IDynamicBakedModel {
 
     private static void initTextures() {
         if (spriteCable == null) {
-            spriteCable = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/facade");
+            spriteCable = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shield0");
         }
     }
 
     @Nonnull
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
+        initTextures();
         ShieldRenderingMode mode = state.get(ShieldingBlock.RENDER_MODE);
         switch (mode) {
             case INVISIBLE:
@@ -105,25 +106,27 @@ public class CamoBakedModel implements IDynamicBakedModel {
 
     private List<BakedQuad> getQuadsTextured(@Nullable BlockState state, @Nullable Direction side, TextureAtlasSprite texture) {
         List<BakedQuad> quads = new ArrayList<>();
-        switch (side) {
-            case DOWN:
-                quads.add(createQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), texture));
-                break;
-            case UP:
-                quads.add(createQuad(v(0, 1, 0), v(0, 1, 1), v(1, 1, 1), v(1, 1, 0), texture));
-                break;
-            case NORTH:
-                quads.add(createQuad(v(1, 1, 0), v(1, 0, 0), v(0, 0, 0), v(0, 1, 0), texture));
-                break;
-            case SOUTH:
-                quads.add(createQuad(v(0, 1, 1), v(0, 0, 1), v(1, 0, 1), v(1, 1, 1), texture));
-                break;
-            case WEST:
-                quads.add(createQuad(v(0, 1, 0), v(0, 0, 0), v(0, 0, 1), v(0, 1, 1), texture));
-                break;
-            case EAST:
-                quads.add(createQuad(v(1, 1, 1), v(1, 0, 1), v(1, 0, 0), v(1, 1, 0), texture));
-                break;
+        if (side != null) {
+            switch (side) {
+                case DOWN:
+                    quads.add(createQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), texture));
+                    break;
+                case UP:
+                    quads.add(createQuad(v(0, 1, 0), v(0, 1, 1), v(1, 1, 1), v(1, 1, 0), texture));
+                    break;
+                case NORTH:
+                    quads.add(createQuad(v(1, 1, 0), v(1, 0, 0), v(0, 0, 0), v(0, 1, 0), texture));
+                    break;
+                case SOUTH:
+                    quads.add(createQuad(v(0, 1, 1), v(0, 0, 1), v(1, 0, 1), v(1, 1, 1), texture));
+                    break;
+                case WEST:
+                    quads.add(createQuad(v(0, 1, 0), v(0, 0, 0), v(0, 0, 1), v(0, 1, 1), texture));
+                    break;
+                case EAST:
+                    quads.add(createQuad(v(1, 1, 1), v(1, 0, 1), v(1, 0, 0), v(1, 1, 0), texture));
+                    break;
+            }
         }
         return quads;
     }

@@ -49,6 +49,17 @@ public class ShieldingBlock extends Block {
         super(Block.Properties.create(Material.GLASS)
                 .hardnessAndResistance(-1.0F, 3600000.0F)
                 .noDrops());
+        setDefaultState(getDefaultState()
+                .with(BLOCKED_ITEMS, false)
+                .with(BLOCKED_PASSIVE, false)
+                .with(BLOCKED_HOSTILE, false)
+                .with(BLOCKED_PLAYERS, false)
+                .with(DAMAGE_ITEMS, false)
+                .with(DAMAGE_PASSIVE, false)
+                .with(DAMAGE_HOSTILE, false)
+                .with(DAMAGE_PLAYERS, false)
+                .with(FLAG_OPAQUE, false)
+        );
     }
 
     @Override
@@ -134,7 +145,7 @@ public class ShieldingBlock extends Block {
     }
 
     private boolean checkEntityCD(IBlockReader world, BlockPos pos, String filterName) {
-        ShieldTEBase projector = getShieldProjector(world, pos);
+        ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
         if (projector != null) {
             List<ShieldFilter> filters = projector.getFilters();
             for (ShieldFilter filter : filters) {
@@ -150,7 +161,7 @@ public class ShieldingBlock extends Block {
 
 
     private boolean checkPlayerCD(IBlockReader world, BlockPos pos, PlayerEntity entity) {
-        ShieldTEBase projector = getShieldProjector(world, pos);
+        ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
         if (projector != null) {
             List<ShieldFilter> filters = projector.getFilters();
             for (ShieldFilter filter : filters) {
@@ -182,13 +193,15 @@ public class ShieldingBlock extends Block {
     }
 
     @Nullable
-    private ShieldTEBase getShieldProjector(IBlockReader world, BlockPos shieldingPos) {
+    private ShieldProjectorTileEntity getShieldProjector(IBlockReader world, BlockPos shieldingPos) {
         TileEntity te = world.getTileEntity(shieldingPos);
         if (te instanceof ShieldingTileEntity) {
             BlockPos projectorPos = ((ShieldingTileEntity) te).getShieldProjector();
-            TileEntity tileEntity = world.getTileEntity(projectorPos);
-            if (tileEntity instanceof ShieldTEBase) {
-                return (ShieldTEBase) tileEntity;
+            if (projectorPos != null) {
+                TileEntity tileEntity = world.getTileEntity(projectorPos);
+                if (tileEntity instanceof ShieldProjectorTileEntity) {
+                    return (ShieldProjectorTileEntity) tileEntity;
+                }
             }
         }
         return null;
@@ -220,7 +233,7 @@ public class ShieldingBlock extends Block {
         AxisAlignedBB beamBox = new AxisAlignedBB(xCoord - .4, yCoord - .4, zCoord - .4, xCoord + 1.4, yCoord + 2.0, zCoord + 1.4);
 
         if (entity.getBoundingBox().intersects(beamBox)) {
-            ShieldTEBase projector = getShieldProjector(world, pos);
+            ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
             if (projector != null) {
                 if (dmgItems && entity instanceof ItemEntity) {
                     if (checkEntityDamage(projector, ItemFilter.ITEM)) {
@@ -243,7 +256,7 @@ public class ShieldingBlock extends Block {
         }
     }
 
-    private boolean checkEntityDamage(@Nonnull ShieldTEBase shieldTileEntity, String filterName) {
+    private boolean checkEntityDamage(@Nonnull ShieldProjectorTileEntity shieldTileEntity, String filterName) {
         List<ShieldFilter> filters = shieldTileEntity.getFilters();
         for (ShieldFilter filter : filters) {
             if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
@@ -255,7 +268,7 @@ public class ShieldingBlock extends Block {
         return false;
     }
 
-    private boolean checkPlayerDamage(@Nonnull ShieldTEBase shieldTileEntity, PlayerEntity entity) {
+    private boolean checkPlayerDamage(@Nonnull ShieldProjectorTileEntity shieldTileEntity, PlayerEntity entity) {
         List<ShieldFilter> filters = shieldTileEntity.getFilters();
         for (ShieldFilter filter : filters) {
             if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {

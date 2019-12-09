@@ -19,6 +19,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -40,14 +41,14 @@ public class ClientRegistration {
     public static void registerSounds(RegistryEvent.Register<SoundEvent> sounds) {
     }
 
-//    @SubscribeEvent
-//    public static void onTextureStitch(TextureStitchEvent.Pre event) {
-//        if (!event.getMap().getBasePath().equals("textures")) {
-//            return;
-//        }
-//
-//        event.addSprite(new ResourceLocation(RFToolsBuilder.MODID, "block/connector_side"));
-//    }
+    @SubscribeEvent
+    public static void onTextureStitch(TextureStitchEvent.Pre event) {
+        if (!event.getMap().getBasePath().equals("textures")) {
+            return;
+        }
+
+        event.addSprite(new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shield0"));
+    }
 
 
     @SubscribeEvent
@@ -57,7 +58,10 @@ public class ClientRegistration {
                 .forEach(name -> {
                     ResourceLocation rl = new ResourceLocation(RFToolsBuilder.MODID, name);
                     event.getModelRegistry().put(new ModelResourceLocation(rl, ""), model);
-                    Tools.permutateProperties(s -> event.getModelRegistry().put(new ModelResourceLocation(rl, s), model),
+                    Tools.permutateProperties(s -> {
+                        event.getModelRegistry().put(new ModelResourceLocation(rl, s), model);
+                                System.out.println("s = " + s);
+                            },
                             BLOCKED_HOSTILE, BLOCKED_ITEMS, BLOCKED_PASSIVE, BLOCKED_PLAYERS,
                             DAMAGE_HOSTILE, DAMAGE_ITEMS, DAMAGE_PASSIVE, DAMAGE_PLAYERS,
                             FLAG_OPAQUE, RENDER_MODE);

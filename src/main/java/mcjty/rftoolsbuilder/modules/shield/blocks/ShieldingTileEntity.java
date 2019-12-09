@@ -4,8 +4,11 @@ import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+
+import javax.annotation.Nullable;
 
 public class ShieldingTileEntity extends TileEntity {
 
@@ -14,6 +17,19 @@ public class ShieldingTileEntity extends TileEntity {
 
     public ShieldingTileEntity() {
         super(ShieldSetup.TYPE_SHIELDING.get());
+    }
+
+    @Nullable
+    @Override
+    public SUpdateTileEntityPacket getUpdatePacket() {
+        CompoundNBT nbtTag = new CompoundNBT();
+        this.write(nbtTag);
+        return new SUpdateTileEntityPacket(pos, 1, nbtTag);
+    }
+
+    @Override
+    public CompoundNBT getUpdateTag() {
+        return this.write(new CompoundNBT());
     }
 
     public BlockPos getShieldProjector() {

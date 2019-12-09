@@ -22,7 +22,7 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.DamageTypeMode;
 import mcjty.rftoolsbuilder.modules.shield.ShieldConfiguration;
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
-import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldTEBase;
+import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import mcjty.rftoolsbuilder.modules.shield.network.PacketGetFilters;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
@@ -37,10 +37,10 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldTEBase.*;
+import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity.*;
 
 
-public class GuiShield extends GenericGuiContainer<ShieldTEBase, GenericContainer> {
+public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, GenericContainer> {
     public static final int SHIELD_WIDTH = 256;
     public static final int SHIELD_HEIGHT = 224;
 
@@ -77,7 +77,7 @@ public class GuiShield extends GenericGuiContainer<ShieldTEBase, GenericContaine
     private static final ResourceLocation iconLocation = new ResourceLocation(RFToolsBuilder.MODID, "textures/gui/shieldprojector.png");
     private static final ResourceLocation iconGuiElements = new ResourceLocation(RFToolsBase.MODID, "textures/gui/guielements.png");
 
-    public GuiShield(ShieldTEBase shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
+    public GuiShield(ShieldProjectorTileEntity shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
         super(RFToolsBuilder.instance, shieldTileEntity, container, inventory, 0 /* @todo 1.14. GuiProxy.GUI_MANUAL_SHAPE*/, "shield");
 
         xSize = SHIELD_WIDTH;
@@ -144,10 +144,10 @@ public class GuiShield extends GenericGuiContainer<ShieldTEBase, GenericContaine
         window = new Window(this, toplevel);
 
         window.bind(RFToolsBuilderMessages.INSTANCE, "redstone", tileEntity, GenericTileEntity.VALUE_RSMODE.getName());
-        window.bind(RFToolsBuilderMessages.INSTANCE, "visibility", tileEntity, ShieldTEBase.VALUE_SHIELDVISMODE.getName());
-        window.bind(RFToolsBuilderMessages.INSTANCE, "damage", tileEntity, ShieldTEBase.VALUE_DAMAGEMODE.getName());
-        window.bind(RFToolsBuilderMessages.INSTANCE, "color", tileEntity, ShieldTEBase.VALUE_COLOR.getName());
-        window.bind(RFToolsBuilderMessages.INSTANCE, "light", tileEntity, ShieldTEBase.VALUE_LIGHT.getName());
+        window.bind(RFToolsBuilderMessages.INSTANCE, "visibility", tileEntity, ShieldProjectorTileEntity.VALUE_SHIELDVISMODE.getName());
+        window.bind(RFToolsBuilderMessages.INSTANCE, "damage", tileEntity, ShieldProjectorTileEntity.VALUE_DAMAGEMODE.getName());
+        window.bind(RFToolsBuilderMessages.INSTANCE, "color", tileEntity, ShieldProjectorTileEntity.VALUE_COLOR.getName());
+        window.bind(RFToolsBuilderMessages.INSTANCE, "light", tileEntity, ShieldProjectorTileEntity.VALUE_LIGHT.getName());
         window.event("camo", (source, params) -> applyCamoToShield());
         window.event("addfilter", (source, params) -> addNewFilter());
         window.event("delfilter", (source, params) -> removeSelectedFilter());
@@ -245,7 +245,7 @@ public class GuiShield extends GenericGuiContainer<ShieldTEBase, GenericContaine
     }
 
     private void moveFilterUp() {
-        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, ShieldTEBase.CMD_UPFILTER,
+        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, ShieldProjectorTileEntity.CMD_UPFILTER,
                 TypedMap.builder()
                         .put(PARAM_SELECTED, filterList.getSelected())
                         .build());
@@ -253,7 +253,7 @@ public class GuiShield extends GenericGuiContainer<ShieldTEBase, GenericContaine
     }
 
     private void moveFilterDown() {
-        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, ShieldTEBase.CMD_DOWNFILTER,
+        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, ShieldProjectorTileEntity.CMD_DOWNFILTER,
                 TypedMap.builder()
                         .put(PARAM_SELECTED, filterList.getSelected())
                         .build());
@@ -290,7 +290,7 @@ public class GuiShield extends GenericGuiContainer<ShieldTEBase, GenericContaine
         String playerName = player.getText();
         int selected = filterList.getSelected();
 
-        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, ShieldTEBase.CMD_ADDFILTER,
+        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, ShieldProjectorTileEntity.CMD_ADDFILTER,
                 TypedMap.builder()
                         .put(PARAM_ACTION, action)
                         .put(PARAM_TYPE, type)
@@ -301,7 +301,7 @@ public class GuiShield extends GenericGuiContainer<ShieldTEBase, GenericContaine
     }
 
     private void removeSelectedFilter() {
-        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, ShieldTEBase.CMD_DELFILTER,
+        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, ShieldProjectorTileEntity.CMD_DELFILTER,
                 TypedMap.builder()
                         .put(PARAM_SELECTED, filterList.getSelected())
                         .build());
@@ -376,7 +376,7 @@ public class GuiShield extends GenericGuiContainer<ShieldTEBase, GenericContaine
                 pass = block.getRenderLayer().ordinal();
             }
         }
-        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, ShieldTEBase.CMD_APPLYCAMO,
+        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, ShieldProjectorTileEntity.CMD_APPLYCAMO,
                 TypedMap.builder()
                         .put(PARAM_PASS, pass)
                         .build());

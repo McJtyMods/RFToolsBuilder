@@ -4,22 +4,11 @@ import mcjty.rftoolsbuilder.modules.shield.ShieldConfiguration;
 
 import static mcjty.rftoolsbuilder.modules.shield.ShieldSetup.TYPE_SHIELD_BLOCK3;
 
-public class ShieldTileEntity3 extends ShieldTEBase {
+public class ShieldTileEntity3 extends ShieldProjectorTileEntity {
 
     public ShieldTileEntity3() {
-        super(TYPE_SHIELD_BLOCK3.get());
-        setSupportedBlocks(ShieldConfiguration.maxShieldSize.get() * 16);
+        super(TYPE_SHIELD_BLOCK3.get(), ShieldConfiguration.maxShieldSize.get() * 16, ShieldConfiguration.MAXENERGY.get() * 3, ShieldConfiguration.RECEIVEPERTICK.get() * 2);
         setDamageFactor(4.0f);
         setCostFactor(2.0f);
-    }
-
-    @Override
-    protected int getConfigMaxEnergy() {
-        return ShieldConfiguration.MAXENERGY.get() * 3;
-    }
-
-    @Override
-    protected int getConfigRfPerTick() {
-        return ShieldConfiguration.RECEIVEPERTICK.get() * 2;
     }
 }

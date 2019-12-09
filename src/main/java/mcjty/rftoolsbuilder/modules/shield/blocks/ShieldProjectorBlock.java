@@ -127,8 +127,8 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     private void composeDecomposeShield(World world, BlockPos pos, boolean ctrl) {
         if (!world.isRemote) {
             TileEntity te = world.getTileEntity(pos);
-            if (te instanceof ShieldTEBase) {
-                ((ShieldTEBase)te).composeDecomposeShield(ctrl);
+            if (te instanceof ShieldProjectorTileEntity) {
+                ((ShieldProjectorTileEntity)te).composeDecomposeShield(ctrl);
             }
         }
     }
@@ -136,9 +136,9 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     @Override
     public void onPlayerDestroy(IWorld world, BlockPos pos, BlockState state) {
         TileEntity te = world.getTileEntity(pos);
-        if (te instanceof ShieldTEBase) {
+        if (te instanceof ShieldProjectorTileEntity) {
             if (!world.getWorld().isRemote) {
-                ShieldTEBase shieldTileEntity = (ShieldTEBase) te;
+                ShieldProjectorTileEntity shieldTileEntity = (ShieldProjectorTileEntity) te;
                 if (shieldTileEntity.isShieldComposed()) {
                     shieldTileEntity.decomposeShield();
                 }

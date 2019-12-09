@@ -63,7 +63,7 @@ import java.util.*;
 
 import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
 
-public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWrenchSelector, ITickableTileEntity { // @todo }, IPeripheral {
+public class ShieldProjectorTileEntity extends GenericTileEntity implements ISmartWrenchSelector, ITickableTileEntity { // @todo }, IPeripheral {
 
     public static final String CMD_APPLYCAMO = "shield.applyCamo";
     public static final Key<Integer> PARAM_PASS = new Key<>("pass", Type.INTEGER);
@@ -148,27 +148,34 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
     private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
     private LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
     private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
-            .containerSupplier((windowId,player) -> new GenericContainer(ShieldSetup.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY, getPos(), ShieldTEBase.this))
+            .containerSupplier((windowId,player) -> new GenericContainer(ShieldSetup.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY, getPos(), ShieldProjectorTileEntity.this))
             .itemHandler(itemHandler));
 
     private LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick()));
-    private LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldTEBase.this));
+    private LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldProjectorTileEntity.this));
     private LazyOptional<IPowerInformation> powerInfoHandler = LazyOptional.of(this::createPowerInfo);
 
-    public ShieldTEBase(TileEntityType<?> type) {
+    private final int maxEnergy;
+    private final int rfPerTick;
+
+    public ShieldProjectorTileEntity(TileEntityType<?> type, int supportedBlocks, int maxEnergy, int rfPerTick) {
         super(type);
+        this.supportedBlocks = supportedBlocks;
+        this.maxEnergy = maxEnergy;
+        this.rfPerTick = rfPerTick;
     }
 
-    protected abstract int getConfigMaxEnergy();
-    protected abstract int getConfigRfPerTick();
+    private int getConfigMaxEnergy() {
+        return maxEnergy;
+    }
+
+    private int getConfigRfPerTick() {
+        return rfPerTick;
+    }
 
     @Override
     protected boolean needsRedstoneMode() {
         return true;
-    }
-
-    public void setSupportedBlocks(int supportedBlocks) {
-        this.supportedBlocks = supportedBlocks;
     }
 
     public void setDamageFactor(float factor) {
@@ -421,15 +428,15 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
         }
 
         BlockState shielding = ShieldSetup.SHIELDING.get().getDefaultState();
-        if (blockLight) {
-            shielding = shielding.with(FLAG_OPAQUE, true);
-        }
-        if (ShieldConfiguration.allowInvisibleShield.get() && ShieldRenderingMode.INVISIBLE.equals(shieldRenderingMode)) {
-            shielding = shielding.with(RENDER_MODE, ShieldRenderingMode.INVISIBLE);
+        shielding = shielding.with(FLAG_OPAQUE, blockLight);
+        ShieldRenderingMode render = shieldRenderingMode;
+        if (!ShieldConfiguration.allowInvisibleShield.get() && ShieldRenderingMode.INVISIBLE.equals(shieldRenderingMode)) {
+            render = ShieldRenderingMode.SOLID;
         }
         if (camoId != null) {
-            shielding = shielding.with(RENDER_MODE, ShieldRenderingMode.MIMIC);
+            render = ShieldRenderingMode.MIMIC;
         }
+        shielding = shielding.with(RENDER_MODE, render);
         shielding = calculateShieldCollisionData(shielding);
         shielding = calculateDamageBits(shielding);
         return shielding;
@@ -1203,7 +1210,7 @@ public abstract class ShieldTEBase extends GenericTileEntity implements ISmartWr
     }
 
     private NoDirectionItemHander createItemHandler() {
-        return new NoDirectionItemHander(ShieldTEBase.this, CONTAINER_FACTORY) {
+        return new NoDirectionItemHander(ShieldProjectorTileEntity.this, CONTAINER_FACTORY) {
             @Override
             protected void onUpdate(int index) {
                 super.onUpdate(index);
