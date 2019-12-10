@@ -3,9 +3,13 @@ package mcjty.rftoolsbuilder.modules.shield.client;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock;
+import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingTileEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.model.*;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.BlockRenderLayer;
@@ -23,20 +27,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class CamoBakedModel implements IDynamicBakedModel {
-
-    public static final ModelResourceLocation modelFacade = new ModelResourceLocation(RFToolsBuilder.MODID + ":camo");
+public class ShieldingBakedModel implements IDynamicBakedModel {
 
     private VertexFormat format;
-    private static TextureAtlasSprite spriteCable;
+    private static TextureAtlasSprite shield[] = new TextureAtlasSprite[4];
+    private static TextureAtlasSprite shieldtransparent;
+    private static TextureAtlasSprite shieldfull;
 
-    public CamoBakedModel(VertexFormat format) {
+    public ShieldingBakedModel(VertexFormat format) {
         this.format = format;
     }
 
     private static void initTextures() {
-        if (spriteCable == null) {
-            spriteCable = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shield0");
+        if (shieldfull == null) {
+            shield[0] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shield0");
+            shield[1] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shield1");
+            shield[2] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shield2");
+            shield[3] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shield3");
+            shieldtransparent = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shieldtransparent");
+            shieldfull = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shieldfull");
         }
     }
 
@@ -49,13 +58,13 @@ public class CamoBakedModel implements IDynamicBakedModel {
             case INVISIBLE:
                 return Collections.emptyList();
             case SHIELD:
-                return getQuadsTextured(state, side, spriteCable);
+                return getQuadsShield(side, extraData);
             case MIMIC:
-                return getQuadsMimic(state, side, rand);
+                return getQuadsMimic(state, side, rand, extraData);
             case TRANSP:
-                return getQuadsTextured(state, side, spriteCable);
+                return getQuadsTextured(side, shieldtransparent);
             case SOLID:
-                return getQuadsTextured(state, side, spriteCable);
+                return getQuadsTextured(side, shieldfull);
         }
         return Collections.emptyList();
     }
@@ -104,7 +113,36 @@ public class CamoBakedModel implements IDynamicBakedModel {
         return new Vec3d(x, y, z);
     }
 
-    private List<BakedQuad> getQuadsTextured(@Nullable BlockState state, @Nullable Direction side, TextureAtlasSprite texture) {
+    private List<BakedQuad> getQuadsShield(@Nullable Direction side, IModelData extraData) {
+        List<BakedQuad> quads = new ArrayList<>();
+        if (side != null) {
+            Integer iconTopdown = extraData.getData(ShieldingTileEntity.ICON_TOPDOWN);
+            Integer iconSide = extraData.getData(ShieldingTileEntity.ICON_SIDE);
+            switch (side) {
+                case DOWN:
+                    quads.add(createQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), shield[iconTopdown]));
+                    break;
+                case UP:
+                    quads.add(createQuad(v(0, 1, 0), v(0, 1, 1), v(1, 1, 1), v(1, 1, 0), shield[iconTopdown]));
+                    break;
+                case NORTH:
+                    quads.add(createQuad(v(1, 1, 0), v(1, 0, 0), v(0, 0, 0), v(0, 1, 0), shield[iconSide]));
+                    break;
+                case SOUTH:
+                    quads.add(createQuad(v(0, 1, 1), v(0, 0, 1), v(1, 0, 1), v(1, 1, 1), shield[iconSide]));
+                    break;
+                case WEST:
+                    quads.add(createQuad(v(0, 1, 0), v(0, 0, 0), v(0, 0, 1), v(0, 1, 1), shield[iconSide]));
+                    break;
+                case EAST:
+                    quads.add(createQuad(v(1, 1, 1), v(1, 0, 1), v(1, 0, 0), v(1, 1, 0), shield[iconSide]));
+                    break;
+            }
+        }
+        return quads;
+    }
+
+    private List<BakedQuad> getQuadsTextured(@Nullable Direction side, TextureAtlasSprite texture) {
         List<BakedQuad> quads = new ArrayList<>();
         if (side != null) {
             switch (side) {
@@ -132,8 +170,8 @@ public class CamoBakedModel implements IDynamicBakedModel {
     }
 
 
-    private List<BakedQuad> getQuadsMimic(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand) {
-        BlockState camo = null; // @todo 1.14 extraData.getData(NoTickShieldBlockTileEntity.CAMO_PROPERTY);
+    private List<BakedQuad> getQuadsMimic(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, IModelData extraData) {
+        BlockState camo = extraData.getData(ShieldingTileEntity.MIMIC);
         if (camo == null) {
             return Collections.emptyList();
         }
@@ -174,7 +212,8 @@ public class CamoBakedModel implements IDynamicBakedModel {
 
     @Override
     public TextureAtlasSprite getParticleTexture() {
-        return spriteCable;
+        initTextures();
+        return shield[0];
     }
 
     @Override

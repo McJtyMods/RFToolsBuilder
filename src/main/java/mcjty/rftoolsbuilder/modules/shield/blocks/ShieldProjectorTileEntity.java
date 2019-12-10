@@ -795,10 +795,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             ShieldingTileEntity shieldBlockTileEntity = (ShieldingTileEntity) te;
             if (c.getState() != -1) {
                 BlockState state = blockStateTable.get(c.getState());
-                shieldBlockTileEntity.setCamo(state);
+                shieldBlockTileEntity.setMimic(state);
             } else {
                 // @todo 1.14 check? Is this right?
-                shieldBlockTileEntity.setCamo(ForgeRegistries.BLOCKS.getValue(camoId).getDefaultState());
+                shieldBlockTileEntity.setMimic(ForgeRegistries.BLOCKS.getValue(camoId).getDefaultState());
             }
             shieldBlockTileEntity.setShieldProjector(pos);
             // @todo 1.14

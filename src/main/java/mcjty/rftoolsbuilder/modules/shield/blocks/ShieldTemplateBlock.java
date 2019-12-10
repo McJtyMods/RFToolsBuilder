@@ -6,7 +6,7 @@ import net.minecraft.util.BlockRenderLayer;
 
 public class ShieldTemplateBlock extends Block {
 
-    public static enum TemplateColor {
+    public enum TemplateColor {
         BLUE("blue"), RED("red"), GREEN("green"), YELLOW("yellow");
 
         private final String name;
