@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.modules.shield.client;
 
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
+import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingTileEntity;
 import net.minecraft.block.BlockState;
@@ -22,15 +23,12 @@ import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class ShieldingBakedModel implements IDynamicBakedModel {
 
     private VertexFormat format;
-    private static TextureAtlasSprite shield[] = new TextureAtlasSprite[4];
+    private static Map<ShieldTexture, TextureAtlasSprite[]> shields;
     private static TextureAtlasSprite shieldtransparent;
     private static TextureAtlasSprite shieldfull;
 
@@ -39,11 +37,16 @@ public class ShieldingBakedModel implements IDynamicBakedModel {
     }
 
     private static void initTextures() {
-        if (shieldfull == null) {
-            shield[0] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shield0");
-            shield[1] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shield1");
-            shield[2] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shield2");
-            shield[3] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shield3");
+        if (shields == null) {
+            shields = new HashMap<>();
+            for (ShieldTexture texture : ShieldTexture.values()) {
+                TextureAtlasSprite[] sprites = new TextureAtlasSprite[4];
+                sprites[0] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/" + texture.getPath() + "/shield0");
+                sprites[1] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/" + texture.getPath() + "/shield1");
+                sprites[2] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/" + texture.getPath() + "/shield2");
+                sprites[3] = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/" + texture.getPath() + "/shield3");
+                shields.put(texture, sprites);
+            }
             shieldtransparent = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shieldtransparent");
             shieldfull = Minecraft.getInstance().getTextureMap().getAtlasSprite(RFToolsBuilder.MODID + ":block/shield/shieldfull");
         }
@@ -62,22 +65,23 @@ public class ShieldingBakedModel implements IDynamicBakedModel {
             case MIMIC:
                 return getQuadsMimic(state, side, rand, extraData);
             case TRANSP:
-                return getQuadsTextured(side, shieldtransparent);
+                return getQuadsTextured(side, shieldtransparent, extraData);
             case SOLID:
-                return getQuadsTextured(side, shieldfull);
+                return getQuadsTextured(side, shieldfull, extraData);
         }
         return Collections.emptyList();
     }
 
     private void putVertex(UnpackedBakedQuad.Builder builder, Vec3d normal,
-                           double x, double y, double z, float u, float v, TextureAtlasSprite sprite, float color) {
+                           double x, double y, double z, float u, float v, TextureAtlasSprite sprite,
+                           float r, float g, float b, float a) {
         for (int e = 0; e < format.getElementCount(); e++) {
             switch (format.getElement(e).getUsage()) {
                 case POSITION:
                     builder.put(e, (float)x, (float)y, (float)z, 1.0f);
                     break;
                 case COLOR:
-                    builder.put(e, color, color, color, 1.0f);
+                    builder.put(e, r, g, b, a);
                     break;
                 case UV:
                     if (format.getElement(e).getIndex() == 0) {
@@ -102,10 +106,23 @@ public class ShieldingBakedModel implements IDynamicBakedModel {
 
         UnpackedBakedQuad.Builder builder = new UnpackedBakedQuad.Builder(format);
         builder.setTexture(sprite);
-        putVertex(builder, normal, v1.x, v1.y, v1.z, 0, 0, sprite, 1.0f);
-        putVertex(builder, normal, v2.x, v2.y, v2.z, 0, 16, sprite, 1.0f);
-        putVertex(builder, normal, v3.x, v3.y, v3.z, 16, 16, sprite, 1.0f);
-        putVertex(builder, normal, v4.x, v4.y, v4.z, 16, 0, sprite, 1.0f);
+        putVertex(builder, normal, v1.x, v1.y, v1.z, 0, 0, sprite, 1.0f, 1.0f, 1.0f, 1.0f);
+        putVertex(builder, normal, v2.x, v2.y, v2.z, 0, 16, sprite, 1.0f, 1.0f, 1.0f, 1.0f);
+        putVertex(builder, normal, v3.x, v3.y, v3.z, 16, 16, sprite, 1.0f, 1.0f, 1.0f, 1.0f);
+        putVertex(builder, normal, v4.x, v4.y, v4.z, 16, 0, sprite, 1.0f, 1.0f, 1.0f, 1.0f);
+        return builder.build();
+    }
+
+    private BakedQuad createColoredQuad(Vec3d v1, Vec3d v2, Vec3d v3, Vec3d v4, TextureAtlasSprite sprite,
+                                        float r, float g, float b, float a) {
+        Vec3d normal = v3.subtract(v2).crossProduct(v1.subtract(v2)).normalize();
+
+        UnpackedBakedQuad.Builder builder = new UnpackedBakedQuad.Builder(format);
+        builder.setTexture(sprite);
+        putVertex(builder, normal, v1.x, v1.y, v1.z, 0, 0, sprite, r, g, b, a);
+        putVertex(builder, normal, v2.x, v2.y, v2.z, 0, 16, sprite, r, g, b, a);
+        putVertex(builder, normal, v3.x, v3.y, v3.z, 16, 16, sprite, r, g, b, a);
+        putVertex(builder, normal, v4.x, v4.y, v4.z, 16, 0, sprite, r, g, b, a);
         return builder.build();
     }
 
@@ -118,51 +135,62 @@ public class ShieldingBakedModel implements IDynamicBakedModel {
         if (side != null) {
             Integer iconTopdown = extraData.getData(ShieldingTileEntity.ICON_TOPDOWN);
             Integer iconSide = extraData.getData(ShieldingTileEntity.ICON_SIDE);
+            ShieldRenderData renderData = extraData.getData(ShieldingTileEntity.RENDER_DATA);
+            float r = renderData.getRed();
+            float g = renderData.getGreen();
+            float b = renderData.getBlue();
+            float a = renderData.getAlpha();
+            TextureAtlasSprite[] shield = shields.get(renderData.getShieldTexture());
             switch (side) {
                 case DOWN:
-                    quads.add(createQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), shield[iconTopdown]));
+                    quads.add(createColoredQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), shield[iconTopdown], r, g, b, a));
                     break;
                 case UP:
-                    quads.add(createQuad(v(0, 1, 0), v(0, 1, 1), v(1, 1, 1), v(1, 1, 0), shield[iconTopdown]));
+                    quads.add(createColoredQuad(v(0, 1, 0), v(0, 1, 1), v(1, 1, 1), v(1, 1, 0), shield[iconTopdown], r, g, b, a));
                     break;
                 case NORTH:
-                    quads.add(createQuad(v(1, 1, 0), v(1, 0, 0), v(0, 0, 0), v(0, 1, 0), shield[iconSide]));
+                    quads.add(createColoredQuad(v(1, 1, 0), v(1, 0, 0), v(0, 0, 0), v(0, 1, 0), shield[iconSide], r, g, b, a));
                     break;
                 case SOUTH:
-                    quads.add(createQuad(v(0, 1, 1), v(0, 0, 1), v(1, 0, 1), v(1, 1, 1), shield[iconSide]));
+                    quads.add(createColoredQuad(v(0, 1, 1), v(0, 0, 1), v(1, 0, 1), v(1, 1, 1), shield[iconSide], r, g, b, a));
                     break;
                 case WEST:
-                    quads.add(createQuad(v(0, 1, 0), v(0, 0, 0), v(0, 0, 1), v(0, 1, 1), shield[iconSide]));
+                    quads.add(createColoredQuad(v(0, 1, 0), v(0, 0, 0), v(0, 0, 1), v(0, 1, 1), shield[iconSide], r, g, b, a));
                     break;
                 case EAST:
-                    quads.add(createQuad(v(1, 1, 1), v(1, 0, 1), v(1, 0, 0), v(1, 1, 0), shield[iconSide]));
+                    quads.add(createColoredQuad(v(1, 1, 1), v(1, 0, 1), v(1, 0, 0), v(1, 1, 0), shield[iconSide], r, g, b, a));
                     break;
             }
         }
         return quads;
     }
 
-    private List<BakedQuad> getQuadsTextured(@Nullable Direction side, TextureAtlasSprite texture) {
+    private List<BakedQuad> getQuadsTextured(@Nullable Direction side, TextureAtlasSprite texture, IModelData extraData) {
         List<BakedQuad> quads = new ArrayList<>();
         if (side != null) {
+            ShieldRenderData renderData = extraData.getData(ShieldingTileEntity.RENDER_DATA);
+            float r = renderData.getRed();
+            float g = renderData.getGreen();
+            float b = renderData.getBlue();
+            float a = renderData.getAlpha();
             switch (side) {
                 case DOWN:
-                    quads.add(createQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), texture));
+                    quads.add(createColoredQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), texture, r, g, b, a));
                     break;
                 case UP:
-                    quads.add(createQuad(v(0, 1, 0), v(0, 1, 1), v(1, 1, 1), v(1, 1, 0), texture));
+                    quads.add(createColoredQuad(v(0, 1, 0), v(0, 1, 1), v(1, 1, 1), v(1, 1, 0), texture, r, g, b, a));
                     break;
                 case NORTH:
-                    quads.add(createQuad(v(1, 1, 0), v(1, 0, 0), v(0, 0, 0), v(0, 1, 0), texture));
+                    quads.add(createColoredQuad(v(1, 1, 0), v(1, 0, 0), v(0, 0, 0), v(0, 1, 0), texture, r, g, b, a));
                     break;
                 case SOUTH:
-                    quads.add(createQuad(v(0, 1, 1), v(0, 0, 1), v(1, 0, 1), v(1, 1, 1), texture));
+                    quads.add(createColoredQuad(v(0, 1, 1), v(0, 0, 1), v(1, 0, 1), v(1, 1, 1), texture, r, g, b, a));
                     break;
                 case WEST:
-                    quads.add(createQuad(v(0, 1, 0), v(0, 0, 0), v(0, 0, 1), v(0, 1, 1), texture));
+                    quads.add(createColoredQuad(v(0, 1, 0), v(0, 0, 0), v(0, 0, 1), v(0, 1, 1), texture, r, g, b, a));
                     break;
                 case EAST:
-                    quads.add(createQuad(v(1, 1, 1), v(1, 0, 1), v(1, 0, 0), v(1, 1, 0), texture));
+                    quads.add(createColoredQuad(v(1, 1, 1), v(1, 0, 1), v(1, 0, 0), v(1, 1, 0), texture, r, g, b, a));
                     break;
             }
         }
@@ -213,7 +241,7 @@ public class ShieldingBakedModel implements IDynamicBakedModel {
     @Override
     public TextureAtlasSprite getParticleTexture() {
         initTextures();
-        return shield[0];
+        return shieldfull;
     }
 
     @Override

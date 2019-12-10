@@ -18,6 +18,7 @@ import net.minecraft.state.EnumProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -46,10 +47,13 @@ public class ShieldingBlock extends Block {
 
     public static final VoxelShape COLLISION_SHAPE = VoxelShapes.create(0.002, 0.002, 0.002, 0.998, 0.998, 0.998);
 
-    public ShieldingBlock() {
+    private final BlockRenderLayer layer;
+
+    public ShieldingBlock(BlockRenderLayer layer) {
         super(Block.Properties.create(Material.GLASS)
                 .hardnessAndResistance(-1.0F, 3600000.0F)
                 .noDrops());
+        this.layer = layer;
         setDefaultState(getDefaultState()
                 .with(BLOCKED_ITEMS, false)
                 .with(BLOCKED_PASSIVE, false)
@@ -59,7 +63,7 @@ public class ShieldingBlock extends Block {
                 .with(DAMAGE_PASSIVE, false)
                 .with(DAMAGE_HOSTILE, false)
                 .with(DAMAGE_PLAYERS, false)
-                .with(FLAG_OPAQUE, false)
+                .with(FLAG_OPAQUE, true)
         );
     }
 
@@ -104,7 +108,7 @@ public class ShieldingBlock extends Block {
 
     @Override
     public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.TRANSLUCENT;
+        return layer;
     }
 
     @Override
@@ -178,13 +182,18 @@ public class ShieldingBlock extends Block {
                     String name = playerFilter.getName();
                     if ((name == null || name.isEmpty())) {
                         return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
-                    } else if (name.equals(entity.getName())) {
+                    } else if (name.equals(entity.getName().getFormattedText())) {
                         return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
                     }
                 }
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isSideInvisible(BlockState state, BlockState adjacentBlockState, Direction side) {
+        return adjacentBlockState.getBlock() == this ? true : super.isSideInvisible(state, adjacentBlockState, side);
     }
 
     @Override
@@ -211,16 +220,6 @@ public class ShieldingBlock extends Block {
             }
         }
         return null;
-
-//        // Needs to work both client and server side so use getI()
-//        BlockPos shieldBlock = ShieldWorldInfo.getI((World) world).getShieldProjector(shieldingPos);
-//        if (shieldBlock != null) {
-//            TileEntity shieldTE = world.getTileEntity(shieldBlock);
-//            if (shieldTE instanceof ShieldTEBase) {
-//                return (ShieldTEBase) shieldTE;
-//            }
-//        }
-//        return null;
     }
 
     public void handleDamage(BlockState state, World world, BlockPos pos, Entity entity) {
@@ -284,7 +283,7 @@ public class ShieldingBlock extends Block {
                 String name = playerFilter.getName();
                 if ((name == null || name.isEmpty())) {
                     return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
-                } else if (name.equals(entity.getName())) {
+                } else if (name.equals(entity.getName().getFormattedText())) {
                     return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
                 }
             }

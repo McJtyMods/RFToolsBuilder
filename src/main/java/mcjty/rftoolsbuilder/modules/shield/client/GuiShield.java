@@ -22,16 +22,14 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.DamageTypeMode;
 import mcjty.rftoolsbuilder.modules.shield.ShieldConfiguration;
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
+import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import mcjty.rftoolsbuilder.modules.shield.network.PacketGetFilters;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.block.Block;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.energy.CapabilityEnergy;
-import net.minecraftforge.items.CapabilityItemHandler;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -53,6 +51,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     public static final String DAMAGETYPE_PLAYER = DamageTypeMode.DAMAGETYPE_PLAYER.getDescription();
 
     private EnergyBar energyBar;
+    private ChoiceLabel shieldTextures;
     private ChoiceLabel visibilityOptions;
     private ChoiceLabel actionOptions;
     private ChoiceLabel typeOptions;
@@ -91,6 +90,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
         energyBar = new EnergyBar(minecraft, this).setVertical().setLayoutHint(12, 141, 10, 76).setShowText(false);
 
         initVisibilityMode();
+        initShieldTextures();
         initActionOptions();
         initTypeOptions();
         ImageChoiceLabel redstoneMode = initRedstoneMode();
@@ -108,8 +108,6 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
                 .setLayoutHint(12, 10, 154, 124).addChildren(filterList, filterSlider)
                 .setFilledBackground(0xff9e9e9e);
 
-        Button applyCamo = new Button(minecraft, this).setChannel("camo").setText("Set").setTooltips("Set the camouflage block").
-                setLayoutHint(46, 142, 30, 16);
         colorSelector = new ColorSelector(minecraft, this)
                 .setName("color")
                 .setTooltips("Color for the shield")
@@ -136,7 +134,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
                 .setLayoutHint(160, 118, 60, 18);
 
         Panel toplevel = new Panel(minecraft, this).setBackground(iconLocation).setLayout(new PositionalLayout()).addChildren(energyBar,
-                visibilityOptions, applyCamo, redstoneMode, filterPanel, actionOptions,
+                visibilityOptions, shieldTextures, redstoneMode, filterPanel, actionOptions,
                 typeOptions, player, controlPanel, damageType,
                 colorSelector, lootingBonus, light);
         toplevel.setBounds(new Rectangle(guiLeft, guiTop, xSize, ySize));
@@ -145,10 +143,10 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
 
         window.bind(RFToolsBuilderMessages.INSTANCE, "redstone", tileEntity, GenericTileEntity.VALUE_RSMODE.getName());
         window.bind(RFToolsBuilderMessages.INSTANCE, "visibility", tileEntity, ShieldProjectorTileEntity.VALUE_SHIELDVISMODE.getName());
+        window.bind(RFToolsBuilderMessages.INSTANCE, "shieldtextures", tileEntity, ShieldProjectorTileEntity.VALUE_SHIELDTEXTURE.getName());
         window.bind(RFToolsBuilderMessages.INSTANCE, "damage", tileEntity, ShieldProjectorTileEntity.VALUE_DAMAGEMODE.getName());
         window.bind(RFToolsBuilderMessages.INSTANCE, "color", tileEntity, ShieldProjectorTileEntity.VALUE_COLOR.getName());
         window.bind(RFToolsBuilderMessages.INSTANCE, "light", tileEntity, ShieldProjectorTileEntity.VALUE_LIGHT.getName());
-        window.event("camo", (source, params) -> applyCamoToShield());
         window.event("addfilter", (source, params) -> addNewFilter());
         window.event("delfilter", (source, params) -> removeSelectedFilter());
         window.event("upfilter", (source, params) -> moveFilterUp());
@@ -338,6 +336,15 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
         visibilityOptions.setChoiceTooltip(ShieldRenderingMode.MIMIC.getDescription(), "Use the texture from the supplied block");
     }
 
+    private void initShieldTextures() {
+        shieldTextures = new ChoiceLabel(minecraft, this)
+                .setName("shieldtextures")
+                .setLayoutHint(45, 143, 34, 14);
+        for (ShieldTexture m : ShieldTexture.values()) {
+            shieldTextures.addChoices(m.getDescription());
+        }
+    }
+
     private void initActionOptions() {
         actionOptions = new ChoiceLabel(minecraft, this).setLayoutHint(170, 12, 80, 14);
         actionOptions.addChoices(ACTION_PASS, ACTION_SOLID, ACTION_DAMAGE, ACTION_SOLIDDAMAGE);
@@ -364,22 +371,6 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
         damageType.addChoices(DAMAGETYPE_GENERIC, DAMAGETYPE_PLAYER);
         damageType.setChoiceTooltip(DAMAGETYPE_GENERIC, "Generic damage type");
         damageType.setChoiceTooltip(DAMAGETYPE_PLAYER, "Damage as done by a player");
-    }
-
-    private void applyCamoToShield() {
-        ItemStack stack = tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(0)).orElse(ItemStack.EMPTY);
-
-        int pass = 0;
-        if (!stack.isEmpty()) {
-            Block block = Block.getBlockFromItem(stack.getItem());
-            if (block != null) {
-                pass = block.getRenderLayer().ordinal();
-            }
-        }
-        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, ShieldProjectorTileEntity.CMD_APPLYCAMO,
-                TypedMap.builder()
-                        .put(PARAM_PASS, pass)
-                        .build());
     }
 
     private void enableButtons() {
