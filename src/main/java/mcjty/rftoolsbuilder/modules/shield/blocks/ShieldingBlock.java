@@ -97,6 +97,11 @@ public class ShieldingBlock extends Block {
     }
 
     @Override
+    public float getAmbientOcclusionLightValue(BlockState state, IBlockReader worldIn, BlockPos pos) {
+        return super.getAmbientOcclusionLightValue(state, worldIn, pos);
+    }
+
+    @Override
     public boolean isNormalCube(BlockState state, IBlockReader worldIn, BlockPos pos) {
         return false;
     }
@@ -114,6 +119,44 @@ public class ShieldingBlock extends Block {
     @Override
     public PushReaction getPushReaction(BlockState state) {
         return PushReaction.BLOCK;
+    }
+
+    @Override
+    public boolean isSolid(BlockState state) {
+        return false;
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof ShieldingTileEntity) {
+            BlockState mimic = ((ShieldingTileEntity) te).getMimic();
+            if (mimic != null) {
+                return mimic.getShape(world, pos, context);
+            }
+        }
+        if (state.get(RENDER_MODE) == ShieldRenderingMode.INVISIBLE) {
+            return VoxelShapes.empty();
+        } else {
+            return super.getShape(state, world, pos, context);
+        }
+    }
+
+
+    @Override
+    public VoxelShape getRaytraceShape(BlockState state, IBlockReader world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof ShieldingTileEntity) {
+            BlockState mimic = ((ShieldingTileEntity) te).getMimic();
+            if (mimic != null) {
+                return mimic.getRaytraceShape(world, pos);
+            }
+        }
+        if (state.get(RENDER_MODE) == ShieldRenderingMode.INVISIBLE) {
+            return VoxelShapes.empty();
+        } else {
+            return super.getRaytraceShape(state, world, pos);
+        }
     }
 
     @Override

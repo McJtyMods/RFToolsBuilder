@@ -49,14 +49,10 @@ public class ShieldingTileEntity extends TileEntity {
 
     @Override
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-        BlockState oldMimic = mimic;
-        BlockPos oldShieldProjector = shieldProjector;
         read(pkt.getNbtCompound());
-        if (!(Objects.equals(oldMimic, mimic) && Objects.equals(oldShieldProjector, shieldProjector))) {
-            ModelDataManager.requestModelDataRefresh(this);
-            BlockState state = world.getBlockState(pos);
-            world.notifyBlockUpdate(pos, state, state, Constants.BlockFlags.BLOCK_UPDATE + Constants.BlockFlags.NOTIFY_NEIGHBORS);
-        }
+        ModelDataManager.requestModelDataRefresh(this);
+        BlockState state = world.getBlockState(pos);
+        world.notifyBlockUpdate(pos, state, state, Constants.BlockFlags.BLOCK_UPDATE + Constants.BlockFlags.NOTIFY_NEIGHBORS);
     }
 
     public BlockPos getShieldProjector() {

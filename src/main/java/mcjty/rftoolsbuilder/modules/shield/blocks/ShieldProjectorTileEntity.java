@@ -117,6 +117,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     // Timeout in case power is low. Here we wait a bit before trying again.
     private int powerTimeout = 0;
 
+    // Timeout for updating the shield. This is done to make sure that the shielding blocks are updated
+    // a bit after the shield projector itself has had a change to update its client-side data
+    private int updateTimeout = 0;
+
     private int shieldColor;
 
     // If true light is blocked
@@ -344,7 +348,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     public void setBlockLight(boolean blockLight) {
         this.blockLight = blockLight;
-        updateShield();
+        updateTimeout = 10;
         markDirtyClient();
     }
 
@@ -354,13 +358,13 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     public void setShieldColor(int shieldColor) {
         this.shieldColor = shieldColor;
-        updateShield();
+        updateTimeout = 10;
         markDirtyClient();
     }
 
     private void delFilter(int selected) {
         filters.remove(selected);
-        updateShield();
+        updateTimeout = 10;
         markDirtyClient();
     }
 
@@ -391,7 +395,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         } else {
             filters.add(selected, filter);
         }
-        updateShield();
+        updateTimeout = 10;
         markDirtyClient();
     }
 
@@ -410,11 +414,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     public void setShieldRenderingMode(ShieldRenderingMode shieldRenderingMode) {
         this.shieldRenderingMode = shieldRenderingMode;
-
-        if (shieldComposed) {
-            updateShield();
-        }
-
+        updateTimeout = 10;
         markDirtyClient();
     }
 
@@ -424,11 +424,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     public void setShieldTexture(ShieldTexture shieldTexture) {
         this.shieldTexture = shieldTexture;
-
-        if (shieldComposed) {
-            updateShield();
-        }
-
+        updateTimeout = 10;
         markDirtyClient();
     }
 
@@ -669,6 +665,13 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             return;
         }
 
+        // Delayed update of shield
+        if (updateTimeout > 0) {
+            updateTimeout--;
+            if (updateTimeout <= 0) {
+                updateShield();
+            }
+        }
 
         energyHandler.ifPresent(h -> {
             boolean checkPower = false;
@@ -881,6 +884,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 return;
             }
         }
+
+        // To force an update set it to air first
+        world.setBlockState(pp, Blocks.AIR.getDefaultState());
         world.setBlockState(pp, shielding, Constants.BlockFlags.BLOCK_UPDATE);
 
         TileEntity te = getWorld().getTileEntity(pp);
@@ -893,9 +899,6 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 shieldingTE.setMimic(mimic);
             }
             shieldingTE.setShieldProjector(pos);
-            // @todo 1.14
-//            shieldBlockTileEntity.setShieldColor(shieldColor);
-//            shieldBlockTileEntity.setShieldRenderingMode(shieldRenderingMode);
         }
     }
 
