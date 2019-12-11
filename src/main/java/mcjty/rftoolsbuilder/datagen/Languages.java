@@ -39,6 +39,9 @@ public class Languages extends LanguageProvider {
         add(ShieldSetup.TEMPLATE_RED.get(), "Red Shield Template");
         add(ShieldSetup.TEMPLATE_GREEN.get(), "Green Shield Template");
         add(ShieldSetup.TEMPLATE_YELLOW.get(), "Yellow Shield Template");
+        add(ShieldSetup.SHIELDING_CUTOUT.get(), "Shield");
+        add(ShieldSetup.SHIELDING_SOLID.get(), "Shield");
+        add(ShieldSetup.SHIELDING_TRANSLUCENT.get(), "Shield");
 
         add("message.rftoolsbuilder.shiftmessage", "<Press Shift>");
         add("message.rftoolsbuilder.builder", "@fThis block can quarry areas, pump liquids,\n"

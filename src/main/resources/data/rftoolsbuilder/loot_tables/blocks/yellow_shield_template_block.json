@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "name": "template_yellow",
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "rftoolsbuilder:yellow_shield_template_block"
+        }
+      ]
+    }
+  ]
+}

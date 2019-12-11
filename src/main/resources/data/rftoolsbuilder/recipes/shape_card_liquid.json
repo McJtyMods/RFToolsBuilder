@@ -1,25 +1,26 @@
 {
   "type": "mcjtylib:copy_nbt",
+  "group": "rftools",
   "pattern": [
-    "rwr",
+    "rWr",
     "iMi",
-    "rlr"
+    "rLr"
   ],
   "key": {
-    "w": {
-      "item": "minecraft:water_bucket"
-    },
-    "l": {
-      "item": "minecraft:lava_bucket"
+    "M": {
+      "item": "rftoolsbuilder:shape_card_def"
     },
     "r": {
       "item": "minecraft:redstone"
     },
-    "i": {
-      "item": "minecraft:iron_ingot"
+    "W": {
+      "item": "minecraft:water_bucket"
     },
-    "M": {
-      "item": "rftoolsbuilder:shape_card_def"
+    "i": {
+      "tag": "forge:ingots/iron"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
     }
   },
   "result": {

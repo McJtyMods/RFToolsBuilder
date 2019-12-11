@@ -1,16 +1,17 @@
 {
   "type": "mcjtylib:copy_nbt",
+  "group": "rftools",
   "pattern": [
-    "ggg",
-    "gMg",
-    "ggg"
+    "GGG",
+    "GMG",
+    "GGG"
   ],
   "key": {
-    "g": {
-      "item": "minecraft:glass"
-    },
     "M": {
       "item": "rftoolsbuilder:shape_card_quarry_silk"
+    },
+    "G": {
+      "tag": "forge:glass"
     }
   },
   "result": {

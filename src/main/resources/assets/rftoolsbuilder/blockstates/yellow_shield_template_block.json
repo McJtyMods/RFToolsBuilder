@@ -1,8 +1,7 @@
 {
-  "forge_marker": 1,
   "variants": {
     "": {
-      "model": "rftoolsbuilder:block/shield_template_block_yellow"
+      "model": "rftoolsbuilder:block/yellow_shield_template"
     }
   }
 }

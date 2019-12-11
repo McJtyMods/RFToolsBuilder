@@ -26,6 +26,18 @@ public class Items extends BaseItemModelProvider {
         parentedBlock(ShieldSetup.SHIELD_BLOCK4.get(), "block/shield_block4");
 
         parentedBlock(BuilderSetup.BUILDER.get(),"block/builder");
+
+        itemGenerated(BuilderSetup.SHAPE_CARD_DEF.get(), "item/shapecarditem");
+        itemGenerated(BuilderSetup.SHAPE_CARD_LIQUID.get(), "item/shapecardliquiditem");
+        itemGenerated(BuilderSetup.SHAPE_CARD_PUMP.get(), "item/shapecardpumpitem");
+        itemGenerated(BuilderSetup.SHAPE_CARD_PUMP_CLEAR.get(), "item/shapecardpumpclearitem");
+        itemGenerated(BuilderSetup.SHAPE_CARD_QUARRY.get(), "item/shapecardquarryitem");
+        itemGenerated(BuilderSetup.SHAPE_CARD_QUARRY_CLEAR.get(), "item/shapecardcquarryitem");
+        itemGenerated(BuilderSetup.SHAPE_CARD_QUARRY_CLEAR_FORTUNE.get(), "item/shapecardcfortuneitem");
+        itemGenerated(BuilderSetup.SHAPE_CARD_QUARRY_CLEAR_SILK.get(), "item/shapecardcsilkitem");
+        itemGenerated(BuilderSetup.SHAPE_CARD_QUARRY_FORTUNE.get(), "item/shapecardfortuneitem");
+        itemGenerated(BuilderSetup.SHAPE_CARD_QUARRY_SILK.get(), "item/shapecardsilkitem");
+        itemGenerated(BuilderSetup.SHAPE_CARD_VOID.get(), "item/shapecardvoiditem");
     }
 
     @Override

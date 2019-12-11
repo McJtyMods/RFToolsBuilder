@@ -1,5 +1,7 @@
 {
   "variants": {
-    "": { "model": "rftoolsbuilder:block/shield_block" }
+    "": {
+      "model": "rftoolsbuilder:block/shield_block"
+    }
   }
 }

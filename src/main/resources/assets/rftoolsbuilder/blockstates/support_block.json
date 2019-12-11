@@ -1,7 +1,13 @@
 {
   "variants": {
-    "status=0": { "model": "rftoolsbuilder:block/supportblock_status0" },
-    "status=1": { "model": "rftoolsbuilder:block/supportblock_status1" },
-    "status=2": { "model": "rftoolsbuilder:block/supportblock_status2" }
+    "status=0": {
+      "model": "rftoolsbuilder:block/supportblock_status0"
+    },
+    "status=1": {
+      "model": "rftoolsbuilder:block/supportblock_status1"
+    },
+    "status=2": {
+      "model": "rftoolsbuilder:block/supportblock_status2"
+    }
   }
 }

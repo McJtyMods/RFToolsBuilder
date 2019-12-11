@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "rftoolsbuilder:shape_card_pump_dirt"
+    ]
+  },
+  "criteria": {
+    "shape_card": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "rftoolsbuilder:shape_card_def"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "rftoolsbuilder:shape_card_pump_dirt"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "shape_card",
+      "has_the_recipe"
+    ]
+  ]
+}

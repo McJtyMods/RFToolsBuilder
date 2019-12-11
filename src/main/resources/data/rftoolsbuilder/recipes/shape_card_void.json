@@ -1,0 +1,23 @@
+{
+  "type": "mcjtylib:copy_nbt",
+  "group": "rftools",
+  "pattern": [
+    "xOx",
+    "OMO",
+    "xOx"
+  ],
+  "key": {
+    "x": {
+      "tag": "forge:dyes/black"
+    },
+    "M": {
+      "item": "rftoolsbuilder:shape_card_def"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "result": {
+    "item": "rftoolsbuilder:shape_card_void"
+  }
+}

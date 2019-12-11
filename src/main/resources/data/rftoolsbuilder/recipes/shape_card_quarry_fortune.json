@@ -1,28 +1,29 @@
 {
   "type": "mcjtylib:copy_nbt",
+  "group": "rftools",
   "pattern": [
-    "RnR",
+    "sns",
     "eMd",
-    "RrR"
+    "srs"
   ],
   "key": {
-    "R": {
-      "item": "rftoolsbase:dimensionalshard"
-    },
-    "d": {
-      "item": "minecraft:diamond"
-    },
-    "r": {
-      "item": "minecraft:redstone"
-    },
-    "e": {
-      "item": "minecraft:emerald"
-    },
     "n": {
       "item": "minecraft:ghast_tear"
     },
     "M": {
       "item": "rftoolsbuilder:shape_card_quarry"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    },
+    "s": {
+      "item": "rftoolsbase:dimensionalshard"
+    },
+    "d": {
+      "item": "minecraft:diamond"
+    },
+    "e": {
+      "item": "minecraft:emerald"
     }
   },
   "result": {

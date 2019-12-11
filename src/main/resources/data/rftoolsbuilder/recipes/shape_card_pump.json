@@ -1,16 +1,14 @@
 {
   "type": "mcjtylib:copy_nbt",
+  "group": "rftools",
   "pattern": [
-    "rwr",
+    "rWr",
     "bMb",
-    "rlr"
+    "rLr"
   ],
   "key": {
-    "w": {
-      "item": "minecraft:water_bucket"
-    },
-    "l": {
-      "item": "minecraft:lava_bucket"
+    "M": {
+      "item": "rftoolsbuilder:shape_card_def"
     },
     "r": {
       "item": "minecraft:redstone"
@@ -18,8 +16,11 @@
     "b": {
       "item": "minecraft:bucket"
     },
-    "M": {
-      "item": "rftoolsbuilder:shape_card_def"
+    "W": {
+      "item": "minecraft:water_bucket"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
     }
   },
   "result": {

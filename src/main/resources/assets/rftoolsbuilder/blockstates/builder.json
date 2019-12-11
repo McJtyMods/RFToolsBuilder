@@ -1,10 +1,19 @@
 {
   "variants": {
-    "facing=north": { "model": "rftoolsbuilder:block/builder" },
-    "facing=south": { "model": "rftoolsbuilder:block/builder", "y": 180 },
-    "facing=west": { "model": "rftoolsbuilder:block/builder", "y": 270 },
-    "facing=east": { "model": "rftoolsbuilder:block/builder", "y": 90 },
-    "facing=up": { "model": "rftoolsbuilder:block/builder", "x": -90 },
-    "facing=down": { "model": "rftoolsbuilder:block/builder", "x": 90 }
+    "facing=north": {
+      "model": "rftoolsbuilder:block/builder"
+    },
+    "facing=south": {
+      "model": "rftoolsbuilder:block/builder",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "rftoolsbuilder:block/builder",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "rftoolsbuilder:block/builder",
+      "y": 90
+    }
   }
 }

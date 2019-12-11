@@ -1,5 +1,7 @@
 {
   "variants": {
-    "": { "model": "rftoolsbase:block/empty_model" }
+    "": {
+      "model": "rftoolsbase:block/empty_model"
+    }
   }
 }

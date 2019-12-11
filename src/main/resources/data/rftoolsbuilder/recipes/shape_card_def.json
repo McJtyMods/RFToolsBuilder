@@ -1,22 +1,23 @@
 {
   "type": "minecraft:crafting_shaped",
+  "group": "rftools",
   "pattern": [
-    "pbp",
+    "pBp",
     "rir",
-    "pbp"
+    "pBp"
   ],
   "key": {
-    "i": {
-      "item": "minecraft:iron_ingot"
+    "p": {
+      "item": "minecraft:paper"
+    },
+    "B": {
+      "item": "minecraft:bricks"
     },
     "r": {
       "item": "minecraft:redstone"
     },
-    "b": {
-      "item": "minecraft:bricks"
-    },
-    "p": {
-      "item": "minecraft:paper"
+    "i": {
+      "tag": "forge:ingots/iron"
     }
   },
   "result": {

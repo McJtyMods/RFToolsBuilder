@@ -1,16 +1,17 @@
 {
   "type": "mcjtylib:copy_nbt",
+  "group": "rftools",
   "pattern": [
-    "ggg",
-    "gMg",
-    "ggg"
+    "DDD",
+    "DMD",
+    "DDD"
   ],
   "key": {
-    "g": {
-      "item": "minecraft:dirt"
-    },
     "M": {
       "item": "rftoolsbuilder:shape_card_pump_clear"
+    },
+    "D": {
+      "item": "minecraft:dirt"
     }
   },
   "result": {
