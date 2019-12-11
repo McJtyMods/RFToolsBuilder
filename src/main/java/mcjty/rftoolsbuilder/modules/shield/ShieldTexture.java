@@ -7,6 +7,7 @@ import java.util.Map;
 
 public enum ShieldTexture implements IStringSerializable {
     SHIELD("Shield", "shield"),
+    STRIPES("Stripes", "shieldstripes"),
     TEST("Test", "shieldtest")
     ;
 
