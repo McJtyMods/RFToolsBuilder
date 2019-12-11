@@ -39,6 +39,8 @@ import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
@@ -201,7 +203,20 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         return renderData;
     }
 
-//    @Override
+    @Override
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket packet) {
+        int oldColor = shieldColor;
+        ShieldTexture oldTexture = shieldTexture;
+        super.onDataPacket(net, packet);
+        if (oldColor != shieldColor || oldTexture != shieldTexture) {
+            renderData = null;
+            // @todo this doesn't help to automatically update the color
+            BlockState state = world.getBlockState(pos);
+            world.notifyBlockUpdate(pos, state, state, Constants.BlockFlags.BLOCK_UPDATE + Constants.BlockFlags.NOTIFY_NEIGHBORS);
+        }
+    }
+
+    //    @Override
 //    @Optional.Method(modid = "opencomputers")
 //    public String getComponentName() {
 //        return COMPONENT_NAME;
@@ -339,7 +354,6 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     public void setShieldColor(int shieldColor) {
         this.shieldColor = shieldColor;
-        renderData = null;
         updateShield();
         markDirtyClient();
     }
@@ -760,7 +774,6 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             }
             shieldBlocks.add(new RelCoordinateShield(c.getX() - xCoord, c.getY() - yCoord, c.getZ() - zCoord, st));
             getWorld().setBlockState(c, Blocks.AIR.getDefaultState());
-//            ShieldWorldInfo.get(world).decomposeShield(pos, c);
         }
 
         shieldComposed = true;
@@ -826,7 +839,6 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             //@todo
             shieldBlocks.remove(new RelCoordinate(pos.getX() - xCoord, pos.getY() - yCoord, pos.getZ() - zCoord));
             getWorld().setBlockState(pos, templateState, 2);
-//            ShieldWorldInfo.get(world).decomposeShield(this.pos, pos);
         } else {
             Logging.message(player, TextFormatting.YELLOW + "The selected shield can't do anything with this block!");
             return;
@@ -850,7 +862,6 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 BlockState oldState = getWorld().getBlockState(pos);
                 if (oldState.getBlock() instanceof ShieldingBlock) {
                     getWorld().setBlockState(pos, Blocks.AIR.getDefaultState());
-//                    ShieldWorldInfo.get(world).decomposeShield(this.pos, pos);
                 }
             } else {
                 updateShieldBlock(mimic, shielding, c);
@@ -865,11 +876,12 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         int zCoord = getPos().getZ();
         BlockPos pp = new BlockPos(xCoord + c.getDx(), yCoord + c.getDy(), zCoord + c.getDz());
         BlockState oldState = getWorld().getBlockState(pp);
-        if ((!oldState.getMaterial().isReplaceable()) && !(oldState.getBlock() instanceof ShieldTemplateBlock)) {
-            return;
+        if (!(oldState.getBlock() instanceof ShieldingBlock)) {
+            if ((!oldState.getMaterial().isReplaceable()) && !(oldState.getBlock() instanceof ShieldTemplateBlock)) {
+                return;
+            }
         }
         world.setBlockState(pp, shielding, Constants.BlockFlags.BLOCK_UPDATE);
-//        ShieldWorldInfo.get(world).composeShield(this.pos, pp);
 
         TileEntity te = getWorld().getTileEntity(pp);
         if (te instanceof ShieldingTileEntity) {
@@ -900,7 +912,6 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             Block block = getWorld().getBlockState(pp).getBlock();
             if (getWorld().isAirBlock(pp) || block instanceof ShieldingBlock) {
                 getWorld().setBlockState(new BlockPos(pp), templateState, 2);
-//                ShieldWorldInfo.get(world).decomposeShield(this.pos, pp);
             } else if (templateState.getMaterial() != Material.AIR){
                 if (!isShapedShield()) {
                     // No room, just spawn the block
@@ -1040,19 +1051,23 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             templateState = Blocks.AIR.getDefaultState();
         }
 
-        shieldRenderingMode = ShieldRenderingMode.values()[tagCompound.getInt("visMode")];
-        shieldTexture = ShieldTexture.values()[tagCompound.getInt("shieldTexture")];
-        rsMode = RedstoneMode.values()[(tagCompound.getByte("rsMode"))];
-        damageMode = DamageTypeMode.values()[(tagCompound.getByte("damageMode"))];
-        blockLight = tagCompound.getBoolean("blocklight");
+        if (tagCompound.contains("Info")) {
+            CompoundNBT info = tagCompound.getCompound("Info");
+            shieldRenderingMode = ShieldRenderingMode.values()[info.getInt("visMode")];
+            shieldTexture = ShieldTexture.values()[info.getInt("shieldTexture")];
+            rsMode = RedstoneMode.values()[(info.getByte("rsMode"))];
+            damageMode = DamageTypeMode.values()[(info.getByte("damageMode"))];
+            blockLight = info.getBoolean("blocklight");
 
-        shieldColor = tagCompound.getInt("shieldColor");
-        if (shieldColor == 0) {
-            shieldColor = 0x96ffc8;
+            if (info.contains("shieldColor")) {
+                shieldColor = info.getInt("shieldColor");
+            } else {
+                shieldColor = 0x96ffc8;
+            }
+            readFiltersFromNBT(info);
         }
 
         renderData = null;
-        readFiltersFromNBT(tagCompound);
     }
 
     @Override
@@ -1065,15 +1080,16 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             tagCompound.putInt("templateColor", ((ShieldTemplateBlock)templateState.getBlock()).getColor().ordinal());
         }
 
-        tagCompound.putInt("visMode", shieldRenderingMode.ordinal());
-        tagCompound.putInt("shieldTexture", shieldTexture.ordinal());
-        tagCompound.putByte("rsMode", (byte) rsMode.ordinal());
-        tagCompound.putByte("damageMode", (byte) damageMode.ordinal());
+        CompoundNBT info = getOrCreateInfo(tagCompound);
+        info.putInt("visMode", shieldRenderingMode.ordinal());
+        info.putInt("shieldTexture", shieldTexture.ordinal());
+        info.putByte("rsMode", (byte) rsMode.ordinal());
+        info.putByte("damageMode", (byte) damageMode.ordinal());
 
-        tagCompound.putBoolean("blocklight", blockLight);
-        tagCompound.putInt("shieldColor", shieldColor);
+        info.putBoolean("blocklight", blockLight);
+        info.putInt("shieldColor", shieldColor);
 
-        writeFiltersToNBT(tagCompound);
+        writeFiltersToNBT(info);
     }
 
     @Override
@@ -1157,8 +1173,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             damageMode = DamageTypeMode.values()[(info.getByte("damageMode"))];
             blockLight = info.getBoolean("blocklight");
 
-            shieldColor = info.getInt("shieldColor");
-            if (shieldColor == 0) {
+            if (info.contains("shieldColor")) {
+                shieldColor = info.getInt("shieldColor");
+            } else {
                 shieldColor = 0x96ffc8;
             }
 
