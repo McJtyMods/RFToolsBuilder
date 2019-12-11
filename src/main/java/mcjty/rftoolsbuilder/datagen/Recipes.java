@@ -32,6 +32,9 @@ public class Recipes extends BaseRecipeProvider {
         build(consumer, ShapedRecipeBuilder.shapedRecipe(BuilderSetup.SHAPE_CARD_DEF.get())
                         .addCriterion("iron_ingot", InventoryChangeTrigger.Instance.forItems(Items.IRON_INGOT)),
                 "pBp", "rir", "pBp");
+
+        // @todo recipes for shield projector and shield templates
+
         build(consumer, CopyNBTRecipeBuilder.shapedRecipe(BuilderSetup.SHAPE_CARD_PUMP.get())
                         .key('M', BuilderSetup.SHAPE_CARD_DEF.get())
                         .addCriterion("shape_card", InventoryChangeTrigger.Instance.forItems(BuilderSetup.SHAPE_CARD_DEF.get())),

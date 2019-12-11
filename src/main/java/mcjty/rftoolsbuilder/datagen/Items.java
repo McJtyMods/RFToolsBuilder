@@ -20,10 +20,10 @@ public class Items extends BaseItemModelProvider {
         parentedBlock(ShieldSetup.TEMPLATE_YELLOW.get(), "block/yellow_shield_template");
         parentedBlock(ShieldSetup.TEMPLATE_GREEN.get(), "block/green_shield_template");
 
-        parentedBlock(ShieldSetup.SHIELD_BLOCK1.get(), "block/shield_block1");
-        parentedBlock(ShieldSetup.SHIELD_BLOCK2.get(), "block/shield_block2");
-        parentedBlock(ShieldSetup.SHIELD_BLOCK3.get(), "block/shield_block3");
-        parentedBlock(ShieldSetup.SHIELD_BLOCK4.get(), "block/shield_block4");
+        parentedBlock(ShieldSetup.SHIELD_BLOCK1.get(), "block/shield_block");
+        parentedBlock(ShieldSetup.SHIELD_BLOCK2.get(), "block/shield_block");
+        parentedBlock(ShieldSetup.SHIELD_BLOCK3.get(), "block/shield_block");
+        parentedBlock(ShieldSetup.SHIELD_BLOCK4.get(), "block/shield_block");
 
         parentedBlock(BuilderSetup.BUILDER.get(),"block/builder");
 
