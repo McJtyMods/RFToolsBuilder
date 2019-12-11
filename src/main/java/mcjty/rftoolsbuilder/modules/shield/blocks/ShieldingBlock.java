@@ -117,6 +117,18 @@ public class ShieldingBlock extends Block {
     }
 
     @Override
+    public VoxelShape getRenderShape(BlockState state, IBlockReader world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof ShieldingTileEntity) {
+            BlockState mimic = ((ShieldingTileEntity) te).getMimic();
+            if (mimic != null) {
+                return mimic.getRenderShape(world, pos);
+            }
+        }
+        return super.getRenderShape(state, world, pos);
+    }
+
+    @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
         Entity entity = context.getEntity();
         if (state.get(BLOCKED_HOSTILE)) {
