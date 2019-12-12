@@ -5,11 +5,13 @@ import mcjty.lib.datagen.BaseRecipeProvider;
 import mcjty.rftoolsbase.modules.various.VariousSetup;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
+import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.IFinishedRecipe;
 import net.minecraft.data.ShapedRecipeBuilder;
 import net.minecraft.item.Items;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.Tags;
 
@@ -33,7 +35,44 @@ public class Recipes extends BaseRecipeProvider {
                         .addCriterion("iron_ingot", InventoryChangeTrigger.Instance.forItems(Items.IRON_INGOT)),
                 "pBp", "rir", "pBp");
 
-        // @todo recipes for shield projector and shield templates
+        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldSetup.SHIELD_BLOCK1.get())
+                        .key('g', Tags.Items.INGOTS_GOLD)
+                        .addCriterion("machine_frame", InventoryChangeTrigger.Instance.forItems(VariousSetup.MACHINE_FRAME.get())),
+                "gTg", "rFr", "OOO");
+        build(consumer, CopyNBTRecipeBuilder.shapedRecipe(ShieldSetup.SHIELD_BLOCK2.get())
+                        .key('M', ShieldSetup.SHIELD_BLOCK1.get())
+                        .addCriterion("machine_frame", InventoryChangeTrigger.Instance.forItems(VariousSetup.MACHINE_FRAME.get())),
+                "ROR", "OMO", "ROR");
+        build(consumer, CopyNBTRecipeBuilder.shapedRecipe(ShieldSetup.SHIELD_BLOCK3.get())
+                        .key('M', ShieldSetup.SHIELD_BLOCK2.get())
+                        .addCriterion("machine_frame", InventoryChangeTrigger.Instance.forItems(VariousSetup.MACHINE_FRAME.get())),
+                "sOs", "OMO", "sOs");
+        build(consumer, CopyNBTRecipeBuilder.shapedRecipe(ShieldSetup.SHIELD_BLOCK4.get())
+                        .key('M', ShieldSetup.SHIELD_BLOCK3.get())
+                        .key('n', Items.NETHER_STAR)
+                        .addCriterion("machine_frame", InventoryChangeTrigger.Instance.forItems(VariousSetup.MACHINE_FRAME.get())),
+                "nOs", "OMO", "sOn");
+
+        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldSetup.TEMPLATE_BLUE.get())
+                        .key('w', ItemTags.WOOL)
+                        .key('l', Tags.Items.DYES_BLUE)
+                        .addCriterion("glass", InventoryChangeTrigger.Instance.forItems(Items.GLASS)),
+                "www", "lGl", "www");
+        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldSetup.TEMPLATE_RED.get())
+                        .key('w', ItemTags.WOOL)
+                        .key('l', Tags.Items.DYES_RED)
+                        .addCriterion("glass", InventoryChangeTrigger.Instance.forItems(Items.GLASS)),
+                "www", "lGl", "www");
+        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldSetup.TEMPLATE_YELLOW.get())
+                        .key('w', ItemTags.WOOL)
+                        .key('l', Tags.Items.DYES_YELLOW)
+                        .addCriterion("glass", InventoryChangeTrigger.Instance.forItems(Items.GLASS)),
+                "www", "lGl", "www");
+        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldSetup.TEMPLATE_GREEN.get())
+                        .key('w', ItemTags.WOOL)
+                        .key('l', Tags.Items.DYES_GREEN)
+                        .addCriterion("glass", InventoryChangeTrigger.Instance.forItems(Items.GLASS)),
+                "www", "lGl", "www");
 
         build(consumer, CopyNBTRecipeBuilder.shapedRecipe(BuilderSetup.SHAPE_CARD_PUMP.get())
                         .key('M', BuilderSetup.SHAPE_CARD_DEF.get())

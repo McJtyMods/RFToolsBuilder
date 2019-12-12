@@ -1,0 +1,23 @@
+{
+  "type": "mcjtylib:copy_nbt",
+  "group": "rftools",
+  "pattern": [
+    "ROR",
+    "OMO",
+    "ROR"
+  ],
+  "key": {
+    "M": {
+      "item": "rftoolsbuilder:shield_block1"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "result": {
+    "item": "rftoolsbuilder:shield_block2"
+  }
+}
