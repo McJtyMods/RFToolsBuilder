@@ -7,8 +7,7 @@ import java.util.Map;
 
 public enum ShieldTexture implements IStringSerializable {
     SHIELD("Shield", "shield"),
-    STRIPES("Stripes", "shieldstripes"),
-    TEST("Test", "shieldtest")
+    STRIPES("Rain", "shieldstripes")
     ;
 
     private static final Map<String, ShieldTexture> MODE_TO_MODE = new HashMap<>();
