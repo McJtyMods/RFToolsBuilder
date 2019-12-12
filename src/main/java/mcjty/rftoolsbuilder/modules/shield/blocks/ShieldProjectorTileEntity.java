@@ -1054,6 +1054,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             templateState = Blocks.AIR.getDefaultState();
         }
 
+        readEnergyCap(tagCompound);
+
         if (tagCompound.contains("Info")) {
             CompoundNBT info = tagCompound.getCompound("Info");
             shieldRenderingMode = ShieldRenderingMode.values()[info.getInt("visMode")];
@@ -1093,6 +1095,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         info.putInt("shieldColor", shieldColor);
 
         writeFiltersToNBT(info);
+        writeEnergyCap(tagCompound);
     }
 
     @Override
