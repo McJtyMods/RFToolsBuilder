@@ -21,6 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -148,7 +149,22 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
         super.onPlayerDestroy(world, pos, state);
     }
 
-//
+    @Override
+    public void onExplosionDestroy(World world, BlockPos pos, Explosion explosionIn) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof ShieldProjectorTileEntity) {
+            if (!world.getWorld().isRemote) {
+                ShieldProjectorTileEntity shieldTileEntity = (ShieldProjectorTileEntity) te;
+                if (shieldTileEntity.isShieldComposed()) {
+                    shieldTileEntity.decomposeShield();
+                }
+            }
+        }
+
+        super.onExplosionDestroy(world, pos, explosionIn);
+    }
+
+    //
 //    @Override
 //    public boolean shouldRedstoneConduitConnect(World world, int x, int y, int z, Direction from) {
 //        return true;
