@@ -1,5 +1,6 @@
 Upcoming:
 - Fixed power bar display in the GUI of the shield
+- Fixed cleanup of shapecard previews
 
 1.2.11:
 - Updates to latest McJtyLib

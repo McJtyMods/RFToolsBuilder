@@ -10,8 +10,8 @@ import mcjty.rftoolsbuilder.modules.builder.client.BuilderRenderer;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
 import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
 import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
-import mcjty.rftoolsbuilder.modules.shield.client.ShieldingBakedModel;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
+import mcjty.rftoolsbuilder.modules.shield.client.ShieldingBakedModel;
 import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
 import net.minecraft.client.renderer.model.ModelResourceLocation;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -19,8 +19,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelBakeEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -36,6 +36,7 @@ public class ClientRegistration {
         GenericGuiContainer.register(BuilderSetup.CONTAINER_BUILDER.get(), GuiBuilder::new);
         GenericGuiContainer.register(ShieldSetup.CONTAINER_SHIELD.get(), GuiShield::new);
         BuilderRenderer.register();
+        MinecraftForge.EVENT_BUS.addListener(ShapeDataManagerClient::cleanupOldRenderers);
     }
 
     @SubscribeEvent
@@ -71,10 +72,5 @@ public class ClientRegistration {
                             DAMAGE_HOSTILE, DAMAGE_ITEMS, DAMAGE_PASSIVE, DAMAGE_PLAYERS,
                             FLAG_OPAQUE, RENDER_MODE);
                 });
-    }
-
-    @SubscribeEvent
-    public static void onRenderWorldLastEvent(RenderWorldLastEvent event) {
-        ShapeDataManagerClient.cleanupOldRenderers();
     }
 }

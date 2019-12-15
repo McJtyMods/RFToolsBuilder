@@ -1,5 +1,7 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import net.minecraftforge.client.event.RenderWorldLastEvent;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -29,7 +31,7 @@ public class ShapeDataManagerClient {
         return data;
     }
 
-    public static void cleanupOldRenderers() {
+    public static void cleanupOldRenderers(RenderWorldLastEvent event) {
         cleanupCounter--;
         if (cleanupCounter >= 0) {
             return;
