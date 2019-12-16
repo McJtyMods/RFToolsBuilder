@@ -1,4 +1,4 @@
-Upcoming:
+1.2.12:
 - Fixed power bar display in the GUI of the shield
 - Fixed cleanup of shapecard previews
 - When the shield projector is destroyed by an explosion the shield template blocks will be restored first
