@@ -6,11 +6,9 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.modules.shield.ShieldConfiguration;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.common.Mod;
 
 import java.nio.file.Path;
 
-@Mod.EventBusSubscriber
 public class Config {
 
     public static final String CATEGORY_GENERAL = "general";
