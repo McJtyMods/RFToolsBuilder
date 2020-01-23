@@ -7,6 +7,7 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.PushReaction;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
@@ -17,7 +18,6 @@ import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.EnumProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -47,9 +47,9 @@ public class ShieldingBlock extends Block {
 
     public static final VoxelShape COLLISION_SHAPE = VoxelShapes.create(0.002, 0.002, 0.002, 0.998, 0.998, 0.998);
 
-    private final BlockRenderLayer layer;
+    private final RenderType layer;
 
-    public ShieldingBlock(BlockRenderLayer layer) {
+    public ShieldingBlock(RenderType layer) {
         super(Block.Properties.create(Material.GLASS)
                 .hardnessAndResistance(-1.0F, 3600000.0F)
                 .noDrops());
@@ -111,20 +111,22 @@ public class ShieldingBlock extends Block {
         return false;
     }
 
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return layer;
-    }
+    // @todo 1.15
+//    @Override
+//    public BlockRenderLayer getRenderLayer() {
+//        return layer;
+//    }
 
     @Override
     public PushReaction getPushReaction(BlockState state) {
         return PushReaction.BLOCK;
     }
 
-    @Override
-    public boolean isSolid(BlockState state) {
-        return false;
-    }
+    // @todo 1.15
+//    @Override
+//    public boolean isSolid(BlockState state) {
+//        return false;
+//    }
 
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
@@ -256,7 +258,7 @@ public class ShieldingBlock extends Block {
         if (!(entity instanceof LivingEntity)) {
             if (!state.get(BLOCKED_ITEMS)) {
                 // Items should be able to pass through. We just move the entity to below this block.
-                entity.setPosition(entity.posX, entity.posY - 1, entity.posZ);
+                entity.setPosition(entity.getPosX(), entity.getPosY() - 1, entity.getPosZ());
             }
         }
         handleDamage(state, world, pos, entity);

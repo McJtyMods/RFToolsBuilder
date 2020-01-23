@@ -46,7 +46,7 @@ public class BuilderSetup {
 
     public static final RegistryObject<BaseBlock> BUILDER = BLOCKS.register("builder", BuilderTileEntity::createBlock);
     public static final RegistryObject<Item> BUILDER_ITEM = ITEMS.register("builder", () -> new BlockItem(BUILDER.get(), RFToolsBuilder.createStandardProperties()));
-    public static final RegistryObject<TileEntityType<?>> TYPE_BUILDER = TILES.register("builder", () -> TileEntityType.Builder.create(BuilderTileEntity::new, BUILDER.get()).build(null));
+    public static final RegistryObject<TileEntityType<BuilderTileEntity>> TYPE_BUILDER = TILES.register("builder", () -> TileEntityType.Builder.create(BuilderTileEntity::new, BUILDER.get()).build(null));
     public static final RegistryObject<ContainerType<GenericContainer>> CONTAINER_BUILDER = CONTAINERS.register("builder", GenericContainer::createContainerType);
 
     public static final RegistryObject<Item> SUPER_HARVESTING_TOOL = ITEMS.register("superharvestingtool", SuperHarvestingTool::new);

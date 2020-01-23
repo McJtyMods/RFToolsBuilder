@@ -2,7 +2,6 @@ package mcjty.rftoolsbuilder.modules.shield.blocks;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.util.BlockRenderLayer;
 
 public class ShieldTemplateBlock extends Block {
 
@@ -23,10 +22,11 @@ public class ShieldTemplateBlock extends Block {
         this.color = color;
     }
 
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.TRANSLUCENT;
-    }
+    // @todo 1.15
+//    @Override
+//    public BlockRenderLayer getRenderLayer() {
+//        return BlockRenderLayer.TRANSLUCENT;
+//    }
 
     public TemplateColor getColor() {
         return color;

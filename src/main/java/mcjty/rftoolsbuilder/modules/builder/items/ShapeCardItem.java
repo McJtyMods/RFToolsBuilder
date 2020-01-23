@@ -68,7 +68,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
             ItemStack stack = context.getItem();
             int mode = getMode(stack);
             if (mode == MODE_NONE) {
-                if (player.isSneaking()) {
+                if (player.func_225608_bj_ /*isSneaking*/()) {
                     if (world.getTileEntity(pos) instanceof BuilderTileEntity) {
                         setCurrentBlock(stack, new GlobalCoordinate(pos, world.getDimension().getType()));
                         Logging.message(player, TextFormatting.GREEN + "Now select the first corner");

@@ -32,8 +32,8 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
-import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.setup.ClientCommandHandler;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -387,8 +387,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 return;
             }
 
-            BlockPos.MutableBlockPos src = new BlockPos.MutableBlockPos();
-            BlockPos.MutableBlockPos dest = new BlockPos.MutableBlockPos();
+            BlockPos.Mutable src = new BlockPos.Mutable();
+            BlockPos.Mutable dest = new BlockPos.Mutable();
             for (int x = minBox.getX(); x <= maxBox.getX(); x++) {
                 for (int y = minBox.getY(); y <= maxBox.getY(); y++) {
                     for (int z = minBox.getZ(); z <= maxBox.getZ(); z++) {
@@ -450,8 +450,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             DimensionType dimension = chamberChannel.getDimension();
             World world = WorldTools.getWorld(this.world, dimension);
 
-            BlockPos.MutableBlockPos src = new BlockPos.MutableBlockPos();
-            BlockPos.MutableBlockPos dest = new BlockPos.MutableBlockPos();
+            BlockPos.Mutable src = new BlockPos.Mutable();
+            BlockPos.Mutable dest = new BlockPos.Mutable();
             for (int x = minBox.getX(); x <= maxBox.getX(); x++) {
                 for (int y = minBox.getY(); y <= maxBox.getY(); y++) {
                     for (int z = minBox.getZ(); z <= maxBox.getZ(); z++) {
@@ -817,9 +817,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             double sqradius = 30 * 30;
             for (ServerPlayerEntity player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
                 if (player.dimension.equals(world.getDimension().getType())) {
-                    double d0 = x - player.posX;
-                    double d1 = y - player.posY;
-                    double d2 = z - player.posZ;
+                    double d0 = x - player.getPosX();
+                    double d1 = y - player.getPosY();
+                    double d2 = z - player.getPosZ();
                     if (d0 * d0 + d1 * d1 + d2 * d2 < sqradius) {
                         RFToolsBuilderMessages.sendToClient(player, ClientCommandHandler.CMD_POSITION_TO_CLIENT,
                                 TypedMap.builder().put(ClientCommandHandler.PARAM_POS, getPos()).put(ClientCommandHandler.PARAM_SCAN, scan));
@@ -1816,9 +1816,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 return;
             }
 
-            double newX = destX + (entity.posX - x);
-            double newY = destY + (entity.posY - y);
-            double newZ = destZ + (entity.posZ - z);
+            double newX = destX + (entity.getPosX() - x);
+            double newY = destY + (entity.getPosY() - y);
+            double newZ = destZ + (entity.getPosZ() - z);
 
             teleportEntity(world, destWorld, entity, newX, newY, newZ);
         }
@@ -1838,9 +1838,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     return;
                 }
 
-                double newX = destX + (entity.posX - x);
-                double newY = destY + (entity.posY - y);
-                double newZ = destZ + (entity.posZ - z);
+                double newX = destX + (entity.getPosX() - x);
+                double newY = destY + (entity.getPosY() - y);
+                double newZ = destZ + (entity.getPosZ() - z);
                 teleportEntity(world, destWorld, entity, newX, newY, newZ);
             }
         }
@@ -1850,9 +1850,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     return;
                 }
 
-                double newX = x + (entity.posX - destX);
-                double newY = y + (entity.posY - destY);
-                double newZ = z + (entity.posZ - destZ);
+                double newX = x + (entity.getPosX() - destX);
+                double newY = y + (entity.getPosY() - destY);
+                double newZ = z + (entity.getPosZ() - destZ);
                 teleportEntity(destWorld, world, entity, newX, newY, newZ);
             }
         }
@@ -1868,7 +1868,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
 
     private boolean isEntityInBlock(int x, int y, int z, Entity entity) {
-        if (entity.posX >= x && entity.posX < x + 1 && entity.posY >= y && entity.posY < y + 1 && entity.posZ >= z && entity.posZ < z + 1) {
+        if (entity.getPosX() >= x && entity.getPosX() < x + 1 && entity.getPosY() >= y && entity.getPosY() < y + 1 && entity.getPosZ() >= z && entity.getPosZ() < z + 1) {
             return true;
         }
         return false;
@@ -2030,13 +2030,13 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return c;
     }
 
-    private void sourceToDest(BlockPos source, BlockPos.MutableBlockPos dest) {
+    private void sourceToDest(BlockPos source, BlockPos.Mutable dest) {
         rotate(source, dest);
         dest.setPos(dest.getX() + projDx, dest.getY() + projDy, dest.getZ() + projDz);
     }
 
 
-    private void rotate(BlockPos c, BlockPos.MutableBlockPos dest) {
+    private void rotate(BlockPos c, BlockPos.Mutable dest) {
         switch (rotate) {
             case 0:
                 dest.setPos(c);

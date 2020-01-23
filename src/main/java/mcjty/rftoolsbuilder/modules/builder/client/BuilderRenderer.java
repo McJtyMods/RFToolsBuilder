@@ -1,23 +1,30 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import mcjty.rftoolsbase.modules.hud.client.HudRenderer;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
+import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 
 public class BuilderRenderer extends TileEntityRenderer<BuilderTileEntity> {
 
+    public BuilderRenderer(TileEntityRendererDispatcher dispatcher) {
+        super(dispatcher);
+    }
+
     @Override
-    public void render(BuilderTileEntity te, double x, double y, double z, float partialTicks, int destroyStage) {
-        super.render(te, x, y, z, partialTicks, destroyStage);
+    public void render(BuilderTileEntity te, float v, MatrixStack matrixStack, IRenderTypeBuffer buffer, int i, int i1) {
         if (BuilderConfiguration.showProgressHud.get()) {
-            HudRenderer.renderHud(te, x, y, z);
+            HudRenderer.renderHud(matrixStack, buffer, te, 0,0,0 /*@todo 1.15 was x,y,z*/);
         }
     }
 
     public static void register() {
-        ClientRegistry.bindTileEntitySpecialRenderer(BuilderTileEntity.class, new BuilderRenderer());
+        ClientRegistry.bindTileEntityRenderer(BuilderSetup.TYPE_BUILDER.get(), dispatcher -> new BuilderRenderer(dispatcher));
     }
 }

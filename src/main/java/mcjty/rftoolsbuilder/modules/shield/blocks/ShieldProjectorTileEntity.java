@@ -858,7 +858,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         int xCoord = getPos().getX();
         int yCoord = getPos().getY();
         int zCoord = getPos().getZ();
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        BlockPos.Mutable pos = new BlockPos.Mutable();
         for (RelCoordinateShield c : shieldBlocks) {
             if (Blocks.AIR.equals(shielding.getBlock())) {
                 pos.setPos(xCoord + c.getDx(), yCoord + c.getDy(), zCoord + c.getDz());
@@ -906,7 +906,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         int xCoord = getPos().getX();
         int yCoord = getPos().getY();
         int zCoord = getPos().getZ();
-        BlockPos.MutableBlockPos pp = new BlockPos.MutableBlockPos();
+        BlockPos.Mutable pp = new BlockPos.Mutable();
         for (RelCoordinate c : shieldBlocks) {
             int cx = xCoord + c.getDx();
             int cy = yCoord + c.getDy();
@@ -975,7 +975,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         int x = coordinate.getX();
         int y = coordinate.getY();
         int z = coordinate.getZ();
-        BlockPos.MutableBlockPos c = new BlockPos.MutableBlockPos();
+        BlockPos.Mutable c = new BlockPos.Mutable();
         for (int xx = x-1 ; xx <= x+1 ; xx++) {
             for (int yy = y-1 ; yy <= y+1 ; yy++) {
                 for (int zz = z-1 ; zz <= z+1 ; zz++) {

@@ -384,8 +384,8 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         window.handleMouseInput(0); // @todo 1.14 is this right? What button?
 
         MouseHelper mouse = getMinecraft().mouseHelper;
-        int x = (int)mouse.getMouseX() * width / getMinecraft().mainWindow.getWidth();
-        int y = (int)mouse.getMouseY() * height / getMinecraft().mainWindow.getHeight();
+        int x = (int)mouse.getMouseX() * width / getMinecraft().getMainWindow().getWidth();
+        int y = (int)mouse.getMouseY() * height / getMinecraft().getMainWindow().getHeight();
         x -= guiLeft;
         y -= guiTop;
 
@@ -497,8 +497,8 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
             int guiLeft = (this.width - this.xSize) / 2;
             int guiTop = (this.height - this.ySize) / 2;
             MouseHelper mouse = getMinecraft().mouseHelper;
-            int x = (int)mouse.getMouseX() * width / getMinecraft().mainWindow.getWidth();
-            int y = height - (int)mouse.getMouseY() * height / getMinecraft().mainWindow.getHeight() - 1;
+            int x = (int)mouse.getMouseX() * width / getMinecraft().getMainWindow().getWidth();
+            int y = height - (int)mouse.getMouseY() * height / getMinecraft().getMainWindow().getHeight() - 1;
             renderTooltip(tooltips, x-guiLeft, y-guiTop, minecraft.fontRenderer);
         }
     }

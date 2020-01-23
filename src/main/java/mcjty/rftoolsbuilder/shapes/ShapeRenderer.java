@@ -77,7 +77,7 @@ public class ShapeRenderer {
     public void initView(int dx, int dy) {
         Minecraft mc = Minecraft.getInstance();
 
-        MainWindow mainWindow = mc.mainWindow;
+        MainWindow mainWindow = mc.getMainWindow();
         int xScale = mainWindow.getScaledWidth();
         int yScale = mainWindow.getScaledHeight();
         int sx = (dx + 84) * mainWindow.getWidth() / xScale;
@@ -134,7 +134,7 @@ public class ShapeRenderer {
         GlStateManager.rotatef(angle, 0, 1, 0);
 
 //        net.minecraft.client.renderer.RenderHelper.disableStandardItemLighting();
-        Minecraft.getInstance().gameRenderer.disableLightmap();
+        Minecraft.getInstance().gameRenderer.getLightTexture().disableLightmap();
         GlStateManager.disableBlend();
         GlStateManager.enableCull();
         GlStateManager.disableLighting();
@@ -148,7 +148,7 @@ public class ShapeRenderer {
         GlStateManager.disableBlend();
         GlStateManager.enableLighting();
 //        RenderHelper.enableStandardItemLighting();
-        Minecraft.getInstance().gameRenderer.enableLightmap();
+        Minecraft.getInstance().gameRenderer.getLightTexture().enableLightmap();
 
         GlStateManager.popMatrix();
         return doSound;
@@ -197,7 +197,7 @@ public class ShapeRenderer {
 
         GlStateManager.enableTexture();
         GlStateManager.disableBlend();
-        RenderHelper.enableGUIStandardItemLighting();
+        RenderHelper.func_227780_a_();
 
         RenderData data = ShapeDataManagerClient.getRenderData(shapeID);
         if (data != null && !data.previewMessage.isEmpty()) {
@@ -254,7 +254,8 @@ public class ShapeRenderer {
         buffer.pos(xleft, ybot, znorth).color(1f, 1f, 1f, 1f).endVertex();
         buffer.pos(xleft, ybot, znorth).color(1f, 1f, 1f, 1f).endVertex();
         buffer.pos(xright, ybot, znorth).color(1f, 1f, 1f, 1f).endVertex();
-        buffer.setTranslation(0, 0, 0);
+        // @todo 1.15
+//        buffer.setTranslation(0, 0, 0);
         tessellator.draw();
     }
 
@@ -268,7 +269,8 @@ public class ShapeRenderer {
         buffer.pos(0, ylen, 0).color(0f, 1f, 0f, 1f).endVertex();
         buffer.pos(0, 0, 0).color(0f, 0f, 1f, 1f).endVertex();
         buffer.pos(0, 0, zlen).color(0f, 0f, 1f, 1f).endVertex();
-        buffer.setTranslation(0, 0, 0);
+        // @todo 1.15
+//        buffer.setTranslation(0, 0, 0);
         tessellator.draw();
     }
 
@@ -486,12 +488,12 @@ public class ShapeRenderer {
     private static void setupScissor(IShapeParentGui gui) {
         Minecraft mc = Minecraft.getInstance();
 
-        int xScale = mc.mainWindow.getScaledWidth();
-        int yScale = mc.mainWindow.getScaledHeight();
-        int sx = (gui.getPreviewLeft() + 84) * mc.mainWindow.getWidth() / xScale;
-        int sy = (mc.mainWindow.getHeight()) - (gui.getPreviewTop() + 136) * mc.mainWindow.getHeight() / yScale;
-        int sw = 161 * mc.mainWindow.getWidth() / xScale;
-        int sh = 130 * mc.mainWindow.getHeight() / yScale;
+        int xScale = mc.getMainWindow().getScaledWidth();
+        int yScale = mc.getMainWindow().getScaledHeight();
+        int sx = (gui.getPreviewLeft() + 84) * mc.getMainWindow().getWidth() / xScale;
+        int sy = (mc.getMainWindow().getHeight()) - (gui.getPreviewTop() + 136) * mc.getMainWindow().getHeight() / yScale;
+        int sw = 161 * mc.getMainWindow().getWidth() / xScale;
+        int sh = 130 * mc.getMainWindow().getHeight() / yScale;
 
         GL11.glScissor(sx, sy, sw, sh);
     }
