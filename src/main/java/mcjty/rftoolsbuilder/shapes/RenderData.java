@@ -124,17 +124,18 @@ public class RenderData {
         protected net.minecraft.client.renderer.vertex.VertexBuffer vbo;
 
         public void cleanup() {
-            if (useVBO.get()) {
-                if (vbo != null) {
-                    vbo.deleteGlBuffers();
-                    vbo = null;
-                }
-            } else {
-                if (glList != -1) {
-                    GLAllocation.deleteDisplayLists(glList);
-                    glList = -1;
-                }
-            }
+            // @todo 1.15
+//            if (useVBO.get()) {
+//                if (vbo != null) {
+//                    vbo.deleteGlBuffers();
+//                    vbo = null;
+//                }
+//            } else {
+//                if (glList != -1) {
+//                    GLAllocation.deleteDisplayLists(glList);
+//                    glList = -1;
+//                }
+//            }
         }
 
         public void render() {
@@ -145,14 +146,16 @@ public class RenderData {
                     GlStateManager.vertexPointer(3, GL11.GL_FLOAT, 16, 0);
                     GlStateManager.enableClientState(GL11.GL_COLOR_ARRAY);
                     GlStateManager.colorPointer(4, GL11.GL_UNSIGNED_BYTE, 16, 12);
-                    vbo.drawArrays(7);
+                    // @todo 1.15
+//                    vbo.drawArrays(7);
                     vbo.unbindBuffer();
                     GlStateManager.disableClientState(GL11.GL_COLOR_ARRAY);
                     GlStateManager.disableClientState(GL11.GL_VERTEX_ARRAY);
                 }
             } else {
                 if (glList != -1) {
-                    GlStateManager.callList(glList);
+                    // @todo 1.15
+//                    GlStateManager.callList(glList);
                 }
             }
         }
@@ -162,8 +165,9 @@ public class RenderData {
                 vbo = new net.minecraft.client.renderer.vertex.VertexBuffer(DefaultVertexFormats.POSITION_COLOR);
                 buffer = vboBuffer;
             } else {
-                glList = GLAllocation.generateDisplayLists(1);
-                GlStateManager.newList(glList, GL11.GL_COMPILE);
+                // @todo 1.15
+//                glList = GLAllocation.generateDisplayLists(1);
+//                GlStateManager.newList(glList, GL11.GL_COMPILE);
             }
             return buffer;
         }
@@ -172,11 +176,13 @@ public class RenderData {
             if (useVBO.get()) {
                 buffer.finishDrawing();
                 buffer.reset();
-                vbo.bufferData(buffer.getByteBuffer());
+                // @todo 1.15
+//                vbo.bufferData(buffer.getByteBuffer());
 
             } else {
                 tessellator.draw();
-                GlStateManager.endList();
+                // @todo 1.15
+//                GlStateManager.endList();
             }
         }
     }

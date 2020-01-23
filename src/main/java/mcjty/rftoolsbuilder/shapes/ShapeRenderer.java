@@ -361,9 +361,9 @@ public class ShapeRenderer {
                                   boolean grayscale) {
         Map<BlockState, ShapeBlockInfo> palette = new HashMap<>();
 
-        double origOffsetX = buffer.xOffset;
-        double origOffsetY = buffer.yOffset;
-        double origOffsetZ = buffer.zOffset;
+        double origOffsetX = 0;// @todo 1.15 buffer.xOffset;
+        double origOffsetY = 0;// @todo 1.15 buffer.yOffset;
+        double origOffsetZ = 0;// @todo 1.15 buffer.zOffset;
 
         int avgcnt = 0;
         int total = 0;
@@ -382,7 +382,8 @@ public class ShapeRenderer {
                 int cnt = pair.getKey();
                 BlockState state = pair.getValue();
                 if (state != null) {
-                    buffer.setTranslation(origOffsetX + x, origOffsetY + y, origOffsetZ + z);
+                    // @todo 1.15
+//                    buffer.setTranslation(origOffsetX + x, origOffsetY + y, origOffsetZ + z);
                     avgcnt += cnt;
                     total++;
                     ShapeBlockInfo info = ShapeBlockInfo.getBlockInfo(palette, state);
@@ -417,7 +418,8 @@ public class ShapeRenderer {
             }
         }
 
-        buffer.setTranslation(origOffsetX, origOffsetY, origOffsetZ);
+        // @todo 1.15
+//        buffer.setTranslation(origOffsetX, origOffsetY, origOffsetZ);
         data.performRenderToList(tessellator, buffer, offsety);
 
 //        float avg = avgcnt / (float) total;
@@ -452,17 +454,19 @@ public class ShapeRenderer {
             float g = type.getG();
             float b = type.getB();
 
-            double origOffsetX = buffer.xOffset;
-            double origOffsetY = buffer.yOffset;
-            double origOffsetZ = buffer.zOffset;
-            buffer.setTranslation(origOffsetX, origOffsetY-.7f, origOffsetZ);
+            double origOffsetX = 0; // @todo 1.15 buffer.xOffset;
+            double origOffsetY = 0; // @todo 1.15 buffer.yOffset;
+            double origOffsetZ = 0; // @todo 1.15 buffer.zOffset;
+            // @todo 1.15
+//            buffer.setTranslation(origOffsetX, origOffsetY-.7f, origOffsetZ);
             addSideN(buffer, r, g, b, .3f);
             addSideS(buffer, r, g, b, .3f);
             addSideW(buffer, r, g, b, .3f);
             addSideE(buffer, r, g, b, .3f);
             addSideU(buffer, r, g, b, .3f);
             addSideD(buffer, r, g, b, .3f);
-            buffer.setTranslation(origOffsetX, origOffsetY-.2f, origOffsetZ);
+            // @todo 1.15
+//            buffer.setTranslation(origOffsetX, origOffsetY-.2f, origOffsetZ);
             addSideN(buffer, r, g, b, .2f);
             addSideS(buffer, r, g, b, .2f);
             addSideW(buffer, r, g, b, .2f);
@@ -471,14 +475,16 @@ public class ShapeRenderer {
             addSideD(buffer, r, g, b, .2f);
 
             if (doBeacon) {
-                buffer.setTranslation(origOffsetX, origOffsetY+.2f, origOffsetZ);
+                // @todo 1.15
+//                buffer.setTranslation(origOffsetX, origOffsetY+.2f, origOffsetZ);
                 addSideN(buffer, r, g, b, .1f, ScannerConfiguration.locatorBeaconHeight.get());
                 addSideS(buffer, r, g, b, .1f, ScannerConfiguration.locatorBeaconHeight.get());
                 addSideW(buffer, r, g, b, .1f, ScannerConfiguration.locatorBeaconHeight.get());
                 addSideE(buffer, r, g, b, .1f, ScannerConfiguration.locatorBeaconHeight.get());
             }
 
-            buffer.setTranslation(origOffsetX, origOffsetY, origOffsetZ);
+            // @todo 1.15
+//            buffer.setTranslation(origOffsetX, origOffsetY, origOffsetZ);
 
             elements[type.ordinal()].performRenderToList(tessellator, buffer);
         }

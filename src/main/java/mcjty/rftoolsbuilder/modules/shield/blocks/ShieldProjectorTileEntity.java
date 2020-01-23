@@ -513,16 +513,17 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     private Block getShieldingBlock(ShieldRenderingMode render, BlockState mimic) {
         if (mimic != null) {
-            switch (mimic.getBlock().getRenderLayer()) {
-                case SOLID:
-                    return ShieldSetup.SHIELDING_SOLID.get();
-                case CUTOUT_MIPPED:
-                    return ShieldSetup.SHIELDING_CUTOUT.get();   // @todo check?
-                case CUTOUT:
-                    return ShieldSetup.SHIELDING_CUTOUT.get();
-                case TRANSLUCENT:
-                    return ShieldSetup.SHIELDING_TRANSLUCENT.get();
-            }
+            // @todo 1.15
+//            switch (mimic.getBlock().getRenderLayer()) {
+//                case SOLID:
+//                    return ShieldSetup.SHIELDING_SOLID.get();
+//                case CUTOUT_MIPPED:
+//                    return ShieldSetup.SHIELDING_CUTOUT.get();   // @todo check?
+//                case CUTOUT:
+//                    return ShieldSetup.SHIELDING_CUTOUT.get();
+//                case TRANSLUCENT:
+//                    return ShieldSetup.SHIELDING_TRANSLUCENT.get();
+//            }
         } else {
             if (render.isTranslucent()) {
                 return ShieldSetup.SHIELDING_TRANSLUCENT.get();

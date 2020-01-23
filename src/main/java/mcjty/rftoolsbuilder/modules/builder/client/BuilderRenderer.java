@@ -25,6 +25,6 @@ public class BuilderRenderer extends TileEntityRenderer<BuilderTileEntity> {
     }
 
     public static void register() {
-        ClientRegistry.bindTileEntityRenderer(BuilderSetup.TYPE_BUILDER.get(), dispatcher -> new BuilderRenderer(dispatcher));
+        ClientRegistry.bindTileEntityRenderer(BuilderSetup.TYPE_BUILDER.get(), BuilderRenderer::new);
     }
 }
