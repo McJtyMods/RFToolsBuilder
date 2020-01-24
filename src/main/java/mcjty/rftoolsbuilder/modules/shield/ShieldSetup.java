@@ -5,7 +5,6 @@ import mcjty.lib.container.GenericContainer;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.*;
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -56,9 +55,9 @@ public class ShieldSetup {
     public static final RegistryObject<Item> TEMPLATE_GREEN_ITEM = ITEMS.register("green_shield_template_block", () -> new BlockItem(TEMPLATE_GREEN.get(), RFToolsBuilder.createStandardProperties()));
     public static final RegistryObject<Item> TEMPLATE_YELLOW_ITEM = ITEMS.register("yellow_shield_template_block", () -> new BlockItem(TEMPLATE_YELLOW.get(), RFToolsBuilder.createStandardProperties()));
 
-    public static final RegistryObject<ShieldingBlock> SHIELDING_SOLID = BLOCKS.register("shielding_solid", () -> new ShieldingBlock(RenderType.solid()));
-    public static final RegistryObject<ShieldingBlock> SHIELDING_TRANSLUCENT = BLOCKS.register("shielding_translucent", () -> new ShieldingBlock(RenderType.translucent()));
-    public static final RegistryObject<ShieldingBlock> SHIELDING_CUTOUT = BLOCKS.register("shielding_cutout", () -> new ShieldingBlock(RenderType.cutout()));
+    public static final RegistryObject<ShieldingBlock> SHIELDING_SOLID = BLOCKS.register("shielding_solid", ShieldingBlock::new);
+    public static final RegistryObject<ShieldingBlock> SHIELDING_TRANSLUCENT = BLOCKS.register("shielding_translucent", ShieldingBlock::new);
+    public static final RegistryObject<ShieldingBlock> SHIELDING_CUTOUT = BLOCKS.register("shielding_cutout", ShieldingBlock::new);
     public static final RegistryObject<TileEntityType<?>> TYPE_SHIELDING = TILES.register("shielding", () -> TileEntityType.Builder.create(ShieldingTileEntity::new,
             SHIELDING_SOLID.get(), SHIELDING_TRANSLUCENT.get(), SHIELDING_CUTOUT.get()).build(null));
 

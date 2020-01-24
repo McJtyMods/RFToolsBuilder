@@ -29,12 +29,6 @@ public class SupportBlock extends Block {
         super(Properties.create(Material.GLASS));
     }
 
-    // @todo 1.15
-//    @Override
-//    public BlockRenderLayer getRenderLayer() {
-//        return BlockRenderLayer.TRANSLUCENT;
-//    }
-
     @Override
     public boolean isNormalCube(BlockState state, IBlockReader reader, BlockPos pos) {
         return false;

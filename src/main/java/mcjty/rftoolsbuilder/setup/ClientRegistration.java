@@ -13,8 +13,9 @@ import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldingBakedModel;
 import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.client.renderer.model.ModelResourceLocation;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
@@ -37,6 +38,11 @@ public class ClientRegistration {
         GenericGuiContainer.register(ShieldSetup.CONTAINER_SHIELD.get(), GuiShield::new);
         BuilderRenderer.register();
         MinecraftForge.EVENT_BUS.addListener(ShapeDataManagerClient::cleanupOldRenderers);
+
+        RenderTypeLookup.setRenderLayer(BuilderSetup.SUPPORT.get(), RenderType.translucent());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_TRANSLUCENT.get(), RenderType.translucent());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_SOLID.get(), RenderType.solid());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_CUTOUT.get(), RenderType.cutout());
     }
 
     @SubscribeEvent
@@ -62,7 +68,7 @@ public class ClientRegistration {
 
     @SubscribeEvent
     public static void onModelBake(ModelBakeEvent event) {
-        ShieldingBakedModel model = new ShieldingBakedModel(DefaultVertexFormats.BLOCK);
+        ShieldingBakedModel model = new ShieldingBakedModel();
         Lists.newArrayList("shielding_solid", "shielding_translucent", "shielding_cutout").stream()
                 .forEach(name -> {
                     ResourceLocation rl = new ResourceLocation(RFToolsBuilder.MODID, name);

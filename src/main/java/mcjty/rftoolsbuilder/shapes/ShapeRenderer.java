@@ -197,7 +197,7 @@ public class ShapeRenderer {
 
         GlStateManager.enableTexture();
         GlStateManager.disableBlend();
-        RenderHelper.func_227780_a_();
+        RenderHelper.enableStandardItemLighting();
 
         RenderData data = ShapeDataManagerClient.getRenderData(shapeID);
         if (data != null && !data.previewMessage.isEmpty()) {

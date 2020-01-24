@@ -7,7 +7,6 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.PushReaction;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
@@ -47,13 +46,11 @@ public class ShieldingBlock extends Block {
 
     public static final VoxelShape COLLISION_SHAPE = VoxelShapes.create(0.002, 0.002, 0.002, 0.998, 0.998, 0.998);
 
-    private final RenderType layer;
-
-    public ShieldingBlock(RenderType layer) {
+    public ShieldingBlock() {
         super(Block.Properties.create(Material.GLASS)
+                .func_226896_b_()   // set solid to false
                 .hardnessAndResistance(-1.0F, 3600000.0F)
                 .noDrops());
-        this.layer = layer;
         setDefaultState(getDefaultState()
                 .with(BLOCKED_ITEMS, false)
                 .with(BLOCKED_PASSIVE, false)
@@ -111,22 +108,10 @@ public class ShieldingBlock extends Block {
         return false;
     }
 
-    // @todo 1.15
-//    @Override
-//    public BlockRenderLayer getRenderLayer() {
-//        return layer;
-//    }
-
     @Override
     public PushReaction getPushReaction(BlockState state) {
         return PushReaction.BLOCK;
     }
-
-    // @todo 1.15
-//    @Override
-//    public boolean isSolid(BlockState state) {
-//        return false;
-//    }
 
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
