@@ -48,7 +48,7 @@ public class ShieldingBlock extends Block {
 
     public ShieldingBlock() {
         super(Block.Properties.create(Material.GLASS)
-                .func_226896_b_()   // set solid to false
+                .notSolid()
                 .hardnessAndResistance(-1.0F, 3600000.0F)
                 .noDrops());
         setDefaultState(getDefaultState()

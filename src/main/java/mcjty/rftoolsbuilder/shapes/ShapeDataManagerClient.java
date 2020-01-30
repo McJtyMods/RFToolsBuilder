@@ -32,6 +32,7 @@ public class ShapeDataManagerClient {
     }
 
     public static void cleanupOldRenderers(RenderWorldLastEvent event) {
+        // @todo 1.15 is this still the correct way?
         cleanupCounter--;
         if (cleanupCounter >= 0) {
             return;
