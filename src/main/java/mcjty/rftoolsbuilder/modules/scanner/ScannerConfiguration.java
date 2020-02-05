@@ -29,8 +29,6 @@ public class ScannerConfiguration {
     public static ForgeConfigSpec.IntValue PROJECTOR_RECEIVEPERTICK;
     public static ForgeConfigSpec.IntValue PROJECTOR_USEPERTICK;
 
-    public static ForgeConfigSpec.BooleanValue useVBO;
-
     // Maximum dimension when the shape card is used for projection/scanner
     public static ForgeConfigSpec.IntValue maxScannerDimension;
     public static ForgeConfigSpec.IntValue maxScannerOffset;
@@ -140,10 +138,6 @@ public class ScannerConfiguration {
         baseProjectorVolume = CLIENT_BUILDER
                 .comment("The volume for the projector sound (0.0 is off)")
                 .defineInRange("baseProjectorVolume", 0.4, 0, 1.0);
-
-        useVBO = CLIENT_BUILDER
-                .comment("Use VBO for rendering shapecard views. Otherwise display lists")
-                .define("useVBO", true);
 
         COMMON_BUILDER.pop();
         CLIENT_BUILDER.pop();

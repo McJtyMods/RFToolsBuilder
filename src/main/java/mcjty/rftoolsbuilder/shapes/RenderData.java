@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GLAllocation;
+import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.apache.commons.lang3.tuple.Pair;
@@ -15,11 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration.useVBO;
-
 public class RenderData {
 
-    private static BufferBuilder vboBuffer = new BufferBuilder(2097152);
+    public static BufferBuilder vboBuffer = new BufferBuilder(2097152);
 
     private RenderPlane planes[] = null;
     public String previewMessage = "";
@@ -32,7 +30,7 @@ public class RenderData {
             return false;
         }
         for (RenderPlane plane : planes) {
-            if (plane != null && (plane.vbo != null || plane.glList != -1)) {
+            if (plane != null && plane.vbo != null) {
                 return true;
             }
         }
@@ -106,84 +104,57 @@ public class RenderData {
         }
     }
 
-    public BufferBuilder createRenderList(BufferBuilder buffer, int y) {
+    public void createRenderList(int y) {
         if (planes != null) {
-            return planes[y].createRenderList(buffer);
+            planes[y].createRenderList();
         }
-        return null;
     }
 
-    public void performRenderToList(Tessellator tessellator, BufferBuilder buffer, int y) {
+    public void performRenderToList(int y) {
         if (planes != null) {
-            planes[y].performRenderToList(tessellator, buffer);
+            planes[y].performRenderToList();
         }
+    }
+
+    private static final Matrix4f IDENTITY = new Matrix4f();
+
+    static {
+        IDENTITY.identity();
     }
 
     public static class RenderElement {
-        protected int glList = -1;
         protected net.minecraft.client.renderer.vertex.VertexBuffer vbo;
 
         public void cleanup() {
-            // @todo 1.15
-//            if (useVBO.get()) {
-//                if (vbo != null) {
-//                    vbo.deleteGlBuffers();
-//                    vbo = null;
-//                }
-//            } else {
-//                if (glList != -1) {
-//                    GLAllocation.deleteDisplayLists(glList);
-//                    glList = -1;
-//                }
-//            }
+            if (vbo != null) {
+                vbo.close();
+                vbo = null;
+            }
         }
 
         public void render() {
-            if (useVBO.get()) {
-                if (vbo != null) {
-                    vbo.bindBuffer();
-                    GlStateManager.enableClientState(GL11.GL_VERTEX_ARRAY);
-                    GlStateManager.vertexPointer(3, GL11.GL_FLOAT, 16, 0);
-                    GlStateManager.enableClientState(GL11.GL_COLOR_ARRAY);
-                    GlStateManager.colorPointer(4, GL11.GL_UNSIGNED_BYTE, 16, 12);
-                    // @todo 1.15
-//                    vbo.drawArrays(7);
-                    vbo.unbindBuffer();
-                    GlStateManager.disableClientState(GL11.GL_COLOR_ARRAY);
-                    GlStateManager.disableClientState(GL11.GL_VERTEX_ARRAY);
-                }
-            } else {
-                if (glList != -1) {
-                    // @todo 1.15
-//                    GlStateManager.callList(glList);
-                }
+            if (vbo != null) {
+                vbo.bindBuffer();
+                GlStateManager.enableClientState(GL11.GL_VERTEX_ARRAY);
+                GlStateManager.vertexPointer(3, GL11.GL_FLOAT, 16, 0);
+                GlStateManager.enableClientState(GL11.GL_COLOR_ARRAY);
+                GlStateManager.colorPointer(4, GL11.GL_UNSIGNED_BYTE, 16, 12);
+                vbo.draw(IDENTITY, GL11.GL_QUADS);
+                vbo.unbindBuffer();
+                GlStateManager.disableClientState(GL11.GL_COLOR_ARRAY);
+                GlStateManager.disableClientState(GL11.GL_VERTEX_ARRAY);
             }
         }
 
-        public BufferBuilder createRenderList(BufferBuilder buffer) {
-            if (useVBO.get()) {
-                vbo = new net.minecraft.client.renderer.vertex.VertexBuffer(DefaultVertexFormats.POSITION_COLOR);
-                buffer = vboBuffer;
-            } else {
-                // @todo 1.15
-//                glList = GLAllocation.generateDisplayLists(1);
-//                GlStateManager.newList(glList, GL11.GL_COMPILE);
-            }
-            return buffer;
+        public void createRenderList() {
+            vbo = new net.minecraft.client.renderer.vertex.VertexBuffer(DefaultVertexFormats.POSITION_COLOR);
         }
 
-        public void performRenderToList(Tessellator tessellator, BufferBuilder buffer) {
-            if (useVBO.get()) {
-                buffer.finishDrawing();
-                buffer.reset();
-                // @todo 1.15
-//                vbo.bufferData(buffer.getByteBuffer());
-
-            } else {
-                tessellator.draw();
-                // @todo 1.15
-//                GlStateManager.endList();
-            }
+        public void performRenderToList() {
+            vboBuffer.finishDrawing();
+//            vboBuffer.reset();
+            vbo.upload(vboBuffer);
+            vboBuffer.reset();
         }
     }
 

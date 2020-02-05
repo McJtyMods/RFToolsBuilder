@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class ShieldingBakedModel extends AbstractDynamicBakedModel {
+public class ShieldBakedModel extends AbstractDynamicBakedModel {
 
     public static final ResourceLocation TEXTURE_TRANSPARENT = new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldtransparent");
     public static final ResourceLocation TEXTURE_FULL = new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldfull");
@@ -70,6 +70,9 @@ public class ShieldingBakedModel extends AbstractDynamicBakedModel {
             Integer iconTopdown = extraData.getData(ShieldingTileEntity.ICON_TOPDOWN);
             Integer iconSide = extraData.getData(ShieldingTileEntity.ICON_SIDE);
             ShieldRenderData renderData = extraData.getData(ShieldingTileEntity.RENDER_DATA);
+            if (renderData == null) {
+                return quads;
+            }
             float r = renderData.getRed();
             float g = renderData.getGreen();
             float b = renderData.getBlue();
@@ -103,6 +106,9 @@ public class ShieldingBakedModel extends AbstractDynamicBakedModel {
         List<BakedQuad> quads = new ArrayList<>();
         if (side != null) {
             ShieldRenderData renderData = extraData.getData(ShieldingTileEntity.RENDER_DATA);
+            if (renderData == null) {
+                return quads;
+            }
             float r = renderData.getRed();
             float g = renderData.getGreen();
             float b = renderData.getBlue();
@@ -145,7 +151,7 @@ public class ShieldingBakedModel extends AbstractDynamicBakedModel {
 //        }
         IBakedModel model = getModel(camo);
         try {
-            return model.getQuads(state, side, rand);
+            return model.getQuads(state, side, rand, null);
         } catch (Exception e) {
             return Collections.emptyList();
         }
@@ -153,8 +159,7 @@ public class ShieldingBakedModel extends AbstractDynamicBakedModel {
 
     private IBakedModel getModel(@Nonnull BlockState facadeState) {
         initTextures();
-        IBakedModel model = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(facadeState);
-        return model;
+        return Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(facadeState);
     }
 
 

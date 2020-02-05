@@ -1,33 +1,26 @@
 package mcjty.rftoolsbuilder.setup;
 
 
-import com.google.common.collect.Lists;
 import mcjty.lib.gui.GenericGuiContainer;
-import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.builder.client.BuilderRenderer;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
 import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
-import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
-import mcjty.rftoolsbuilder.modules.shield.client.ShieldingBakedModel;
+import mcjty.rftoolsbuilder.modules.shield.client.ShieldModelLoader;
 import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
-import net.minecraft.client.renderer.model.ModelResourceLocation;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ModelBakeEvent;
-import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-
-import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
 
 @Mod.EventBusSubscriber(modid = RFToolsBuilder.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ClientRegistration {
@@ -43,40 +36,29 @@ public class ClientRegistration {
         RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_TRANSLUCENT.get(), RenderType.translucent());
         RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_SOLID.get(), RenderType.solid());
         RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_CUTOUT.get(), RenderType.cutout());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_GREEN.get(), RenderType.translucent());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_BLUE.get(), RenderType.translucent());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_RED.get(), RenderType.translucent());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_YELLOW.get(), RenderType.translucent());
+
+        ModelLoaderRegistry.registerLoader(new ResourceLocation(RFToolsBuilder.MODID, "shieldloader"), new ShieldModelLoader());
     }
 
     @SubscribeEvent
     public static void registerSounds(RegistryEvent.Register<SoundEvent> sounds) {
     }
 
-    @SubscribeEvent
-    public static void onTextureStitch(TextureStitchEvent.Pre event) {
-        if (!event.getMap().getBasePath().equals("textures")) {
-            return;
-        }
-
-        for (ShieldTexture texture : ShieldTexture.values()) {
-            event.addSprite(new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield0"));
-            event.addSprite(new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield1"));
-            event.addSprite(new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield2"));
-            event.addSprite(new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield3"));
-        }
-        event.addSprite(new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldtransparent"));
-        event.addSprite(new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldfull"));
-    }
-
-
-    @SubscribeEvent
-    public static void onModelBake(ModelBakeEvent event) {
-        ShieldingBakedModel model = new ShieldingBakedModel();
-        Lists.newArrayList("shielding_solid", "shielding_translucent", "shielding_cutout").stream()
-                .forEach(name -> {
-                    ResourceLocation rl = new ResourceLocation(RFToolsBuilder.MODID, name);
-                    event.getModelRegistry().put(new ModelResourceLocation(rl, ""), model);
-                    Tools.permutateProperties(s -> event.getModelRegistry().put(new ModelResourceLocation(rl, s), model),
-                            BLOCKED_HOSTILE, BLOCKED_ITEMS, BLOCKED_PASSIVE, BLOCKED_PLAYERS,
-                            DAMAGE_HOSTILE, DAMAGE_ITEMS, DAMAGE_PASSIVE, DAMAGE_PLAYERS,
-                            FLAG_OPAQUE, RENDER_MODE);
-                });
-    }
+//    @SubscribeEvent
+//    public static void onModelBake(ModelBakeEvent event) {
+//        ShieldBakedModel model = new ShieldBakedModel();
+//        Lists.newArrayList("shielding_solid", "shielding_translucent", "shielding_cutout").stream()
+//                .forEach(name -> {
+//                    ResourceLocation rl = new ResourceLocation(RFToolsBuilder.MODID, name);
+//                    event.getModelRegistry().put(new ModelResourceLocation(rl, ""), model);
+//                    Tools.permutateProperties(s -> event.getModelRegistry().put(new ModelResourceLocation(rl, s), model),
+//                            BLOCKED_HOSTILE, BLOCKED_ITEMS, BLOCKED_PASSIVE, BLOCKED_PLAYERS,
+//                            DAMAGE_HOSTILE, DAMAGE_ITEMS, DAMAGE_PASSIVE, DAMAGE_PLAYERS,
+//                            FLAG_OPAQUE, RENDER_MODE);
+//                });
+//    }
 }
