@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
 import mcjty.lib.McJtyLib;
+import mcjty.lib.network.NetworkTools;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiChamberDetails;
 import net.minecraft.block.Block;
@@ -38,7 +39,7 @@ public class PacketChamberInfoReady {
             buf.writeInt(costs.get(bm));
             if (stacks.containsKey(bm)) {
                 buf.writeBoolean(true);
-                buf.writeItemStack(stacks.get(bm));
+                NetworkTools.writeItemStack(buf, stacks.get(bm));
             } else {
                 buf.writeBoolean(false);
             }
@@ -96,7 +97,7 @@ public class PacketChamberInfoReady {
             blocks.put(bm, count);
             costs.put(bm, cost);
             if (buf.readBoolean()) {
-                ItemStack stack = buf.readItemStack();
+                ItemStack stack = NetworkTools.readItemStack(buf);
                 stacks.put(bm, stack);
             }
         }
