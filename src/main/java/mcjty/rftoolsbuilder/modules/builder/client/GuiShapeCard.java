@@ -3,16 +3,17 @@ package mcjty.rftoolsbuilder.modules.builder.client;
 import com.mojang.blaze3d.platform.GlStateManager;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.RenderHelper;
+import mcjty.lib.gui.GuiTools;
 import mcjty.lib.gui.IKeyReceiver;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.layout.HorizontalLayout;
 import mcjty.lib.gui.layout.PositionalLayout;
 import mcjty.lib.gui.layout.VerticalLayout;
+import mcjty.lib.gui.widgets.*;
 import mcjty.lib.gui.widgets.Label;
 import mcjty.lib.gui.widgets.Panel;
 import mcjty.lib.gui.widgets.TextField;
-import mcjty.lib.gui.widgets.*;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
@@ -30,7 +31,6 @@ import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.MouseHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -383,9 +383,8 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     public void mouseMoved(double xx, double yy) {
         window.handleMouseInput(0); // @todo 1.14 is this right? What button?
 
-        MouseHelper mouse = getMinecraft().mouseHelper;
-        int x = (int)mouse.getMouseX() * width / getMinecraft().getMainWindow().getWidth();
-        int y = (int)mouse.getMouseY() * height / getMinecraft().getMainWindow().getHeight();
+        int x = GuiTools.getRelativeX(this);
+        int y = GuiTools.getRelativeY(this);
         x -= guiLeft;
         y -= guiTop;
 
@@ -496,9 +495,8 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         if (tooltips != null) {
             int guiLeft = (this.width - this.xSize) / 2;
             int guiTop = (this.height - this.ySize) / 2;
-            MouseHelper mouse = getMinecraft().mouseHelper;
-            int x = (int)mouse.getMouseX() * width / getMinecraft().getMainWindow().getWidth();
-            int y = height - (int)mouse.getMouseY() * height / getMinecraft().getMainWindow().getHeight() - 1;
+            int x = GuiTools.getRelativeX(this);
+            int y = GuiTools.getRelativeY(this);
             renderTooltip(tooltips, x-guiLeft, y-guiTop, minecraft.fontRenderer);
         }
     }
