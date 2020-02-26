@@ -26,6 +26,7 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
@@ -135,22 +136,26 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     }
 
     @Override
-    public void onPlayerDestroy(IWorld world, BlockPos pos, BlockState state) {
-        TileEntity te = world.getTileEntity(pos);
-        if (te instanceof ShieldProjectorTileEntity) {
-            if (!world.getWorld().isRemote) {
-                ShieldProjectorTileEntity shieldTileEntity = (ShieldProjectorTileEntity) te;
-                if (shieldTileEntity.isShieldComposed()) {
-                    shieldTileEntity.decomposeShield();
-                }
-            }
+    public void onReplaced(BlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
+        if (newstate.getBlock() != this) {
+            removeShield(world, pos);
         }
+        super.onReplaced(state, world, pos, newstate, isMoving);
+    }
 
+    @Override
+    public void onPlayerDestroy(IWorld world, BlockPos pos, BlockState state) {
+        removeShield(world, pos);
         super.onPlayerDestroy(world, pos, state);
     }
 
     @Override
     public void onExplosionDestroy(World world, BlockPos pos, Explosion explosionIn) {
+        removeShield(world, pos);
+        super.onExplosionDestroy(world, pos, explosionIn);
+    }
+
+    private void removeShield(IWorld world, BlockPos pos) {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof ShieldProjectorTileEntity) {
             if (!world.getWorld().isRemote) {
@@ -160,9 +165,8 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
                 }
             }
         }
-
-        super.onExplosionDestroy(world, pos, explosionIn);
     }
+
 
     //
 //    @Override

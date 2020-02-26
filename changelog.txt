@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem where the shield wasn't decomposed properly if the projector block was broken
+
 1.2.12:
 - Fixed power bar display in the GUI of the shield
 - Fixed cleanup of shapecard previews
