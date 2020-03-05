@@ -119,7 +119,7 @@ public class RenderData {
     private static final Matrix4f IDENTITY = new Matrix4f();
 
     static {
-        IDENTITY.identity();
+        IDENTITY.setIdentity();
     }
 
     public static class RenderElement {

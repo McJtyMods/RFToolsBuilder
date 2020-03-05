@@ -32,14 +32,14 @@ public class ClientRegistration {
         BuilderRenderer.register();
         MinecraftForge.EVENT_BUS.addListener(ShapeDataManagerClient::cleanupOldRenderers);
 
-        RenderTypeLookup.setRenderLayer(BuilderSetup.SUPPORT.get(), RenderType.translucent());
-        RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_TRANSLUCENT.get(), RenderType.translucent());
-        RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_SOLID.get(), RenderType.solid());
-        RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_CUTOUT.get(), RenderType.cutout());
-        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_GREEN.get(), RenderType.translucent());
-        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_BLUE.get(), RenderType.translucent());
-        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_RED.get(), RenderType.translucent());
-        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_YELLOW.get(), RenderType.translucent());
+        RenderTypeLookup.setRenderLayer(BuilderSetup.SUPPORT.get(), RenderType.getTranslucent());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_TRANSLUCENT.get(), RenderType.getTranslucent());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_SOLID.get(), RenderType.getSolid());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_CUTOUT.get(), RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_GREEN.get(), RenderType.getTranslucent());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_BLUE.get(), RenderType.getTranslucent());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_RED.get(), RenderType.getTranslucent());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_YELLOW.get(), RenderType.getTranslucent());
 
         ModelLoaderRegistry.registerLoader(new ResourceLocation(RFToolsBuilder.MODID, "shieldloader"), new ShieldModelLoader());
     }
