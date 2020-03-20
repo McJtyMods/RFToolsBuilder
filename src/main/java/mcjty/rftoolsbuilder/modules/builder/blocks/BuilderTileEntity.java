@@ -26,6 +26,8 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
 import mcjty.rftoolsbase.api.client.IHudSupport;
 import mcjty.rftoolsbase.modules.hud.network.PacketGetHudLog;
+import mcjty.rftoolsbase.modules.various.FilterModuleCache;
+import mcjty.rftoolsbase.modules.various.items.FilterModuleItem;
 import mcjty.rftoolsbuilder.modules.builder.BlockInformation;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
@@ -112,7 +114,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         protected void setup() {
             slot(SlotDefinition.specific(s -> s.getItem() instanceof ShapeCardItem) /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
                     CONTAINER_CONTAINER, SLOT_TAB, 100, 10);
-            slot(SlotDefinition.specific(ItemStack.EMPTY /* @todo 1.14 should be filter item from rftools storage */ /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/),
+            slot(SlotDefinition.specific(s -> s.getItem() instanceof FilterModuleItem) /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
                     CONTAINER_CONTAINER, SLOT_FILTER, 84, 46);
             playerSlots(10, 70);
         }
@@ -173,8 +175,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private static ItemStack TOOL_NORMAL;
     private static ItemStack TOOL_SILK;
 
-    // @todo 1.14
-//    private StorageFilterCache filterCache = null;
+    private FilterModuleCache filterCache = null;
 
     // For chunkloading with the quarry.
     // @todo 1.14
@@ -201,7 +202,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(
             this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get()));
     private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
-            .containerSupplier((windowId,player) -> new GenericContainer(BuilderSetup.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY, getPos(), BuilderTileEntity.this))
+            .containerSupplier((windowId, player) -> new GenericContainer(BuilderSetup.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY, getPos(), BuilderTileEntity.this))
             .itemHandler(itemHandler)
             .energyHandler(energyHandler)
             .shortListener(new IntReferenceHolder() {
@@ -239,7 +240,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     @Override
     public IValue<?>[] getValues() {
-        return new IValue[] {
+        return new IValue[]{
                 new DefaultValue<>(VALUE_RSMODE, this::getRSModeInt, this::setRSModeInt),
                 new DefaultValue<>(VALUE_WAIT, this::isWaitMode, this::setWaitMode),
                 new DefaultValue<>(VALUE_LOOP, this::hasLoopMode, this::setLoopMode),
@@ -265,7 +266,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     @Override
     public IAction[] getActions() {
-        return new IAction[] {
+        return new IAction[]{
                 new DefaultAction("restart", this::restartScan)
         };
     }
@@ -277,7 +278,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private FakePlayer getHarvester() {
         if (harvester == null) {
-            harvester = FakePlayerFactory.get((ServerWorld) world,  new GameProfile(UUID.nameUUIDFromBytes("rftools_builder".getBytes()), "rftools_builder"));
+            harvester = FakePlayerFactory.get((ServerWorld) world, new GameProfile(UUID.nameUUIDFromBytes("rftools_builder".getBytes()), "rftools_builder"));
         }
         harvester.setWorld(world);
         harvester.setPosition(pos.getX(), pos.getY(), pos.getZ());
@@ -843,17 +844,17 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         float factor = infusableHandler.map(inf -> inf.getInfusedFactor()).orElse(0.0f);
 
         if (!energyHandler.map(h -> {
-                    long rf = h.getEnergyStored();
-                    float area = (maxBox.getX() - minBox.getX() + 1) * (maxBox.getY() - minBox.getY() + 1) * (maxBox.getZ() - minBox.getZ() + 1);
-                    float infusedFactor = (4.0f - factor) / 4.0f;
-                    int rfNeeded = (int) (BuilderConfiguration.collectRFPerTickPerArea.get() * area * infusedFactor) * BuilderConfiguration.collectTimer.get();
-                    if (rfNeeded > rf) {
-                        // Not enough energy.
-                        return false;
-                    }
-                    h.consumeEnergy(rfNeeded);
-                    return true;
-                }).orElse(false)) {
+            long rf = h.getEnergyStored();
+            float area = (maxBox.getX() - minBox.getX() + 1) * (maxBox.getY() - minBox.getY() + 1) * (maxBox.getZ() - minBox.getZ() + 1);
+            float infusedFactor = (4.0f - factor) / 4.0f;
+            int rfNeeded = (int) (BuilderConfiguration.collectRFPerTickPerArea.get() * area * infusedFactor) * BuilderConfiguration.collectTimer.get();
+            if (rfNeeded > rf) {
+                // Not enough energy.
+                return false;
+            }
+            h.consumeEnergy(rfNeeded);
+            return true;
+        }).orElse(false)) {
             return;
         }
 
@@ -888,7 +889,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             if (bottles > 0) {
                 if (insertItem(new ItemStack(Items.EXPERIENCE_BOTTLE, bottles)).isEmpty()) {
                     collectXP = collectXP % 7;
-                    ((ServerWorld)world).removeEntity(orb);
+                    ((ServerWorld) world).removeEntity(orb);
                     h.consumeEnergy(rfNeeded);
                 } else {
                     collectXP = 0;
@@ -1082,11 +1083,11 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             FakePlayer fakePlayer = getHarvester();
             BlockState newState = BlockTools.placeStackAt(fakePlayer, stack, world, srcPos, pickState);
             if (!ItemStack.areItemStacksEqual(stack, item.peek())) { // Did we actually use up whatever we were holding?
-                if(!stack.isEmpty()) { // Are we holding something else that we should put back?
+                if (!stack.isEmpty()) { // Are we holding something else that we should put back?
                     stack = item.takeAndReplace(stack); // First try to put our new item where we got what we placed
-                    if(!stack.isEmpty()) { // If that didn't work, then try to put it anywhere it will fit
+                    if (!stack.isEmpty()) { // If that didn't work, then try to put it anywhere it will fit
                         stack = insertItem(stack);
-                        if(!stack.isEmpty()) { // If that still didn't work, then just drop whatever we're holding
+                        if (!stack.isEmpty()) { // If that still didn't work, then just drop whatever we're holding
                             world.addEntity(new ItemEntity(world, getPos().getX(), getPos().getY(), getPos().getZ(), stack));
                         }
                     }
@@ -1137,10 +1138,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private void getFilterCache() {
-        // @todo 1.14
-//        if (filterCache == null) {
-//            filterCache = StorageFilterItem.getCache(inventoryHelper.getStackInSlot(SLOT_FILTER));
-//        }
+        if (filterCache == null) {
+            filterCache = FilterModuleItem.getCache(items.getStackInSlot(SLOT_FILTER));
+        }
     }
 
     public static boolean allowedToBreak(BlockState state, World world, BlockPos pos, PlayerEntity player) {
@@ -1202,14 +1202,13 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
                     getFilterCache();
-// @todo 1.14
-                    //                    if (filterCache != null) {
-//                        boolean match = filterCache.match(block.getItem(world, srcPos, srcState));
-//                        if (!match) {
-//                            energyHandler.ifPresent(h -> h.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get())));
-//                            return skip();   // Skip this
-//                        }
-//                    }
+                    if (filterCache != null) {
+                        boolean match = filterCache.match(block.getItem(world, srcPos, srcState));
+                        if (!match) {
+                            energyHandler.ifPresent(h -> h.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get())));
+                            return skip();   // Skip this
+                        }
+                    }
                 }
                 if (!getCachedVoidableBlocks().contains(block)) {
                     if (overflowItems != null) {
@@ -1289,7 +1288,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             return skip();
         }
 
-        FluidStack fluidStack = FluidTools.pickupFluidBlock(world, srcPos, s -> false, () -> {});
+        FluidStack fluidStack = FluidTools.pickupFluidBlock(world, srcPos, s -> false, () -> {
+        });
         if (fluidStack.isEmpty()) {
             return skip();
         }
@@ -1346,14 +1346,13 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
                     getFilterCache();
-// @todo 1.14
-                    //                    if (filterCache != null) {
-//                        boolean match = filterCache.match(block.getItem(world, srcPos, srcState));
-//                        if (!match) {
-//                            energyHandler.ifPresent(h -> h.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get())));
-//                            return skip();   // Skip this
-//                        }
-//                    }
+                    if (filterCache != null) {
+                        boolean match = filterCache.match(block.getItem(world, srcPos, srcState));
+                        if (!match) {
+                            energyHandler.ifPresent(h -> h.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get())));
+                            return skip();   // Skip this
+                        }
+                    }
                 }
 
                 if (!silent) {
@@ -1538,6 +1537,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         private final ItemStack peekStack;
 
         public static final TakeableItem EMPTY = new TakeableItem();
+
         private TakeableItem() {
             this.itemHandler = null;
             this.inventory = null;
@@ -1567,20 +1567,20 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         }
 
         public void take() {
-            if(itemHandler != null) {
+            if (itemHandler != null) {
                 itemHandler.extractItem(slot, 1, false);
-            } else if(slot != -1) {
+            } else if (slot != -1) {
                 inventory.decrStackSize(slot, 1);
             }
         }
 
         public ItemStack takeAndReplace(ItemStack replacement) {
-            if(itemHandler != null) {
+            if (itemHandler != null) {
                 itemHandler.extractItem(slot, 1, false);
                 return itemHandler.insertItem(slot, replacement, false);
-            } else if(slot != -1) {
+            } else if (slot != -1) {
                 inventory.decrStackSize(slot, 1);
-                if(inventory.isItemValidForSlot(slot, replacement) && inventory.getStackInSlot(slot).isEmpty()) {
+                if (inventory.isItemValidForSlot(slot, replacement) && inventory.getStackInSlot(slot).isEmpty()) {
                     inventory.setInventorySlotContents(slot, replacement);
                     return ItemStack.EMPTY;
                 }
@@ -1628,7 +1628,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private FluidStack findAndConsumeLiquid(IFluidHandler tank, World srcWorld, BlockPos srcPos) {
-        for (int i = 0 ; i < tank.getTanks() ; i++) {
+        for (int i = 0; i < tank.getTanks(); i++) {
             FluidStack contents = tank.getFluidInTank(i);
             if (!contents.isEmpty()) {
                 if (contents.getFluid() != null) {
@@ -2133,7 +2133,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         Map<BlockPos, Pair<Long, BlockPos>> scans = new HashMap<>();
         long time = System.currentTimeMillis();
         for (Map.Entry<BlockPos, Pair<Long, BlockPos>> entry : scanLocClient.entrySet()) {
-            if (entry.getValue().getKey()+10000 > time) {
+            if (entry.getValue().getKey() + 10000 > time) {
                 scans.put(entry.getKey(), entry.getValue());
             }
         }
@@ -2217,11 +2217,11 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     @Override
     public void read(CompoundNBT tagCompound) {
         super.read(tagCompound);
-        if(tagCompound.contains("overflowItems")) {
+        if (tagCompound.contains("overflowItems")) {
             ListNBT overflowItemsNbt = tagCompound.getList("overflowItems", Constants.NBT.TAG_COMPOUND);
             overflowItems = new ArrayList<>(overflowItemsNbt.size());
-            for(INBT overflowNbt : overflowItemsNbt) {
-                overflowItems.add(ItemStack.read((CompoundNBT)overflowNbt));
+            for (INBT overflowNbt : overflowItemsNbt) {
+                overflowItems.add(ItemStack.read((CompoundNBT) overflowNbt));
             }
         }
     }
@@ -2262,9 +2262,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     @Override
     public CompoundNBT write(CompoundNBT tagCompound) {
         super.write(tagCompound);
-        if(overflowItems != null) {
+        if (overflowItems != null) {
             ListNBT overflowItemsNbt = new ListNBT();
-            for(ItemStack overflow : overflowItems) {
+            for (ItemStack overflow : overflowItems) {
                 overflowItemsNbt.add(overflow.write(new CompoundNBT()));
             }
             tagCompound.put("overflowItems", overflowItemsNbt);
@@ -2323,12 +2323,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             return true;
         }
         if (CMD_SETROTATE.equals(command)) {
-            setRotate(Integer.parseInt(params.get(ChoiceLabel.PARAM_CHOICE))/90);
+            setRotate(Integer.parseInt(params.get(ChoiceLabel.PARAM_CHOICE)) / 90);
             return true;
         } else if (CMD_SETANCHOR.equals(command)) {
             setAnchor(params.get(PARAM_ANCHOR_INDEX));
             return true;
-        } else  if (CMD_SETMODE.equals(command)) {
+        } else if (CMD_SETMODE.equals(command)) {
             setMode(params.get(ChoiceLabel.PARAM_CHOICE_IDX));
             return true;
         }
@@ -2436,8 +2436,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     refreshSettings();
                 }
                 if (index == SLOT_FILTER) {
-                    // @todo 1.14
-//                    filterCache = null;
+                    filterCache = null;
                 }
             }
         };
