@@ -7,7 +7,7 @@ import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.crafting.INBTPreservingIngredient;
 import mcjty.lib.varia.GlobalCoordinate;
 import mcjty.lib.varia.Logging;
-import mcjty.rftoolsbase.modules.various.SmartWrenchItem;
+import mcjty.rftoolsbase.modules.various.items.SmartWrenchItem;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.util.ITooltipFlag;
