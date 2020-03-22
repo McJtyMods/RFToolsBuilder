@@ -1,4 +1,4 @@
-Upcoming:
+2.0.1-alpha:
 - Fixed a problem where the shield wasn't decomposed properly if the projector block was broken
 - Re-implemented the filter module for the Builder
 
