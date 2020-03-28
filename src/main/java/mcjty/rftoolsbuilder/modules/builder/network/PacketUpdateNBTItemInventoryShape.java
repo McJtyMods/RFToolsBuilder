@@ -9,6 +9,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.items.CapabilityItemHandler;
 
 import java.util.function.Supplier;
 
@@ -48,15 +49,16 @@ public class PacketUpdateNBTItemInventoryShape {
         ctx.enqueueWork(() -> {
             World world = ctx.getSender().getEntityWorld();
             TileEntity te = world.getTileEntity(pos);
-            if (te instanceof IInventory) {
+            if (te != null) {
                 if (!isValidBlock(world, pos, te)) {
                     return;
                 }
-                IInventory inv = (IInventory) te;
-                ItemStack stack = inv.getStackInSlot(slotIndex);
-                if (!stack.isEmpty()) {
-                    stack.setTag(tagCompound);
-                }
+                te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
+                    ItemStack stack = h.getStackInSlot(slotIndex);
+                    if (!stack.isEmpty()) {
+                        stack.setTag(tagCompound);
+                    }
+                });
             }
         });
         ctx.setPacketHandled(true);
