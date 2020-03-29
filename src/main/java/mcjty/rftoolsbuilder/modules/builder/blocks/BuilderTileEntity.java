@@ -1531,7 +1531,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     // Return what could not be inserted
-    private ItemStack insertItem(ItemStack s) {
+    private ItemStack insertItem(@Nonnull ItemStack s) {
         s = InventoryHelper.insertItem(world, getPos(), Direction.UP, s);
         if (!s.isEmpty()) {
             s = InventoryHelper.insertItem(world, getPos(), Direction.DOWN, s);

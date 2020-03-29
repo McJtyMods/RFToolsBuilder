@@ -1,3 +1,6 @@
+2.0.2-alpha:
+- Michael Hillcox added some protection to the builder to prevent it from crashing in weird situations
+
 2.0.1-alpha:
 - Fixed a problem where the shield wasn't decomposed properly if the projector block was broken
 - Re-implemented the filter module for the Builder
