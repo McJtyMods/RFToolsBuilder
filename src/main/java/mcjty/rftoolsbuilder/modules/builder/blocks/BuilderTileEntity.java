@@ -37,10 +37,7 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
 import mcjty.rftoolsbuilder.setup.ClientCommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.shapes.Shape;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.FlowingFluidBlock;
+import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -1107,8 +1104,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             }
 
             if (!silent) {
-                SoundEvent sound = newState.getBlock().getSoundType(newState, world, srcPos, fakePlayer).getPlaceSound();
-                playSoundSafe(sound, world, newState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
+                SoundType sound = newState.getBlock().getSoundType(newState, world, srcPos, fakePlayer);
+                playPlaceSoundSafe(sound, world, newState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
             }
 
             energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
@@ -1116,9 +1113,17 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return skip();
     }
 
-    private void playSoundSafe(SoundEvent sound, World world, BlockState state, int x, int y, int z) {
+    private void playPlaceSoundSafe(SoundType sound, World world, BlockState state, int x, int y, int z) {
         try {
-            SoundTools.playSound(world, sound, x, y, z, 1.0f, 1.0f);
+            SoundTools.playSound(world, sound.getPlaceSound(), x, y, z, 1.0f, 1.0f);
+        } catch (Exception e) {
+            Logging.getLogger().error("Error getting soundtype from " + state.getBlock().getRegistryName() + "! Please report to the mod owner!");
+        }
+    }
+
+    private void playBreakSoundSafe(SoundType sound, World world, BlockState state, int x, int y, int z) {
+        try {
+            SoundTools.playSound(world, sound.getBreakSound(), x, y, z, 1.0f, 1.0f);
         } catch (Exception e) {
             Logging.getLogger().error("Error getting soundtype from " + state.getBlock().getRegistryName() + "! Please report to the mod owner!");
         }
@@ -1144,7 +1149,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         }
         energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
         if (!silent) {
-            playSoundSafe(srcState.getBlock().getSoundType(srcState, world, spos, null).getBreakSound(), world, srcState, spos.getX(), spos.getY(), spos.getZ());
+            SoundType soundType = srcState.getBlock().getSoundType(srcState, world, spos, null);
+            playBreakSoundSafe(soundType, world, srcState, spos.getX(), spos.getY(), spos.getZ());
         }
     }
 
@@ -1285,7 +1291,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 world.setBlockState(srcPos, block.getDefaultState(), 11);
 
                 if (!silent) {
-                    playSoundSafe(block.getSoundType(block.getDefaultState(), world, srcPos, fakePlayer).getPlaceSound(), world, block.getDefaultState(), srcPos.getX(), srcPos.getY(), srcPos.getZ());
+                    SoundType soundType = block.getSoundType(block.getDefaultState(), world, srcPos, fakePlayer);
+                    playPlaceSoundSafe(soundType, world, block.getDefaultState(), srcPos.getX(), srcPos.getY(), srcPos.getZ());
                 }
             }
 
@@ -1337,7 +1344,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                         }
                     });
                     if (!silent) {
-                        playSoundSafe(block.getSoundType(srcState, world, srcPos, fakePlayer).getBreakSound(), world, srcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
+                        SoundType soundType = block.getSoundType(srcState, world, srcPos, fakePlayer);
+                        playBreakSoundSafe(soundType, world, srcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
                     }
                     return skip();
                 }
@@ -1375,7 +1383,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 }
 
                 if (!silent) {
-                    playSoundSafe(block.getSoundType(srcState, world, srcPos, fakePlayer).getBreakSound(), world, srcState, sx, sy, sz);
+                    SoundType soundType = block.getSoundType(srcState, world, srcPos, fakePlayer);
+                    playBreakSoundSafe(soundType, world, srcState, sx, sy, sz);
                 }
                 world.setBlockState(srcPos, Blocks.AIR.getDefaultState());
                 energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
@@ -1791,7 +1800,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 }
 
                 if (!silent) {
-                    playSoundSafe(newState.getBlock().getSoundType(newState, destWorld, destPos, fakePlayer).getPlaceSound(), destWorld, newState, destPos.getX(), destPos.getY(), destPos.getZ());
+                    SoundType soundType = newState.getBlock().getSoundType(newState, destWorld, destPos, fakePlayer);
+                    playPlaceSoundSafe(soundType, destWorld, newState, destPos.getX(), destPos.getY(), destPos.getZ());
                 }
 
                 h.consumeEnergy(rfNeeded);
@@ -1936,8 +1946,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 setTileEntityNBT(destWorld, tc, destPos, srcState);
             }
             if (!silent) {
-                playSoundSafe(srcBlock.getSoundType(srcState, srcWorld, srcPos, null).getBreakSound(), srcWorld, srcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
-                playSoundSafe(srcBlock.getSoundType(srcState, destWorld, destPos, null).getPlaceSound(), destWorld, srcState, destPos.getX(), destPos.getY(), destPos.getZ());
+                SoundType srcSoundType = srcBlock.getSoundType(srcState, srcWorld, srcPos, null);
+                playBreakSoundSafe(srcSoundType, srcWorld, srcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
+                SoundType dstSoundtype = srcBlock.getSoundType(srcState, destWorld, destPos, null);
+                playPlaceSoundSafe(dstSoundtype, destWorld, srcState, destPos.getX(), destPos.getY(), destPos.getZ());
             }
         }
     }
@@ -2021,12 +2033,16 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         if (!silent) {
             if (!isEmpty(oldSrcState, srcBlock)) {
-                playSoundSafe(srcBlock.getSoundType(oldSrcState, srcWorld, srcPos, null).getBreakSound(), srcWorld, oldSrcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
-                playSoundSafe(srcBlock.getSoundType(oldSrcState, destWorld, dstPos, null).getPlaceSound(), destWorld, oldSrcState, dstPos.getX(), dstPos.getY(), dstPos.getZ());
+                SoundType srcSoundType = srcBlock.getSoundType(oldSrcState, srcWorld, srcPos, null);
+                playBreakSoundSafe(srcSoundType, srcWorld, oldSrcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
+                SoundType dstSoundType = srcBlock.getSoundType(oldSrcState, destWorld, dstPos, null);
+                playPlaceSoundSafe(dstSoundType, destWorld, oldSrcState, dstPos.getX(), dstPos.getY(), dstPos.getZ());
             }
             if (!isEmpty(oldDstState, dstBlock)) {
-                playSoundSafe(dstBlock.getSoundType(oldDstState, destWorld, dstPos, null).getBreakSound(), destWorld, oldDstState, dstPos.getX(), dstPos.getY(), dstPos.getZ());
-                playSoundSafe(dstBlock.getSoundType(oldDstState, srcWorld, srcPos, null).getPlaceSound(), srcWorld, oldDstState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
+                SoundType srcSoundType = dstBlock.getSoundType(oldDstState, destWorld, dstPos, null);
+                playBreakSoundSafe(srcSoundType, destWorld, oldDstState, dstPos.getX(), dstPos.getY(), dstPos.getZ());
+                SoundType dstSoundType = dstBlock.getSoundType(oldDstState, srcWorld, srcPos, null);
+                playPlaceSoundSafe(dstSoundType, srcWorld, oldDstState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
             }
         }
     }
