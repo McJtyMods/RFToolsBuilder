@@ -65,6 +65,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.IntReferenceHolder;
 import net.minecraft.util.Rotation;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -1106,12 +1107,21 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             }
 
             if (!silent) {
-                SoundTools.playSound(world, newState.getBlock().getSoundType(newState, world, srcPos, fakePlayer).getPlaceSound(), srcPos.getX(), srcPos.getY(), srcPos.getZ(), 1.0f, 1.0f);
+                SoundEvent sound = newState.getBlock().getSoundType(newState, world, srcPos, fakePlayer).getPlaceSound();
+                playSoundSafe(sound, world, newState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
             }
 
             energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
         }
         return skip();
+    }
+
+    private void playSoundSafe(SoundEvent sound, World world, BlockState state, int x, int y, int z) {
+        try {
+            SoundTools.playSound(world, sound, x, y, z, 1.0f, 1.0f);
+        } catch (Exception e) {
+            Logging.getLogger().error("Error getting soundtype from " + state.getBlock().getRegistryName() + "! Please report to the mod owner!");
+        }
     }
 
     private Set<Block> getCachedVoidableBlocks() {
@@ -1134,7 +1144,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         }
         energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
         if (!silent) {
-            SoundTools.playSound(world, srcState.getBlock().getSoundType(srcState, world, spos, null).getBreakSound(), spos.getX(), spos.getY(), spos.getZ(), 1.0f, 1.0f);
+            playSoundSafe(srcState.getBlock().getSoundType(srcState, world, spos, null).getBreakSound(), world, srcState, spos.getX(), spos.getY(), spos.getZ());
         }
     }
 
@@ -1275,7 +1285,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 world.setBlockState(srcPos, block.getDefaultState(), 11);
 
                 if (!silent) {
-                    SoundTools.playSound(world, block.getSoundType(block.getDefaultState(), world, srcPos, fakePlayer).getPlaceSound(), srcPos.getX(), srcPos.getY(), srcPos.getZ(), 1.0f, 1.0f);
+                    playSoundSafe(block.getSoundType(block.getDefaultState(), world, srcPos, fakePlayer).getPlaceSound(), world, block.getDefaultState(), srcPos.getX(), srcPos.getY(), srcPos.getZ());
                 }
             }
 
@@ -1327,7 +1337,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                         }
                     });
                     if (!silent) {
-                        SoundTools.playSound(world, block.getSoundType(srcState, world, srcPos, fakePlayer).getBreakSound(), srcPos.getX(), srcPos.getY(), srcPos.getZ(), 1.0f, 1.0f);
+                        playSoundSafe(block.getSoundType(srcState, world, srcPos, fakePlayer).getBreakSound(), world, srcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
                     }
                     return skip();
                 }
@@ -1365,7 +1375,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 }
 
                 if (!silent) {
-                    SoundTools.playSound(world, block.getSoundType(srcState, world, srcPos, fakePlayer).getBreakSound(), sx, sy, sz, 1.0f, 1.0f);
+                    playSoundSafe(block.getSoundType(srcState, world, srcPos, fakePlayer).getBreakSound(), world, srcState, sx, sy, sz);
                 }
                 world.setBlockState(srcPos, Blocks.AIR.getDefaultState());
                 energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
@@ -1781,7 +1791,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 }
 
                 if (!silent) {
-                    SoundTools.playSound(destWorld, newState.getBlock().getSoundType(newState, destWorld, destPos, fakePlayer).getPlaceSound(), destPos.getX(), destPos.getY(), destPos.getZ(), 1.0f, 1.0f);
+                    playSoundSafe(newState.getBlock().getSoundType(newState, destWorld, destPos, fakePlayer).getPlaceSound(), destWorld, newState, destPos.getX(), destPos.getY(), destPos.getZ());
                 }
 
                 h.consumeEnergy(rfNeeded);
@@ -1926,8 +1936,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 setTileEntityNBT(destWorld, tc, destPos, srcState);
             }
             if (!silent) {
-                SoundTools.playSound(srcWorld, srcBlock.getSoundType(srcState, srcWorld, srcPos, null).getBreakSound(), srcPos.getX(), srcPos.getY(), srcPos.getZ(), 1.0f, 1.0f);
-                SoundTools.playSound(destWorld, srcBlock.getSoundType(srcState, destWorld, destPos, null).getPlaceSound(), destPos.getX(), destPos.getY(), destPos.getZ(), 1.0f, 1.0f);
+                playSoundSafe(srcBlock.getSoundType(srcState, srcWorld, srcPos, null).getBreakSound(), srcWorld, srcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
+                playSoundSafe(srcBlock.getSoundType(srcState, destWorld, destPos, null).getPlaceSound(), destWorld, srcState, destPos.getX(), destPos.getY(), destPos.getZ());
             }
         }
     }
@@ -2011,12 +2021,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         if (!silent) {
             if (!isEmpty(oldSrcState, srcBlock)) {
-                SoundTools.playSound(srcWorld, srcBlock.getSoundType(oldSrcState, srcWorld, srcPos, null).getBreakSound(), srcPos.getX(), srcPos.getY(), srcPos.getZ(), 1.0f, 1.0f);
-                SoundTools.playSound(destWorld, srcBlock.getSoundType(oldSrcState, destWorld, dstPos, null).getPlaceSound(), dstPos.getX(), dstPos.getY(), dstPos.getZ(), 1.0f, 1.0f);
+                playSoundSafe(srcBlock.getSoundType(oldSrcState, srcWorld, srcPos, null).getBreakSound(), srcWorld, oldSrcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
+                playSoundSafe(srcBlock.getSoundType(oldSrcState, destWorld, dstPos, null).getPlaceSound(), destWorld, oldSrcState, dstPos.getX(), dstPos.getY(), dstPos.getZ());
             }
             if (!isEmpty(oldDstState, dstBlock)) {
-                SoundTools.playSound(destWorld, dstBlock.getSoundType(oldDstState, destWorld, dstPos, null).getBreakSound(), dstPos.getX(), dstPos.getY(), dstPos.getZ(), 1.0f, 1.0f);
-                SoundTools.playSound(srcWorld, dstBlock.getSoundType(oldDstState, srcWorld, srcPos, null).getPlaceSound(), srcPos.getX(), srcPos.getY(), srcPos.getZ(), 1.0f, 1.0f);
+                playSoundSafe(dstBlock.getSoundType(oldDstState, destWorld, dstPos, null).getBreakSound(), destWorld, oldDstState, dstPos.getX(), dstPos.getY(), dstPos.getZ());
+                playSoundSafe(dstBlock.getSoundType(oldDstState, srcWorld, srcPos, null).getPlaceSound(), srcWorld, oldDstState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
             }
         }
     }
