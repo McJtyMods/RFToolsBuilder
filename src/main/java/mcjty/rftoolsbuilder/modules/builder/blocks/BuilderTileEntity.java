@@ -1089,6 +1089,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
             FakePlayer fakePlayer = getHarvester();
             BlockState newState = BlockTools.placeStackAt(fakePlayer, stack, world, srcPos, pickState);
+            if (newState == null) {
+                return skip();
+            }
             if (!ItemStack.areItemStacksEqual(stack, item.peek())) { // Did we actually use up whatever we were holding?
                 if (!stack.isEmpty()) { // Are we holding something else that we should put back?
                     stack = item.takeAndReplace(stack); // First try to put our new item where we got what we placed
