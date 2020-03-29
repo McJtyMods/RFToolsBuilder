@@ -655,6 +655,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     @Override
     public void tick() {
+        if( world == null )
+            return;
+
         if (!world.isRemote) {
             checkStateServer();
         }

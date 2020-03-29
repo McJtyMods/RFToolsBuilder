@@ -745,6 +745,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     @Override
     public void tick() {
+        if( world == null )
+            return;
+
         if (!world.isRemote) {
             checkStateServer();
         }
@@ -1032,6 +1035,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     // Return true if we have to wait at this spot.
     private boolean handleSingleBlock(BlockState pickState) {
+        if( world == null )
+            return false;
+
         BlockPos srcPos = scan;
         int sx = scan.getX();
         int sy = scan.getY();
@@ -1073,6 +1079,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     public boolean buildBlock(int rfNeeded, BlockPos srcPos, BlockState srcState, BlockState pickState) {
+        if( world == null )
+            return false;
+
         if (isEmptyOrReplacable(world, srcPos)) {
             TakeableItem item = createTakeableItem(world, srcPos, pickState);
             ItemStack stack = item.peek();
