@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed the Builder to cope better with 'unplacable' blocks. Everything is better compared to crashing.
+
 2.0.2-alpha:
 - Michael Hillcox added some protection to the builder to prevent it from crashing in weird situations
 

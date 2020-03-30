@@ -1090,7 +1090,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             FakePlayer fakePlayer = getHarvester();
             BlockState newState = BlockTools.placeStackAt(fakePlayer, stack, world, srcPos, pickState);
             if (newState == null) {
-                return skip();
+                return waitOrSkip("Cannot place block!");
             }
             if (!ItemStack.areItemStacksEqual(stack, item.peek())) { // Did we actually use up whatever we were holding?
                 if (!stack.isEmpty()) { // Are we holding something else that we should put back?
@@ -1786,6 +1786,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
                 FakePlayer fakePlayer = getHarvester();
                 BlockState newState = BlockTools.placeStackAt(fakePlayer, consumedStack, destWorld, destPos, srcState);
+                if (newState == null) {
+                    // This block can't be placed
+                    return;
+                }
                 destWorld.setBlockState(destPos, newState, 3);  // placeBlockAt can reset the orientation. Restore it here
 
                 if (!ItemStack.areItemStacksEqual(consumedStack, takeableItem.peek())) { // Did we actually use up whatever we were holding?
