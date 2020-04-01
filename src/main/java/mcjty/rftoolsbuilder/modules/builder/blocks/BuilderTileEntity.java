@@ -62,7 +62,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.IntReferenceHolder;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -95,6 +94,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+
+import static mcjty.lib.builder.TooltipBuilder.*;
 
 public class BuilderTileEntity extends GenericTileEntity implements ITickableTileEntity, IHudSupport {
 
@@ -253,8 +254,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return new BaseBlock(new BlockBuilder()
                 .tileEntitySupplier(BuilderTileEntity::new)
                 .infusable()
-                .info("message.rftoolsbuilder.shiftmessage")
-                .infoExtended("message.rftoolsbuilder.builder")) {
+                .info(key("message.rftoolsbuilder.shiftmessage"))
+                .infoShift(header(), gold())) {
             @Override
             public RotationType getRotationType() {
                 return RotationType.HORIZROTATION;

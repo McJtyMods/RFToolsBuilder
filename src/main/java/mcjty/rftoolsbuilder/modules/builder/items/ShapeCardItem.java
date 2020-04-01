@@ -1,11 +1,9 @@
 package mcjty.rftoolsbuilder.modules.builder.items;
 
-import mcjty.lib.McJtyLib;
+import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.crafting.INBTPreservingIngredient;
-import mcjty.lib.varia.BlockPosTools;
-import mcjty.lib.varia.Check32;
-import mcjty.lib.varia.GlobalCoordinate;
-import mcjty.lib.varia.Logging;
+import mcjty.lib.tooltips.ITooltipSettings;
+import mcjty.lib.varia.*;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
@@ -14,7 +12,6 @@ import mcjty.rftoolsbuilder.shapes.IFormula;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeModifier;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
-import mcjty.lib.varia.RLE;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -43,9 +40,38 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.*;
 import java.util.*;
 
-public class ShapeCardItem extends Item implements INBTPreservingIngredient {
+import static mcjty.lib.builder.TooltipBuilder.*;
+
+public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITooltipSettings {
 
     private final ShapeCardType type;
+
+    private final TooltipBuilder tooltipBuilder = new TooltipBuilder()
+            .info(key("message.rftoolsbuilder.shiftmessage"))
+            .infoShift(warning(stack -> isDisabledInConfig()),
+                    header(),
+                    parameter("shape", this::getShapeDescription),
+                    parameter("dimension", this::getShapeDimension),
+                    parameter("offset", this::getShapeOffset),
+                    parameter("formulas", stack -> getShape(stack).isComposition(),
+                            stack -> {
+                                CompoundNBT card = stack.getTag();
+                                if (card != null) {
+                                    ListNBT children = card.getList("children", Constants.NBT.TAG_COMPOUND);
+                                    return Integer.toString(children.size());
+                                }
+                                return "<none>";
+                            }),
+                    parameter("scan", stack -> getShape(stack).isScan(),
+                            stack -> {
+                                CompoundNBT card = stack.getTag();
+                                if (card != null) {
+                                    int scanid = card.getInt("scanid");
+                                    return Integer.toString(scanid);
+                                }
+                                return "<none>";
+                            })
+            );
 
     public static final int MAXIMUM_COUNT = 50000000;
 
@@ -56,6 +82,39 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
     public ShapeCardItem(ShapeCardType type) {
         super(new Properties().maxStackSize(1).defaultMaxDamage(0).group(RFToolsBuilder.setup.getTab()));
         this.type = type;
+    }
+
+    public boolean isDisabledInConfig() {
+        if (!BuilderConfiguration.shapeCardAllowed.get()) {
+            return true;
+        } else if (type != ShapeCardType.CARD_SHAPE) {
+            if (!BuilderConfiguration.quarryAllowed.get()) {
+                return true;
+            } else if (type.isQuarry() && type.isClearing()) {
+                if (!BuilderConfiguration.clearingQuarryAllowed.get()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public String getShapeDescription(ItemStack itemStack) {
+        Shape shape = getShape(itemStack);
+        boolean issolid = isSolid(itemStack);
+        return shape.getDescription() + " (" + (issolid ? "Solid" : "Hollow") + ")";
+    }
+
+    public String getShapeDimension(ItemStack itemStack) {
+        Shape shape = getShape(itemStack);
+        boolean issolid = isSolid(itemStack);
+        return  BlockPosTools.toString(getDimension(itemStack));
+    }
+
+    public String getShapeOffset(ItemStack itemStack) {
+        Shape shape = getShape(itemStack);
+        boolean issolid = isSolid(itemStack);
+        return BlockPosTools.toString(getOffset(itemStack));
     }
 
     @Override
@@ -252,44 +311,8 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient {
     @Override
     public void addInformation(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
         super.addInformation(itemStack, world, list, flag);
-
-        if (!BuilderConfiguration.shapeCardAllowed.get()) {
-            list.add(new StringTextComponent(TextFormatting.RED + "Disabled in config!"));
-        } else if (type != ShapeCardType.CARD_SHAPE) {
-            if (!BuilderConfiguration.quarryAllowed.get()) {
-                list.add(new StringTextComponent(TextFormatting.RED + "Disabled in config!"));
-            } else if (type.isQuarry() && type.isClearing()) {
-                if (!BuilderConfiguration.clearingQuarryAllowed.get()) {
-                    list.add(new StringTextComponent(TextFormatting.RED + "Disabled in config!"));
-                }
-            }
-        }
-
-        Shape shape = getShape(itemStack);
-        boolean issolid = isSolid(itemStack);
-        list.add(new StringTextComponent(TextFormatting.GREEN + "Shape " + shape.getDescription() + " (" + (issolid ? "Solid" : "Hollow") + ")"));
-        list.add(new StringTextComponent(TextFormatting.GREEN + "Dimension " + BlockPosTools.toString(getDimension(itemStack))));
-        list.add(new StringTextComponent(TextFormatting.GREEN + "Offset " + BlockPosTools.toString(getOffset(itemStack))));
-
-        if (shape.isComposition()) {
-            CompoundNBT card = itemStack.getOrCreateTag();
-            ListNBT children = card.getList("children", Constants.NBT.TAG_COMPOUND);
-            list.add(new StringTextComponent(TextFormatting.DARK_GREEN + "Formulas: " + children.size()));
-        }
-
-        if (shape.isScan()) {
-            CompoundNBT card = itemStack.getOrCreateTag();
-            int scanid = card.getInt("scanid");
-            list.add(new StringTextComponent(TextFormatting.DARK_GREEN + "Scan id: " + scanid));
-        }
-
-        if (McJtyLib.proxy.isShiftKeyDown()) {
-            list.add(new StringTextComponent(TextFormatting.YELLOW + "Sneak right click on builder to start mark mode"));
-            list.add(new StringTextComponent(TextFormatting.YELLOW + "Then right click to mark two corners of wanted area"));
-            type.addInformation(list);
-        } else {
-            list.add(new StringTextComponent(TextFormatting.WHITE + RFToolsBuilder.SHIFT_MESSAGE));
-        }
+        // Use custom RL so that we don't have to duplicate the translation for every shape card
+        tooltipBuilder.makeTooltip(new ResourceLocation(RFToolsBuilder.MODID, "shape_card"), itemStack, list);
     }
 
     /**
