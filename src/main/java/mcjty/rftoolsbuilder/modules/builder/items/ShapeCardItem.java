@@ -312,7 +312,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     public void addInformation(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
         super.addInformation(itemStack, world, list, flag);
         // Use custom RL so that we don't have to duplicate the translation for every shape card
-        tooltipBuilder.makeTooltip(new ResourceLocation(RFToolsBuilder.MODID, "shape_card"), itemStack, list);
+        tooltipBuilder.makeTooltip(new ResourceLocation(RFToolsBuilder.MODID, "shape_card"), itemStack, list, flag);
     }
 
     /**

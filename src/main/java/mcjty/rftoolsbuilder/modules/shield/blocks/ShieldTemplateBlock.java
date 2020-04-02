@@ -57,6 +57,6 @@ public class ShieldTemplateBlock extends Block implements ITooltipSettings {
     @Override
     public void addInformation(ItemStack stack, @Nullable IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        tooltipBuilder.makeTooltip(getRegistryName(), stack, tooltip);
+        tooltipBuilder.makeTooltip(getRegistryName(), stack, tooltip, flagIn);
     }
 }
