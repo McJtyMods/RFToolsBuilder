@@ -23,6 +23,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
@@ -89,8 +90,8 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     @Override
     protected boolean wrenchSneakSelect(World world, BlockPos pos, PlayerEntity player) {
         if (!world.isRemote) {
-            GlobalCoordinate currentBlock = SmartWrenchItem.getCurrentBlock(player.getHeldItem(Hand.MAIN_HAND));
-            if (currentBlock == null) {
+            Optional<GlobalCoordinate> currentBlock = SmartWrenchItem.getCurrentBlock(player.getHeldItem(Hand.MAIN_HAND));
+            if (!currentBlock.isPresent()) {
                 SmartWrenchItem.setCurrentBlock(player.getHeldItem(Hand.MAIN_HAND), new GlobalCoordinate(pos, world.getDimension().getType()));
                 Logging.message(player, TextFormatting.YELLOW + "Selected block");
             } else {
