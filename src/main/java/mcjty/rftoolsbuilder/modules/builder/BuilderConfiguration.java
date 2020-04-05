@@ -117,7 +117,7 @@ public class BuilderConfiguration {
 
         quarryReplace = SERVER_BUILDER
                 .comment("Use this block for the builder to replace with")
-                .define("quarryReplacE", "minecraft:dirt");
+                .define("quarryReplace", "minecraft:dirt");
         quarryTileEntities = SERVER_BUILDER
                 .comment("If true the quarry will also quarry tile entities. Otherwise it just ignores them")
                 .define("quarryTileEntities", true);
