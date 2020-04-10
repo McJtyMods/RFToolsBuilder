@@ -10,10 +10,10 @@ import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.layout.HorizontalLayout;
 import mcjty.lib.gui.layout.PositionalLayout;
 import mcjty.lib.gui.layout.VerticalLayout;
-import mcjty.lib.gui.widgets.*;
 import mcjty.lib.gui.widgets.Label;
 import mcjty.lib.gui.widgets.Panel;
 import mcjty.lib.gui.widgets.TextField;
+import mcjty.lib.gui.widgets.*;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
@@ -79,7 +79,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     private ToggleButton sand;
     private ToggleButton netherrack;
     private ToggleButton endstone;
-    private ToggleButton oredict;
+    private ToggleButton tagMatching;
 
     public final boolean fromTE;
 
@@ -250,8 +250,8 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         sand = new ToggleButton(minecraft, this).setDesiredWidth(20).setDesiredHeight(20).setTooltips("Void sand").addButtonEvent(widget -> updateVoidSettings());
         netherrack = new ToggleButton(minecraft, this).setDesiredWidth(20).setDesiredHeight(20).setTooltips("Void netherrack").addButtonEvent(widget -> updateVoidSettings());
         endstone = new ToggleButton(minecraft, this).setDesiredWidth(20).setDesiredHeight(20).setTooltips("Void end stone").addButtonEvent(widget -> updateVoidSettings());
-        oredict = new ToggleButton(minecraft, this).setDesiredWidth(60).setDesiredHeight(15).setTooltips("Enable ore dictionary matching")
-                .setText("Oredict")
+        tagMatching = new ToggleButton(minecraft, this).setDesiredWidth(60).setDesiredHeight(15).setTooltips("Enable tag matching")
+                .setText("Tags")
                 .setCheckMarker(true)
                 .addButtonEvent(widget -> updateVoidSettings());
 
@@ -262,9 +262,9 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         sand.setPressed(ShapeCardItem.isVoiding(heldItem, "sand"));
         netherrack.setPressed(ShapeCardItem.isVoiding(heldItem, "netherrack"));
         endstone.setPressed(ShapeCardItem.isVoiding(heldItem, "endstone"));
-        oredict.setPressed(ShapeCardItem.isOreDictionary(heldItem));
+        tagMatching.setPressed(ShapeCardItem.isTagMatching(heldItem));
 
-        voidPanel.addChildren(label, stone, cobble, dirt, gravel, sand, netherrack, endstone, oredict);
+        voidPanel.addChildren(label, stone, cobble, dirt, gravel, sand, netherrack, endstone, tagMatching);
     }
 
     private boolean isTorus() {
@@ -358,7 +358,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
                 tag.putBoolean("voidsand", sand.isPressed());
                 tag.putBoolean("voidnetherrack", netherrack.isPressed());
                 tag.putBoolean("voidendstone", endstone.isPressed());
-                tag.putBoolean("oredict", oredict.isPressed());
+                tag.putBoolean("tagMatching", tagMatching.isPressed());
                 RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketUpdateNBTItemInventoryShape(
                         fromTEPos, fromTEStackSlot, tag));
             }
@@ -372,7 +372,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
                             .put(new Key<>("voidsand", Type.BOOLEAN), sand.isPressed())
                             .put(new Key<>("voidnetherrack", Type.BOOLEAN), netherrack.isPressed())
                             .put(new Key<>("voidendstone", Type.BOOLEAN), endstone.isPressed())
-                            .put(new Key<>("oredict", Type.BOOLEAN), oredict.isPressed())
+                            .put(new Key<>("tagMatching", Type.BOOLEAN), tagMatching.isPressed())
                             .build()));
         }
     }
@@ -381,7 +381,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     @Override
     public void mouseMoved(double xx, double yy) {
-        window.handleMouseInput(0); // @todo 1.14 is this right? What button?
+        window.mouseDragged(xx, yy, 0); // @todo 1.14 is this right? What button?
 
         int x = GuiTools.getRelativeX(this);
         int y = GuiTools.getRelativeY(this);
@@ -398,7 +398,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
             buttons[button] = true;
         }
         boolean rc = super.mouseClicked(x, y, button);
-        window.mouseClicked((int)x, (int)y, button);
+        window.mouseClicked(x, y, button);
         return rc;
     }
 
@@ -408,7 +408,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
             buttons[button] = false;
         }
         boolean rc = super.mouseReleased(mouseX, mouseY, button);
-        window.mouseMovedOrUp((int)mouseX, (int)mouseY, button);
+        window.mouseReleased(mouseX, mouseY, button);
         return rc;
     }
 

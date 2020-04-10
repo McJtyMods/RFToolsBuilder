@@ -22,6 +22,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
@@ -33,6 +34,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
@@ -332,57 +334,49 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         return ShapeCardType.CARD_UNKNOWN;
     }
 
-    private static void addBlocks(Set<Block> blocks, Block block, boolean oredict) {
+    private static void addBlocks(Set<Block> blocks, Block block, Tag<Block> tag, boolean tagMatching) {
         blocks.add(block);
-        // @todo 1.14 use tags!
-//        if (oredict) {
-//            int[] iDs = OreDictionary.getOreIDs(new ItemStack(block));
-//            for (int id : iDs) {
-//                String oreName = OreDictionary.getOreName(id);
-//                List<ItemStack> ores = ItemStackTools.getOres(oreName);
-//                for (ItemStack ore : ores) {
-//                    if (ore.getItem() instanceof ItemBlock) {
-//                        blocks.add(((ItemBlock)ore.getItem()).getBlock());
-//                    }
-//                }
-//            }
-//        }
+        if (tagMatching && tag != null) {
+            for (Block b : tag.getAllElements()) {
+                blocks.add(b);
+            }
+        }
     }
 
     public static Set<Block> getVoidedBlocks(ItemStack stack) {
         Set<Block> blocks = new HashSet<>();
-        boolean oredict = isOreDictionary(stack);
+        boolean tagMatching = isTagMatching(stack);
         if (isVoiding(stack, "stone")) {
-            addBlocks(blocks, Blocks.STONE, oredict);
+            addBlocks(blocks, Blocks.STONE, Tags.Blocks.STONE, tagMatching);
         }
         if (isVoiding(stack, "cobble")) {
-            addBlocks(blocks, Blocks.COBBLESTONE, oredict);
+            addBlocks(blocks, Blocks.COBBLESTONE, Tags.Blocks.COBBLESTONE, tagMatching);
         }
         if (isVoiding(stack, "dirt")) {
-            addBlocks(blocks, Blocks.DIRT, oredict);
-            addBlocks(blocks, Blocks.GRASS, oredict);
+            addBlocks(blocks, Blocks.DIRT, Tags.Blocks.DIRT, tagMatching);
+            addBlocks(blocks, Blocks.GRASS, null, tagMatching);
         }
         if (isVoiding(stack, "sand")) {
-            addBlocks(blocks, Blocks.SAND, oredict);
+            addBlocks(blocks, Blocks.SAND, Tags.Blocks.SAND, tagMatching);
         }
         if (isVoiding(stack, "gravel")) {
-            addBlocks(blocks, Blocks.GRAVEL, oredict);
+            addBlocks(blocks, Blocks.GRAVEL, Tags.Blocks.GRAVEL, tagMatching);
         }
         if (isVoiding(stack, "netherrack")) {
-            addBlocks(blocks, Blocks.NETHERRACK, oredict);
+            addBlocks(blocks, Blocks.NETHERRACK, Tags.Blocks.NETHERRACK, tagMatching);
         }
         if (isVoiding(stack, "endstone")) {
-            addBlocks(blocks, Blocks.END_STONE, oredict);
+            addBlocks(blocks, Blocks.END_STONE, Tags.Blocks.END_STONES, tagMatching);
         }
         return blocks;
     }
 
-    public static boolean isOreDictionary(ItemStack stack) {
+    public static boolean isTagMatching(ItemStack stack) {
         CompoundNBT tagCompound = stack.getTag();
         if (tagCompound == null) {
             return false;
         }
-        return tagCompound.getBoolean("oredict");
+        return tagCompound.getBoolean("tagMatching");
     }
 
     public static boolean isVoiding(ItemStack stack, String material) {

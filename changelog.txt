@@ -1,6 +1,7 @@
 Upcoming:
 - Fixed the Builder to cope better with 'unplacable' blocks. Everything is better compared to crashing.
-- Better tooltips
+- Better tooltips for items and blocks
+- The 'oredict' support for voidable blocks in the shape card has been replaced with 'tag matching'
 
 2.0.2-alpha:
 - Michael Hillcox added some protection to the builder to prevent it from crashing in weird situations
