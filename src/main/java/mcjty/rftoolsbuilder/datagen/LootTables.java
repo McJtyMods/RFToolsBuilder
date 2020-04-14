@@ -4,8 +4,6 @@ import mcjty.lib.datagen.BaseLootTableProvider;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.data.LootTableProvider;
 
 public class LootTables extends BaseLootTableProvider {
 

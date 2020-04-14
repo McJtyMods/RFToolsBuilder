@@ -6,12 +6,6 @@ import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.events.DefaultSelectionEvent;
 import mcjty.lib.gui.layout.HorizontalAlignment;
-import mcjty.lib.gui.layout.HorizontalLayout;
-import mcjty.lib.gui.layout.PositionalLayout;
-import mcjty.lib.gui.widgets.Button;
-import mcjty.lib.gui.widgets.Label;
-import mcjty.lib.gui.widgets.Panel;
-import mcjty.lib.gui.widgets.TextField;
 import mcjty.lib.gui.widgets.*;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.GenericTileEntity;
@@ -31,10 +25,10 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.energy.CapabilityEnergy;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static mcjty.lib.gui.widgets.Widgets.*;
 import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity.*;
 
 
@@ -87,7 +81,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     public void init() {
         super.init();
 
-        energyBar = new EnergyBar(minecraft, this).setVertical().setLayoutHint(12, 141, 10, 76).setShowText(false);
+        energyBar = new EnergyBar().vertical().hint(12, 141, 10, 76).showText(false);
 
         initVisibilityMode();
         initShieldTextures();
@@ -96,48 +90,46 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
         ImageChoiceLabel redstoneMode = initRedstoneMode();
         initDamageType();
 
-        filterList = new WidgetList(minecraft, this).setName("filters").setDesiredHeight(120).
-                addSelectionEvent(new DefaultSelectionEvent() {
+        filterList = new WidgetList().name("filters").desiredHeight(120).
+                event(new DefaultSelectionEvent() {
                     @Override
-                    public void select(Widget<?> parent, int index) {
+                    public void select(int index) {
                         selectFilter();
                     }
                 });
-        Slider filterSlider = new Slider(minecraft, this).setVertical().setScrollableName("filters").setDesiredWidth(11).setDesiredHeight(120);
-        Panel filterPanel = new Panel(minecraft, this).setLayout(new HorizontalLayout().setSpacing(1).setHorizontalMargin(3))
-                .setLayoutHint(12, 10, 154, 124).addChildren(filterList, filterSlider)
-                .setFilledBackground(0xff9e9e9e);
+        Slider filterSlider = new Slider().vertical().scrollableName("filters").desiredWidth(11).desiredHeight(120);
+        Panel filterPanel = horizontal(3, 1)
+                .hint(12, 10, 154, 124).children(filterList, filterSlider)
+                .filledBackground(0xff9e9e9e);
 
-        colorSelector = new ColorSelector(minecraft, this)
-                .setName("color")
-                .setTooltips("Color for the shield")
-                .setLayoutHint(25, 177, 30, 16);
+        colorSelector = new ColorSelector()
+                .name("color")
+                .tooltips("Color for the shield")
+                .hint(25, 177, 30, 16);
 
-        ToggleButton light = new ToggleButton(minecraft, this).setName("light").setCheckMarker(true).setText("L").setTooltips("If pressed, light is blocked", "by the shield")
-                .setLayoutHint(56, 177, 23, 16);
+        ToggleButton light = new ToggleButton().name("light").checkMarker(true).text("L").tooltips("If pressed, light is blocked", "by the shield")
+                .hint(56, 177, 23, 16);
 
-        player = new TextField(minecraft, this).setTooltips("Optional player name").setLayoutHint(170, 44, 80, 14);
+        player = textfield(170, 44, 80, 14).tooltips("Optional player name");
 
-        addFilter = new Button(minecraft, this).setChannel("addfilter").setText("Add").setTooltips("Add selected filter").setLayoutHint(4, 6, 36, 14);
-        delFilter = new Button(minecraft, this).setChannel("delfilter").setText("Del").setTooltips("Delete selected filter").setLayoutHint(39, 6, 36, 14);
-        upFilter = new Button(minecraft, this).setChannel("upfilter").setText("Up").setTooltips("Move filter up").setLayoutHint(4, 22, 36, 14);
-        downFilter = new Button(minecraft, this).setChannel("downfilter").setText("Down").setTooltips("Move filter down").setLayoutHint(39, 22, 36, 14);
+        addFilter = button(4, 6, 36, 14, "Add").channel("addfilter").tooltips("Add selected filter");
+        delFilter = button(39, 6, 36, 14, "Del").channel("delfilter").tooltips("Delete selected filter");
+        upFilter = button(4, 22, 36, 14, "Up").channel("upfilter").tooltips("Move filter up");
+        downFilter = button(39, 22, 36, 14, "Down").channel("downfilter").tooltips("Move filter down");
 
-        Panel controlPanel = new Panel(minecraft, this).setLayout(new PositionalLayout()).setLayoutHint(170, 58, 80, 43)
-                .addChildren(addFilter, delFilter, upFilter, downFilter)
-                .setFilledRectThickness(-2)
-                .setFilledBackground(StyleConfig.colorListBackground);
+        Panel controlPanel = positional().hint(170, 58, 80, 43)
+                .children(addFilter, delFilter, upFilter, downFilter)
+                .filledRectThickness(-2)
+                .filledBackground(StyleConfig.colorListBackground);
 
-        Label lootingBonus = new Label(minecraft, this).setHorizontalAlignment(HorizontalAlignment.ALIGN_RIGHT)
-                .setText("Looting:");
-        lootingBonus.setTooltips("Insert dimensional shards", "for looting bonus")
-                .setLayoutHint(160, 118, 60, 18);
+        Label lootingBonus = label(160, 118, 60, 18, "Looting:").horizontalAlignment(HorizontalAlignment.ALIGN_RIGHT);
+        lootingBonus.tooltips("Insert dimensional shards", "for looting bonus");
 
-        Panel toplevel = new Panel(minecraft, this).setBackground(iconLocation).setLayout(new PositionalLayout()).addChildren(energyBar,
+        Panel toplevel = positional().background(iconLocation).children(energyBar,
                 visibilityOptions, shieldTextures, redstoneMode, filterPanel, actionOptions,
                 typeOptions, player, controlPanel, damageType,
                 colorSelector, lootingBonus, light);
-        toplevel.setBounds(new Rectangle(guiLeft, guiTop, xSize, ySize));
+        toplevel.bounds(guiLeft, guiTop, xSize, ySize);
 
         window = new Window(this, toplevel);
 
@@ -163,30 +155,30 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
             boolean solid = (shieldFilter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
             boolean damage = (shieldFilter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0;
             if (solid && damage) {
-                actionOptions.setChoice(ACTION_SOLIDDAMAGE);
+                actionOptions.choice(ACTION_SOLIDDAMAGE);
             } else if (solid) {
-                actionOptions.setChoice(ACTION_SOLID);
+                actionOptions.choice(ACTION_SOLID);
             } else if (damage) {
-                actionOptions.setChoice(ACTION_DAMAGE);
+                actionOptions.choice(ACTION_DAMAGE);
             } else {
-                actionOptions.setChoice(ACTION_PASS);
+                actionOptions.choice(ACTION_PASS);
             }
             String type = shieldFilter.getFilterName();
             if (DefaultFilter.DEFAULT.equals(type)) {
-                typeOptions.setChoice("All");
+                typeOptions.choice("All");
             } else if (AnimalFilter.ANIMAL.equals(type)) {
-                typeOptions.setChoice("Passive");
+                typeOptions.choice("Passive");
             } else if (HostileFilter.HOSTILE.equals(type)) {
-                typeOptions.setChoice("Hostile");
+                typeOptions.choice("Hostile");
             } else if (PlayerFilter.PLAYER.equals(type)) {
-                typeOptions.setChoice("Player");
+                typeOptions.choice("Player");
             } else if (ItemFilter.ITEM.equals(type)) {
-                typeOptions.setChoice("Item");
+                typeOptions.choice("Item");
             }
             if (shieldFilter instanceof PlayerFilter) {
-                player.setText(((PlayerFilter)shieldFilter).getName());
+                player.text(((PlayerFilter)shieldFilter).getName());
             } else {
-                player.setText("");
+                player.text("");
             }
         }
     }
@@ -223,8 +215,8 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
             } else {
                 n = filter.getFilterName();
             }
-            Panel panel = new Panel(minecraft, this).setLayout(new HorizontalLayout());
-            panel.addChild(new Label(minecraft, this).setText(n).setColor(StyleConfig.colorTextInListNormal).setHorizontalAlignment(HorizontalAlignment.ALIGN_LEFT).setDesiredWidth(85));
+            Panel panel = horizontal();
+            panel.children(label(n).color(StyleConfig.colorTextInListNormal).horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).desiredWidth(85));
             String actionName;
             boolean solid = (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
             boolean damage = (filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0;
@@ -237,8 +229,8 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
             } else {
                 actionName = ACTION_PASS;
             }
-            panel.addChild(new Label(minecraft, this).setText(actionName).setColor(StyleConfig.colorTextInListNormal).setHorizontalAlignment(HorizontalAlignment.ALIGN_LEFT));
-            filterList.addChild(panel);
+            panel.children(label(actionName).color(StyleConfig.colorTextInListNormal).horizontalAlignment(HorizontalAlignment.ALIGN_LEFT));
+            filterList.children(panel);
         }
     }
 
@@ -307,84 +299,84 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     private ImageChoiceLabel initRedstoneMode() {
-        ImageChoiceLabel redstoneMode = new ImageChoiceLabel(minecraft, this).
-                setName("redstone").
-                addChoice(RedstoneMode.REDSTONE_IGNORED.getDescription(), "Redstone mode:\nIgnored", iconGuiElements, 0, 0).
-                addChoice(RedstoneMode.REDSTONE_OFFREQUIRED.getDescription(), "Redstone mode:\nOff to activate", iconGuiElements, 16, 0).
-                addChoice(RedstoneMode.REDSTONE_ONREQUIRED.getDescription(), "Redstone mode:\nOn to activate", iconGuiElements, 32, 0);
-        redstoneMode.setLayoutHint(62, 200, 16, 16);
+        ImageChoiceLabel redstoneMode = new ImageChoiceLabel().
+                name("redstone").
+                choice(RedstoneMode.REDSTONE_IGNORED.getDescription(), "Redstone mode:\nIgnored", iconGuiElements, 0, 0).
+                choice(RedstoneMode.REDSTONE_OFFREQUIRED.getDescription(), "Redstone mode:\nOff to activate", iconGuiElements, 16, 0).
+                choice(RedstoneMode.REDSTONE_ONREQUIRED.getDescription(), "Redstone mode:\nOn to activate", iconGuiElements, 32, 0);
+        redstoneMode.hint(62, 200, 16, 16);
         redstoneMode.setCurrentChoice(tileEntity.getRSMode().ordinal());
         return redstoneMode;
     }
 
     private void initVisibilityMode() {
-        visibilityOptions = new ChoiceLabel(minecraft, this)
-                .setName("visibility")
-                .setLayoutHint(25, 161, 54, 14);
+        visibilityOptions = new ChoiceLabel()
+                .name("visibility")
+                .hint(25, 161, 54, 14);
         for (ShieldRenderingMode m : ShieldRenderingMode.values()) {
             if ((!ShieldConfiguration.allowInvisibleShield.get()) && m == ShieldRenderingMode.INVISIBLE) {
                 continue;
             }
-            visibilityOptions.addChoices(m.getDescription());
+            visibilityOptions.choices(m.getDescription());
         }
         if (ShieldConfiguration.allowInvisibleShield.get()) {
-            visibilityOptions.setChoiceTooltip(ShieldRenderingMode.INVISIBLE.getDescription(), "Shield is completely invisible");
+            visibilityOptions.choiceTooltip(ShieldRenderingMode.INVISIBLE.getDescription(), "Shield is completely invisible");
         }
-        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.SHIELD.getDescription(), "Default shield texture");
-        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.TRANSP.getDescription(), "Transparent shield texture");
-        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.SOLID.getDescription(), "Solid shield texture");
-        visibilityOptions.setChoiceTooltip(ShieldRenderingMode.MIMIC.getDescription(), "Use the texture from the supplied block");
+        visibilityOptions.choiceTooltip(ShieldRenderingMode.SHIELD.getDescription(), "Default shield texture");
+        visibilityOptions.choiceTooltip(ShieldRenderingMode.TRANSP.getDescription(), "Transparent shield texture");
+        visibilityOptions.choiceTooltip(ShieldRenderingMode.SOLID.getDescription(), "Solid shield texture");
+        visibilityOptions.choiceTooltip(ShieldRenderingMode.MIMIC.getDescription(), "Use the texture from the supplied block");
     }
 
     private void initShieldTextures() {
-        shieldTextures = new ChoiceLabel(minecraft, this)
-                .setName("shieldtextures")
-                .setLayoutHint(45, 143, 34, 14);
+        shieldTextures = new ChoiceLabel()
+                .name("shieldtextures")
+                .hint(45, 143, 34, 14);
         for (ShieldTexture m : ShieldTexture.values()) {
-            shieldTextures.addChoices(m.getDescription());
+            shieldTextures.choices(m.getDescription());
         }
     }
 
     private void initActionOptions() {
-        actionOptions = new ChoiceLabel(minecraft, this).setLayoutHint(170, 12, 80, 14);
-        actionOptions.addChoices(ACTION_PASS, ACTION_SOLID, ACTION_DAMAGE, ACTION_SOLIDDAMAGE);
-        actionOptions.setChoiceTooltip(ACTION_PASS, "Entity that matches this filter", "can pass through");
-        actionOptions.setChoiceTooltip(ACTION_SOLID, "Entity that matches this filter", "cannot pass");
-        actionOptions.setChoiceTooltip(ACTION_DAMAGE, "Entity that matches this filter", "can pass but gets damage");
-        actionOptions.setChoiceTooltip(ACTION_SOLIDDAMAGE, "Entity that matches this filter", "cannot pass and gets damage");
+        actionOptions = new ChoiceLabel().hint(170, 12, 80, 14);
+        actionOptions.choices(ACTION_PASS, ACTION_SOLID, ACTION_DAMAGE, ACTION_SOLIDDAMAGE);
+        actionOptions.choiceTooltip(ACTION_PASS, "Entity that matches this filter", "can pass through");
+        actionOptions.choiceTooltip(ACTION_SOLID, "Entity that matches this filter", "cannot pass");
+        actionOptions.choiceTooltip(ACTION_DAMAGE, "Entity that matches this filter", "can pass but gets damage");
+        actionOptions.choiceTooltip(ACTION_SOLIDDAMAGE, "Entity that matches this filter", "cannot pass and gets damage");
     }
 
     private void initTypeOptions() {
-        typeOptions = new ChoiceLabel(minecraft, this).setLayoutHint(170, 28, 80, 14);
-        typeOptions.addChoices("All", "Passive", "Hostile", "Item", "Player");
-        typeOptions.setChoiceTooltip("All", "Matches everything");
-        typeOptions.setChoiceTooltip("Passive", "Matches passive mobs");
-        typeOptions.setChoiceTooltip("Hostile", "Matches hostile mobs");
-        typeOptions.setChoiceTooltip("Item", "Matches items");
-        typeOptions.setChoiceTooltip("Player", "Matches players", "(optionally named)");
+        typeOptions = new ChoiceLabel().hint(170, 28, 80, 14);
+        typeOptions.choices("All", "Passive", "Hostile", "Item", "Player");
+        typeOptions.choiceTooltip("All", "Matches everything");
+        typeOptions.choiceTooltip("Passive", "Matches passive mobs");
+        typeOptions.choiceTooltip("Hostile", "Matches hostile mobs");
+        typeOptions.choiceTooltip("Item", "Matches items");
+        typeOptions.choiceTooltip("Player", "Matches players", "(optionally named)");
     }
 
     private void initDamageType() {
-        damageType = new ChoiceLabel(minecraft, this)
-                .setName("damage")
-                .setLayoutHint(170, 102, 80, 14);
-        damageType.addChoices(DAMAGETYPE_GENERIC, DAMAGETYPE_PLAYER);
-        damageType.setChoiceTooltip(DAMAGETYPE_GENERIC, "Generic damage type");
-        damageType.setChoiceTooltip(DAMAGETYPE_PLAYER, "Damage as done by a player");
+        damageType = new ChoiceLabel()
+                .name("damage")
+                .hint(170, 102, 80, 14);
+        damageType.choices(DAMAGETYPE_GENERIC, DAMAGETYPE_PLAYER);
+        damageType.choiceTooltip(DAMAGETYPE_GENERIC, "Generic damage type");
+        damageType.choiceTooltip(DAMAGETYPE_PLAYER, "Damage as done by a player");
     }
 
     private void enableButtons() {
         int sel = filterList.getSelected();
         int cnt = filterList.getMaximum();
-        delFilter.setEnabled(sel != -1 && cnt > 0);
-        upFilter.setEnabled(sel > 0 && cnt > 0);
-        downFilter.setEnabled(sel < cnt-1 && sel != -1 && cnt > 0);
+        delFilter.enabled(sel != -1 && cnt > 0);
+        upFilter.enabled(sel > 0 && cnt > 0);
+        downFilter.enabled(sel < cnt-1 && sel != -1 && cnt > 0);
         if (sel == -1) {
-            addFilter.setText("Add");
+            addFilter.text("Add");
         } else {
-            addFilter.setText("Ins");
+            addFilter.text("Ins");
         }
-        player.setEnabled("Player".equals(typeOptions.getCurrentChoice()));
+        player.enabled("Player".equals(typeOptions.getCurrentChoice()));
     }
 
     @Override
@@ -393,10 +385,10 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
         populateFilters();
         enableButtons();
         drawWindow();
-        colorSelector.setCurrentColor(tileEntity.getShieldColor());
+        colorSelector.currentColor(tileEntity.getShieldColor());
         tileEntity.getCapability(CapabilityEnergy.ENERGY).ifPresent(e -> {
-            energyBar.setMaxValue(((GenericEnergyStorage)e).getCapacity());
-            energyBar.setValue(((GenericEnergyStorage)e).getEnergy());
+            energyBar.maxValue(((GenericEnergyStorage)e).getCapacity());
+            energyBar.value(((GenericEnergyStorage)e).getEnergy());
         });
     }
 }

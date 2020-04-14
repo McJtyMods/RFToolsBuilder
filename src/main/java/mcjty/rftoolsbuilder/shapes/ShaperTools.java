@@ -2,8 +2,8 @@ package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnExtraData;
-import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.setup.ClientCommandHandler;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.tileentity.TileEntity;

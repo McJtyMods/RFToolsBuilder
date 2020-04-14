@@ -55,9 +55,9 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         anchor[2] = window.findChild("anchor2");
         anchor[3] = window.findChild("anchor3");
 
-        ((ChoiceLabel) window.findChild("mode")).setChoice(MODES[tileEntity.getMode()]);
+        ((ChoiceLabel) window.findChild("mode")).choice(MODES[tileEntity.getMode()]);
         ChoiceLabel rotateButton = window.findChild("rotate");
-        rotateButton.setChoice(String.valueOf(tileEntity.getRotate() * 90));
+        rotateButton.choice(String.valueOf(tileEntity.getRotate() * 90));
         if (!isShapeCard()) {
             anchor[tileEntity.getAnchor()].setCurrentChoice(1);
         }
@@ -70,8 +70,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
             GuiShapeCard.fromTEPos = tileEntity.getPos();
             GuiShapeCard.fromTEStackSlot = SLOT_TAB;
             GuiShapeCard.returnGui = this;
-            // @todo 1.14
-//            player.openGui(RFTools.instance, GuiProxy.GUI_SHAPECARD_COMPOSER, player.getEntityWorld(), (int) player.getPosX(), (int) player.getPosY(), (int) player.getPosZ());
+            GuiShapeCard.open();
         }
     }
 
@@ -99,7 +98,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         int cury = getCurrentLevelClientSide();
-        currentLevel.setText("Y: " + (cury == -1 ? "stop" : cury));
+        currentLevel.text("Y: " + (cury == -1 ? "stop" : cury));
 
         ItemStack card = tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY);
         if (card.isEmpty()) {
@@ -114,8 +113,8 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         drawWindow();
 
         tileEntity.getCapability(CapabilityEnergy.ENERGY).ifPresent(e -> {
-            energyBar.setMaxValue(((GenericEnergyStorage)e).getCapacity());
-            energyBar.setValue(((GenericEnergyStorage)e).getEnergy());
+            energyBar.maxValue(((GenericEnergyStorage)e).getCapacity());
+            energyBar.value(((GenericEnergyStorage)e).getEnergy());
         });
     }
 }

@@ -18,7 +18,6 @@ import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 public class ShieldingTileEntity extends TileEntity {
 

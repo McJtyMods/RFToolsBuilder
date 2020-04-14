@@ -629,7 +629,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 source = DamageSource.causePlayerDamage(fakePlayer);
             }
 
-            float factor = infusableHandler.map(inf -> inf.getInfusedFactor()).orElse(0.0f);
+            float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
             rf = (int) (rf * costFactor * (4.0f - factor) / 4.0f);
             if (h.getEnergyStored() < rf) {
                 // Not enough RF to do damage.
@@ -720,7 +720,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     private int getRfPerTick() {
         int rf = calculateRfPerTick();
-        float factor = infusableHandler.map(inf -> inf.getInfusedFactor()).orElse(0.0f);
+        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
         rf = (int) (rf * (2.0f - factor) / 2.0f);
         return rf;
     }

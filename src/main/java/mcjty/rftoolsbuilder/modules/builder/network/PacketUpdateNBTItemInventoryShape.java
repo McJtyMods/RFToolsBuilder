@@ -1,7 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;

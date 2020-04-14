@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.builder.items;
 
-import mcjty.lib.container.InventoryHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;

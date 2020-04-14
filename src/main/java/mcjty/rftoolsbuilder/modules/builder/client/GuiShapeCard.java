@@ -7,12 +7,7 @@ import mcjty.lib.gui.GuiTools;
 import mcjty.lib.gui.IKeyReceiver;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.layout.HorizontalAlignment;
-import mcjty.lib.gui.layout.HorizontalLayout;
-import mcjty.lib.gui.layout.PositionalLayout;
 import mcjty.lib.gui.layout.VerticalLayout;
-import mcjty.lib.gui.widgets.Label;
-import mcjty.lib.gui.widgets.Panel;
-import mcjty.lib.gui.widgets.TextField;
 import mcjty.lib.gui.widgets.*;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
@@ -45,14 +40,20 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.dimension.DimensionType;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
 import java.util.List;
+
+import static mcjty.lib.gui.layout.AbstractLayout.DEFAULT_SPACING;
+import static mcjty.lib.gui.widgets.Widgets.*;
 
 public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceiver {
 
-    /** The X size of the window in pixels. */
+    /**
+     * The X size of the window in pixels.
+     */
     protected int xSize = 360;
-    /** The Y size of the window in pixels. */
+    /**
+     * The Y size of the window in pixels.
+     */
     protected int ySize = 160;
 
     private int guiLeft;
@@ -165,7 +166,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
         getShapeRenderer().initView(getPreviewLeft(), guiTop);
 
-        shapeLabel = new ChoiceLabel(minecraft, this).setDesiredWidth(100).setDesiredHeight(16).addChoices(
+        shapeLabel = new ChoiceLabel().desiredWidth(100).desiredHeight(16).choices(
                 Shape.SHAPE_BOX.getDescription(),
                 Shape.SHAPE_TOPDOME.getDescription(),
                 Shape.SHAPE_BOTTOMDOME.getDescription(),
@@ -178,93 +179,99 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
                 Shape.SHAPE_HEART.getDescription(),
                 Shape.SHAPE_COMPOSITION.getDescription(),
                 Shape.SHAPE_SCAN.getDescription()
-        ).addChoiceEvent((parent, newChoice) -> updateSettings());
+        ).event((newChoice) -> updateSettings());
 
-        solidLabel = new ChoiceLabel(minecraft, this).setDesiredWidth(50).setDesiredHeight(16).addChoices(
+        solidLabel = new ChoiceLabel().desiredWidth(50).desiredHeight(16).choices(
                 "Hollow",
                 "Solid"
-        ).addChoiceEvent((parent, newChoice) -> updateSettings());
+        ).event((newChoice) -> updateSettings());
 
-        Panel shapePanel = new Panel(minecraft, this).setLayout(new HorizontalLayout()).addChild(shapeLabel).addChild(solidLabel);
+        Panel shapePanel = horizontal().children(shapeLabel, solidLabel);
 
         Shape shape = ShapeCardItem.getShape(heldItem);
-        shapeLabel.setChoice(shape.getDescription());
+        shapeLabel.choice(shape.getDescription());
         boolean solid = ShapeCardItem.isSolid(heldItem);
-        solidLabel.setChoice(solid ? "Solid" : "Hollow");
+        solidLabel.choice(solid ? "Solid" : "Hollow");
 
-        blocksLabel = new Label(minecraft, this).setText("# ").setHorizontalAlignment(HorizontalAlignment.ALIGN_LEFT);
-        blocksLabel.setDesiredWidth(100).setDesiredHeight(16);
+        blocksLabel = label("# ").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT);
+        blocksLabel.desiredWidth(100).desiredHeight(16);
 
-        Panel modePanel = new Panel(minecraft, this).setLayout(new VerticalLayout()).setDesiredWidth(170).addChild(shapePanel).addChild(blocksLabel);
+        Panel modePanel = vertical().desiredWidth(170).children(shapePanel, blocksLabel);
 
         BlockPos dim = ShapeCardItem.getDimension(heldItem);
         BlockPos offset = ShapeCardItem.getOffset(heldItem);
 
-        dimX = new TextField(minecraft, this).addTextEvent((parent, newText) -> {
+        dimX = new TextField().event((newText) -> {
             if (isTorus()) {
-                dimZ.setText(newText);
+                dimZ.text(newText);
             }
             updateSettings();
-        }).setText(String.valueOf(dim.getX()));
-        dimY = new TextField(minecraft, this).addTextEvent((parent, newText) -> updateSettings()).setText(String.valueOf(dim.getY()));
-        dimZ = new TextField(minecraft, this).addTextEvent((parent, newText) -> updateSettings()).setText(String.valueOf(dim.getZ()));
-        Panel dimPanel = new Panel(minecraft, this).setLayout(new HorizontalLayout().setHorizontalMargin(0)).addChild(new Label(minecraft, this).setText("Dim:").setHorizontalAlignment(HorizontalAlignment.ALIGN_RIGHT).setDesiredWidth(40)).setDesiredHeight(18).addChild(dimX).addChild(dimY).addChild(dimZ);
-        offsetX = new TextField(minecraft, this).addTextEvent((parent, newText) -> updateSettings()).setText(String.valueOf(offset.getX()));
-        offsetY = new TextField(minecraft, this).addTextEvent((parent, newText) -> updateSettings()).setText(String.valueOf(offset.getY()));
-        offsetZ = new TextField(minecraft, this).addTextEvent((parent, newText) -> updateSettings()).setText(String.valueOf(offset.getZ()));
-        Panel offsetPanel = new Panel(minecraft, this).setLayout(new HorizontalLayout().setHorizontalMargin(0)).addChild(new Label(minecraft, this).setText("Offset:").setHorizontalAlignment(HorizontalAlignment.ALIGN_RIGHT).setDesiredWidth(40)).setDesiredHeight(18).addChild(offsetX).addChild(offsetY).addChild(offsetZ);
+        }).text(String.valueOf(dim.getX()));
+        dimY = new TextField().event((newText) -> updateSettings()).text(String.valueOf(dim.getY()));
+        dimZ = new TextField().event((newText) -> updateSettings()).text(String.valueOf(dim.getZ()));
+        Panel dimPanel = horizontal(0, DEFAULT_SPACING).desiredHeight(18)
+                .children(
+                        label("Dim:").horizontalAlignment(HorizontalAlignment.ALIGN_RIGHT).desiredWidth(40),
+                        dimX, dimY, dimZ);
+        offsetX = new TextField().event((newText) -> updateSettings()).text(String.valueOf(offset.getX()));
+        offsetY = new TextField().event((newText) -> updateSettings()).text(String.valueOf(offset.getY()));
+        offsetZ = new TextField().event((newText) -> updateSettings()).text(String.valueOf(offset.getZ()));
+        Panel offsetPanel = horizontal(0, DEFAULT_SPACING).desiredHeight(18).children(
+                label("Offset:").horizontalAlignment(HorizontalAlignment.ALIGN_RIGHT).desiredWidth(40),
+                offsetX, offsetY, offsetZ);
 
-        Panel settingsPanel = new Panel(minecraft, this).setLayout(new VerticalLayout().setSpacing(1).setVerticalMargin(1).setHorizontalMargin(0))
-                .addChild(dimPanel).addChild(offsetPanel);
+        Panel settingsPanel = new Panel().layout(new VerticalLayout().setSpacing(1).setVerticalMargin(1).setHorizontalMargin(0))
+                .children(dimPanel, offsetPanel);
 
         int k = (this.width - this.xSize) / 2;
         int l = (this.height - this.ySize) / 2;
 
-        Panel modeSettingsPanel = new Panel(minecraft, this).setLayout(new VerticalLayout().setHorizontalMargin(0)).addChild(modePanel).addChild(settingsPanel);
-        modeSettingsPanel.setLayoutHint(0, 0, 180, 160);
+        Panel modeSettingsPanel = new Panel().layout(new VerticalLayout().setHorizontalMargin(0))
+                .children(modePanel, settingsPanel);
+        modeSettingsPanel.hint(0, 0, 180, 160);
         Panel toplevel;
         if (isQuarryCard) {
             setupVoidPanel(heldItem);
-            toplevel = new Panel(minecraft, this).setLayout(new PositionalLayout()).setFilledRectThickness(2).addChild(modeSettingsPanel).addChild(voidPanel);
+            toplevel = Widgets.positional().filledRectThickness(2).children(modeSettingsPanel, voidPanel);
 
         } else {
-            toplevel = new Panel(minecraft, this).setLayout(new PositionalLayout()).setFilledRectThickness(2).addChild(modeSettingsPanel);
+            toplevel = Widgets.positional().filledRectThickness(2).children(modeSettingsPanel);
         }
 
-        toplevel.setBounds(new Rectangle(k, l, xSize, ySize));
+        toplevel.bounds(k, l, xSize, ySize);
 
         window = new Window(this, toplevel);
     }
 
     private void setupVoidPanel(ItemStack heldItem) {
-        voidPanel = new Panel(minecraft, this).setLayout(new HorizontalLayout())
-                .setDesiredHeight(26)
-                .setFilledRectThickness(-2)
-                .setFilledBackground(StyleConfig.colorListBackground);
-        voidPanel.setLayoutHint(5, 155, 350, 26);
-        Label label = new Label(minecraft, this).setText("Void:");
-        stone = new ToggleButton(minecraft, this).setDesiredWidth(20).setDesiredHeight(20).setTooltips("Void stone").addButtonEvent(widget -> updateVoidSettings());
-        cobble = new ToggleButton(minecraft, this).setDesiredWidth(20).setDesiredHeight(20).setTooltips("Void cobble").addButtonEvent(widget -> updateVoidSettings());
-        dirt = new ToggleButton(minecraft, this).setDesiredWidth(20).setDesiredHeight(20).setTooltips("Void dirt").addButtonEvent(widget -> updateVoidSettings());
-        gravel = new ToggleButton(minecraft, this).setDesiredWidth(20).setDesiredHeight(20).setTooltips("Void gravel").addButtonEvent(widget -> updateVoidSettings());
-        sand = new ToggleButton(minecraft, this).setDesiredWidth(20).setDesiredHeight(20).setTooltips("Void sand").addButtonEvent(widget -> updateVoidSettings());
-        netherrack = new ToggleButton(minecraft, this).setDesiredWidth(20).setDesiredHeight(20).setTooltips("Void netherrack").addButtonEvent(widget -> updateVoidSettings());
-        endstone = new ToggleButton(minecraft, this).setDesiredWidth(20).setDesiredHeight(20).setTooltips("Void end stone").addButtonEvent(widget -> updateVoidSettings());
-        tagMatching = new ToggleButton(minecraft, this).setDesiredWidth(60).setDesiredHeight(15).setTooltips("Enable tag matching")
-                .setText("Tags")
-                .setCheckMarker(true)
-                .addButtonEvent(widget -> updateVoidSettings());
+        voidPanel = horizontal()
+                .desiredHeight(26)
+                .filledRectThickness(-2)
+                .filledBackground(StyleConfig.colorListBackground);
+        voidPanel.hint(5, 155, 350, 26);
+        Label label = label("Void:");
+        stone = new ToggleButton().desiredWidth(20).desiredHeight(20).tooltips("Void stone").event(this::updateVoidSettings);
+        cobble = new ToggleButton().desiredWidth(20).desiredHeight(20).tooltips("Void cobble").event(this::updateVoidSettings);
+        dirt = new ToggleButton().desiredWidth(20).desiredHeight(20).tooltips("Void dirt").event(this::updateVoidSettings);
+        gravel = new ToggleButton().desiredWidth(20).desiredHeight(20).tooltips("Void gravel").event(this::updateVoidSettings);
+        sand = new ToggleButton().desiredWidth(20).desiredHeight(20).tooltips("Void sand").event(this::updateVoidSettings);
+        netherrack = new ToggleButton().desiredWidth(20).desiredHeight(20).tooltips("Void netherrack").event(this::updateVoidSettings);
+        endstone = new ToggleButton().desiredWidth(20).desiredHeight(20).tooltips("Void end stone").event(this::updateVoidSettings);
+        tagMatching = new ToggleButton().desiredWidth(60).desiredHeight(15).tooltips("Enable tag matching")
+                .text("Tags")
+                .checkMarker(true)
+                .event(this::updateVoidSettings);
 
-        stone.setPressed(ShapeCardItem.isVoiding(heldItem, "stone"));
-        cobble.setPressed(ShapeCardItem.isVoiding(heldItem, "cobble"));
-        dirt.setPressed(ShapeCardItem.isVoiding(heldItem, "dirt"));
-        gravel.setPressed(ShapeCardItem.isVoiding(heldItem, "gravel"));
-        sand.setPressed(ShapeCardItem.isVoiding(heldItem, "sand"));
-        netherrack.setPressed(ShapeCardItem.isVoiding(heldItem, "netherrack"));
-        endstone.setPressed(ShapeCardItem.isVoiding(heldItem, "endstone"));
-        tagMatching.setPressed(ShapeCardItem.isTagMatching(heldItem));
+        stone.pressed(ShapeCardItem.isVoiding(heldItem, "stone"));
+        cobble.pressed(ShapeCardItem.isVoiding(heldItem, "cobble"));
+        dirt.pressed(ShapeCardItem.isVoiding(heldItem, "dirt"));
+        gravel.pressed(ShapeCardItem.isVoiding(heldItem, "gravel"));
+        sand.pressed(ShapeCardItem.isVoiding(heldItem, "sand"));
+        netherrack.pressed(ShapeCardItem.isVoiding(heldItem, "netherrack"));
+        endstone.pressed(ShapeCardItem.isVoiding(heldItem, "endstone"));
+        tagMatching.pressed(ShapeCardItem.isTagMatching(heldItem));
 
-        voidPanel.addChildren(label, stone, cobble, dirt, gravel, sand, netherrack, endstone, tagMatching);
+        voidPanel.children(label, stone, cobble, dirt, gravel, sand, netherrack, endstone, tagMatching);
     }
 
     private boolean isTorus() {
@@ -298,22 +305,22 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         } else if (dx > max) {
             dx = max;
         }
-        dimX.setText(Integer.toString(dx));
+        dimX.text(Integer.toString(dx));
         if (dz < 0) {
-             dz = 0;
+            dz = 0;
         } else if (dz > max) {
             dz = max;
         }
-        dimZ.setText(Integer.toString(dz));
+        dimZ.text(Integer.toString(dz));
         if (dy < 0) {
             dy = 0;
         } else if (dy > 256) {
             dy = 256;
         }
-        dimY.setText(Integer.toString(dy));
+        dimY.text(Integer.toString(dy));
 
         if (isTorus()) {
-            dimZ.setText(dimX.getText());
+            dimZ.text(dimX.getText());
         }
         if (fromTE) {
             ItemStack stack = getStackToEdit();
@@ -457,16 +464,16 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
         super.render(xSize_lo, ySize_lo, par3);
 
-        dimZ.setEnabled(!isTorus());
+        dimZ.enabled(!isTorus());
 
         updateCounter--;
         if (updateCounter <= 0) {
             updateCounter = 10;
             int count = getShapeRenderer().getCount();
             if (count >= ShapeCardItem.MAXIMUM_COUNT) {
-                blocksLabel.setText("#Blocks: ++" + count);
+                blocksLabel.text("#Blocks: ++" + count);
             } else {
-                blocksLabel.setText("#Blocks: " + count);
+                blocksLabel.text("#Blocks: " + count);
             }
         }
 
@@ -497,7 +504,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
             int guiTop = (this.height - this.ySize) / 2;
             int x = GuiTools.getRelativeX(this);
             int y = GuiTools.getRelativeY(this);
-            renderTooltip(tooltips, x-guiLeft, y-guiTop, minecraft.fontRenderer);
+            renderTooltip(tooltips, x - guiLeft, y - guiTop, minecraft.fontRenderer);
         }
     }
 
@@ -505,8 +512,8 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         x += (int) button.getBounds().getX();
         RenderHelper.renderObject(Minecraft.getInstance(), x, y, new ItemStack(block), button.isPressed());
         if (button.isPressed()) {
-            drawLine(x-1, y-1, x+18, y+18, 0xffff0000);
-            drawLine(x+18, y-1, x-1, y+18, 0xffff0000);
+            drawLine(x - 1, y - 1, x + 18, y + 18, 0xffff0000);
+            drawLine(x + 18, y - 1, x - 1, y + 18, 0xffff0000);
         }
     }
 
