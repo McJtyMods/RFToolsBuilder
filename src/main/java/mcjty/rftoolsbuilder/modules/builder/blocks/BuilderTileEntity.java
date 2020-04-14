@@ -26,7 +26,6 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
 import mcjty.rftoolsbase.api.client.IHudSupport;
 import mcjty.rftoolsbase.modules.hud.network.PacketGetHudLog;
-import mcjty.rftoolsbase.modules.various.FilterModuleCache;
 import mcjty.rftoolsbase.modules.various.items.FilterModuleItem;
 import mcjty.rftoolsbuilder.modules.builder.BlockInformation;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
@@ -94,6 +93,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Predicate;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 
@@ -174,7 +174,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private static ItemStack TOOL_NORMAL;
     private static ItemStack TOOL_SILK;
 
-    private FilterModuleCache filterCache = null;
+    private Predicate<ItemStack> filterCache = null;
 
     // For chunkloading with the quarry.
     // @todo 1.14
@@ -1232,7 +1232,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 if (!filter.isEmpty()) {
                     getFilterCache();
                     if (filterCache != null) {
-                        boolean match = filterCache.match(block.getItem(world, srcPos, srcState));
+                        boolean match = filterCache.test(block.getItem(world, srcPos, srcState));
                         if (!match) {
                             energyHandler.ifPresent(h -> h.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get())));
                             return skip();   // Skip this
@@ -1378,7 +1378,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 if (!filter.isEmpty()) {
                     getFilterCache();
                     if (filterCache != null) {
-                        boolean match = filterCache.match(block.getItem(world, srcPos, srcState));
+                        boolean match = filterCache.test(block.getItem(world, srcPos, srcState));
                         if (!match) {
                             energyHandler.ifPresent(h -> h.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get())));
                             return skip();   // Skip this
