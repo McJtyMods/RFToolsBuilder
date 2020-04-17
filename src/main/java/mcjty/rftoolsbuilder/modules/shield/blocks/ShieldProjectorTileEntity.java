@@ -17,7 +17,10 @@ import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
-import mcjty.lib.varia.*;
+import mcjty.lib.varia.Logging;
+import mcjty.lib.varia.OrientationTools;
+import mcjty.lib.varia.RedstoneMode;
+import mcjty.lib.varia.WorldTools;
 import mcjty.rftoolsbase.modules.various.VariousSetup;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.shield.*;
@@ -34,6 +37,7 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundNBT;
@@ -610,7 +614,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             } else {
                 rf = ShieldConfiguration.rfDamagePlayer.get();
                 if (killer == null) {
-                    killer = FakePlayerFactory.get(WorldTools.getOverworld(), new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_shield"));
+                    killer = FakePlayerFactory.get(WorldTools.getOverworld(world), new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_shield"));
                 }
                 killer.setWorld(world);
                 killer.setPosition(pos.getX(), pos.getY(), pos.getZ());
@@ -922,7 +926,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             } else if (templateState.getMaterial() != Material.AIR){
                 if (!isShapedShield()) {
                     // No room, just spawn the block
-                    BlockTools.spawnItemStack(getWorld(), cx, cy, cz, templateState.getBlock().getItem(getWorld(), new BlockPos(cx, cy, cz), templateState));
+                    InventoryHelper.spawnItemStack(getWorld(), cx, cy, cz, templateState.getBlock().getItem(getWorld(), new BlockPos(cx, cy, cz), templateState));
                 }
             }
         }

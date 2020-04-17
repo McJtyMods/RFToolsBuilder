@@ -30,7 +30,7 @@ public class ShaperTools {
     }
 
     public static void requestScanDirty(PlayerEntity player, int scanId) {
-        int counter = ScanDataManager.get(player.getEntityWorld()).loadScan(scanId).getDirtyCounter();
+        int counter = ScanDataManager.get(player.getEntityWorld()).loadScan(player.getEntityWorld(), scanId).getDirtyCounter();
         RFToolsBuilderMessages.sendToClient(player, ClientCommandHandler.CMD_RETURN_SCAN_DIRTY,
                 TypedMap.builder().put(ClientCommandHandler.PARAM_SCANID, scanId).put(ClientCommandHandler.PARAM_COUNTER, counter));
     }

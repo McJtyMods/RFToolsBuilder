@@ -2134,7 +2134,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         int cx = x >> 4;
         int cz = z >> 4;
 
-        if (WorldTools.chunkLoaded(world, new BlockPos(x, 0, z))) {
+        if (WorldTools.isLoaded(world, new BlockPos(x, 0, z))) {
             return true;
         }
 

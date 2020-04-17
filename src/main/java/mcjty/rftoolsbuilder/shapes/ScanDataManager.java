@@ -35,8 +35,8 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
         super(SCANDATA_NETWORK_NAME);
     }
 
-    public void save(int scanId) {
-        World world = WorldTools.getOverworld();
+    public void save(World w, int scanId) {
+        World world = WorldTools.getOverworld(w);
         File dataDir = new File(((ServerWorld)world).getSaveHandler().getWorldDirectory(), "rftoolsscans");
         dataDir.mkdirs();
         File file = new File(dataDir, "scan" + scanId);
@@ -81,8 +81,8 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
     }
 
     @Nonnull
-    public Scan loadScan(int id) {
-        World world = WorldTools.getOverworld();
+    public Scan loadScan(World w, int id) {
+        World world = WorldTools.getOverworld(w);
         Scan scan = scans.get(id);
         if (scan == null || scan.getDataInt() == null) {
             if (scan == null) {
@@ -107,7 +107,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
         ScanDataManager scans = get(sender.getEntityWorld());
         for (Map.Entry<Integer, Scan> entry : scans.scans.entrySet()) {
             Integer scanid = entry.getKey();
-            scans.loadScan(scanid);
+            scans.loadScan(sender.getEntityWorld(), scanid);
             Scan scan = entry.getValue();
             BlockPos dim = scan.getDataDim();
             if (dim == null) {
