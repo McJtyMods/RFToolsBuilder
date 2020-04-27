@@ -25,8 +25,8 @@ import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
 import mcjty.rftoolsbase.api.client.IHudSupport;
-import mcjty.rftoolsbase.modules.hud.network.PacketGetHudLog;
 import mcjty.rftoolsbase.modules.filter.items.FilterModuleItem;
+import mcjty.rftoolsbase.modules.hud.network.PacketGetHudLog;
 import mcjty.rftoolsbuilder.modules.builder.BlockInformation;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
@@ -96,6 +96,8 @@ import java.util.*;
 import java.util.function.Predicate;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
+import static mcjty.lib.container.ContainerFactory.CONTAINER_CONTAINER;
+import static mcjty.lib.container.SlotDefinition.specific;
 
 public class BuilderTileEntity extends GenericTileEntity implements ITickableTileEntity, IHudSupport {
 
@@ -108,16 +110,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public static final int SLOT_TAB = 0;
     public static final int SLOT_FILTER = 1;
 
-    public static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory(2) {
-        @Override
-        protected void setup() {
-            slot(SlotDefinition.specific(s -> s.getItem() instanceof ShapeCardItem) /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
-                    CONTAINER_CONTAINER, SLOT_TAB, 100, 10);
-            slot(SlotDefinition.specific(s -> s.getItem() instanceof FilterModuleItem) /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
-                    CONTAINER_CONTAINER, SLOT_FILTER, 84, 46);
-            playerSlots(10, 70);
-        }
-    };
+    public static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory(2)
+            .slot(specific(s -> s.getItem() instanceof ShapeCardItem) /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
+                    CONTAINER_CONTAINER, SLOT_TAB, 100, 10)
+            .slot(specific(s -> s.getItem() instanceof FilterModuleItem) /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
+                    CONTAINER_CONTAINER, SLOT_FILTER, 84, 46)
+            .playerSlots(10, 70);
 
     public static final int MODE_COPY = 0;
     public static final int MODE_MOVE = 1;
@@ -1555,9 +1553,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     // Return what could not be inserted
     private ItemStack insertItem(@Nonnull ItemStack s) {
-        s = InventoryHelper.insertItem(world, getPos(), Direction.UP, s);
+        s = InventoryTools.insertItem(world, getPos(), Direction.UP, s);
         if (!s.isEmpty()) {
-            s = InventoryHelper.insertItem(world, getPos(), Direction.DOWN, s);
+            s = InventoryTools.insertItem(world, getPos(), Direction.DOWN, s);
         }
         return s;
     }

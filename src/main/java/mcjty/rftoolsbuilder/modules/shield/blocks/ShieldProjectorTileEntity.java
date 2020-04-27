@@ -11,7 +11,10 @@ import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.api.smartwrench.ISmartWrenchSelector;
 import mcjty.lib.bindings.DefaultValue;
 import mcjty.lib.bindings.IValue;
-import mcjty.lib.container.*;
+import mcjty.lib.container.AutomationFilterItemHander;
+import mcjty.lib.container.ContainerFactory;
+import mcjty.lib.container.GenericContainer;
+import mcjty.lib.container.NoDirectionItemHander;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.Key;
@@ -70,6 +73,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
+import static mcjty.lib.container.ContainerFactory.CONTAINER_CONTAINER;
+import static mcjty.lib.container.SlotDefinition.input;
+import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
 
 public class ShieldProjectorTileEntity extends GenericTileEntity implements ISmartWrenchSelector, ITickableTileEntity { // @todo }, IPeripheral {
@@ -147,15 +153,11 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public static final int SLOT_SHAPE = 1;
     public static final int SLOT_SHARD = 2;
     public static final int BUFFER_SIZE = 3;
-    public static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory(BUFFER_SIZE) {
-        @Override
-        protected void setup() {
-            slot(SlotDefinition.input(), CONTAINER_CONTAINER, SLOT_BUFFER, 26, 142);
-            slot(SlotDefinition.specific(s -> s.getItem() instanceof ShapeCardItem), CONTAINER_CONTAINER, SLOT_SHAPE, 26, 200);
-            slot(SlotDefinition.specific(s -> s.getItem() == VariousSetup.DIMENSIONALSHARD.get()), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118);
-            playerSlots(85, 142);
-        }
-    };
+    public static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory(BUFFER_SIZE)
+            .slot(input(), CONTAINER_CONTAINER, SLOT_BUFFER, 26, 142)
+            .slot(specific(s -> s.getItem() instanceof ShapeCardItem), CONTAINER_CONTAINER, SLOT_SHAPE, 26, 200)
+            .slot(specific(s -> s.getItem() == VariousSetup.DIMENSIONALSHARD.get()), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118)
+            .playerSlots(85, 142);
 
     private NoDirectionItemHander items = createItemHandler();
     private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
