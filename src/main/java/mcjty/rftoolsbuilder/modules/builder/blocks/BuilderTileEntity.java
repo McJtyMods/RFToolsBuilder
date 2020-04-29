@@ -16,7 +16,10 @@ import mcjty.lib.bindings.IValue;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
-import mcjty.lib.container.*;
+import mcjty.lib.container.AutomationFilterItemHander;
+import mcjty.lib.container.ContainerFactory;
+import mcjty.lib.container.GenericContainer;
+import mcjty.lib.container.NoDirectionItemHander;
 import mcjty.lib.gui.widgets.ChoiceLabel;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.GenericTileEntity;
@@ -182,12 +185,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private ChunkPos cachedChunk = null;       // For which chunk are the cachedBlocks valid
 
     // Cached set of blocks that we want to void with the quarry.
-    private Set<Block> cachedVoidableBlocks = null;
+    private Cached<Set<Block>> cachedVoidableBlocks = Cached.of(this::getCachedVoidableBlocks);
 
     // Drops from a block that we broke but couldn't fit in an inventory
     private List<ItemStack> overflowItems = null;
 
-    private FakePlayer harvester = null;
+    private Lazy<FakePlayer> harvester = Lazy.of(this::getHarvester);
 
     private NoDirectionItemHander items = createItemHandler();
     private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
@@ -271,12 +274,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private FakePlayer getHarvester() {
-        if (harvester == null) {
-            harvester = FakePlayerFactory.get((ServerWorld) world, new GameProfile(UUID.nameUUIDFromBytes("rftools_builder".getBytes()), "rftools_builder"));
-        }
-        harvester.setWorld(world);
-        harvester.setPosition(pos.getX(), pos.getY(), pos.getZ());
-        return harvester;
+        FakePlayer player = FakePlayerFactory.get((ServerWorld) world, new GameProfile(UUID.nameUUIDFromBytes("rftools_builder".getBytes()), "rftools_builder"));
+        player.setWorld(world);
+        player.setPosition(pos.getX(), pos.getY(), pos.getZ());
+        return player;
     }
 
     @Override
@@ -952,7 +953,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         cachedBlocks = null;
         cachedChunk = null;
-        cachedVoidableBlocks = null;
+        cachedVoidableBlocks.clear();
         minBox = minCorner;
         maxBox = maxCorner;
         restartScan();
@@ -1052,7 +1053,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 if (isFluidBlock(block)) {
                     hardness = 1.0f;
                 } else {
-                    if (getCachedVoidableBlocks().contains(block)) {
+                    if (cachedVoidableBlocks.get().contains(block)) {
                         rfNeeded = (int) (BuilderConfiguration.builderRfPerQuarry.get() * BuilderConfiguration.voidShapeCardFactor.get());
                     }
                     hardness = block.getBlockHardness(state, world, srcPos);
@@ -1083,7 +1084,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 return waitOrSkip("Cannot find block!\nor missing inventory\non top or below");    // We could not find a block. Wait
             }
 
-            FakePlayer fakePlayer = getHarvester();
+            FakePlayer fakePlayer = harvester.get();
             BlockState newState = BlockTools.placeStackAt(fakePlayer, stack, world, srcPos, pickState);
             if (newState == null) {
                 return waitOrSkip("Cannot place block!");
@@ -1129,15 +1130,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private Set<Block> getCachedVoidableBlocks() {
-        if (cachedVoidableBlocks == null) {
-            ItemStack card = items.getStackInSlot(SLOT_TAB);
-            if (!card.isEmpty() && card.getItem() instanceof ShapeCardItem) {
-                cachedVoidableBlocks = ShapeCardItem.getVoidedBlocks(card);
-            } else {
-                cachedVoidableBlocks = Collections.emptySet();
-            }
+        ItemStack card = items.getStackInSlot(SLOT_TAB);
+        if (!card.isEmpty() && card.getItem() instanceof ShapeCardItem) {
+            return ShapeCardItem.getVoidedBlocks(card);
+        } else {
+            return Collections.emptySet();
         }
-        return cachedVoidableBlocks;
     }
 
     private void clearOrDirtBlock(int rfNeeded, BlockPos spos, BlockState srcState, boolean clear) {
@@ -1221,7 +1219,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 return skip();
             }
 
-            FakePlayer fakePlayer = getHarvester();
+            FakePlayer fakePlayer = harvester.get();
             if (allowedToBreak(srcState, world, srcPos, fakePlayer)) {
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
@@ -1234,7 +1232,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                         }
                     }
                 }
-                if (!getCachedVoidableBlocks().contains(block)) {
+                if (!cachedVoidableBlocks.get().contains(block)) {
                     if (overflowItems != null) {
                         // Don't harvest any new blocks if we're still overflowing with the drops from a previous block
                         return waitOrSkip("Not enough room!\nor no usable storage\non top or below!");
@@ -1286,7 +1284,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             } else {
                 // We assume here the liquid is placable.
                 Block block = fluid.getDefaultState().getBlockState().getBlock();   // @todo 1.14 check blockstate
-                FakePlayer fakePlayer = getHarvester();
+                FakePlayer fakePlayer = harvester.get();
                 world.setBlockState(srcPos, block.getDefaultState(), 11);
 
                 if (!silent) {
@@ -1330,7 +1328,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 //        }
 
         if (block.getBlockHardness(srcState, world, srcPos) >= 0) {
-            FakePlayer fakePlayer = getHarvester();
+            FakePlayer fakePlayer = harvester.get();
             if (allowedToBreak(srcState, world, srcPos, fakePlayer)) {
                 if (checkAndInsertFluids(fluidStack)) {
                     energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
@@ -1366,7 +1364,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             // Skip a 3x3x3 block around the builder.
             return skip();
         }
-        FakePlayer fakePlayer = getHarvester();
+        FakePlayer fakePlayer = harvester.get();
         if (allowedToBreak(srcState, world, srcPos, fakePlayer)) {
             if (block.getBlockHardness(srcState, world, srcPos) >= 0) {
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
@@ -1714,7 +1712,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private int isMovable(World world, BlockPos pos, Block block, TileEntity tileEntity) {
-        return getBlockInformation(getHarvester(), world, pos, block, tileEntity).getBlockLevel();
+        return getBlockInformation(harvester.get(), world, pos, block, tileEntity).getBlockLevel();
     }
 
     public static boolean isEmptyOrReplacable(World world, BlockPos pos) {
@@ -1780,7 +1778,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     return;
                 }
 
-                FakePlayer fakePlayer = getHarvester();
+                FakePlayer fakePlayer = harvester.get();
                 BlockState newState = BlockTools.placeStackAt(fakePlayer, consumedStack, destWorld, destPos, srcState);
                 if (newState == null) {
                     // This block can't be placed
@@ -1916,7 +1914,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 return;
             }
             TileEntity srcTileEntity = srcWorld.getTileEntity(srcPos);
-            BlockInformation srcInformation = getBlockInformation(getHarvester(), srcWorld, srcPos, srcBlock, srcTileEntity);
+            BlockInformation srcInformation = getBlockInformation(harvester.get(), srcWorld, srcPos, srcBlock, srcTileEntity);
             if (srcInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
                 return;
             }
@@ -1983,12 +1981,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             return;
         }
 
-        BlockInformation srcInformation = getBlockInformation(getHarvester(), srcWorld, srcPos, srcBlock, srcTileEntity);
+        BlockInformation srcInformation = getBlockInformation(harvester.get(), srcWorld, srcPos, srcBlock, srcTileEntity);
         if (srcInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
             return;
         }
 
-        BlockInformation dstInformation = getBlockInformation(getHarvester(), destWorld, dstPos, dstBlock, dstTileEntity);
+        BlockInformation dstInformation = getBlockInformation(harvester.get(), destWorld, dstPos, dstBlock, dstTileEntity);
         if (dstInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
             return;
         }
@@ -2105,7 +2103,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             }
             cachedBlocks = null;
             cachedChunk = null;
-            cachedVoidableBlocks = null;
+            cachedVoidableBlocks.clear();
         } else {
             scan = null;
         }
@@ -2246,7 +2244,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         clearSupportBlocks();
         cachedBlocks = null;
         cachedChunk = null;
-        cachedVoidableBlocks = null;
+        cachedVoidableBlocks.clear();
         boxValid = false;
         scan = null;
         cardType = ShapeCardType.CARD_UNKNOWN;
