@@ -28,7 +28,7 @@ public class RFToolsBuilder implements ModBase {
         instance = this;
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_CONFIG);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.COMMON_CONFIG);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SERVER_CONFIG);
 
         BuilderSetup.register();
         ShieldSetup.register();

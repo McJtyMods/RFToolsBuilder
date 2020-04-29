@@ -42,86 +42,86 @@ public class ScannerConfiguration {
     public static ForgeConfigSpec.DoubleValue baseProjectorVolume;      // Use 0 to turn off projector sounds
 
 
-    public static void init(ForgeConfigSpec.Builder COMMON_BUILDER, ForgeConfigSpec.Builder CLIENT_BUILDER) {
-        COMMON_BUILDER.comment("Settings for the scanner, composer, and projector").push(CATEGORY_SCANNER);
+    public static void init(ForgeConfigSpec.Builder SERVER_BUILDER, ForgeConfigSpec.Builder CLIENT_BUILDER) {
+        SERVER_BUILDER.comment("Settings for the scanner, composer, and projector").push(CATEGORY_SCANNER);
         CLIENT_BUILDER.comment("Settings for the scanner, composer, and projector").push(CATEGORY_SCANNER);
 
-        SCANNER_MAXENERGY = COMMON_BUILDER
+        SCANNER_MAXENERGY = SERVER_BUILDER
                 .comment("Maximum RF storage that the scanner can hold")
                 .defineInRange("scannerMaxRF", 500000, 0, Integer.MAX_VALUE);
-        SCANNER_RECEIVEPERTICK = COMMON_BUILDER
+        SCANNER_RECEIVEPERTICK = SERVER_BUILDER
                 .comment("RF per tick that the scanner can receive")
                 .defineInRange("scannerRFPerTick", 20000, 0, Integer.MAX_VALUE);
-        SCANNER_PERTICK = COMMON_BUILDER
+        SCANNER_PERTICK = SERVER_BUILDER
                 .comment("Amount of RF needed per tick during the scan")
                 .defineInRange("scannerUsePerTick", 1000, 0, Integer.MAX_VALUE);
-        REMOTE_SCANNER_PERTICK = COMMON_BUILDER
+        REMOTE_SCANNER_PERTICK = SERVER_BUILDER
                 .comment("Amount of RF needed per tick during the scan for a remote scanner")
                 .defineInRange("remoteScannerUsePerTick", 2000, 0, Integer.MAX_VALUE);
-        LOCATOR_MAXENERGY = COMMON_BUILDER
+        LOCATOR_MAXENERGY = SERVER_BUILDER
                 .comment("Maximum RF storage that the locator can hold")
                 .defineInRange("locatorMaxRF", 2000000, 0, Integer.MAX_VALUE);
-        LOCATOR_RECEIVEPERTICK = COMMON_BUILDER
+        LOCATOR_RECEIVEPERTICK = SERVER_BUILDER
                 .comment("RF per tick that the locator can receive")
                 .defineInRange("locatorRFPerTick", 20000, 0, Integer.MAX_VALUE);
-        LOCATOR_PERSCAN_BASE = COMMON_BUILDER
+        LOCATOR_PERSCAN_BASE = SERVER_BUILDER
                 .comment("Fixed amount of RF needed for a scan")
                 .defineInRange("locatorUsePerTickBase", 5000, 0, Integer.MAX_VALUE);
 
-        LOCATOR_PERSCAN_CHUNK = COMMON_BUILDER
+        LOCATOR_PERSCAN_CHUNK = SERVER_BUILDER
                 .comment("Base amount of RF needed for a scan per 16x16x16 subchunk")
                 .defineInRange("locatorUsePerTickChunk", 0.1, 0, 1000000000.0);
-        LOCATOR_PERSCAN_HOSTILE = COMMON_BUILDER
+        LOCATOR_PERSCAN_HOSTILE = SERVER_BUILDER
                 .comment("Additional amount of RF per 16x16x16 subchunk needed for a scan for hostile entities")
                 .defineInRange("locatorUsePerTickHostile", 1.0, 0, 1000000000.0);
-        LOCATOR_PERSCAN_PASSIVE = COMMON_BUILDER
+        LOCATOR_PERSCAN_PASSIVE = SERVER_BUILDER
                 .comment("Additional amount of RF per 16x16x16 subchunk needed for a scan for passive entities")
                 .defineInRange("locatorUsePerTickPassive", 0.5, 0, 1000000000.0);
-        LOCATOR_PERSCAN_PLAYER = COMMON_BUILDER
+        LOCATOR_PERSCAN_PLAYER = SERVER_BUILDER
                 .comment("Additional amount of RF per 16x16x16 subchunk needed for a scan for players")
                 .defineInRange("locatorUsePerTickPlayer", 2, 0, 1000000000.0);
-        LOCATOR_PERSCAN_ENERGY = COMMON_BUILDER
+        LOCATOR_PERSCAN_ENERGY = SERVER_BUILDER
                 .comment("Additional amount of RF per 16x16x16 subchunk needed for a scan for low energy")
                 .defineInRange("locatorUsePerTickEnergy", 5, 0, 1000000000.0);
-        LOCATOR_FILTER_COST = COMMON_BUILDER
+        LOCATOR_FILTER_COST = SERVER_BUILDER
                 .comment("Additional amount of RF per 16x16x16 subchunk needed for a filtered scan")
                 .defineInRange("locatorFilterCost", 0.5, 0, 1000000000.0);
 
-        PROJECTOR_MAXENERGY = COMMON_BUILDER
+        PROJECTOR_MAXENERGY = SERVER_BUILDER
                 .comment("Maximum RF storage that the projector can hold")
                 .defineInRange("projectorMaxRF", 500000, 0, Integer.MAX_VALUE);
-        PROJECTOR_RECEIVEPERTICK = COMMON_BUILDER
+        PROJECTOR_RECEIVEPERTICK = SERVER_BUILDER
                 .comment("RF per tick that the projector can receive")
                 .defineInRange("projectorRFPerTick", 10000, 0, Integer.MAX_VALUE);
-        PROJECTOR_USEPERTICK = COMMON_BUILDER
+        PROJECTOR_USEPERTICK = SERVER_BUILDER
                 .comment("RF/t for the projector while it is in use")
                 .defineInRange("projectorUsePerTick", 1000, 0, Integer.MAX_VALUE);
 
-        ticksPerLocatorScan = COMMON_BUILDER
+        ticksPerLocatorScan = SERVER_BUILDER
                 .comment("Number of ticks between every scan of the locator")
                 .defineInRange("ticksPerLocatorScan", 40, 0, Integer.MAX_VALUE);
         locatorBeaconHeight = CLIENT_BUILDER
                 .comment("Height of the beacon in case beacons are used")
                 .defineInRange("locatorBeaconHeight", 30, 0, Integer.MAX_VALUE);
-        locatorEntitySafety = COMMON_BUILDER
+        locatorEntitySafety = SERVER_BUILDER
                 .comment("Maximum amount of entities in a single block to show markers/beacons for")
                 .defineInRange("locatorEntitySafety", 10, 0, Integer.MAX_VALUE);
-        locatorMaxEnergyChunks = COMMON_BUILDER
+        locatorMaxEnergyChunks = SERVER_BUILDER
                 .comment("Maximum amount of 16x16 chunks we support for energy scanning")
                 .defineInRange("locatorMaxEnergyChunks", 5*5, 0, Integer.MAX_VALUE);
 
-        maxScannerOffset = COMMON_BUILDER
+        maxScannerOffset = SERVER_BUILDER
                 .comment("Maximum offset of the shape when a shape card is used in the scanner/projector")
                 .defineInRange("maxScannerOffset", 2048, 0, Integer.MAX_VALUE);
-        maxScannerDimension = COMMON_BUILDER
+        maxScannerDimension = SERVER_BUILDER
                 .comment("Maximum dimension of the shape when a scanner/projector card is used")
                 .defineInRange("maxScannerDimension", 512, 0, 10000);
 
-        surfaceAreaPerTick = COMMON_BUILDER
+        surfaceAreaPerTick = SERVER_BUILDER
                 .comment("The amount of surface area the scanner will scan in a tick. Increasing this will increase the speed of the scanner but cause more strain on the server")
                 .defineInRange("surfaceAreaPerTick", 512*256*2,
                 100, 32768*32768);
-        planeSurfacePerTick = COMMON_BUILDER
+        planeSurfacePerTick = SERVER_BUILDER
                 .comment("The amount of 'surface area' that the server will send to the client for the projector. Increasing this will increase the speed at which projections are ready but also increase the load for server and client")
                 .defineInRange("planeSurfacePerTick", 200*200,
                 100, 10000000);
@@ -139,7 +139,7 @@ public class ScannerConfiguration {
                 .comment("The volume for the projector sound (0.0 is off)")
                 .defineInRange("baseProjectorVolume", 0.4, 0, 1.0);
 
-        COMMON_BUILDER.pop();
+        SERVER_BUILDER.pop();
         CLIENT_BUILDER.pop();
     }
 }
