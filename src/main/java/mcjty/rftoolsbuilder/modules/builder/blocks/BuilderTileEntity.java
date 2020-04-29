@@ -73,10 +73,7 @@ import net.minecraft.world.storage.loot.LootParameters;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.FakePlayerFactory;
-import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.common.util.*;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fluids.FluidStack;
@@ -110,12 +107,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public static final int SLOT_TAB = 0;
     public static final int SLOT_FILTER = 1;
 
-    public static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory(2)
+    public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(2)
             .slot(specific(s -> s.getItem() instanceof ShapeCardItem) /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
                     CONTAINER_CONTAINER, SLOT_TAB, 100, 10)
             .slot(specific(s -> s.getItem() instanceof FilterModuleItem) /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
                     CONTAINER_CONTAINER, SLOT_FILTER, 84, 46)
-            .playerSlots(10, 70);
+            .playerSlots(10, 70));
 
     public static final int MODE_COPY = 0;
     public static final int MODE_MOVE = 1;
@@ -199,7 +196,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(
             this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get()));
     private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
-            .containerSupplier((windowId, player) -> new GenericContainer(BuilderSetup.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY, getPos(), BuilderTileEntity.this))
+            .containerSupplier((windowId, player) -> new GenericContainer(BuilderSetup.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY.get(), getPos(), BuilderTileEntity.this))
             .itemHandler(itemHandler)
             .energyHandler(energyHandler)
             .shortListener(new IntReferenceHolder() {
@@ -2465,7 +2462,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 //    }
 
     private NoDirectionItemHander createItemHandler() {
-        return new NoDirectionItemHander(BuilderTileEntity.this, CONTAINER_FACTORY) {
+        return new NoDirectionItemHander(BuilderTileEntity.this, CONTAINER_FACTORY.get()) {
             @Override
             protected void onUpdate(int index) {
                 super.onUpdate(index);

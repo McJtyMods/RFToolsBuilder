@@ -61,10 +61,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.FakePlayerFactory;
-import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.common.util.*;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -153,17 +150,17 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public static final int SLOT_SHAPE = 1;
     public static final int SLOT_SHARD = 2;
     public static final int BUFFER_SIZE = 3;
-    public static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory(BUFFER_SIZE)
+    public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(BUFFER_SIZE)
             .slot(input(), CONTAINER_CONTAINER, SLOT_BUFFER, 26, 142)
             .slot(specific(s -> s.getItem() instanceof ShapeCardItem), CONTAINER_CONTAINER, SLOT_SHAPE, 26, 200)
             .slot(specific(s -> s.getItem() == VariousSetup.DIMENSIONALSHARD.get()), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118)
-            .playerSlots(85, 142);
+            .playerSlots(85, 142));
 
     private NoDirectionItemHander items = createItemHandler();
     private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
     private LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
     private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
-            .containerSupplier((windowId,player) -> new GenericContainer(ShieldSetup.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY, getPos(), ShieldProjectorTileEntity.this))
+            .containerSupplier((windowId,player) -> new GenericContainer(ShieldSetup.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY.get(), getPos(), ShieldProjectorTileEntity.this))
             .itemHandler(itemHandler));
 
     private LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick()));
@@ -1323,7 +1320,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     private NoDirectionItemHander createItemHandler() {
-        return new NoDirectionItemHander(ShieldProjectorTileEntity.this, CONTAINER_FACTORY) {
+        return new NoDirectionItemHander(ShieldProjectorTileEntity.this, CONTAINER_FACTORY.get()) {
             @Override
             protected void onUpdate(int index) {
                 super.onUpdate(index);
