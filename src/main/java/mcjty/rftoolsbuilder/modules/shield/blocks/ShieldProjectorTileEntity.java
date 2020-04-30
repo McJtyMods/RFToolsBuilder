@@ -143,8 +143,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     private ShieldTexture shieldTexture = ShieldTexture.SHIELD;
     private ShieldRenderingMode shieldRenderingMode = ShieldRenderingMode.SHIELD;
 
-    private List<RelCoordinateShield> shieldBlocks = new ArrayList<>();
-    private List<BlockState> blockStateTable = new ArrayList<>();
+    private final List<RelCoordinateShield> shieldBlocks = new ArrayList<>();
+    private final List<BlockState> blockStateTable = new ArrayList<>();
 
     public static final int SLOT_BUFFER = 0;
     public static final int SLOT_SHAPE = 1;
@@ -156,16 +156,16 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             .slot(specific(s -> s.getItem() == VariousSetup.DIMENSIONALSHARD.get()), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118)
             .playerSlots(85, 142));
 
-    private NoDirectionItemHander items = createItemHandler();
-    private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
-    private LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
-    private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
+    private final NoDirectionItemHander items = createItemHandler();
+    private final LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
+    private final LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
+    private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
             .containerSupplier((windowId,player) -> new GenericContainer(ShieldSetup.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY.get(), getPos(), ShieldProjectorTileEntity.this))
             .itemHandler(itemHandler));
 
-    private LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick()));
-    private LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldProjectorTileEntity.this));
-    private LazyOptional<IPowerInformation> powerInfoHandler = LazyOptional.of(this::createPowerInfo);
+    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick()));
+    private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldProjectorTileEntity.this));
+    private final LazyOptional<IPowerInformation> powerInfoHandler = LazyOptional.of(this::createPowerInfo);
 
     private final int maxEnergy;
     private final int rfPerTick;

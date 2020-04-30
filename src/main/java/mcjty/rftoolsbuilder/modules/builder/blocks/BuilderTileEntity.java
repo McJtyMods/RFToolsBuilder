@@ -172,7 +172,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private static ItemStack TOOL_NORMAL;
     private static ItemStack TOOL_SILK;
 
-    private Predicate<ItemStack> filterCache = null;
+    private final Cached<Predicate<ItemStack>> filterCache = Cached.of(this::createFilterCache);
 
     // For chunkloading with the quarry.
     // @todo 1.14
@@ -185,20 +185,20 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private ChunkPos cachedChunk = null;       // For which chunk are the cachedBlocks valid
 
     // Cached set of blocks that we want to void with the quarry.
-    private Cached<Set<Block>> cachedVoidableBlocks = Cached.of(this::getCachedVoidableBlocks);
+    private final Cached<Set<Block>> cachedVoidableBlocks = Cached.of(this::getCachedVoidableBlocks);
 
     // Drops from a block that we broke but couldn't fit in an inventory
     private List<ItemStack> overflowItems = null;
 
-    private Lazy<FakePlayer> harvester = Lazy.of(this::getHarvester);
+    private final Lazy<FakePlayer> harvester = Lazy.of(this::getHarvester);
 
-    private NoDirectionItemHander items = createItemHandler();
-    private LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
-    private LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
+    private final NoDirectionItemHander items = createItemHandler();
+    private final LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
+    private final LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
 
-    private LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(
+    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(
             this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get()));
-    private LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
+    private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
             .containerSupplier((windowId, player) -> new GenericContainer(BuilderSetup.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY.get(), getPos(), BuilderTileEntity.this))
             .itemHandler(itemHandler)
             .energyHandler(energyHandler)
@@ -214,8 +214,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 }
             })
     );
-    private LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(BuilderTileEntity.this));
-    private LazyOptional<IModuleSupport> moduleSupportHandler = LazyOptional.of(() -> new DefaultModuleSupport(SLOT_TAB) {
+    private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(BuilderTileEntity.this));
+    private final LazyOptional<IModuleSupport> moduleSupportHandler = LazyOptional.of(() -> new DefaultModuleSupport(SLOT_TAB) {
         @Override
         public boolean isModule(ItemStack itemStack) {
             return (itemStack.getItem() instanceof ShapeCardItem || itemStack.getItem() == BuilderSetup.SPACE_CHAMBER_CARD);
@@ -1159,10 +1159,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return commonQuarryBlock(true, rfNeeded, srcPos, srcState);
     }
 
-    private void getFilterCache() {
-        if (filterCache == null) {
-            filterCache = FilterModuleItem.getCache(items.getStackInSlot(SLOT_FILTER));
-        }
+    private Predicate<ItemStack> createFilterCache() {
+        return FilterModuleItem.getCache(items.getStackInSlot(SLOT_FILTER));
     }
 
     public static boolean allowedToBreak(BlockState state, World world, BlockPos pos, PlayerEntity player) {
@@ -1223,9 +1221,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             if (allowedToBreak(srcState, world, srcPos, fakePlayer)) {
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
-                    getFilterCache();
-                    if (filterCache != null) {
-                        boolean match = filterCache.test(block.getItem(world, srcPos, srcState));
+                    if (filterCache.get() != null) {
+                        boolean match = filterCache.get().test(block.getItem(world, srcPos, srcState));
                         if (!match) {
                             energyHandler.ifPresent(h -> h.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get())));
                             return skip();   // Skip this
@@ -1369,9 +1366,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             if (block.getBlockHardness(srcState, world, srcPos) >= 0) {
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
-                    getFilterCache();
-                    if (filterCache != null) {
-                        boolean match = filterCache.test(block.getItem(world, srcPos, srcState));
+                    if (filterCache.get() != null) {
+                        boolean match = filterCache.get().test(block.getItem(world, srcPos, srcState));
                         if (!match) {
                             energyHandler.ifPresent(h -> h.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get())));
                             return skip();   // Skip this
@@ -2472,7 +2468,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     refreshSettings();
                 }
                 if (index == SLOT_FILTER) {
-                    filterCache = null;
+                    filterCache.clear();
                 }
             }
         };
