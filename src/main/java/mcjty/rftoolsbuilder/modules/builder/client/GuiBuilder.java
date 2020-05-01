@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.modules.builder.client;
 
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
+import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.widgets.Button;
 import mcjty.lib.gui.widgets.ChoiceLabel;
@@ -30,7 +31,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private ImageChoiceLabel anchor[] = new ImageChoiceLabel[4];
 
     public GuiBuilder(BuilderTileEntity builderTileEntity, GenericContainer container, PlayerInventory inventory) {
-        super(RFToolsBuilder.instance, builderTileEntity, container, inventory, 0 /* @todo 1.14 GuiProxy.GUI_MANUAL_SHAPE*/, "builder");
+        super(RFToolsBuilder.instance, builderTileEntity, container, inventory,  /* @todo 1.14 GuiProxy.GUI_MANUAL_SHAPE*/ ManualEntry.EMPTY);
     }
 
     @Override

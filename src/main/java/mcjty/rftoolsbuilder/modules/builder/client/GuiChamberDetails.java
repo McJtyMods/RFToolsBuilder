@@ -3,6 +3,7 @@ package mcjty.rftoolsbuilder.modules.builder.client;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.RenderHelper;
 import mcjty.lib.gui.GuiItemScreen;
+import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.widgets.*;
@@ -38,7 +39,7 @@ public class GuiChamberDetails extends GuiItemScreen {
     private Label info2Label;
 
     public GuiChamberDetails() {
-        super(RFToolsBuilder.instance, RFToolsBuilderMessages.INSTANCE, CHAMBER_XSIZE, CHAMBER_YSIZE, 0 /* @todo 1.14 GuiProxy.GUI_MANUAL_SHAPE*/, "chambercard");
+        super(RFToolsBuilder.instance, RFToolsBuilderMessages.INSTANCE, CHAMBER_XSIZE, CHAMBER_YSIZE,  /* @todo 1.14 GuiProxy.GUI_MANUAL_SHAPE*/ ManualEntry.EMPTY);
         requestChamberInfoFromServer();
     }
 

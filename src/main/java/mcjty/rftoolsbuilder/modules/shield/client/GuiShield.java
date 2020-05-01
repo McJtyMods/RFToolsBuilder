@@ -3,6 +3,7 @@ package mcjty.rftoolsbuilder.modules.shield.client;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
+import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.events.DefaultSelectionEvent;
 import mcjty.lib.gui.layout.HorizontalAlignment;
@@ -71,7 +72,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     private static final ResourceLocation iconGuiElements = new ResourceLocation(RFToolsBase.MODID, "textures/gui/guielements.png");
 
     public GuiShield(ShieldProjectorTileEntity shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
-        super(RFToolsBuilder.instance, shieldTileEntity, container, inventory, 0 /* @todo 1.14. GuiProxy.GUI_MANUAL_SHAPE*/, "shield");
+        super(RFToolsBuilder.instance, shieldTileEntity, container, inventory,  /* @todo 1.14. GuiProxy.GUI_MANUAL_SHAPE*/ ManualEntry.EMPTY);
 
         xSize = SHIELD_WIDTH;
         ySize = SHIELD_HEIGHT;
