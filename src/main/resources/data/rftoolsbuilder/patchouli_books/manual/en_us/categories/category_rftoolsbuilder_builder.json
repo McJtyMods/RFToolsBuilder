@@ -1,0 +1,7 @@
+{
+  "name": "rftoolsbuilder.category.builder",
+  "description": "rftoolsbuilder.category.builder.description",
+  "parent": "rftoolsbuilder:category_rftoolsbuilder",
+  "icon": "rftoolsbuilder:builder",
+  "sortnum": 20
+}

@@ -1,0 +1,12 @@
+{
+  "name": "rftoolsbuilder.entry.shape_card_liquid",
+  "icon": "rftoolsbuilder:shape_card_liquid",
+  "category": "rftoolsbuilder:category_rftoolsbuilder_shape_cards",
+  "sortnum": 40,
+  "pages": [
+    {
+      "type": "text",
+      "text": "rftoolsbuilder.page.shape_card_liquid0"
+    }
+  ]
+}

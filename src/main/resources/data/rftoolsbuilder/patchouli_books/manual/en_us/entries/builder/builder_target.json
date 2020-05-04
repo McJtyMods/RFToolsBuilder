@@ -1,0 +1,12 @@
+{
+  "name": "rftoolsbuilder.entry.builder_target",
+  "icon": "minecraft:compass",
+  "category": "rftoolsbuilder:category_rftoolsbuilder_builder",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "text",
+      "text": "rftoolsbuilder.page.builder_target0"
+    }
+  ]
+}

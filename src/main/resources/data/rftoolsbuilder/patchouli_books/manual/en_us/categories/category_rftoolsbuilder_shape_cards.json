@@ -1,0 +1,7 @@
+{
+  "name": "rftoolsbuilder.category.shape_cards",
+  "description": "rftoolsbuilder.category.shape_cards.description",
+  "parent": "rftoolsbuilder:category_rftoolsbuilder",
+  "icon": "rftoolsbuilder:shape_card_def",
+  "sortnum": 10
+}

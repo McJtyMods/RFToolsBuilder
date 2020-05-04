@@ -1,0 +1,12 @@
+{
+  "name": "rftoolsbuilder.entry.builder_intro",
+  "icon": "minecraft:experience_bottle",
+  "category": "rftoolsbuilder:category_rftoolsbuilder_builder",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "text",
+      "text": "rftoolsbuilder.page.builder_intro0"
+    }
+  ]
+}

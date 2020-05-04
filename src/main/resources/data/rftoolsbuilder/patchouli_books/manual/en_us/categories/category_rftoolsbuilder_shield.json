@@ -1,0 +1,7 @@
+{
+  "name": "rftoolsbuilder.category.shield",
+  "description": "rftoolsbuilder.category.shield.description",
+  "parent": "rftoolsbuilder:category_rftoolsbuilder",
+  "icon": "rftoolsbuilder:shield_block1",
+  "sortnum": 30
+}

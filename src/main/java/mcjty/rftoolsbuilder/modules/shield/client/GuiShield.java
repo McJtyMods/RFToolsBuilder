@@ -13,6 +13,7 @@ import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.RedstoneMode;
 import mcjty.rftoolsbase.RFToolsBase;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.DamageTypeMode;
 import mcjty.rftoolsbuilder.modules.shield.ShieldConfiguration;
@@ -72,7 +73,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     private static final ResourceLocation iconGuiElements = new ResourceLocation(RFToolsBase.MODID, "textures/gui/guielements.png");
 
     public GuiShield(ShieldProjectorTileEntity shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
-        super(RFToolsBuilder.instance, shieldTileEntity, container, inventory,  /* @todo 1.14. GuiProxy.GUI_MANUAL_SHAPE*/ ManualEntry.EMPTY);
+        super(RFToolsBuilder.instance, shieldTileEntity, container, inventory, ManualHelper.create("rftoolsbuilder:shield/shield_intro"));
 
         xSize = SHIELD_WIDTH;
         ySize = SHIELD_HEIGHT;

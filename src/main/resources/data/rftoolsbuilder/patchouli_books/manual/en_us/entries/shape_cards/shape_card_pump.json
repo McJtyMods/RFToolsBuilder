@@ -1,0 +1,12 @@
+{
+  "name": "rftoolsbuilder.entry.shape_card_pump",
+  "icon": "rftoolsbuilder:shape_card_pump",
+  "category": "rftoolsbuilder:category_rftoolsbuilder_shape_cards",
+  "sortnum": 50,
+  "pages": [
+    {
+      "type": "text",
+      "text": "rftoolsbuilder.page.shape_card_pump0"
+    }
+  ]
+}
