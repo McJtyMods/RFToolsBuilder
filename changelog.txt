@@ -1,3 +1,6 @@
+2.1.1-beta:
+- Dependency fix
+
 2.1.0-beta:
 - Fixed the Builder to cope better with 'unplacable' blocks. Everything is better compared to crashing.
 - Better tooltips for items and blocks
