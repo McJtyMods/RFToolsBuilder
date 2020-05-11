@@ -1056,7 +1056,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     if (cachedVoidableBlocks.get().contains(block)) {
                         rfNeeded = (int) (BuilderConfiguration.builderRfPerQuarry.get() * BuilderConfiguration.voidShapeCardFactor.get());
                     }
-                    hardness = block.getBlockHardness(state, world, srcPos);
+                    hardness = state.getBlockHardness(world, srcPos);
                 }
                 rfNeeded *= (int) ((hardness + 1) * 2);
             }
@@ -1206,7 +1206,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (isEmpty(srcState, block)) {
             return skip();
         }
-        if (block.getBlockHardness(srcState, world, srcPos) >= 0) {
+        if (srcState.getBlockHardness(world, srcPos) >= 0) {
             boolean clear = getCardType().isClearing();
             if ((!clear) && srcState == getReplacementBlock()) {
                 // We can skip dirt if we are not clearing.
@@ -1324,7 +1324,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 //            return skip();
 //        }
 
-        if (block.getBlockHardness(srcState, world, srcPos) >= 0) {
+        if (srcState.getBlockHardness(world, srcPos) >= 0) {
             FakePlayer fakePlayer = harvester.get();
             if (allowedToBreak(srcState, world, srcPos, fakePlayer)) {
                 if (checkAndInsertFluids(fluidStack)) {
@@ -1363,7 +1363,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         }
         FakePlayer fakePlayer = harvester.get();
         if (allowedToBreak(srcState, world, srcPos, fakePlayer)) {
-            if (block.getBlockHardness(srcState, world, srcPos) >= 0) {
+            assert world != null;
+            if (srcState.getBlockHardness(world, srcPos) >= 0) {
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
                     if (filterCache.get() != null) {
@@ -1726,7 +1727,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (block == null) {
             return true;
         }
-        if (block.getMaterial(state) == Material.AIR) {
+        if (state.getMaterial() == Material.AIR) {
             return true;
         }
         if (block == BuilderSetup.SUPPORT.get()) {

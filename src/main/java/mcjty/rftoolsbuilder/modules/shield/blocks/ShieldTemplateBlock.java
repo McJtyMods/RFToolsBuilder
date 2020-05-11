@@ -22,13 +22,7 @@ import static mcjty.lib.builder.TooltipBuilder.key;
 public class ShieldTemplateBlock extends Block implements ITooltipSettings {
 
     public enum TemplateColor {
-        BLUE("blue"), RED("red"), GREEN("green"), YELLOW("yellow");
-
-        private final String name;
-
-        TemplateColor(String name) {
-            this.name = name;
-        }
+        BLUE, RED, GREEN, YELLOW
     }
 
     private final TooltipBuilder tooltipBuilder = new TooltipBuilder()

@@ -30,14 +30,11 @@ import static mcjty.lib.builder.TooltipBuilder.*;
 
 public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIngredient {
 
-    private final int max;
-
     public ShieldProjectorBlock(Supplier<TileEntity> te, int max) {
         super(new BlockBuilder()
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(), gold(), parameter("info", stack -> Integer.toString(max)))
                 .tileEntitySupplier(te));
-        this.max = max;
     }
 
     @Override

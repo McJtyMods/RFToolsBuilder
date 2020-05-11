@@ -39,10 +39,11 @@ public class PacketReturnShapeData {
         } else {
             buf.writeInt(statePalette.getPalette().size());
             for (BlockState state : statePalette.getPalette()) {
-                if (state.getBlock().getRegistryName() == null) {
-                    state = Blocks.STONE.getDefaultState();
+                BlockState blockState = state;
+                if (blockState.getBlock().getRegistryName() == null) {
+                    blockState = Blocks.STONE.getDefaultState();
                 }
-                buf.writeString(state.getBlock().getRegistryName().toString());
+                buf.writeString(blockState.getBlock().getRegistryName().toString());
                 //                buf.writeInt(state.getBlock().getMetaFromState(state));   // @todo 1.14 persist blockstate here!
             }
         }
