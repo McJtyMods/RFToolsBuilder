@@ -1,11 +1,9 @@
 package mcjty.rftoolsbuilder;
 
 import mcjty.lib.base.ModBase;
-import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
-import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.ModSetup;
-import net.minecraft.item.Item;
+import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -29,8 +27,7 @@ public class RFToolsBuilder implements ModBase {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SERVER_CONFIG);
 
-        BuilderSetup.register();
-        ShieldSetup.register();
+        Registration.register();
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> setup.init(event));
         FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLClientSetupEvent event) -> setup.initClient(event));
@@ -40,9 +37,4 @@ public class RFToolsBuilder implements ModBase {
     public String getModId() {
         return MODID;
     }
-
-    public static Item.Properties createStandardProperties() {
-        return new Item.Properties().group(setup.getTab());
-    }
-
 }
