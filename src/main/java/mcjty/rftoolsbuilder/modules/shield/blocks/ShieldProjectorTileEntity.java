@@ -159,11 +159,12 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     private final NoDirectionItemHander items = createItemHandler();
     private final LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
     private final LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
+    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick()));
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
             .containerSupplier((windowId,player) -> new GenericContainer(ShieldSetup.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY.get(), getPos(), ShieldProjectorTileEntity.this))
+            .energyHandler(energyHandler)
             .itemHandler(itemHandler));
 
-    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick()));
     private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldProjectorTileEntity.this));
     private final LazyOptional<IPowerInformation> powerInfoHandler = LazyOptional.of(this::createPowerInfo);
 

@@ -1,5 +1,6 @@
 Upcoming:
 - The Builder can build in water again
+- Fixed a problem with the energy level not showing in the shield projector GUI (it worked fine, it just didn't show)
 
 2.1.1-beta:
 - Dependency fix
