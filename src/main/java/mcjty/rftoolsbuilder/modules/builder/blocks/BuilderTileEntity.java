@@ -1715,10 +1715,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public static boolean isEmptyOrReplacable(World world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
-        // @todo 1.14
-//        if (block.isReplaceable(world, pos)) {
-//            return true;
-//        }
+        if (state.getMaterial().isReplaceable()) {
+            return true;
+        }
         return isEmpty(state, block);
     }
 

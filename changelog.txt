@@ -1,3 +1,6 @@
+Upcoming:
+- The Builder can build in water again
+
 2.1.1-beta:
 - Dependency fix
 
