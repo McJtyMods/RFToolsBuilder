@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
+import mcjty.rftoolsbase.api.screens.IModuleProvider;
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import net.minecraft.block.Block;
@@ -290,7 +291,7 @@ public class ShieldingBlock extends Block {
                     if (checkEntityDamage(projector, HostileFilter.HOSTILE)) {
                         projector.applyDamageToEntity(entity);
                     }
-                } else if (dmgPassive && entity instanceof AnimalEntity) {
+                } else if (dmgPassive && (entity instanceof LivingEntity) && !(entity instanceof IMob)) {
                     if (checkEntityDamage(projector, AnimalFilter.ANIMAL)) {
                         projector.applyDamageToEntity(entity);
                     }
