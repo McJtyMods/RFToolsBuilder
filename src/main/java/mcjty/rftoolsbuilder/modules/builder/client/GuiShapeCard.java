@@ -69,7 +69,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     private TextField offsetX;
     private TextField offsetY;
     private TextField offsetZ;
-    private Window window;
+    private Window window = null;
     private Label blocksLabel;
 
     private Panel voidPanel;
@@ -388,6 +388,10 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     @Override
     public void mouseMoved(double xx, double yy) {
+        // If not initialized yet we do nothing
+        if (window == null) {
+            return;
+        }
         window.mouseDragged(xx, yy, 0); // @todo 1.14 is this right? What button?
 
         int x = GuiTools.getRelativeX(this);
@@ -401,6 +405,10 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     @Override
     public boolean mouseClicked(double x, double y, int button) {
+        // If not initialized yet we do nothing
+        if (window == null) {
+            return false;
+        }
         if (button < buttons.length) {
             buttons[button] = true;
         }
@@ -411,6 +419,10 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        // If not initialized yet we do nothing
+        if (window == null) {
+            return false;
+        }
         if (button < buttons.length) {
             buttons[button] = false;
         }
@@ -421,6 +433,10 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // If not initialized yet we do nothing
+        if (window == null) {
+            return false;
+        }
         boolean rc = false;
         if (!window.keyTyped(keyCode, scanCode)) {
             rc = super.keyPressed(keyCode, scanCode, modifiers);
@@ -453,6 +469,10 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     @Override
     public boolean mouseScrolled(double x, double y, double wheel) {
+        // If not initialized yet we do nothing
+        if (window == null) {
+            return false;
+        }
         getShapeRenderer().handleMouseWheel(wheel);
         return super.mouseScrolled(x, y, wheel);
     }
@@ -461,6 +481,10 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     @Override
     public void render(int xSize_lo, int ySize_lo, float par3) {
+        // If not initialized yet we do nothing
+        if (window == null) {
+            return;
+        }
 
         super.render(xSize_lo, ySize_lo, par3);
 
