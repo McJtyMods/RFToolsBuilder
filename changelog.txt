@@ -1,4 +1,4 @@
-Upcoming:
+2.1.2-beta:
 - The Builder can build in water again
 - Fixed a problem with the energy level not showing in the shield projector GUI (it worked fine, it just didn't show)
 - Fixed a potential crash with the shape card gui when it is openened from the Builder
