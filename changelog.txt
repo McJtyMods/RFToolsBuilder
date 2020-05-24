@@ -4,6 +4,8 @@ Upcoming:
 - Fixed a potential crash with the shape card gui when it is openened from the Builder
 - The shield will now also consider dolphins, bees, squids, and other neutral creatures as passive
 - Some small protection fix
+- Fixed a bug with the Builder where replacing a shape card would not trigger the recalculation of certain internal settings. This could cause settings like fortune or silk touch to be ignored
+- Fixed a bug with the Builder where fortune wasn't working at all
 
 2.1.1-beta:
 - Dependency fix

@@ -171,6 +171,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private static ItemStack TOOL_NORMAL;
     private static ItemStack TOOL_SILK;
+    private static ItemStack TOOL_FORTUNE;
 
     private final Cached<Predicate<ItemStack>> filterCache = Cached.of(this::createFilterCache);
 
@@ -1183,6 +1184,13 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 TOOL_SILK.addEnchantment(Enchantments.SILK_TOUCH, 1);
             }
             return TOOL_SILK;
+        } else if (fortune > 0) {
+            if (TOOL_FORTUNE == null || TOOL_FORTUNE.isEmpty()) {
+                TOOL_FORTUNE = new ItemStack(BuilderSetup.SUPER_HARVESTING_TOOL.get());
+                TOOL_FORTUNE.addEnchantment(Enchantments.FORTUNE, fortune);
+            }
+            return TOOL_FORTUNE;
+
         } else {
             if (TOOL_NORMAL == null || TOOL_NORMAL.isEmpty()) {
                 TOOL_NORMAL = new ItemStack(BuilderSetup.SUPER_HARVESTING_TOOL.get());
@@ -2457,18 +2465,56 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private NoDirectionItemHander createItemHandler() {
         return new NoDirectionItemHander(BuilderTileEntity.this, CONTAINER_FACTORY.get()) {
+
+            // @todo all methods below could be avoided with a proper onUpdate method
+            @Nonnull
+            @Override
+            public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+                checkShapeCard(slot, stack);
+                return super.insertItem(slot, stack, simulate);
+            }
+
+            @Override
+            public void setInventorySlotContents(int stackLimit, int index, ItemStack stack) {
+                checkShapeCard(index, stack);
+                super.setInventorySlotContents(stackLimit, index, stack);
+            }
+
+            @Nonnull
+            @Override
+            public ItemStack extractItem(int slot, int amount, boolean simulate) {
+                checkShapeCard(slot, ItemStack.EMPTY);
+                return super.extractItem(slot, amount, simulate);
+            }
+
+            @Override
+            public ItemStack decrStackSize(int index, int amount) {
+                checkShapeCard(index, ItemStack.EMPTY);
+                return super.decrStackSize(index, amount);
+            }
+
+            @Override
+            public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
+                checkShapeCard(slot, stack);
+                super.setStackInSlot(slot, stack);
+            }
+
+            // @todo would be better if onUpdate had an ItemStack parameter
             @Override
             protected void onUpdate(int index) {
                 super.onUpdate(index);
-                ItemStack stack = getStackInSlot(index);
-                if (index == SLOT_TAB && ((stack.isEmpty()
-                        && !getStackInSlot(index).isEmpty())
-                        || (!stack.isEmpty() && getStackInSlot(index).isEmpty()))) {
-                    // Restart if we go from having a stack to not having stack or the other way around.
-                    refreshSettings();
-                }
                 if (index == SLOT_FILTER) {
                     filterCache.clear();
+                }
+            }
+
+            private void checkShapeCard(int index, ItemStack newStack) {
+                ItemStack stack = getStackInSlot(index);
+                if (index == SLOT_TAB && ((stack.isEmpty()
+                        && !newStack.isEmpty())
+                        || (!stack.isEmpty() && newStack.isEmpty()))) {
+                    // Restart if we go from having a stack to not having stack or the other way around.
+                    refreshSettings();
                 }
             }
         };
