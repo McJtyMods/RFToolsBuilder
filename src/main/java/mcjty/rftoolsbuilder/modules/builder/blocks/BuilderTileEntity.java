@@ -189,7 +189,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private final Cached<Set<Block>> cachedVoidableBlocks = Cached.of(this::getCachedVoidableBlocks);
 
     // Drops from a block that we broke but couldn't fit in an inventory
-    private List<ItemStack> overflowItems = null;
+    private LazyList<ItemStack> overflowItems = new LazyList<>();
 
     private final Lazy<FakePlayer> harvester = Lazy.of(this::getHarvester);
 
@@ -750,10 +750,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private void checkStateServer() {
-        if (overflowItems != null) {
-            List<ItemStack> toInsert = overflowItems;
-            overflowItems = null;
-            insertItems(toInsert);
+        if (!overflowItems.isEmpty()) {
+            insertItems(overflowItems.extractList());
         }
 
         if (!isMachineEnabled() && loopMode) {
@@ -801,10 +799,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 }
             }
         }
-    }
-
-    public List<ItemStack> getOverflowItems() {
-        return overflowItems;
     }
 
     private void updateHilight() {
@@ -1509,46 +1503,49 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return false;
     }
 
-    private List<ItemStack> couldntHandle = new ArrayList<>();
+    private LazyList<ItemStack> couldntHandle1 = new LazyList<>();
+    private LazyList<ItemStack> couldntHandle2 = new LazyList<>();
+
+    // Tries to insert the items in the given item handler (if the te represents an item handler)
+    // All items that could not be inserted are put on the couldntHandle list (for example, because
+    // there is no item handler or the item handler is full)
+    private void handleItemInsertion(@Nullable TileEntity te, Direction direction, List<ItemStack> items, LazyList<ItemStack> couldntHandle) {
+        if (te == null) {
+            couldntHandle.copyList(items);
+            return;
+        }
+        LazyOptional<IItemHandler> capability = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction);
+        if (!capability.isPresent()) {
+            couldntHandle.copyList(items);
+            return;
+        }
+        couldntHandle.clear();
+        te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.DOWN).ifPresent(h -> {
+            for (ItemStack item : items) {
+                ItemStack overflow = ItemHandlerHelper.insertItem(h, item, false);
+                if (!overflow.isEmpty()) {
+                    couldntHandle.add(overflow);
+                }
+            }
+        });
+    }
 
     private boolean insertItems(List<ItemStack> items) {
-        TileEntity te = world.getTileEntity(getPos().up());
-        if (te != null) {
-            te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.DOWN).ifPresent(h -> {
-                for (ItemStack item : items) {
-                    ItemStack overflow = ItemHandlerHelper.insertItem(h, item, false);
-                    if (!overflow.isEmpty()) {
-                        couldntHandle.add(overflow);
-                    }
-                }
-            });
-        }
-        if (couldntHandle.isEmpty()) {
+        handleItemInsertion(world.getTileEntity(pos.up()), Direction.DOWN, items, couldntHandle1);
+        if (couldntHandle1.isEmpty()) {
+            // All ok
             return true;
         }
-        te = world.getTileEntity(getPos().down());
-        if (te != null) {
-            te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.UP).ifPresent(h -> {
-                for (ItemStack item : couldntHandle) {
-                    ItemStack overflow = ItemHandlerHelper.insertItem(h, item, false);
-                    if (!overflow.isEmpty()) {
-                        if (overflowItems == null) {
-                            overflowItems = new ArrayList<>();
-                        }
-                        overflowItems.add(overflow);
-                    }
-                }
-                couldntHandle.clear();
-            });
+
+        handleItemInsertion(world.getTileEntity(pos.down()), Direction.UP, couldntHandle1.getList(), couldntHandle2);
+        if (couldntHandle2.isEmpty()) {
+            // Now it is ok
+            return true;
         }
-        if (!couldntHandle.isEmpty()) {
-            if (overflowItems == null) {
-                overflowItems = new ArrayList<>();
-            }
-            overflowItems.addAll(couldntHandle);
-            couldntHandle.clear();
-        }
-        return overflowItems == null;
+
+        // After trying both the top and the bottom chest there are still items remaining
+        overflowItems.copyList(couldntHandle2.getList());
+        return false;
     }
 
     // Return what could not be inserted
@@ -2259,7 +2256,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         super.read(tagCompound);
         if (tagCompound.contains("overflowItems")) {
             ListNBT overflowItemsNbt = tagCompound.getList("overflowItems", Constants.NBT.TAG_COMPOUND);
-            overflowItems = new ArrayList<>(overflowItemsNbt.size());
+            overflowItems.clear();
             for (INBT overflowNbt : overflowItemsNbt) {
                 overflowItems.add(ItemStack.read((CompoundNBT) overflowNbt));
             }
@@ -2302,9 +2299,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     @Override
     public CompoundNBT write(CompoundNBT tagCompound) {
         super.write(tagCompound);
-        if (overflowItems != null) {
+        if (!overflowItems.isEmpty()) {
             ListNBT overflowItemsNbt = new ListNBT();
-            for (ItemStack overflow : overflowItems) {
+            for (ItemStack overflow : overflowItems.getList()) {
                 overflowItemsNbt.add(overflow.write(new CompoundNBT()));
             }
             tagCompound.put("overflowItems", overflowItemsNbt);

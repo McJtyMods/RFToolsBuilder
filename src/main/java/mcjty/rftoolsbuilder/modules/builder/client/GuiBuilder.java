@@ -2,7 +2,6 @@ package mcjty.rftoolsbuilder.modules.builder.client;
 
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
-import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.widgets.Button;
 import mcjty.lib.gui.widgets.ChoiceLabel;
@@ -15,8 +14,6 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -68,7 +65,6 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private void openCardGui() {
         ItemStack cardStack = container.getSlot(SLOT_TAB).getStack();
         if (!cardStack.isEmpty()) {
-            PlayerEntity player = Minecraft.getInstance().player;
             GuiShapeCard.fromTEPos = tileEntity.getPos();
             GuiShapeCard.fromTEStackSlot = SLOT_TAB;
             GuiShapeCard.returnGui = this;
