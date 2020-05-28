@@ -1232,7 +1232,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     }
                 }
                 if (!cachedVoidableBlocks.get().contains(block)) {
-                    if (overflowItems != null) {
+                    if (!overflowItems.isEmpty()) {
                         // Don't harvest any new blocks if we're still overflowing with the drops from a previous block
                         return waitOrSkip("Not enough room!\nor no usable storage\non top or below!");
                     }

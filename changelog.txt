@@ -1,5 +1,5 @@
 Upcoming:
-- Builder fixes (todo...)
+- Fixed the builder so it no longer voids items if there are no suitable storages
 
 2.1.2-beta:
 - The Builder can build in water again
