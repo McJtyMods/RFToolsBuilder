@@ -96,7 +96,7 @@ public class ShapeRenderer {
     public void handleShapeDragging(int x, int y, boolean[] buttons) {
         MouseHelper mouse = Minecraft.getInstance().mouseHelper;
         if (x >= 100 && y <= 120) {
-            if (McJtyLib.proxy.isShiftKeyDown()) {
+            if (McJtyLib.proxy.isSneaking()) {
                 if (prevX != -1 && buttons[0]) {
                     dx += (x - prevX);
                     dy += (y - prevY);
