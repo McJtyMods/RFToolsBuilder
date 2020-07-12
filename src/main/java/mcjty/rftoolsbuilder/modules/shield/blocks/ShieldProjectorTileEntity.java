@@ -454,6 +454,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         FakePlayer fakePlayer = FakePlayerFactory.get((ServerWorld) world, new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_builder"));
         fakePlayer.setWorld(world);
         fakePlayer.setPosition(pos.getX(), pos.getY(), pos.getZ());
+        new FakePlayerConnection(fakePlayer);
         return fakePlayer;
     }
 
@@ -612,6 +613,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 FakePlayer killer = FakePlayerFactory.get(WorldTools.getOverworld(world), new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_shield"));
                 killer.setWorld(world);
                 killer.setPosition(pos.getX(), pos.getY(), pos.getZ());
+                new FakePlayerConnection(killer);
                 ItemStack shards = items.getStackInSlot(SLOT_SHARD);
                 if (!shards.isEmpty() && shards.getCount() >= ShieldConfiguration.shardsPerLootingKill.get()) {
                     items.extractItem(SLOT_SHARD, ShieldConfiguration.shardsPerLootingKill.get(), false);
