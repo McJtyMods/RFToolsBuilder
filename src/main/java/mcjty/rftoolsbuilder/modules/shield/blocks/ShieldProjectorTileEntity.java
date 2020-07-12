@@ -450,11 +450,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 //        return index == ShieldContainer.SLOT_SHARD && itemStackIn.getItem() == ModItems.dimensionalShardItem;
 //    }
 
-    private FakePlayer fakePlayer = null;
     private FakePlayer getFakePlayer() {
-        if (fakePlayer == null) {
-            fakePlayer = FakePlayerFactory.get((ServerWorld) world,  new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_builder"));
-        }
+        FakePlayer fakePlayer = FakePlayerFactory.get((ServerWorld) world, new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_builder"));
         fakePlayer.setWorld(world);
         fakePlayer.setPosition(pos.getX(), pos.getY(), pos.getZ());
         return fakePlayer;
@@ -601,7 +598,6 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         return shieldActive;
     }
 
-    private FakePlayer killer = null;
     private ItemStack lootingSword = ItemStack.EMPTY;
 
     public void applyDamageToEntity(Entity entity) {
@@ -613,12 +609,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 source = DamageSource.GENERIC;
             } else {
                 rf = ShieldConfiguration.rfDamagePlayer.get();
-                if (killer == null) {
-                    killer = FakePlayerFactory.get(WorldTools.getOverworld(world), new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_shield"));
-                }
+                FakePlayer killer = FakePlayerFactory.get(WorldTools.getOverworld(world), new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_shield"));
                 killer.setWorld(world);
                 killer.setPosition(pos.getX(), pos.getY(), pos.getZ());
-                FakePlayer fakePlayer = killer;
                 ItemStack shards = items.getStackInSlot(SLOT_SHARD);
                 if (!shards.isEmpty() && shards.getCount() >= ShieldConfiguration.shardsPerLootingKill.get()) {
                     items.extractItem(SLOT_SHARD, ShieldConfiguration.shardsPerLootingKill.get(), false);
@@ -626,11 +619,11 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                         lootingSword = createEnchantedItem(Items.DIAMOND_SWORD, Enchantments.LOOTING, ShieldConfiguration.lootingKillBonus.get());
                     }
                     lootingSword.setDamage(0);
-                    fakePlayer.setHeldItem(Hand.MAIN_HAND, lootingSword);
+                    killer.setHeldItem(Hand.MAIN_HAND, lootingSword);
                 } else {
-                    fakePlayer.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
+                    killer.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
                 }
-                source = DamageSource.causePlayerDamage(fakePlayer);
+                source = DamageSource.causePlayerDamage(killer);
             }
 
             float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
