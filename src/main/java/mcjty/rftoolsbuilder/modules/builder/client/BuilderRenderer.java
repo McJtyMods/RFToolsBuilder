@@ -20,7 +20,7 @@ public class BuilderRenderer extends TileEntityRenderer<BuilderTileEntity> {
     @Override
     public void render(BuilderTileEntity te, float v, MatrixStack matrixStack, IRenderTypeBuffer buffer, int i, int i1) {
         if (BuilderConfiguration.showProgressHud.get()) {
-            HudRenderer.renderHud(matrixStack, buffer, te, 0,0,0 /*@todo 1.15 was x,y,z*/);
+            HudRenderer.renderHud(matrixStack, buffer, te);
         }
     }
 
