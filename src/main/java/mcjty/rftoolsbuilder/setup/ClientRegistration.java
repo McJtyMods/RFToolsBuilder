@@ -36,10 +36,10 @@ public class ClientRegistration {
         RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_TRANSLUCENT.get(), RenderType.getTranslucent());
         RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_SOLID.get(), RenderType.getSolid());
         RenderTypeLookup.setRenderLayer(ShieldSetup.SHIELDING_CUTOUT.get(), RenderType.getCutout());
-        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_GREEN.get(), RenderType.getTranslucent());
-        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_BLUE.get(), RenderType.getTranslucent());
-        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_RED.get(), RenderType.getTranslucent());
-        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_YELLOW.get(), RenderType.getTranslucent());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_GREEN.get(), RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_BLUE.get(), RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_RED.get(), RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_YELLOW.get(), RenderType.getCutout());
 
         ModelLoaderRegistry.registerLoader(new ResourceLocation(RFToolsBuilder.MODID, "shieldloader"), new ShieldModelLoader());
     }
