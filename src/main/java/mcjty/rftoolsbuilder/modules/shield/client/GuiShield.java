@@ -3,12 +3,10 @@ package mcjty.rftoolsbuilder.modules.shield.client;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
-import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.events.DefaultSelectionEvent;
 import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.widgets.*;
-import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.RedstoneMode;
@@ -25,7 +23,6 @@ import mcjty.rftoolsbuilder.modules.shield.network.PacketGetFilters;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.energy.CapabilityEnergy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -388,9 +385,6 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
         enableButtons();
         drawWindow();
         colorSelector.currentColor(tileEntity.getShieldColor());
-        tileEntity.getCapability(CapabilityEnergy.ENERGY).ifPresent(e -> {
-            energyBar.maxValue(((GenericEnergyStorage)e).getCapacity());
-            energyBar.value(((GenericEnergyStorage)e).getEnergy());
-        });
+        updateEnergyBar(energyBar);
     }
 }

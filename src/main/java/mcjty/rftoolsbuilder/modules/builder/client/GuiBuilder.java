@@ -7,7 +7,6 @@ import mcjty.lib.gui.widgets.Button;
 import mcjty.lib.gui.widgets.ChoiceLabel;
 import mcjty.lib.gui.widgets.EnergyBar;
 import mcjty.lib.gui.widgets.ImageChoiceLabel;
-import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
@@ -17,7 +16,6 @@ import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.items.CapabilityItemHandler;
 
 import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity.*;
@@ -109,10 +107,6 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         updateAnchorSettings(tileEntity.getAnchor());
 
         drawWindow();
-
-        tileEntity.getCapability(CapabilityEnergy.ENERGY).ifPresent(e -> {
-            energyBar.maxValue(((GenericEnergyStorage)e).getCapacity());
-            energyBar.value(((GenericEnergyStorage)e).getEnergy());
-        });
+        updateEnergyBar(energyBar);
     }
 }
