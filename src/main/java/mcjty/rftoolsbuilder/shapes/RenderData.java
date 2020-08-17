@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Matrix4f;
+import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;

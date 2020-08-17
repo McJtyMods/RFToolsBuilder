@@ -57,7 +57,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.capabilities.Capability;
@@ -466,7 +466,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             BlockItem blockItem = (BlockItem) item;
             FakePlayer player = getFakePlayer();
             player.setHeldItem(Hand.MAIN_HAND, stack);
-            BlockRayTraceResult result = new BlockRayTraceResult(new Vec3d(.5, 0, .5), Direction.UP, pos, false);
+            BlockRayTraceResult result = new BlockRayTraceResult(new Vector3d(.5, 0, .5), Direction.UP, pos, false);
             BlockItemUseContext context = new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, result));
             BlockState stateForPlacement = blockItem.getBlock().getStateForPlacement(context);
             return stateForPlacement == null ? blockItem.getBlock().getDefaultState() : stateForPlacement;

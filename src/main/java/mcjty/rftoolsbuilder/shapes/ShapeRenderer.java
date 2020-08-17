@@ -18,7 +18,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
@@ -232,15 +232,15 @@ public class ShapeRenderer {
         }
     }
 
-    private static Vec3d offset = new Vec3d(0, 0, 0);
+    private static Vector3d offset = new Vector3d(0, 0, 0);
 
-    private static Vec3d setOffset(double x, double y, double z) {
-        Vec3d old = offset;
-        offset = new Vec3d(x, y, z);
+    private static Vector3d setOffset(double x, double y, double z) {
+        Vector3d old = offset;
+        offset = new Vector3d(x, y, z);
         return old;
     }
 
-    private static void restoreOffset(Vec3d prev) {
+    private static void restoreOffset(Vector3d prev) {
         offset = prev;
     }
 
@@ -255,7 +255,7 @@ public class ShapeRenderer {
     static void renderOuterBox(Tessellator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(1.0f);
         buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        Vec3d origOffset = setOffset(.5, .5, .5);
+        Vector3d origOffset = setOffset(.5, .5, .5);
         int xleft = -xlen / 2;
         int xright = xlen / 2 + (xlen & 1);
         int ybot = -ylen / 2;
@@ -295,7 +295,7 @@ public class ShapeRenderer {
     static void renderOuterBoxInGui(Tessellator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(1.0f);
         buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        Vec3d origOffset = setOffset(.5, .5, .5);
+        Vector3d origOffset = setOffset(.5, .5, .5);
         int xleft = -xlen / 2;
         int xright = xlen / 2 + (xlen & 1);
         int ybot = -ylen / 2;
@@ -335,7 +335,7 @@ public class ShapeRenderer {
     static void renderAxisInGui(Tessellator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(2.5f);
         buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        Vec3d origOffset = setOffset(.5, .5, .5);
+        Vector3d origOffset = setOffset(.5, .5, .5);
         add(buffer, 0, 0, 0, 1f, 0f, 0f, 1f);
         add(buffer, xlen, 0, 0, 1f, 0f, 0f, 1f);
         add(buffer, 0, 0, 0, 0f, 1f, 0f, 1f);
@@ -349,7 +349,7 @@ public class ShapeRenderer {
     static void renderAxis(Tessellator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(2.5f);
         buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        Vec3d origOffset = setOffset(.5, .5, .5);
+        Vector3d origOffset = setOffset(.5, .5, .5);
         add(buffer, 0, 0, 0, 1f, 0f, 0f, 1f);
         add(buffer, xlen, 0, 0, 1f, 0f, 0f, 1f);
         add(buffer, 0, 0, 0, 0f, 1f, 0f, 1f);
@@ -535,7 +535,7 @@ public class ShapeRenderer {
                 int cnt = pair.getKey();
                 BlockState state = pair.getValue();
                 if (state != null) {
-                    Vec3d origOffset = setOffset(x, y, z);
+                    Vector3d origOffset = setOffset(x, y, z);
                     avgcnt += cnt;
                     total++;
                     ShapeBlockInfo info = ShapeBlockInfo.getBlockInfo(palette, state);
@@ -606,7 +606,7 @@ public class ShapeRenderer {
             float g = type.getG();
             float b = type.getB();
 
-            Vec3d origOffset = setOffset(0, -.7f, 0);
+            Vector3d origOffset = setOffset(0, -.7f, 0);
             addSideN(buffer, r, g, b, .3f);
             addSideS(buffer, r, g, b, .3f);
             addSideW(buffer, r, g, b, .3f);
