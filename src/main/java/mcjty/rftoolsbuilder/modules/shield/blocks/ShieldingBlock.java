@@ -99,10 +99,11 @@ public class ShieldingBlock extends Block {
         return super.getAmbientOcclusionLightValue(state, worldIn, pos);
     }
 
-    @Override
-    public boolean isNormalCube(BlockState state, IBlockReader worldIn, BlockPos pos) {
-        return false;
-    }
+    // @todo 1.16
+//    @Override
+//    public boolean isNormalCube(BlockState state, IBlockReader worldIn, BlockPos pos) {
+//        return false;
+//    }
 
     @Override
     public boolean canEntityDestroy(BlockState state, IBlockReader world, BlockPos pos, Entity entity) {
@@ -137,7 +138,7 @@ public class ShieldingBlock extends Block {
         if (te instanceof ShieldingTileEntity) {
             BlockState mimic = ((ShieldingTileEntity) te).getMimic();
             if (mimic != null) {
-                return mimic.getRaytraceShape(world, pos);
+                return mimic.getRaytraceShape(world, pos, ISelectionContext.dummy());   // @todo 1.16 is dummy() ok?
             }
         }
         if (state.get(RENDER_MODE) == ShieldRenderingMode.INVISIBLE) {
@@ -225,7 +226,7 @@ public class ShieldingBlock extends Block {
                     String name = playerFilter.getName();
                     if ((name == null || name.isEmpty())) {
                         return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
-                    } else if (name.equals(entity.getName().getFormattedText())) {
+                    } else if (name.equals(entity.getName().getString())) { // @todo getFormattedText
                         return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
                     }
                 }
@@ -326,7 +327,7 @@ public class ShieldingBlock extends Block {
                 String name = playerFilter.getName();
                 if ((name == null || name.isEmpty())) {
                     return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
-                } else if (name.equals(entity.getName().getFormattedText())) {
+                } else if (name.equals(entity.getName().getString())) { // @todo getFormattedText
                     return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
                 }
             }

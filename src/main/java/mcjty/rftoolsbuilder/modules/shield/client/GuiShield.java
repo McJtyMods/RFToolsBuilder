@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.shield.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
@@ -379,11 +380,11 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     @Override
-    protected void drawGuiContainerBackgroundLayer(float v, int i, int i2) {
+    protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float v, int i, int i2) {
         requestListsIfNeeded();
         populateFilters();
         enableButtons();
-        drawWindow(xxx);
+        drawWindow(matrixStack);
         colorSelector.currentColor(tileEntity.getShieldColor());
         updateEnergyBar(energyBar);
     }

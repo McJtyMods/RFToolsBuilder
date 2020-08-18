@@ -7,7 +7,7 @@ import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
+import mcjty.lib.varia.DimensionId;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.HashMap;
@@ -60,7 +60,7 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
             int channel = tc.getInt("channel");
 
             SpaceChamberChannel value = new SpaceChamberChannel();
-            value.setDimension(DimensionType.byName(new ResourceLocation(tc.getString("dimension"))));
+            value.setDimension(DimensionId.fromResourceLocation(new ResourceLocation(tc.getString("dimension"))));
             value.setMinCorner(BlockPosTools.read(tc, "minCorner"));
             value.setMaxCorner(BlockPosTools.read(tc, "maxCorner"));
             channels.put(channel, value);
@@ -85,15 +85,15 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
     }
 
     public static class SpaceChamberChannel {
-        private DimensionType dimension;
+        private DimensionId dimension;
         private BlockPos minCorner = null;
         private BlockPos maxCorner = null;
 
-        public DimensionType getDimension() {
+        public DimensionId getDimension() {
             return dimension;
         }
 
-        public void setDimension(DimensionType dimension) {
+        public void setDimension(DimensionId dimension) {
             this.dimension = dimension;
         }
 

@@ -56,7 +56,7 @@ public class PacketChamberInfoReady {
                     buf.writeByte(ENTITY_PLAYER);
                     int entityId = entity.getEntityId();
                     buf.writeInt(entityId);
-                    buf.writeString(entity.getDisplayName().getFormattedText());
+                    buf.writeString(entity.getDisplayName().getString());   // @todo getFormattedText
                 } else {
                     buf.writeByte(ENTITY_NORMAL);
                     CompoundNBT nbt = entity.serializeNBT();

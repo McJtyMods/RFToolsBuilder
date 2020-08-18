@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.RenderHelper;
@@ -12,6 +13,7 @@ import mcjty.lib.gui.widgets.*;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
+import mcjty.lib.varia.DimensionId;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
@@ -37,7 +39,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.dimension.DimensionType;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -114,7 +115,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     private ShapeID getShapeID() {
         ItemStack stackToEdit = getStackToEdit();
-        return new ShapeID(DimensionType.OVERWORLD, null, ShapeCardItem.getScanId(stackToEdit), false, ShapeCardItem.isSolid(stackToEdit));
+        return new ShapeID(DimensionId.overworld(), null, ShapeCardItem.getScanId(stackToEdit), false, ShapeCardItem.isSolid(stackToEdit));
     }
 
     @Override
@@ -480,13 +481,13 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     private static int updateCounter = 20;
 
     @Override
-    public void render(int xSize_lo, int ySize_lo, float par3) {
+    public void render(MatrixStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
         // If not initialized yet we do nothing
         if (window == null) {
             return;
         }
 
-        super.render(xSize_lo, ySize_lo, par3);
+        super.render(matrixStack, xSize_lo, ySize_lo, par3);
 
         dimZ.enabled(!isTorus());
 
@@ -528,7 +529,8 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
             int guiTop = (this.height - this.ySize) / 2;
             int x = GuiTools.getRelativeX(this);
             int y = GuiTools.getRelativeY(this);
-            renderTooltip(tooltips, x - guiLeft, y - guiTop, minecraft.fontRenderer);
+            // @todo 1.16
+//            renderTooltip(matrixStack, tooltips, x - guiLeft, y - guiTop, minecraft.fontRenderer);
         }
     }
 

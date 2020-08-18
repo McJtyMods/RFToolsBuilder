@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.RenderHelper;
 import mcjty.lib.gui.GuiItemScreen;
@@ -105,7 +106,7 @@ public class GuiChamberDetails extends GuiItemScreen {
             if (stack.getItem() == null) {
                 nameLabel.text("?").desiredWidth(160);
             } else {
-                nameLabel.text(stack.getDisplayName().getFormattedText()).desiredWidth(160);
+                nameLabel.text(stack.getDisplayName().getString()).desiredWidth(160);   // @todo getFormattedText
             }
 
             Label countLabel = label(String.valueOf(count)).color(StyleConfig.colorTextInListNormal);
@@ -187,11 +188,11 @@ public class GuiChamberDetails extends GuiItemScreen {
     }
 
     @Override
-    public void render(int xSize_lo, int ySize_lo, float par3) {
-        super.render(xSize_lo, ySize_lo, par3);
+    public void render(MatrixStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
+        super.render(matrixStack, xSize_lo, ySize_lo, par3);
 
         populateLists();
 
-        drawWindow();
+        drawWindow(matrixStack);
     }
 }

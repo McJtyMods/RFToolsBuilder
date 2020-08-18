@@ -123,28 +123,28 @@ public class ShapeBlockInfo {
 
         if (block == Blocks.TORCH || block == Blocks.REDSTONE_TORCH) {
             render = BD_TORCH;
-        } else if (tags.contains(BlockTags.SLABS.getId())) {
-            if (state.has(SlabBlock.TYPE) && state.get(SlabBlock.TYPE) == SlabType.BOTTOM) {
+        } else if (tags.contains(BlockTags.SLABS.getName())) {
+            if (state.hasProperty(SlabBlock.TYPE) && state.get(SlabBlock.TYPE) == SlabType.BOTTOM) {
                 render = BD_SLAB;
             } else {
                 render = BD_SLAB_UPPER;
             }
         } else if (block == Blocks.SNOW) {
             render = BD_SNOWLAYER;
-        } else if (tags.contains(BlockTags.WALLS.getId())) {
+        } else if (tags.contains(BlockTags.WALLS.getName())) {
             render = BD_WALL;
         } else if (block == Blocks.IRON_BARS || block == Blocks.LADDER) {
             render = BD_BARS;
         } else if (block == Blocks.VINE) {
             render = BD_VINE;
-        } else if (tags.contains(BlockTags.SMALL_FLOWERS.getId()) ||
-                tags.contains(BlockTags.CORAL_PLANTS.getId()) ||
+        } else if (tags.contains(BlockTags.SMALL_FLOWERS.getName()) ||
+                tags.contains(BlockTags.CORAL_PLANTS.getName()) ||
                 block == Blocks.WHEAT || block == Blocks.CARROTS ||
                 block == Blocks.POTATOES || block == Blocks.BEETROOTS) {
             render = BD_FLOWER;
         } else if (block == Blocks.GRASS) { // Tall grass
             render = BD_GRASS;
-        } else if (tags.contains(BlockTags.RAILS.getId())) {
+        } else if (tags.contains(BlockTags.RAILS.getName())) {
             render = BD_RAIL;
         } else if (block == Blocks.RED_MUSHROOM || block == Blocks.BROWN_MUSHROOM) {
             render = BD_MUSHROOM;
@@ -152,19 +152,19 @@ public class ShapeBlockInfo {
             render = BD_FIRE;
         } else if (block == Blocks.REDSTONE_WIRE) {
             render = BD_REDSTONE;
-        } else if (tags.contains(Tags.Blocks.CHESTS.getId())) {
+        } else if (tags.contains(Tags.Blocks.CHESTS.getName())) {
             render = BD_CHEST;
-        } else if (tags.contains(BlockTags.TRAPDOORS.getId()) ||
-                tags.contains(BlockTags.WOODEN_PRESSURE_PLATES.getId()) ||
+        } else if (tags.contains(BlockTags.TRAPDOORS.getName()) ||
+                tags.contains(BlockTags.WOODEN_PRESSURE_PLATES.getName()) ||
                 block == Blocks.OAK_PRESSURE_PLATE || block == Blocks.STONE_PRESSURE_PLATE) {
             render = BD_TRAPDOOR;
         } else if (block == Blocks.LEVER ||
-                tags.contains(BlockTags.BUTTONS.getId()) ||
-                tags.contains(BlockTags.WOODEN_BUTTONS.getId())) {
+                tags.contains(BlockTags.BUTTONS.getName()) ||
+                tags.contains(BlockTags.WOODEN_BUTTONS.getName())) {
             render = BD_BUTTON;
         } else if (
-                tags.contains(BlockTags.FENCES.getId()) ||
-                tags.contains(BlockTags.WOODEN_FENCES.getId())) {
+                tags.contains(BlockTags.FENCES.getName()) ||
+                tags.contains(BlockTags.WOODEN_FENCES.getName())) {
             render = BD_FENCE;
         }
         return render;
@@ -179,7 +179,7 @@ public class ShapeBlockInfo {
         // The given world and pos are wrong but they help to avoid crashes for some code
         MaterialColor mapColor = null;
         try {
-            mapColor = block.getMaterialColor(state, Minecraft.getInstance().world, new BlockPos(0, 0, 0));
+            mapColor = state.getMaterialColor(Minecraft.getInstance().world, new BlockPos(0, 0, 0));
         } catch (Exception e) {
             mapColor = MaterialColor.RED;
         }

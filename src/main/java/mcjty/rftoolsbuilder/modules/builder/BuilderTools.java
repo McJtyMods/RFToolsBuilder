@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
 import mcjty.lib.varia.Counter;
+import mcjty.lib.varia.DimensionId;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
@@ -17,7 +18,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.fml.network.NetworkDirection;
 
 import java.util.HashMap;
@@ -43,8 +43,8 @@ public class BuilderTools {
             return;
         }
 
-        DimensionType dimension = chamberChannel.getDimension();
-        World world = player.getEntityWorld().getServer().getWorld(dimension);
+        DimensionId dimension = chamberChannel.getDimension();
+        World world = dimension.getWorld();
         if (world == null) {
             return;
         }

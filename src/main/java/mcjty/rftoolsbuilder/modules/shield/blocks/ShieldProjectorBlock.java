@@ -4,6 +4,7 @@ import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.crafting.INBTPreservingIngredient;
+import mcjty.lib.varia.DimensionId;
 import mcjty.lib.varia.GlobalCoordinate;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbase.modules.various.items.SmartWrenchItem;
@@ -89,7 +90,7 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
         if (!world.isRemote) {
             Optional<GlobalCoordinate> currentBlock = SmartWrenchItem.getCurrentBlock(player.getHeldItem(Hand.MAIN_HAND));
             if (!currentBlock.isPresent()) {
-                SmartWrenchItem.setCurrentBlock(player.getHeldItem(Hand.MAIN_HAND), new GlobalCoordinate(pos, world.getDimension().getType()));
+                SmartWrenchItem.setCurrentBlock(player.getHeldItem(Hand.MAIN_HAND), new GlobalCoordinate(pos, DimensionId.fromWorld(world)));
                 Logging.message(player, TextFormatting.YELLOW + "Selected block");
             } else {
                 SmartWrenchItem.setCurrentBlock(player.getHeldItem(Hand.MAIN_HAND), null);
@@ -131,7 +132,7 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     private void removeShield(IWorld world, BlockPos pos) {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof ShieldProjectorTileEntity) {
-            if (!world.getWorld().isRemote) {
+            if (!world.isRemote()) {
                 ShieldProjectorTileEntity shieldTileEntity = (ShieldProjectorTileEntity) te;
                 if (shieldTileEntity.isShieldComposed()) {
                     shieldTileEntity.decomposeShield();

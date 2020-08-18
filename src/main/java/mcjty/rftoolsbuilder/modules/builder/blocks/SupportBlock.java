@@ -29,10 +29,11 @@ public class SupportBlock extends Block {
         super(Properties.create(Material.GLASS));
     }
 
-    @Override
-    public boolean isNormalCube(BlockState state, IBlockReader reader, BlockPos pos) {
-        return false;
-    }
+    // @todo 1.16
+//    @Override
+//    public boolean isNormalCube(BlockState state, IBlockReader reader, BlockPos pos) {
+//        return false;
+//    }
 
     @Override
     public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {

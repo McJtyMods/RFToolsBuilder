@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import mcjty.lib.McJtyLib;
@@ -204,7 +205,7 @@ public class ShapeRenderer {
 
         RenderData data = ShapeDataManagerClient.getRenderData(shapeID);
         if (data != null && !data.previewMessage.isEmpty()) {
-            Minecraft.getInstance().fontRenderer.drawString(data.previewMessage, gui.getPreviewLeft()+84, gui.getPreviewTop()+50, 0xffff0000);
+            Minecraft.getInstance().fontRenderer.drawString(new MatrixStack(), data.previewMessage, gui.getPreviewLeft()+84, gui.getPreviewTop()+50, 0xffff0000);   // @todo 1.16
         }
 
     }

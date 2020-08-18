@@ -8,6 +8,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -37,7 +38,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
 
     public void save(World w, int scanId) {
         World world = WorldTools.getOverworld(w);
-        File dataDir = new File(((ServerWorld)world).getSaveHandler().getWorldDirectory(), "rftoolsscans");
+        File dataDir = null; // @todo 1.16 new File(((ServerWorld)world).getSaveHandler().getWorldDirectory(), "rftoolsscans");
         dataDir.mkdirs();
         File file = new File(dataDir, "scan" + scanId);
         Scan scan = getOrCreateScan(scanId);
@@ -88,7 +89,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
             if (scan == null) {
                 scan = new Scan();
             }
-            File dataDir = new File(((ServerWorld)world).getSaveHandler().getWorldDirectory(), "rftoolsscans");
+            File dataDir = null; // @todo 1.16 new File(((ServerWorld)world).getSaveHandler().getWorldDirectory(), "rftoolsscans");
             dataDir.mkdirs();
             File file = new File(dataDir, "scan" + id);
             if (file.exists()) {
@@ -113,12 +114,12 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
             if (dim == null) {
                 sender.sendMessage(new StringTextComponent(
                         TextFormatting.YELLOW + "Scan: " + TextFormatting.WHITE + scanid +
-                                TextFormatting.RED + "   Invalid"));
+                                TextFormatting.RED + "   Invalid"), Util.DUMMY_UUID);
             } else {
                 sender.sendMessage(new StringTextComponent(
                         TextFormatting.YELLOW + "Scan: " + TextFormatting.WHITE + scanid +
                                 TextFormatting.YELLOW + "   Dim: " + TextFormatting.WHITE + dim.getX() + "," + dim.getY() + "," + dim.getZ() +
-                                TextFormatting.YELLOW + "   Size: " + TextFormatting.WHITE + scan.getRledata().length + " bytes"));
+                                TextFormatting.YELLOW + "   Size: " + TextFormatting.WHITE + scan.getRledata().length + " bytes"), Util.DUMMY_UUID);
             }
         }
     }

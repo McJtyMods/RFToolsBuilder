@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
@@ -92,7 +93,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     }
 
     @Override
-    protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+    protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float partialTicks, int mouseX, int mouseY) {
         int cury = getCurrentLevelClientSide();
         currentLevel.text("Y: " + (cury == -1 ? "stop" : cury));
 
@@ -106,7 +107,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         }
         updateAnchorSettings(tileEntity.getAnchor());
 
-        drawWindow(xxx);
+        drawWindow(matrixStack);
         updateEnergyBar(energyBar);
     }
 }

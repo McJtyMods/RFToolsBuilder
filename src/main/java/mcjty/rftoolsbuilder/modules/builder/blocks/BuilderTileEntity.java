@@ -48,13 +48,15 @@ import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.IFluidState;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameters;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
@@ -67,12 +69,10 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.loot.LootContext;
-import net.minecraft.world.storage.loot.LootParameters;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
@@ -378,7 +378,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = calculateBox();
         if (chamberChannel != null) {
-            DimensionType dimension = chamberChannel.getDimension();
+            DimensionId dimension = chamberChannel.getDimension();
             World world = WorldTools.getWorld(this.world, dimension);
             if (world == null) {
                 return;
@@ -444,7 +444,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = calculateBox();
         if (chamberChannel != null) {
-            DimensionType dimension = chamberChannel.getDimension();
+            DimensionId dimension = chamberChannel.getDimension();
             World world = WorldTools.getWorld(this.world, dimension);
 
             BlockPos.Mutable src = new BlockPos.Mutable();
@@ -782,7 +782,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             return;
         }
 
-        DimensionType dimension = chamberChannel.getDimension();
+        DimensionId dimension = chamberChannel.getDimension();
         World world = WorldTools.getWorld(this.world, dimension);
         if (world == null) {
             // The other location must be loaded.
@@ -810,7 +810,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             int z = scan.getZ();
             double sqradius = 30 * 30;
             for (ServerPlayerEntity player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
-                if (player.dimension.equals(world.getDimension().getType())) {
+                if (DimensionId.fromWorld(player.getEntityWorld()).equals(DimensionId.fromWorld(world))) {
                     double d0 = x - player.getPosX();
                     double d1 = y - player.getPosY();
                     double d2 = z - player.getPosZ();
@@ -1240,7 +1240,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     int fortune = getCardType().isFortune() ? 3 : 0;
                     LootContext.Builder builder = new LootContext.Builder((ServerWorld) world)
                             .withRandom(world.rand)
-                            .withParameter(LootParameters.POSITION, srcPos)
+                            .withParameter(LootParameters.field_237457_g_, new Vector3d(srcPos.getX(), srcPos.getY(), srcPos.getZ()))
                             .withParameter(LootParameters.TOOL, getHarvesterTool(silk, fortune))
                             .withNullableParameter(LootParameters.BLOCK_ENTITY, world.getTileEntity(srcPos));
                     if (fortune > 0) {
@@ -1278,7 +1278,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             }
 
             Fluid fluid = stack.getFluid();
-            if (fluid.getAttributes().doesVaporize(world, srcPos, stack) && world.getDimension().doesWaterVaporize()) {
+            if (fluid.getAttributes().doesVaporize(world, srcPos, stack) && world.func_230315_m_().func_236040_e_()) {  // @todo 1.16 doesWaterVaporize()
                 fluid.getAttributes().vaporize(null, world, srcPos, stack);
             } else {
                 // We assume here the liquid is placable.
@@ -1300,7 +1300,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public boolean pumpBlock(int rfNeeded, BlockPos srcPos, BlockState srcState, BlockState pickState) {
         Block block = srcState.getBlock();
 
-        IFluidState fluidState = world.getFluidState(srcPos);
+        FluidState fluidState = world.getFluidState(srcPos);
 
         if (fluidState == null) {
             return skip();
@@ -1812,7 +1812,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private double getDimensionCostFactor(World world, World destWorld) {
-        return destWorld.getDimension().getType().getId() == world.getDimension().getType().getId() ? 1.0 : BuilderConfiguration.dimensionCostFactor.get();
+        return DimensionId.fromWorld(destWorld).equals(DimensionId.fromWorld(world)) ? 1.0 : BuilderConfiguration.dimensionCostFactor.get();
     }
 
     private boolean consumeEntityEnergy(int rfNeeded, int rfNeededPlayer, Entity entity) {

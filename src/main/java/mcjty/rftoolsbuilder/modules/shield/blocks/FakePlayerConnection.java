@@ -72,10 +72,6 @@ public class FakePlayerConnection extends ServerPlayNetHandler {
     }
 
     @Override
-    public void handleRecipeBookUpdate(CRecipeInfoPacket packetIn) {
-    }
-
-    @Override
     public void handleResourcePackStatus(CResourcePackStatusPacket packetIn) {
     }
 
