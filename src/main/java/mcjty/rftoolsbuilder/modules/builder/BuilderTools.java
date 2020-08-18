@@ -75,7 +75,7 @@ public class BuilderTools {
             if (entity instanceof ItemEntity) {
                 ItemEntity entityItem = (ItemEntity) entity;
                 if (!entityItem.getItem().isEmpty()) {
-                    String displayName = entityItem.getItem().getDisplayName().getFormattedText();
+                    String displayName = entityItem.getItem().getDisplayName().getString() /* was getFormattedText() */;
                     canonicalName += " (" + displayName + ")";
                 }
             }

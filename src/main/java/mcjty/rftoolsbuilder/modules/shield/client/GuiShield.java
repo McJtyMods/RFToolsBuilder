@@ -383,7 +383,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
         requestListsIfNeeded();
         populateFilters();
         enableButtons();
-        drawWindow();
+        drawWindow(xxx);
         colorSelector.currentColor(tileEntity.getShieldColor());
         updateEnergyBar(energyBar);
     }

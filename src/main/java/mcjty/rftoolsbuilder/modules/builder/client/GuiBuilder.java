@@ -106,7 +106,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         }
         updateAnchorSettings(tileEntity.getAnchor());
 
-        drawWindow();
+        drawWindow(xxx);
         updateEnergyBar(energyBar);
     }
 }

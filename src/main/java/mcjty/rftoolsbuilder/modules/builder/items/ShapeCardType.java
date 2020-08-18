@@ -111,7 +111,7 @@ public enum ShapeCardType {
         if(item == Items.AIR) {
             return block.getTranslationKey();
         } else {
-            return new ItemStack(item, 1).getDisplayName().getFormattedText(); // TODO see if this can be made less fragile
+            return new ItemStack(item, 1).getDisplayName().getString() /* was getFormattedText() */; // TODO see if this can be made less fragile
         }
     }
 
