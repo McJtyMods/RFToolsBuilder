@@ -89,7 +89,7 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
         if (!world.isRemote) {
             Optional<GlobalCoordinate> currentBlock = SmartWrenchItem.getCurrentBlock(player.getHeldItem(Hand.MAIN_HAND));
             if (!currentBlock.isPresent()) {
-                SmartWrenchItem.setCurrentBlock(player.getHeldItem(Hand.MAIN_HAND), new GlobalCoordinate(pos, world.getDimension().getType()));
+                SmartWrenchItem.setCurrentBlock(player.getHeldItem(Hand.MAIN_HAND), new GlobalCoordinate(pos, world));
                 Logging.message(player, TextFormatting.YELLOW + "Selected block");
             } else {
                 SmartWrenchItem.setCurrentBlock(player.getHeldItem(Hand.MAIN_HAND), null);
