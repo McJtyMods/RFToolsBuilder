@@ -33,7 +33,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -310,7 +309,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             int y = tagCompound.getInt("selectedY");
             int z = tagCompound.getInt("selectedZ");
             String dim = tagCompound.getString("selectedDim");
-            return new GlobalCoordinate(new BlockPos(x, y, z), DimensionType.byName(new ResourceLocation(dim)));
+            return new GlobalCoordinate(new BlockPos(x, y, z), DimensionId.fromResourceLocation(new ResourceLocation(dim)));
         }
         return null;
     }
