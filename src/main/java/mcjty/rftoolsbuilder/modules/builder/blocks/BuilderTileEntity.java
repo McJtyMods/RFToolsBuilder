@@ -69,7 +69,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.loot.LootContext;
 import net.minecraft.world.storage.loot.LootParameters;
@@ -378,7 +377,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = calculateBox();
         if (chamberChannel != null) {
-            DimensionType dimension = chamberChannel.getDimension();
+            DimensionId dimension = chamberChannel.getDimension();
             World world = WorldTools.getWorld(this.world, dimension);
             if (world == null) {
                 return;
@@ -444,7 +443,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = calculateBox();
         if (chamberChannel != null) {
-            DimensionType dimension = chamberChannel.getDimension();
+            DimensionId dimension = chamberChannel.getDimension();
             World world = WorldTools.getWorld(this.world, dimension);
 
             BlockPos.Mutable src = new BlockPos.Mutable();
@@ -782,7 +781,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             return;
         }
 
-        DimensionType dimension = chamberChannel.getDimension();
+        DimensionId dimension = chamberChannel.getDimension();
         World world = WorldTools.getWorld(this.world, dimension);
         if (world == null) {
             // The other location must be loaded.
