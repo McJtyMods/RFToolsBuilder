@@ -44,7 +44,7 @@ public class BuilderTools {
         }
 
         DimensionId dimension = chamberChannel.getDimension();
-        World world = dimension.loadWorld();
+        World world = dimension.loadWorld(player.getEntityWorld());
         if (world == null) {
             return;
         }
