@@ -132,7 +132,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             if (mode == MODE_NONE) {
                 if (player.isSneaking()) {
                     if (world.getTileEntity(pos) instanceof BuilderTileEntity) {
-                        setCurrentBlock(stack, new GlobalCoordinate(pos, DimensionId.fromWorld(world)));
+                        setCurrentBlock(stack, new GlobalCoordinate(pos, world));
                         Logging.message(player, TextFormatting.GREEN + "Now select the first corner");
                         setMode(stack, MODE_CORNER1);
                         setCorner1(stack, null);
