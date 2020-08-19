@@ -502,25 +502,25 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
             }
         }
 
-        window.draw();
+        window.draw(matrixStack);
 
         if (isQuarryCard) {
             // @@@ Hacky code!
             int x = (int) (window.getToplevel().getBounds().getX() + voidPanel.getBounds().getX()) + 1;
             int y = (int) (window.getToplevel().getBounds().getY() + voidPanel.getBounds().getY() + stone.getBounds().getY()) + 1;
 
-            renderVoidBlock(x, y, stone, Blocks.STONE);
-            renderVoidBlock(x, y, cobble, Blocks.COBBLESTONE);
-            renderVoidBlock(x, y, dirt, Blocks.DIRT);
-            renderVoidBlock(x, y, gravel, Blocks.GRAVEL);
-            renderVoidBlock(x, y, sand, Blocks.SAND);
-            renderVoidBlock(x, y, netherrack, Blocks.NETHERRACK);
-            renderVoidBlock(x, y, endstone, Blocks.END_STONE);
+            renderVoidBlock(matrixStack, x, y, stone, Blocks.STONE);
+            renderVoidBlock(matrixStack, x, y, cobble, Blocks.COBBLESTONE);
+            renderVoidBlock(matrixStack, x, y, dirt, Blocks.DIRT);
+            renderVoidBlock(matrixStack, x, y, gravel, Blocks.GRAVEL);
+            renderVoidBlock(matrixStack, x, y, sand, Blocks.SAND);
+            renderVoidBlock(matrixStack, x, y, netherrack, Blocks.NETHERRACK);
+            renderVoidBlock(matrixStack, x, y, endstone, Blocks.END_STONE);
         }
 
         ItemStack stack = getStackToEdit();
         if (!stack.isEmpty()) {
-            getShapeRenderer().renderShape(this, stack, guiLeft, guiTop, true, true, true, false);
+            getShapeRenderer().renderShape(matrixStack, this, stack, guiLeft, guiTop, true, true, true, false);
         }
 
         List<String> tooltips = window.getTooltips();
@@ -534,9 +534,9 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         }
     }
 
-    private void renderVoidBlock(int x, int y, ToggleButton button, Block block) {
+    private void renderVoidBlock(MatrixStack matrixStack, int x, int y, ToggleButton button, Block block) {
         x += (int) button.getBounds().getX();
-        RenderHelper.renderObject(Minecraft.getInstance(), x, y, new ItemStack(block), button.isPressed());
+        RenderHelper.renderObject(matrixStack, x, y, new ItemStack(block), button.isPressed());
         if (button.isPressed()) {
             drawLine(x - 1, y - 1, x + 18, y + 18, 0xffff0000);
             drawLine(x + 18, y - 1, x - 1, y + 18, 0xffff0000);

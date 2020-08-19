@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
@@ -158,16 +159,16 @@ public class ShapeRenderer {
         return doSound;
     }
 
-    public void renderShape(IShapeParentGui gui, ItemStack stack, int x, int y, boolean showAxis, boolean showOuter, boolean showScan, boolean showGuidelines) {
+    public void renderShape(MatrixStack matrixStack, IShapeParentGui gui, ItemStack stack, int x, int y, boolean showAxis, boolean showOuter, boolean showScan, boolean showGuidelines) {
         setupScissor(gui);
 
-        RenderSystem.pushMatrix();
+        matrixStack.push();
 
-        RenderSystem.translatef(dx, dy, 200);
-        RenderSystem.rotatef(180-xangle, 1f, 0, 0);
-        RenderSystem.rotatef(yangle, 0, 1f, 0);
-        RenderSystem.rotatef(zangle, 0, 0, 1f);
-        RenderSystem.scalef(-scale, scale, scale);
+        matrixStack.translate(dx, dy, 200);
+        matrixStack.rotate(Vector3f.XP.rotationDegrees(180-xangle));
+        matrixStack.rotate(Vector3f.YP.rotationDegrees(yangle));
+        matrixStack.rotate(Vector3f.ZP.rotationDegrees(zangle));
+        matrixStack.scale(-scale, scale, scale);
 
         RenderSystem.disableBlend();
         RenderSystem.disableCull();
@@ -185,7 +186,7 @@ public class ShapeRenderer {
 
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
 
-        RenderSystem.popMatrix();
+        matrixStack.pop();
 
         if (showGuidelines) {
             RenderSystem.lineWidth(3);
@@ -205,7 +206,7 @@ public class ShapeRenderer {
 
         RenderData data = ShapeDataManagerClient.getRenderData(shapeID);
         if (data != null && !data.previewMessage.isEmpty()) {
-            Minecraft.getInstance().fontRenderer.drawString(new MatrixStack(), data.previewMessage, gui.getPreviewLeft()+84, gui.getPreviewTop()+50, 0xffff0000);   // @todo 1.16
+            Minecraft.getInstance().fontRenderer.drawString(matrixStack, data.previewMessage, gui.getPreviewLeft()+84, gui.getPreviewTop()+50, 0xffff0000);
         }
 
     }
