@@ -11,7 +11,6 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
 import java.util.ArrayDeque;
@@ -26,14 +25,8 @@ public class SupportBlock extends Block {
     public static IntegerProperty STATUS = IntegerProperty.create("status", 0, 2);
 
     public SupportBlock() {
-        super(Properties.create(Material.GLASS));
+        super(Properties.create(Material.GLASS).setOpaque((state, world, pos) -> false));
     }
-
-    // @todo 1.16
-//    @Override
-//    public boolean isNormalCube(BlockState state, IBlockReader reader, BlockPos pos) {
-//        return false;
-//    }
 
     @Override
     public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {

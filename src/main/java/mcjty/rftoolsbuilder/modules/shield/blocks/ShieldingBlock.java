@@ -50,6 +50,7 @@ public class ShieldingBlock extends Block {
     public ShieldingBlock() {
         super(Block.Properties.create(Material.GLASS)
                 .notSolid()
+                .setOpaque((state, world, pos) -> false)
                 .hardnessAndResistance(-1.0F, 3600000.0F)
                 .noDrops());
         setDefaultState(getDefaultState()
@@ -98,12 +99,6 @@ public class ShieldingBlock extends Block {
     public float getAmbientOcclusionLightValue(BlockState state, IBlockReader worldIn, BlockPos pos) {
         return super.getAmbientOcclusionLightValue(state, worldIn, pos);
     }
-
-    // @todo 1.16
-//    @Override
-//    public boolean isNormalCube(BlockState state, IBlockReader worldIn, BlockPos pos) {
-//        return false;
-//    }
 
     @Override
     public boolean canEntityDestroy(BlockState state, IBlockReader world, BlockPos pos, Entity entity) {

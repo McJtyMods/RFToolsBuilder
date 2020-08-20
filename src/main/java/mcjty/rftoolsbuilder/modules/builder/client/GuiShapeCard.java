@@ -37,11 +37,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
+import net.minecraft.util.IReorderingProcessor;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextProperties;
+import net.minecraft.util.text.LanguageMap;
 import net.minecraft.util.text.StringTextComponent;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static mcjty.lib.gui.layout.AbstractLayout.DEFAULT_SPACING;
 import static mcjty.lib.gui.widgets.Widgets.*;
@@ -529,8 +533,10 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
             int guiTop = (this.height - this.ySize) / 2;
             int x = GuiTools.getRelativeX(this);
             int y = GuiTools.getRelativeY(this);
-            // @todo 1.16
-//            renderTooltip(matrixStack, tooltips, x - guiLeft, y - guiTop, minecraft.fontRenderer);
+            // @todo check on 1.16
+            List<ITextProperties> properties = tooltips.stream().map(StringTextComponent::new).collect(Collectors.toList());
+            List<IReorderingProcessor> processors = LanguageMap.getInstance().func_244260_a(properties);
+            renderTooltip(matrixStack, processors, x - guiLeft, y - guiTop);
         }
     }
 
