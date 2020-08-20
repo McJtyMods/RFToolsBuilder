@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
@@ -40,7 +41,10 @@ public class ClientRegistration {
         RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_BLUE.get(), RenderType.getCutout());
         RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_RED.get(), RenderType.getCutout());
         RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_YELLOW.get(), RenderType.getCutout());
+    }
 
+    @SubscribeEvent
+    public static void onModelLoad(ModelRegistryEvent event) {
         ModelLoaderRegistry.registerLoader(new ResourceLocation(RFToolsBuilder.MODID, "shieldloader"), new ShieldModelLoader());
     }
 
