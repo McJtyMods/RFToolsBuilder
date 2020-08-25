@@ -8,7 +8,6 @@ import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.widgets.*;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.setup.CommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.block.BlockState;
@@ -40,7 +39,7 @@ public class GuiChamberDetails extends GuiItemScreen {
     private Label info2Label;
 
     public GuiChamberDetails() {
-        super(RFToolsBuilder.instance, RFToolsBuilderMessages.INSTANCE, CHAMBER_XSIZE, CHAMBER_YSIZE,  /* @todo 1.14 GuiProxy.GUI_MANUAL_SHAPE*/ ManualEntry.EMPTY);
+        super(RFToolsBuilderMessages.INSTANCE, CHAMBER_XSIZE, CHAMBER_YSIZE,  /* @todo 1.14 GuiProxy.GUI_MANUAL_SHAPE*/ ManualEntry.EMPTY);
         requestChamberInfoFromServer();
     }
 

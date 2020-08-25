@@ -71,7 +71,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     private static final ResourceLocation iconGuiElements = new ResourceLocation(RFToolsBase.MODID, "textures/gui/guielements.png");
 
     public GuiShield(ShieldProjectorTileEntity shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
-        super(RFToolsBuilder.instance, shieldTileEntity, container, inventory, ManualHelper.create("rftoolsbuilder:shield/shield_intro"));
+        super(shieldTileEntity, container, inventory, ManualHelper.create("rftoolsbuilder:shield/shield_intro"));
 
         xSize = SHIELD_WIDTH;
         ySize = SHIELD_HEIGHT;
