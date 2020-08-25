@@ -5,7 +5,6 @@ import mcjty.lib.setup.DefaultModSetup;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public class ModSetup extends DefaultModSetup {
@@ -21,11 +20,6 @@ public class ModSetup extends DefaultModSetup {
         CommandHandler.registerCommands();
         RFToolsBuilderMessages.registerMessages("rftoolsbuilder");
     }
-
-    public void initClient(FMLClientSetupEvent e) {
-        ClientCommandHandler.registerCommands();
-    }
-
 
     @Override
     protected void setupModCompat() {
