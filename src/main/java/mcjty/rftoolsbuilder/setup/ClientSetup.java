@@ -13,21 +13,14 @@ import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DeferredWorkQueue;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-@Mod.EventBusSubscriber(modid = RFToolsBuilder.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
-public class ClientRegistration {
+public class ClientSetup {
 
-    @SubscribeEvent
     public static void init(FMLClientSetupEvent event) {
         DeferredWorkQueue.runLater(() -> {
             GenericGuiContainer.register(BuilderSetup.CONTAINER_BUILDER.get(), GuiBuilder::new);
@@ -48,13 +41,8 @@ public class ClientRegistration {
         RenderTypeLookup.setRenderLayer(ShieldSetup.TEMPLATE_YELLOW.get(), RenderType.getCutout());
     }
 
-    @SubscribeEvent
-    public static void onModelLoad(ModelRegistryEvent event) {
+    public static void modelInit(ModelRegistryEvent event) {
         ModelLoaderRegistry.registerLoader(new ResourceLocation(RFToolsBuilder.MODID, "shieldloader"), new ShieldModelLoader());
-    }
-
-    @SubscribeEvent
-    public static void registerSounds(RegistryEvent.Register<SoundEvent> sounds) {
     }
 
 //    @SubscribeEvent
