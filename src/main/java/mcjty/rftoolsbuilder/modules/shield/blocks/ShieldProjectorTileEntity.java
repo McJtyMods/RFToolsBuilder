@@ -480,7 +480,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         if (!ShieldRenderingMode.MIMIC.equals(shieldRenderingMode)) {
             return null;
         }
-        LazyOptional<BlockState> map = getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+        Optional<BlockState> map = getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
                 .map(h -> h.getStackInSlot(SLOT_BUFFER))
                 .filter(stack -> !stack.isEmpty())
                 .map(this::getStateFromItem);
