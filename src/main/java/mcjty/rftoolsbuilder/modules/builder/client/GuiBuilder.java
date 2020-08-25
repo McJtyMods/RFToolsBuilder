@@ -27,7 +27,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private ImageChoiceLabel anchor[] = new ImageChoiceLabel[4];
 
     public GuiBuilder(BuilderTileEntity builderTileEntity, GenericContainer container, PlayerInventory inventory) {
-        super(RFToolsBuilder.instance, builderTileEntity, container, inventory, ManualHelper.create("rftoolsbuilder:builder/builder_intro"));
+        super(builderTileEntity, container, inventory, ManualHelper.create("rftoolsbuilder:builder/builder_intro"));
     }
 
     @Override

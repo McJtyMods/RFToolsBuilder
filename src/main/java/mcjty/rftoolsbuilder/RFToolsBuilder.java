@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder;
 
-import mcjty.lib.base.ModBase;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.ModSetup;
 import mcjty.rftoolsbuilder.setup.Registration;
@@ -11,7 +10,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod(RFToolsBuilder.MODID)
-public class RFToolsBuilder implements ModBase {
+public class RFToolsBuilder {
 
     public static final String MODID = "rftoolsbuilder";
 
@@ -29,10 +28,5 @@ public class RFToolsBuilder implements ModBase {
         Registration.register();
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> setup.init(event));
-    }
-
-    @Override
-    public String getModId() {
-        return MODID;
     }
 }
