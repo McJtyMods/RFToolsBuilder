@@ -4,6 +4,8 @@ import mcjty.rftoolsbuilder.setup.ClientSetup;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.ModSetup;
 import mcjty.rftoolsbuilder.setup.Registration;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -28,7 +30,9 @@ public class RFToolsBuilder {
         Registration.register();
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(setup::init);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientSetup::init);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientSetup::modelInit);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientSetup::init);
+            FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientSetup::modelInit);
+        });
     }
 }
