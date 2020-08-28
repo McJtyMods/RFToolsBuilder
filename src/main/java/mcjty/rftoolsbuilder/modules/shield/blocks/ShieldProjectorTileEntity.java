@@ -24,7 +24,7 @@ import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.OrientationTools;
 import mcjty.lib.varia.RedstoneMode;
 import mcjty.lib.varia.WorldTools;
-import mcjty.rftoolsbase.modules.various.VariousSetup;
+import mcjty.rftoolsbase.modules.various.VariousModule;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.shield.*;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
@@ -153,7 +153,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(BUFFER_SIZE)
             .slot(input(), CONTAINER_CONTAINER, SLOT_BUFFER, 26, 142)
             .slot(specific(s -> s.getItem() instanceof ShapeCardItem), CONTAINER_CONTAINER, SLOT_SHAPE, 26, 200)
-            .slot(specific(s -> s.getItem() == VariousSetup.DIMENSIONALSHARD.get()), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118)
+            .slot(specific(s -> s.getItem() == VariousModule.DIMENSIONALSHARD.get()), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118)
             .playerSlots(85, 142));
 
     private final NoDirectionItemHander items = createItemHandler();

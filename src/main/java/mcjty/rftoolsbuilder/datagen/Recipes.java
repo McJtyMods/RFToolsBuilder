@@ -2,7 +2,7 @@ package mcjty.rftoolsbuilder.datagen;
 
 import mcjty.lib.crafting.CopyNBTRecipeBuilder;
 import mcjty.lib.datagen.BaseRecipeProvider;
-import mcjty.rftoolsbase.modules.various.VariousSetup;
+import mcjty.rftoolsbase.modules.various.VariousModule;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
 import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
@@ -20,14 +20,14 @@ public class Recipes extends BaseRecipeProvider {
 
     public Recipes(DataGenerator generatorIn) {
         super(generatorIn);
-        add('F', VariousSetup.MACHINE_FRAME.get());
-        add('s', VariousSetup.DIMENSIONALSHARD.get());
+        add('F', VariousModule.MACHINE_FRAME.get());
+        add('s', VariousModule.DIMENSIONALSHARD.get());
     }
 
     @Override
     protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
         build(consumer, ShapedRecipeBuilder.shapedRecipe(BuilderSetup.BUILDER.get())
-                        .addCriterion("machine_frame", hasItem(VariousSetup.MACHINE_FRAME.get())),
+                        .addCriterion("machine_frame", hasItem(VariousModule.MACHINE_FRAME.get())),
                 "BoB", "rFr", "BrB");
         build(consumer, ShapedRecipeBuilder.shapedRecipe(BuilderSetup.SHAPE_CARD_DEF.get())
                         .addCriterion("iron_ingot", hasItem(Items.IRON_INGOT)),
@@ -35,20 +35,20 @@ public class Recipes extends BaseRecipeProvider {
 
         build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldSetup.SHIELD_BLOCK1.get())
                         .key('g', Tags.Items.INGOTS_GOLD)
-                        .addCriterion("machine_frame", hasItem(VariousSetup.MACHINE_FRAME.get())),
+                        .addCriterion("machine_frame", hasItem(VariousModule.MACHINE_FRAME.get())),
                 "gTg", "rFr", "OOO");
         build(consumer, CopyNBTRecipeBuilder.shapedRecipe(ShieldSetup.SHIELD_BLOCK2.get())
                         .key('M', ShieldSetup.SHIELD_BLOCK1.get())
-                        .addCriterion("machine_frame", hasItem(VariousSetup.MACHINE_FRAME.get())),
+                        .addCriterion("machine_frame", hasItem(VariousModule.MACHINE_FRAME.get())),
                 "ROR", "OMO", "ROR");
         build(consumer, CopyNBTRecipeBuilder.shapedRecipe(ShieldSetup.SHIELD_BLOCK3.get())
                         .key('M', ShieldSetup.SHIELD_BLOCK2.get())
-                        .addCriterion("machine_frame", hasItem(VariousSetup.MACHINE_FRAME.get())),
+                        .addCriterion("machine_frame", hasItem(VariousModule.MACHINE_FRAME.get())),
                 "sOs", "OMO", "sOs");
         build(consumer, CopyNBTRecipeBuilder.shapedRecipe(ShieldSetup.SHIELD_BLOCK4.get())
                         .key('M', ShieldSetup.SHIELD_BLOCK3.get())
                         .key('n', Items.NETHER_STAR)
-                        .addCriterion("machine_frame", hasItem(VariousSetup.MACHINE_FRAME.get())),
+                        .addCriterion("machine_frame", hasItem(VariousModule.MACHINE_FRAME.get())),
                 "nOs", "OMO", "sOn");
 
         build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldSetup.TEMPLATE_BLUE.get())
