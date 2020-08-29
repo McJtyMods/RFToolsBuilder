@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "rftoolsbase:block/empty_model"
+    }
+  }
+}
