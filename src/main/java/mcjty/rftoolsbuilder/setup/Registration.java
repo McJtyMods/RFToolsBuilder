@@ -2,8 +2,6 @@ package mcjty.rftoolsbuilder.setup;
 
 
 import mcjty.rftoolsbuilder.RFToolsBuilder;
-import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
-import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
 import net.minecraft.inventory.container.ContainerType;
@@ -32,9 +30,6 @@ public class Registration {
         CONTAINERS.register(FMLJavaModLoadingContext.get().getModEventBus());
         SOUNDS.register(FMLJavaModLoadingContext.get().getModEventBus());
         ENTITIES.register(FMLJavaModLoadingContext.get().getModEventBus());
-
-        BuilderSetup.register();
-        ShieldSetup.register();
     }
 
 

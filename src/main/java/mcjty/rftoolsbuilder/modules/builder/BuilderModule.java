@@ -2,22 +2,32 @@ package mcjty.rftoolsbuilder.modules.builder;
 
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.container.GenericContainer;
+import mcjty.lib.gui.GenericGuiContainer;
+import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
+import mcjty.rftoolsbuilder.modules.builder.client.BuilderRenderer;
+import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
 import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
+import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.ObjectHolder;
 
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
-public class BuilderSetup {
+public class BuilderModule implements IModule {
 //    public static SpaceChamberBlock spaceChamberBlock;
 //    public static SpaceChamberControllerBlock spaceChamberControllerBlock;
 //    public static BaseBlock composerBlock;
@@ -25,10 +35,6 @@ public class BuilderSetup {
 //    public static BaseBlock remoteScannerBlock;
 //    public static BaseBlock projectorBlock;
 //    public static BaseBlock locatorBlock;
-
-    public static void register() {
-        // Needed to force class loading
-    }
 
     public static final RegistryObject<SupportBlock> SUPPORT = BLOCKS.register("support_block", SupportBlock::new);
 
@@ -74,4 +80,22 @@ public class BuilderSetup {
     public static Item SPACE_CHAMBER_CARD;    // @todo 1.14
 
 
+    @Override
+    public void init(FMLCommonSetupEvent event) {
+
+    }
+
+    @Override
+    public void initClient(FMLClientSetupEvent event) {
+        DeferredWorkQueue.runLater(() -> {
+            GenericGuiContainer.register(CONTAINER_BUILDER.get(), GuiBuilder::new);
+        });
+        BuilderRenderer.register();
+        RenderTypeLookup.setRenderLayer(SUPPORT.get(), RenderType.getTranslucent());
+    }
+
+    @Override
+    public void initConfig() {
+        BuilderConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
+    }
 }

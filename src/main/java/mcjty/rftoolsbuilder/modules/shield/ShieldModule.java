@@ -2,35 +2,46 @@ package mcjty.rftoolsbuilder.modules.shield;
 
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.container.GenericContainer;
+import mcjty.lib.gui.GenericGuiContainer;
+import mcjty.lib.modules.IModule;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.*;
+import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
+import mcjty.rftoolsbuilder.modules.shield.client.ShieldModelLoader;
+import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
 
-public class ShieldSetup {
+public class ShieldModule implements IModule {
 
-    public static void register() {
-        // Needed to force class loading
-    }
-
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK1 = BLOCKS.register("shield_block1", () -> new ShieldProjectorBlock(ShieldSetup::createProjector1, ShieldConfiguration.maxShieldSize.get()));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK2 = BLOCKS.register("shield_block2", () -> new ShieldProjectorBlock(ShieldSetup::createProjector2, ShieldConfiguration.maxShieldSize.get() * 4));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK3 = BLOCKS.register("shield_block3", () -> new ShieldProjectorBlock(ShieldSetup::createProjector3, ShieldConfiguration.maxShieldSize.get() * 16));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK4 = BLOCKS.register("shield_block4", () -> new ShieldProjectorBlock(ShieldSetup::createProjector4, ShieldConfiguration.maxShieldSize.get() * 128));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK1 = BLOCKS.register("shield_block1", () -> new ShieldProjectorBlock(ShieldModule::createProjector1, ShieldConfiguration.maxShieldSize.get()));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK2 = BLOCKS.register("shield_block2", () -> new ShieldProjectorBlock(ShieldModule::createProjector2, ShieldConfiguration.maxShieldSize.get() * 4));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK3 = BLOCKS.register("shield_block3", () -> new ShieldProjectorBlock(ShieldModule::createProjector3, ShieldConfiguration.maxShieldSize.get() * 16));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK4 = BLOCKS.register("shield_block4", () -> new ShieldProjectorBlock(ShieldModule::createProjector4, ShieldConfiguration.maxShieldSize.get() * 128));
     public static final RegistryObject<Item> SHIELD_BLOCK1_ITEM = ITEMS.register("shield_block1", () -> new BlockItem(SHIELD_BLOCK1.get(), Registration.createStandardProperties()));
     public static final RegistryObject<Item> SHIELD_BLOCK2_ITEM = ITEMS.register("shield_block2", () -> new BlockItem(SHIELD_BLOCK2.get(), Registration.createStandardProperties()));
     public static final RegistryObject<Item> SHIELD_BLOCK3_ITEM = ITEMS.register("shield_block3", () -> new BlockItem(SHIELD_BLOCK3.get(), Registration.createStandardProperties()));
     public static final RegistryObject<Item> SHIELD_BLOCK4_ITEM = ITEMS.register("shield_block4", () -> new BlockItem(SHIELD_BLOCK4.get(), Registration.createStandardProperties()));
-    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK1 = TILES.register("shield_block1", () -> TileEntityType.Builder.create(ShieldSetup::createProjector1, SHIELD_BLOCK1.get()).build(null));
-    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK2 = TILES.register("shield_block2", () -> TileEntityType.Builder.create(ShieldSetup::createProjector2, SHIELD_BLOCK2.get()).build(null));
-    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK3 = TILES.register("shield_block3", () -> TileEntityType.Builder.create(ShieldSetup::createProjector3, SHIELD_BLOCK3.get()).build(null));
-    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK4 = TILES.register("shield_block4", () -> TileEntityType.Builder.create(ShieldSetup::createProjector4, SHIELD_BLOCK4.get()).build(null));
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK1 = TILES.register("shield_block1", () -> TileEntityType.Builder.create(ShieldModule::createProjector1, SHIELD_BLOCK1.get()).build(null));
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK2 = TILES.register("shield_block2", () -> TileEntityType.Builder.create(ShieldModule::createProjector2, SHIELD_BLOCK2.get()).build(null));
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK3 = TILES.register("shield_block3", () -> TileEntityType.Builder.create(ShieldModule::createProjector3, SHIELD_BLOCK3.get()).build(null));
+    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK4 = TILES.register("shield_block4", () -> TileEntityType.Builder.create(ShieldModule::createProjector4, SHIELD_BLOCK4.get()).build(null));
     public static final RegistryObject<ContainerType<GenericContainer>> CONTAINER_SHIELD = CONTAINERS.register("shield", GenericContainer::createContainerType);
 
     public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_BLUE = BLOCKS.register("blue_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.BLUE));
@@ -89,4 +100,39 @@ public class ShieldSetup {
 //            noTickCamoShieldBlockOpaque.initColorHandler(blockColors);
 //        }
 //    }
+
+
+    public ShieldModule() {
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(ShieldModule::modelInit);
+    }
+
+    @Override
+    public void init(FMLCommonSetupEvent event) {
+
+    }
+
+    @Override
+    public void initClient(FMLClientSetupEvent event) {
+        DeferredWorkQueue.runLater(() -> {
+            GenericGuiContainer.register(ShieldModule.CONTAINER_SHIELD.get(), GuiShield::new);
+        });
+
+        RenderTypeLookup.setRenderLayer(ShieldModule.SHIELDING_TRANSLUCENT.get(), RenderType.getTranslucent());
+        RenderTypeLookup.setRenderLayer(ShieldModule.SHIELDING_SOLID.get(), RenderType.getSolid());
+        RenderTypeLookup.setRenderLayer(ShieldModule.SHIELDING_CUTOUT.get(), RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(ShieldModule.TEMPLATE_GREEN.get(), RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(ShieldModule.TEMPLATE_BLUE.get(), RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(ShieldModule.TEMPLATE_RED.get(), RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(ShieldModule.TEMPLATE_YELLOW.get(), RenderType.getCutout());
+    }
+
+    @Override
+    public void initConfig() {
+        ShieldConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
+    }
+
+    public static void modelInit(ModelRegistryEvent event) {
+        ModelLoaderRegistry.registerLoader(new ResourceLocation(RFToolsBuilder.MODID, "shieldloader"), new ShieldModelLoader());
+    }
+
 }

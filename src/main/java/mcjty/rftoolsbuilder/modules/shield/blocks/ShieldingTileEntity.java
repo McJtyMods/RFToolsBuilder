@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
-import mcjty.rftoolsbuilder.modules.shield.ShieldSetup;
+import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldRenderData;
 import net.minecraft.block.BlockState;
@@ -30,7 +30,7 @@ public class ShieldingTileEntity extends TileEntity {
     public static final ModelProperty<ShieldRenderData> RENDER_DATA = new ModelProperty<>();
 
     public ShieldingTileEntity() {
-        super(ShieldSetup.TYPE_SHIELDING.get());
+        super(ShieldModule.TYPE_SHIELDING.get());
     }
 
     @Nullable
