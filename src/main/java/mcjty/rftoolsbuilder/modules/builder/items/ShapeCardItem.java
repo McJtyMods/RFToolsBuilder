@@ -145,7 +145,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                 GlobalCoordinate currentBlock = getCurrentBlock(stack);
                 if (currentBlock == null) {
                     Logging.message(player, TextFormatting.RED + "There is no Builder selected!");
-                } else if (!currentBlock.getDimension().equals(world.getDimension().getType())) {
+                } else if (!currentBlock.getDimension().sameDimension(world)) {
                     Logging.message(player, TextFormatting.RED + "The Builder is in another dimension!");
                 } else if (currentBlock.getCoordinate().equals(pos)) {
                     Logging.message(player, TextFormatting.RED + "Cleared area selection mode!");
@@ -159,7 +159,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                 GlobalCoordinate currentBlock = getCurrentBlock(stack);
                 if (currentBlock == null) {
                     Logging.message(player, TextFormatting.RED + "There is no Builder selected!");
-                } else if (!currentBlock.getDimension().equals(world.getDimension().getType())) {
+                } else if (!currentBlock.getDimension().sameDimension(world)) {
                     Logging.message(player, TextFormatting.RED + "The Builder is in another dimension!");
                 } else if (currentBlock.getCoordinate().equals(pos)) {
                     Logging.message(player, TextFormatting.RED + "Cleared area selection mode!");

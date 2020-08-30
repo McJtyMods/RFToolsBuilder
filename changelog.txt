@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a bug where shapecard editing by right clicking the Builder no longer worked (it claimed the Builder was in another dimension)
+
 1.15-2.1.8:
 - Fixed a problem on servers
 
