@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
+import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -190,7 +190,7 @@ public class ShapeBlockInfo {
             // @todo 1.14 scanner
 //        } else if (block == BuilderSetup.scannerBlock) {
 //            col = COL_SCANNER;
-        } else if (block == BuilderSetup.SUPPORT.get()) {
+        } else if (block == BuilderModule.SUPPORT.get()) {
             col = COL_DEFAULT;
         } else if (mapColor != null) {
             col = new Col(((mapColor.colorValue >> 16) & 0xff) / 255.0f, ((mapColor.colorValue >> 8) & 0xff) / 255.0f, (mapColor.colorValue & 0xff) / 255.0f);

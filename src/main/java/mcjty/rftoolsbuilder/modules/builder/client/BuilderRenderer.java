@@ -3,7 +3,7 @@ package mcjty.rftoolsbuilder.modules.builder.client;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import mcjty.rftoolsbase.modules.hud.client.HudRenderer;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
-import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
+import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
@@ -25,6 +25,6 @@ public class BuilderRenderer extends TileEntityRenderer<BuilderTileEntity> {
     }
 
     public static void register() {
-        ClientRegistry.bindTileEntityRenderer(BuilderSetup.TYPE_BUILDER.get(), BuilderRenderer::new);
+        ClientRegistry.bindTileEntityRenderer(BuilderModule.TYPE_BUILDER.get(), BuilderRenderer::new);
     }
 }

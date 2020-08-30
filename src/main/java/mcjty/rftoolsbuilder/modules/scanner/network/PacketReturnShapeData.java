@@ -2,7 +2,7 @@ package mcjty.rftoolsbuilder.modules.scanner.network;
 
 import mcjty.lib.network.NetworkTools;
 import mcjty.lib.varia.RLE;
-import mcjty.rftoolsbuilder.modules.builder.BuilderSetup;
+import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.shapes.RenderData;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
@@ -113,7 +113,7 @@ public class PacketReturnShapeData {
             RenderData.RenderPlane plane = null;
 
             if (rle != null) {
-                BlockState dummy = BuilderSetup.SUPPORT.get().getDefaultState();
+                BlockState dummy = BuilderModule.SUPPORT.get().getDefaultState();
 
                 rle.reset();
 //                for (int oy = 0; oy < dy; oy++) {

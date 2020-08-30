@@ -2,10 +2,10 @@ package mcjty.rftoolsbuilder.setup;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
-import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
-import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
-import mcjty.rftoolsbuilder.modules.shield.ShieldConfiguration;
+import mcjty.lib.modules.Modules;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
 
 import java.nio.file.Path;
 
@@ -13,20 +13,21 @@ public class Config {
 
     public static final String CATEGORY_GENERAL = "general";
 
-    private static final ForgeConfigSpec.Builder SERVER_BUILDER = new ForgeConfigSpec.Builder();
-    private static final ForgeConfigSpec.Builder CLIENT_BUILDER = new ForgeConfigSpec.Builder();
+    public static final ForgeConfigSpec.Builder SERVER_BUILDER = new ForgeConfigSpec.Builder();
+    public static final ForgeConfigSpec.Builder CLIENT_BUILDER = new ForgeConfigSpec.Builder();
 
     public static ForgeConfigSpec SERVER_CONFIG;
     public static ForgeConfigSpec CLIENT_CONFIG;
 
-    static {
+    public static void register(Modules modules) {
         setupGeneralConfig();
-        BuilderConfiguration.init(SERVER_BUILDER, CLIENT_BUILDER);
-        ScannerConfiguration.init(SERVER_BUILDER, CLIENT_BUILDER);
-        ShieldConfiguration.init(SERVER_BUILDER, CLIENT_BUILDER);
+        modules.initConfig();
 
         SERVER_CONFIG = SERVER_BUILDER.build();
         CLIENT_CONFIG = CLIENT_BUILDER.build();
+
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CLIENT_CONFIG);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SERVER_CONFIG);
     }
 
     private static void setupGeneralConfig() {

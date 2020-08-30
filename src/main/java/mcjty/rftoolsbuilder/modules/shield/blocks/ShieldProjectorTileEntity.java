@@ -161,7 +161,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     private final LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
     private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick()));
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
-            .containerSupplier((windowId,player) -> new GenericContainer(ShieldSetup.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY.get(), getPos(), ShieldProjectorTileEntity.this))
+            .containerSupplier((windowId,player) -> new GenericContainer(ShieldModule.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY.get(), getPos(), ShieldProjectorTileEntity.this))
             .energyHandler(energyHandler)
             .itemHandler(itemHandler));
 
@@ -528,12 +528,12 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 //            }
         } else {
             if (render.isTranslucent()) {
-                return ShieldSetup.SHIELDING_TRANSLUCENT.get();
+                return ShieldModule.SHIELDING_TRANSLUCENT.get();
             } else {
-                return ShieldSetup.SHIELDING_SOLID.get();
+                return ShieldModule.SHIELDING_SOLID.get();
             }
         }
-        return ShieldSetup.SHIELDING_SOLID.get();
+        return ShieldModule.SHIELDING_SOLID.get();
     }
 
     private BlockState calculateDamageBits(BlockState shielding) {
@@ -1041,16 +1041,16 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
             switch (color) {
                 case BLUE:
-                    templateState = ShieldSetup.TEMPLATE_BLUE.get().getDefaultState();
+                    templateState = ShieldModule.TEMPLATE_BLUE.get().getDefaultState();
                     break;
                 case RED:
-                    templateState = ShieldSetup.TEMPLATE_RED.get().getDefaultState();
+                    templateState = ShieldModule.TEMPLATE_RED.get().getDefaultState();
                     break;
                 case GREEN:
-                    templateState = ShieldSetup.TEMPLATE_GREEN.get().getDefaultState();
+                    templateState = ShieldModule.TEMPLATE_GREEN.get().getDefaultState();
                     break;
                 case YELLOW:
-                    templateState = ShieldSetup.TEMPLATE_YELLOW.get().getDefaultState();
+                    templateState = ShieldModule.TEMPLATE_YELLOW.get().getDefaultState();
                     break;
             }
         } else {
@@ -1113,16 +1113,16 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
                 switch (color) {
                     case BLUE:
-                        templateState = ShieldSetup.TEMPLATE_BLUE.get().getDefaultState();
+                        templateState = ShieldModule.TEMPLATE_BLUE.get().getDefaultState();
                         break;
                     case RED:
-                        templateState = ShieldSetup.TEMPLATE_RED.get().getDefaultState();
+                        templateState = ShieldModule.TEMPLATE_RED.get().getDefaultState();
                         break;
                     case GREEN:
-                        templateState = ShieldSetup.TEMPLATE_GREEN.get().getDefaultState();
+                        templateState = ShieldModule.TEMPLATE_GREEN.get().getDefaultState();
                         break;
                     case YELLOW:
-                        templateState = ShieldSetup.TEMPLATE_YELLOW.get().getDefaultState();
+                        templateState = ShieldModule.TEMPLATE_YELLOW.get().getDefaultState();
                         break;
                 }
             } else {
