@@ -9,8 +9,8 @@ import mcjty.lib.gui.widgets.ChoiceLabel;
 import mcjty.lib.gui.widgets.EnergyBar;
 import mcjty.lib.gui.widgets.ImageChoiceLabel;
 import mcjty.lib.typed.TypedMap;
-import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
@@ -28,7 +28,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private ImageChoiceLabel anchor[] = new ImageChoiceLabel[4];
 
     public GuiBuilder(BuilderTileEntity builderTileEntity, GenericContainer container, PlayerInventory inventory) {
-        super(builderTileEntity, container, inventory, ManualHelper.create("rftoolsbuilder:builder/builder_intro"));
+        super(builderTileEntity, container, inventory, BuilderModule.BUILDER.get().getManualEntry());
     }
 
     @Override

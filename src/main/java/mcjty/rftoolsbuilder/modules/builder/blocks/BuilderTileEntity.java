@@ -30,6 +30,7 @@ import mcjty.lib.varia.*;
 import mcjty.rftoolsbase.api.client.IHudSupport;
 import mcjty.rftoolsbase.modules.filter.items.FilterModuleItem;
 import mcjty.rftoolsbase.modules.hud.network.PacketGetHudLog;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.modules.builder.BlockInformation;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
@@ -253,6 +254,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return new BaseBlock(new BlockBuilder()
                 .tileEntitySupplier(BuilderTileEntity::new)
                 .infusable()
+                .manualEntry(ManualHelper.create("rftoolsbuilder:builder/builder_intro"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(), gold())) {
             @Override

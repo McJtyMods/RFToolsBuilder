@@ -12,12 +12,8 @@ import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.RedstoneMode;
 import mcjty.rftoolsbase.RFToolsBase;
-import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
-import mcjty.rftoolsbuilder.modules.shield.DamageTypeMode;
-import mcjty.rftoolsbuilder.modules.shield.ShieldConfiguration;
-import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
-import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
+import mcjty.rftoolsbuilder.modules.shield.*;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import mcjty.rftoolsbuilder.modules.shield.network.PacketGetFilters;
@@ -71,7 +67,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     private static final ResourceLocation iconGuiElements = new ResourceLocation(RFToolsBase.MODID, "textures/gui/guielements.png");
 
     public GuiShield(ShieldProjectorTileEntity shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
-        super(shieldTileEntity, container, inventory, ManualHelper.create("rftoolsbuilder:shield/shield_intro"));
+        super(shieldTileEntity, container, inventory, ShieldModule.SHIELD_BLOCK1.get().getManualEntry());
 
         xSize = SHIELD_WIDTH;
         ySize = SHIELD_HEIGHT;
