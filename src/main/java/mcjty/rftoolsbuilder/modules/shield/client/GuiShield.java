@@ -73,6 +73,10 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
         ySize = SHIELD_HEIGHT;
     }
 
+    public static void register() {
+        register(ShieldModule.CONTAINER_SHIELD.get(), GuiShield::new);
+    }
+
     @Override
     public void init() {
         super.init();

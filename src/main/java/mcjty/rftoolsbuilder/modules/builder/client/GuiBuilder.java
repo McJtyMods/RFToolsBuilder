@@ -31,6 +31,10 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         super(builderTileEntity, container, inventory, BuilderModule.BUILDER.get().getManualEntry());
     }
 
+    public static void register() {
+        register(BuilderModule.CONTAINER_BUILDER.get(), GuiBuilder::new);
+    }
+
     @Override
     public void init() {
         window = new Window(this, tileEntity, RFToolsBuilderMessages.INSTANCE, new ResourceLocation(RFToolsBuilder.MODID, "gui/builder.gui"));

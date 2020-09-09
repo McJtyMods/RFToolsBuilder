@@ -2,23 +2,17 @@ package mcjty.rftoolsbuilder.modules.shield;
 
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.container.GenericContainer;
-import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.modules.IModule;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.*;
+import mcjty.rftoolsbuilder.modules.shield.client.ClientSetup;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldModelLoader;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -103,7 +97,7 @@ public class ShieldModule implements IModule {
 
 
     public ShieldModule() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(ShieldModule::modelInit);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(ShieldModelLoader::register);
     }
 
     @Override
@@ -114,25 +108,15 @@ public class ShieldModule implements IModule {
     @Override
     public void initClient(FMLClientSetupEvent event) {
         DeferredWorkQueue.runLater(() -> {
-            GenericGuiContainer.register(ShieldModule.CONTAINER_SHIELD.get(), GuiShield::new);
+            GuiShield.register();
         });
 
-        RenderTypeLookup.setRenderLayer(ShieldModule.SHIELDING_TRANSLUCENT.get(), RenderType.getTranslucent());
-        RenderTypeLookup.setRenderLayer(ShieldModule.SHIELDING_SOLID.get(), RenderType.getSolid());
-        RenderTypeLookup.setRenderLayer(ShieldModule.SHIELDING_CUTOUT.get(), RenderType.getCutout());
-        RenderTypeLookup.setRenderLayer(ShieldModule.TEMPLATE_GREEN.get(), RenderType.getCutout());
-        RenderTypeLookup.setRenderLayer(ShieldModule.TEMPLATE_BLUE.get(), RenderType.getCutout());
-        RenderTypeLookup.setRenderLayer(ShieldModule.TEMPLATE_RED.get(), RenderType.getCutout());
-        RenderTypeLookup.setRenderLayer(ShieldModule.TEMPLATE_YELLOW.get(), RenderType.getCutout());
+        ClientSetup.initClient();
     }
 
     @Override
     public void initConfig() {
         ShieldConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
-    }
-
-    public static void modelInit(ModelRegistryEvent event) {
-        ModelLoaderRegistry.registerLoader(new ResourceLocation(RFToolsBuilder.MODID, "shieldloader"), new ShieldModelLoader());
     }
 
 }
