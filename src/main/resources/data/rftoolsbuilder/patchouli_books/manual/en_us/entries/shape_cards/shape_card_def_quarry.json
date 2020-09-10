@@ -1,12 +1,12 @@
 {
-  "name": "rftoolsbuilder.entry.shape_card_def_quarry",
+  "name": "Quarry Card",
   "icon": "rftoolsbuilder:shape_card_quarry",
   "category": "rftoolsbuilder:category_rftoolsbuilder_shape_cards",
   "sortnum": 20,
   "pages": [
     {
       "type": "text",
-      "text": "rftoolsbuilder.page.shape_card_def_quarry0"
+      "text": "The Quarry Card describes a shape for the Builder. In addition to the shape you can also specify that you want to void certain blocks. There are a few variants of this shape card (clearing/non-clearing, fortune, and silk-touch)"
     }
   ]
 }

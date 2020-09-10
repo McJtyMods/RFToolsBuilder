@@ -1,6 +1,6 @@
 {
-  "name": "rftoolsbuilder.category.shape_cards",
-  "description": "rftoolsbuilder.category.shape_cards.description",
+  "name": "Shape Cards",
+  "description": "Shape Cards are items that represent a certain shape. They can be used by the Builder and the Shield Projector",
   "parent": "rftoolsbuilder:category_rftoolsbuilder",
   "icon": "rftoolsbuilder:shape_card_def",
   "sortnum": 10

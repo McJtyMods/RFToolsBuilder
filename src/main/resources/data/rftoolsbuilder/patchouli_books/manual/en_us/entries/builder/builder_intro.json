@@ -1,12 +1,12 @@
 {
-  "name": "rftoolsbuilder.entry.builder_intro",
+  "name": "Introduction",
   "icon": "minecraft:experience_bottle",
   "category": "rftoolsbuilder:category_rftoolsbuilder_builder",
   "sortnum": 10,
   "pages": [
     {
       "type": "text",
-      "text": "rftoolsbuilder.page.builder_intro0"
+      "text": "The Builder is a versatile block that can quarry, build, pump, collect XP and items and more. Use one of the shape cards to control what has to be done"
     }
   ]
 }
