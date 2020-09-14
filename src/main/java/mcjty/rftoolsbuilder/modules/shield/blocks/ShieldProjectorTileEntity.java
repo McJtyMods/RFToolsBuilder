@@ -71,7 +71,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 import static mcjty.lib.container.ContainerFactory.CONTAINER_CONTAINER;
-import static mcjty.lib.container.SlotDefinition.input;
+import static mcjty.lib.container.SlotDefinition.generic;
 import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
 
@@ -151,19 +151,19 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public static final int SLOT_SHARD = 2;
     public static final int BUFFER_SIZE = 3;
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(BUFFER_SIZE)
-            .slot(input(), CONTAINER_CONTAINER, SLOT_BUFFER, 26, 142)
-            .slot(specific(s -> s.getItem() instanceof ShapeCardItem), CONTAINER_CONTAINER, SLOT_SHAPE, 26, 200)
-            .slot(specific(s -> s.getItem() == VariousModule.DIMENSIONALSHARD.get()), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118)
+            .slot(generic().in(), CONTAINER_CONTAINER, SLOT_BUFFER, 26, 142)
+            .slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), CONTAINER_CONTAINER, SLOT_SHAPE, 26, 200)
+            .slot(specific(s -> s.getItem() == VariousModule.DIMENSIONALSHARD.get()).in().out(), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118)
             .playerSlots(85, 142));
 
     private final NoDirectionItemHander items = createItemHandler();
-    private final LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
-    private final LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
-    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick()));
+    private final LazyOptional<AutomationFilterItemHander> itemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
+    private final GenericEnergyStorage energyStorage = new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick());
+    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> energyStorage);
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
             .containerSupplier((windowId,player) -> new GenericContainer(ShieldModule.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY.get(), getPos(), ShieldProjectorTileEntity.this))
-            .energyHandler(energyHandler)
-            .itemHandler(itemHandler));
+            .energyHandler(() -> energyStorage)
+            .itemHandler(() -> items));
 
     private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldProjectorTileEntity.this));
     private final LazyOptional<IPowerInformation> powerInfoHandler = LazyOptional.of(this::createPowerInfo);
@@ -602,46 +602,44 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     private ItemStack lootingSword = ItemStack.EMPTY;
 
     public void applyDamageToEntity(Entity entity) {
-        energyHandler.ifPresent(h -> {
-            DamageSource source;
-            int rf;
-            if (DamageTypeMode.DAMAGETYPE_GENERIC.equals(damageMode)) {
-                rf = ShieldConfiguration.rfDamage.get();
-                source = DamageSource.GENERIC;
-            } else {
-                rf = ShieldConfiguration.rfDamagePlayer.get();
-                FakePlayer killer = FakePlayerFactory.get(WorldTools.getOverworld(world), new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_shield"));
-                killer.setWorld(world);
-                killer.setPosition(pos.getX(), pos.getY(), pos.getZ());
-                new FakePlayerConnection(killer);
-                ItemStack shards = items.getStackInSlot(SLOT_SHARD);
-                if (!shards.isEmpty() && shards.getCount() >= ShieldConfiguration.shardsPerLootingKill.get()) {
-                    items.extractItem(SLOT_SHARD, ShieldConfiguration.shardsPerLootingKill.get(), false);
-                    if (lootingSword.isEmpty()) {
-                        lootingSword = createEnchantedItem(Items.DIAMOND_SWORD, Enchantments.LOOTING, ShieldConfiguration.lootingKillBonus.get());
-                    }
-                    lootingSword.setDamage(0);
-                    killer.setHeldItem(Hand.MAIN_HAND, lootingSword);
-                } else {
-                    killer.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
+        DamageSource source;
+        int rf;
+        if (DamageTypeMode.DAMAGETYPE_GENERIC.equals(damageMode)) {
+            rf = ShieldConfiguration.rfDamage.get();
+            source = DamageSource.GENERIC;
+        } else {
+            rf = ShieldConfiguration.rfDamagePlayer.get();
+            FakePlayer killer = FakePlayerFactory.get(WorldTools.getOverworld(world), new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_shield"));
+            killer.setWorld(world);
+            killer.setPosition(pos.getX(), pos.getY(), pos.getZ());
+            new FakePlayerConnection(killer);
+            ItemStack shards = items.getStackInSlot(SLOT_SHARD);
+            if (!shards.isEmpty() && shards.getCount() >= ShieldConfiguration.shardsPerLootingKill.get()) {
+                items.extractItem(SLOT_SHARD, ShieldConfiguration.shardsPerLootingKill.get(), false);
+                if (lootingSword.isEmpty()) {
+                    lootingSword = createEnchantedItem(Items.DIAMOND_SWORD, Enchantments.LOOTING, ShieldConfiguration.lootingKillBonus.get());
                 }
-                source = DamageSource.causePlayerDamage(killer);
+                lootingSword.setDamage(0);
+                killer.setHeldItem(Hand.MAIN_HAND, lootingSword);
+            } else {
+                killer.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
             }
+            source = DamageSource.causePlayerDamage(killer);
+        }
 
-            float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
-            rf = (int) (rf * costFactor * (4.0f - factor) / 4.0f);
-            if (h.getEnergyStored() < rf) {
-                // Not enough RF to do damage.
-                return;
-            }
-            h.consumeEnergy(rf);
+        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        rf = (int) (rf * costFactor * (4.0f - factor) / 4.0f);
+        if (energyStorage.getEnergyStored() < rf) {
+            // Not enough RF to do damage.
+            return;
+        }
+        energyStorage.consumeEnergy(rf);
 
-            float damage = (float) (double) ShieldConfiguration.damage.get();
-            damage *= damageFactor;
-            damage = damage * (1.0f + factor / 2.0f);
+        float damage = (float) (double) ShieldConfiguration.damage.get();
+        damage *= damageFactor;
+        damage = damage * (1.0f + factor / 2.0f);
 
-            entity.attackEntityFrom(source, damage);
-        });
+        entity.attackEntityFrom(source, damage);
     }
 
     public static ItemStack createEnchantedItem(Item item, Enchantment effectId, int amount) {
@@ -676,45 +674,43 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             }
         }
 
-        energyHandler.ifPresent(h -> {
-            boolean checkPower = false;
+        boolean checkPower = false;
+        if (powerTimeout > 0) {
+            powerTimeout--;
+            markDirty();
             if (powerTimeout > 0) {
-                powerTimeout--;
-                markDirty();
-                if (powerTimeout > 0) {
-                    return;
-                } else {
-                    checkPower = true;
-                }
+                return;
+            } else {
+                checkPower = true;
             }
+        }
 
-            boolean needsUpdate = false;
+        boolean needsUpdate = false;
 
-            int rf = getRfPerTick();
+        int rf = getRfPerTick();
 
-            if (rf > 0) {
-                if (h.getEnergyStored() < rf) {
-                    powerTimeout = 100;     // Wait 5 seconds before trying again.
-                    needsUpdate = true;
-                } else {
-                    if (checkPower) {
-                        needsUpdate = true;
-                    }
-                    h.consumeEnergy(rf);
-                }
-            }
-
-            boolean newShieldActive = isMachineEnabled();
-            if (newShieldActive != shieldActive) {
+        if (rf > 0) {
+            if (energyStorage.getEnergyStored() < rf) {
+                powerTimeout = 100;     // Wait 5 seconds before trying again.
                 needsUpdate = true;
-                shieldActive = newShieldActive;
+            } else {
+                if (checkPower) {
+                    needsUpdate = true;
+                }
+                energyStorage.consumeEnergy(rf);
             }
+        }
 
-            if (needsUpdate) {
-                updateShield();
-                markDirty();
-            }
-        });
+        boolean newShieldActive = isMachineEnabled();
+        if (newShieldActive != shieldActive) {
+            needsUpdate = true;
+            shieldActive = newShieldActive;
+        }
+
+        if (needsUpdate) {
+            updateShield();
+            markDirty();
+        }
     }
 
     private int getRfPerTick() {
@@ -1363,7 +1359,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction facing) {
         if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return automationItemHandler.cast();
+            return itemHandler.cast();
         }
         if (cap == CapabilityEnergy.ENERGY) {
             return energyHandler.cast();
