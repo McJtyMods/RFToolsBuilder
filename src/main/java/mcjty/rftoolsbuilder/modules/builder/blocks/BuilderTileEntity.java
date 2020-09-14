@@ -112,9 +112,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public static final int SLOT_FILTER = 1;
 
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(2)
-            .slot(specific(s -> s.getItem() instanceof ShapeCardItem) /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
+            .slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out() /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
                     CONTAINER_CONTAINER, SLOT_TAB, 100, 10)
-            .slot(specific(s -> s.getItem() instanceof FilterModuleItem) /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
+            .slot(specific(s -> s.getItem() instanceof FilterModuleItem).in().out() /* @todo 1.14, new ItemStack(BuilderSetup.spaceChamberCardItem)*/,
                     CONTAINER_CONTAINER, SLOT_FILTER, 84, 46)
             .playerSlots(10, 70));
 
@@ -195,15 +195,15 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private final Lazy<FakePlayer> harvester = Lazy.of(this::getHarvester);
 
     private final NoDirectionItemHander items = createItemHandler();
-    private final LazyOptional<NoDirectionItemHander> itemHandler = LazyOptional.of(() -> items);
-    private final LazyOptional<AutomationFilterItemHander> automationItemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
+    private final LazyOptional<AutomationFilterItemHander> itemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
 
-    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> new GenericEnergyStorage(
-            this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get()));
+    private final GenericEnergyStorage energyStorage = new GenericEnergyStorage(
+            this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get());
+    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> energyStorage);
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
             .containerSupplier((windowId, player) -> new GenericContainer(BuilderModule.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY.get(), getPos(), BuilderTileEntity.this))
-            .itemHandler(itemHandler)
-            .energyHandler(energyHandler)
+            .itemHandler(() -> items)
+            .energyHandler(() -> energyStorage)
             .shortListener(new IntReferenceHolder() {
                 @Override
                 public int get() {
@@ -838,20 +838,15 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
 
-        if (!energyHandler.map(h -> {
-            long rf = h.getEnergyStored();
-            float area = (maxBox.getX() - minBox.getX() + 1) * (maxBox.getY() - minBox.getY() + 1) * (maxBox.getZ() - minBox.getZ() + 1);
-            float infusedFactor = (4.0f - factor) / 4.0f;
-            int rfNeeded = (int) (BuilderConfiguration.collectRFPerTickPerArea.get() * area * infusedFactor) * BuilderConfiguration.collectTimer.get();
-            if (rfNeeded > rf) {
-                // Not enough energy.
-                return false;
-            }
-            h.consumeEnergy(rfNeeded);
-            return true;
-        }).orElse(false)) {
+        long rf = energyStorage.getEnergyStored();
+        float area = (maxBox.getX() - minBox.getX() + 1) * (maxBox.getY() - minBox.getY() + 1) * (maxBox.getZ() - minBox.getZ() + 1);
+        float infusedFactor = (4.0f - factor) / 4.0f;
+        int rfNeeded = (int) (BuilderConfiguration.collectRFPerTickPerArea.get() * area * infusedFactor) * BuilderConfiguration.collectTimer.get();
+        if (rfNeeded > rf) {
+            // Not enough energy.
             return;
         }
+        energyStorage.consumeEnergy(rfNeeded);
 
         AxisAlignedBB bb = new AxisAlignedBB(minBox.getX() - .8, minBox.getY() - .8, minBox.getZ() - .8, maxBox.getX() + .8, maxBox.getY() + .8, maxBox.getZ() + .8);
         List<Entity> items = world.getEntitiesWithinAABB(Entity.class, bb);
@@ -869,52 +864,48 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private boolean collectXP(World world, float infusedFactor, ExperienceOrbEntity orb) {
-        return energyHandler.map(h -> {
-            int xp = orb.getXpValue();
-            long rf = h.getEnergyStored();
-            int rfNeeded = (int) (BuilderConfiguration.collectRFPerXP.get() * infusedFactor * xp);
-            if (rfNeeded > rf) {
-                // Not enough energy.
-                return true;
+        int xp = orb.getXpValue();
+        long rf = energyStorage.getEnergyStored();
+        int rfNeeded = (int) (BuilderConfiguration.collectRFPerXP.get() * infusedFactor * xp);
+        if (rfNeeded > rf) {
+            // Not enough energy.
+            return true;
+        }
+
+        collectXP += xp;
+
+        int bottles = collectXP / 7;
+        if (bottles > 0) {
+            if (insertItem(new ItemStack(Items.EXPERIENCE_BOTTLE, bottles)).isEmpty()) {
+                collectXP = collectXP % 7;
+                ((ServerWorld) world).removeEntity(orb);
+                energyStorage.consumeEnergy(rfNeeded);
+            } else {
+                collectXP = 0;
             }
+        }
 
-            collectXP += xp;
-
-            int bottles = collectXP / 7;
-            if (bottles > 0) {
-                if (insertItem(new ItemStack(Items.EXPERIENCE_BOTTLE, bottles)).isEmpty()) {
-                    collectXP = collectXP % 7;
-                    ((ServerWorld) world).removeEntity(orb);
-                    h.consumeEnergy(rfNeeded);
-                } else {
-                    collectXP = 0;
-                }
-            }
-
-            return false;
-        }).orElse(false);
+        return false;
     }
 
     private boolean collectItem(World world, float infusedFactor, ItemEntity item) {
-        return energyHandler.map(h -> {
-            ItemStack stack = item.getItem();
-            long rf = h.getEnergyStored();
-            int rfNeeded = (int) (BuilderConfiguration.collectRFPerItem.get() * infusedFactor) * stack.getCount();
-            if (rfNeeded > rf) {
-                // Not enough energy.
-                return true;
-            }
-            h.consumeEnergy(rfNeeded);
+        ItemStack stack = item.getItem();
+        long rf = energyStorage.getEnergyStored();
+        int rfNeeded = (int) (BuilderConfiguration.collectRFPerItem.get() * infusedFactor) * stack.getCount();
+        if (rfNeeded > rf) {
+            // Not enough energy.
+            return true;
+        }
+        energyStorage.consumeEnergy(rfNeeded);
 
-            ((ServerWorld) world).removeEntity(item);
-            stack = insertItem(stack);
-            if (!stack.isEmpty()) {
-                BlockPos position = item.getPosition();
-                ItemEntity entityItem = new ItemEntity(world, position.getX(), position.getY(), position.getZ(), stack);
-                world.addEntity(entityItem);
-            }
-            return false;
-        }).orElse(false);
+        ((ServerWorld) world).removeEntity(item);
+        stack = insertItem(stack);
+        if (!stack.isEmpty()) {
+            BlockPos position = item.getPosition();
+            ItemEntity entityItem = new ItemEntity(world, position.getX(), position.getY(), position.getZ(), stack);
+            world.addEntity(entityItem);
+        }
+        return false;
     }
 
     private void calculateBoxShaped() {
@@ -1062,7 +1053,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
         rfNeeded = (int) (rfNeeded * (3.0f - factor) / 3.0f);
 
-        if (rfNeeded > energyHandler.map(GenericEnergyStorage::getEnergyStored).orElse(0)) {
+        if (rfNeeded > energyStorage.getEnergyStored()) {
             // Not enough energy.
             return suspend("Not enough power!");
         }
@@ -1105,7 +1096,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 playPlaceSoundSafe(sound, world, newState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
             }
 
-            energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
+            energyStorage.consumeEnergy(rfNeeded);
         }
         return skip();
     }
@@ -1141,7 +1132,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         } else {
             world.setBlockState(spos, getReplacementBlock(), 2);       // No block update!
         }
-        energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
+        energyStorage.consumeEnergy(rfNeeded);
         if (!silent) {
             SoundType soundType = srcState.getBlock().getSoundType(srcState, world, spos, null);
             playBreakSoundSafe(soundType, world, srcState, spos.getX(), spos.getY(), spos.getZ());
@@ -1228,7 +1219,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     if (filterCache.get() != null) {
                         boolean match = filterCache.get().test(block.getItem(world, srcPos, srcState));
                         if (!match) {
-                            energyHandler.ifPresent(h -> h.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get())));
+                            energyStorage.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get()));
                             return skip();   // Skip this
                         }
                     }
@@ -1294,7 +1285,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 }
             }
 
-            energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
+            energyStorage.consumeEnergy(rfNeeded);
         }
         return skip();
     }
@@ -1332,7 +1323,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             FakePlayer fakePlayer = harvester.get();
             if (allowedToBreak(srcState, world, srcPos, fakePlayer)) {
                 if (checkAndInsertFluids(fluidStack)) {
-                    energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
+                    energyStorage.consumeEnergy(rfNeeded);
                     boolean clear = getCardType().isClearing();
                     FluidTools.pickupFluidBlock(world, srcPos, s -> true, () -> {
                         if (clear) {
@@ -1374,7 +1365,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     if (filterCache.get() != null) {
                         boolean match = filterCache.get().test(block.getItem(world, srcPos, srcState));
                         if (!match) {
-                            energyHandler.ifPresent(h -> h.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get())));
+                            energyStorage.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get()));
                             return skip();   // Skip this
                         }
                     }
@@ -1385,7 +1376,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     playBreakSoundSafe(soundType, world, srcState, sx, sy, sz);
                 }
                 world.setBlockState(srcPos, Blocks.AIR.getDefaultState());
-                energyHandler.ifPresent(h -> h.consumeEnergy(rfNeeded));
+                energyStorage.consumeEnergy(rfNeeded);
             }
         }
         return skip();
@@ -1761,56 +1752,54 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private void copyBlock(World srcWorld, BlockPos srcPos, World destWorld, BlockPos destPos) {
-        energyHandler.ifPresent(h -> {
-            long rf = h.getEnergy();
-            float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
-            int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * (4.0f - factor) / 4.0f);
-            if (rfNeeded > rf) {
-                // Not enough energy.
+        long rf = energyStorage.getEnergy();
+        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * (4.0f - factor) / 4.0f);
+        if (rfNeeded > rf) {
+            // Not enough energy.
+            return;
+        }
+
+        if (isEmptyOrReplacable(destWorld, destPos)) {
+            if (srcWorld.isAirBlock(srcPos)) {
+                return;
+            }
+            BlockState srcState = srcWorld.getBlockState(srcPos);
+            TakeableItem takeableItem = createTakeableItem(srcWorld, srcPos, srcState);
+            ItemStack consumedStack = takeableItem.peek();
+            if (consumedStack.isEmpty()) {
                 return;
             }
 
-            if (isEmptyOrReplacable(destWorld, destPos)) {
-                if (srcWorld.isAirBlock(srcPos)) {
-                    return;
-                }
-                BlockState srcState = srcWorld.getBlockState(srcPos);
-                TakeableItem takeableItem = createTakeableItem(srcWorld, srcPos, srcState);
-                ItemStack consumedStack = takeableItem.peek();
-                if (consumedStack.isEmpty()) {
-                    return;
-                }
-
-                FakePlayer fakePlayer = harvester.get();
-                BlockState newState = BlockTools.placeStackAt(fakePlayer, consumedStack, destWorld, destPos, srcState);
-                if (newState == null) {
-                    // This block can't be placed
-                    return;
-                }
-                destWorld.setBlockState(destPos, newState, 3);  // placeBlockAt can reset the orientation. Restore it here
-
-                if (!ItemStack.areItemStacksEqual(consumedStack, takeableItem.peek())) { // Did we actually use up whatever we were holding?
-                    if (!consumedStack.isEmpty()) { // Are we holding something else that we should put back?
-                        consumedStack = takeableItem.takeAndReplace(consumedStack); // First try to put our new item where we got what we placed
-                        if (!consumedStack.isEmpty()) { // If that didn't work, then try to put it anywhere it will fit
-                            consumedStack = insertItem(consumedStack);
-                            if (!consumedStack.isEmpty()) { // If that still didn't work, then just drop whatever we're holding
-                                world.addEntity(new ItemEntity(world, getPos().getX(), getPos().getY(), getPos().getZ(), consumedStack));
-                            }
-                        }
-                    } else {
-                        takeableItem.take(); // If we aren't holding anything, then just consume what we placed
-                    }
-                }
-
-                if (!silent) {
-                    SoundType soundType = newState.getBlock().getSoundType(newState, destWorld, destPos, fakePlayer);
-                    playPlaceSoundSafe(soundType, destWorld, newState, destPos.getX(), destPos.getY(), destPos.getZ());
-                }
-
-                h.consumeEnergy(rfNeeded);
+            FakePlayer fakePlayer = harvester.get();
+            BlockState newState = BlockTools.placeStackAt(fakePlayer, consumedStack, destWorld, destPos, srcState);
+            if (newState == null) {
+                // This block can't be placed
+                return;
             }
-        });
+            destWorld.setBlockState(destPos, newState, 3);  // placeBlockAt can reset the orientation. Restore it here
+
+            if (!ItemStack.areItemStacksEqual(consumedStack, takeableItem.peek())) { // Did we actually use up whatever we were holding?
+                if (!consumedStack.isEmpty()) { // Are we holding something else that we should put back?
+                    consumedStack = takeableItem.takeAndReplace(consumedStack); // First try to put our new item where we got what we placed
+                    if (!consumedStack.isEmpty()) { // If that didn't work, then try to put it anywhere it will fit
+                        consumedStack = insertItem(consumedStack);
+                        if (!consumedStack.isEmpty()) { // If that still didn't work, then just drop whatever we're holding
+                            world.addEntity(new ItemEntity(world, getPos().getX(), getPos().getY(), getPos().getZ(), consumedStack));
+                        }
+                    }
+                } else {
+                    takeableItem.take(); // If we aren't holding anything, then just consume what we placed
+                }
+            }
+
+            if (!silent) {
+                SoundType soundType = newState.getBlock().getSoundType(newState, destWorld, destPos, fakePlayer);
+                playPlaceSoundSafe(soundType, destWorld, newState, destPos.getX(), destPos.getY(), destPos.getZ());
+            }
+
+            energyStorage.consumeEnergy(rfNeeded);
+        }
     }
 
     private double getDimensionCostFactor(World world, World destWorld) {
@@ -1818,22 +1807,20 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private boolean consumeEntityEnergy(int rfNeeded, int rfNeededPlayer, Entity entity) {
-        return energyHandler.map(h -> {
-            long rf = h.getEnergy();
-            int rfn;
-            if (entity instanceof PlayerEntity) {
-                rfn = rfNeededPlayer;
-            } else {
-                rfn = rfNeeded;
-            }
-            if (rfn > rf) {
-                // Not enough energy.
-                return true;
-            } else {
-                h.consumeEnergy(rfn);
-            }
-            return false;
-        }).orElse(false);
+        long rf = energyStorage.getEnergy();
+        int rfn;
+        if (entity instanceof PlayerEntity) {
+            rfn = rfNeededPlayer;
+        } else {
+            rfn = rfNeeded;
+        }
+        if (rfn > rf) {
+            // Not enough energy.
+            return true;
+        } else {
+            energyStorage.consumeEnergy(rfn);
+        }
+        return false;
     }
 
     private void moveEntities(World world, int x, int y, int z, World destWorld, int destX, int destY, int destZ) {
@@ -1922,19 +1909,14 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 return;
             }
 
-            if (!energyHandler.map(h -> {
-                long rf = h.getEnergy();
-                float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
-                int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * srcInformation.getCostFactor() * (4.0f - factor) / 4.0f);
-                if (rfNeeded > rf) {
-                    // Not enough energy.
-                    return false;
-                } else {
-                    h.consumeEnergy(rfNeeded);
-                    return true;
-                }
-            }).orElse(false)) {
+            long rf = energyStorage.getEnergy();
+            float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+            int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * srcInformation.getCostFactor() * (4.0f - factor) / 4.0f);
+            if (rfNeeded > rf) {
+                // Not enough energy.
                 return;
+            } else {
+                energyStorage.consumeEnergy(rfNeeded);
             }
 
             CompoundNBT tc = null;
@@ -1994,20 +1976,15 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             return;
         }
 
-        if (!energyHandler.map(h -> {
-            long rf = h.getEnergy();
-            float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
-            int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * srcInformation.getCostFactor() * (4.0f - factor) / 4.0f);
-            rfNeeded += (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * dstInformation.getCostFactor() * (4.0f - factor) / 4.0f);
-            if (rfNeeded > rf) {
-                // Not enough energy.
-                return false;
-            } else {
-                h.consumeEnergy(rfNeeded);
-                return true;
-            }
-        }).orElse(false)) {
+        long rf = energyStorage.getEnergy();
+        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * srcInformation.getCostFactor() * (4.0f - factor) / 4.0f);
+        rfNeeded += (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * dstInformation.getCostFactor() * (4.0f - factor) / 4.0f);
+        if (rfNeeded > rf) {
+            // Not enough energy.
             return;
+        } else {
+            energyStorage.consumeEnergy(rfNeeded);
         }
 
         srcWorld.removeTileEntity(srcPos);
@@ -2523,7 +2500,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction facing) {
         if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return automationItemHandler.cast();
+            return itemHandler.cast();
         }
         if (cap == CapabilityEnergy.ENERGY) {
             return energyHandler.cast();
