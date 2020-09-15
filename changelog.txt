@@ -1,5 +1,6 @@
-Upcoming:
+1.15-2.1.9:
 - Fixed a bug where shapecard editing by right clicking the Builder no longer worked (it claimed the Builder was in another dimension)
+- Updated to latest McJtyLib
 
 1.15-2.1.8:
 - Fixed a problem on servers
