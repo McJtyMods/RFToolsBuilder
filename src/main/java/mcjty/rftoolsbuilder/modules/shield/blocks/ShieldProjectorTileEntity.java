@@ -158,11 +158,11 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     private final NoDirectionItemHander items = createItemHandler();
     private final LazyOptional<AutomationFilterItemHander> itemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
-    private final GenericEnergyStorage energyStorage = new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick());
-    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> energyStorage);
+    private final GenericEnergyStorage energyStorage;
+    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(this::getEnergyStorage);
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
             .containerSupplier((windowId,player) -> new GenericContainer(ShieldModule.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY.get(), getPos(), ShieldProjectorTileEntity.this))
-            .energyHandler(() -> energyStorage)
+            .energyHandler(this::getEnergyStorage)
             .itemHandler(() -> items));
 
     private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldProjectorTileEntity.this));
@@ -176,6 +176,12 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         this.supportedBlocks = supportedBlocks;
         this.maxEnergy = maxEnergy;
         this.rfPerTick = rfPerTick;
+        energyStorage = new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick());
+    }
+
+    @Nonnull
+    public GenericEnergyStorage getEnergyStorage() {
+        return energyStorage;
     }
 
     private int getConfigMaxEnergy() {
