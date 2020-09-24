@@ -50,7 +50,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -1552,7 +1551,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private static class TakeableItem {
         private final IItemHandler itemHandler;
-        private final IInventory inventory;
         private final int slot;
         private final ItemStack peekStack;
 
@@ -1560,7 +1558,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         private TakeableItem() {
             this.itemHandler = null;
-            this.inventory = null;
             this.slot = -1;
             this.peekStack = ItemStack.EMPTY;
         }
@@ -1568,18 +1565,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         public TakeableItem(IItemHandler itemHandler, int slot) {
             Validate.inclusiveBetween(0, itemHandler.getSlots() - 1, slot);
             this.itemHandler = itemHandler;
-            this.inventory = null;
             this.slot = slot;
             this.peekStack = itemHandler.extractItem(slot, 1, true);
-        }
-
-        public TakeableItem(IInventory inventory, int slot) {
-            Validate.inclusiveBetween(0, inventory.getSizeInventory() - 1, slot);
-            this.itemHandler = null;
-            this.inventory = inventory;
-            this.slot = slot;
-            this.peekStack = inventory.getStackInSlot(slot).copy();
-            this.peekStack.setCount(1);
         }
 
         public ItemStack peek() {
@@ -1589,8 +1576,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         public void take() {
             if (itemHandler != null) {
                 itemHandler.extractItem(slot, 1, false);
-            } else if (slot != -1) {
-                inventory.decrStackSize(slot, 1);
             }
         }
 
@@ -1598,12 +1583,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             if (itemHandler != null) {
                 itemHandler.extractItem(slot, 1, false);
                 return itemHandler.insertItem(slot, replacement, false);
-            } else if (slot != -1) {
-                inventory.decrStackSize(slot, 1);
-                if (inventory.isItemValidForSlot(slot, replacement) && inventory.getStackInSlot(slot).isEmpty()) {
-                    inventory.setInventorySlotContents(slot, replacement);
-                    return ItemStack.EMPTY;
-                }
             }
             return replacement;
         }
