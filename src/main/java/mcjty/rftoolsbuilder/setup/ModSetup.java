@@ -4,7 +4,6 @@ import mcjty.lib.compat.MainCompatHandler;
 import mcjty.lib.setup.DefaultModSetup;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public class ModSetup extends DefaultModSetup {
@@ -16,7 +15,7 @@ public class ModSetup extends DefaultModSetup {
     @Override
     public void init(FMLCommonSetupEvent e) {
         super.init(e);
-        DeferredWorkQueue.runLater(() -> {
+        e.enqueueWork(() -> {
             CommandHandler.registerCommands();
         });
         RFToolsBuilderMessages.registerMessages("rftoolsbuilder");
