@@ -1271,7 +1271,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             }
 
             Fluid fluid = stack.getFluid();
-            if (fluid.getAttributes().doesVaporize(world, srcPos, stack) && world.func_230315_m_().func_236040_e_()) {
+            if (fluid.getAttributes().doesVaporize(world, srcPos, stack) && world.getDimensionType().isUltrawarm()) {
                 fluid.getAttributes().vaporize(null, world, srcPos, stack);
             } else {
                 // We assume here the liquid is placable.
