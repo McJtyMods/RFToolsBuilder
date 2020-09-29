@@ -16,6 +16,7 @@ import mcjty.lib.varia.DimensionId;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketOpenBuilderGui;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTItemInventoryShape;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTShapeCard;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
@@ -31,13 +32,13 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.items.CapabilityItemHandler;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -87,7 +88,6 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     // For GuiComposer, GuiBuilder, etc.: the current card to edit
     public static BlockPos fromTEPos = null;
     public static int fromTEStackSlot = 0;
-    public static Screen returnGui = null;
 
     private ShapeID shapeID = null;
     private ShapeRenderer shapeRenderer = null;
@@ -96,6 +96,14 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     public GuiShapeCard(boolean fromTE) {
         super(new StringTextComponent("Shapecard"));
         this.fromTE = fromTE;
+    }
+
+    @Override
+    public void onClose() {
+        super.onClose();
+        if (fromTE) {
+            RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketOpenBuilderGui(fromTEPos));
+        }
     }
 
     private ShapeRenderer getShapeRenderer() {
@@ -125,11 +133,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     private ItemStack getStackToEdit() {
         if (fromTE) {
             TileEntity te = minecraft.world.getTileEntity(fromTEPos);
-            if (te instanceof IInventory) {
-                return ((IInventory) te).getStackInSlot(fromTEStackSlot);
-            } else {
-                return ItemStack.EMPTY;
-            }
+            return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(fromTEStackSlot)).orElse(ItemStack.EMPTY);
         } else {
             return minecraft.player.getHeldItem(Hand.MAIN_HAND);
         }
@@ -564,8 +568,8 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         GlStateManager.disableBlend();
     }
 
-    public static void open() {
-        Minecraft.getInstance().displayGuiScreen(new GuiShapeCard(false));
+    public static void open(boolean fromTE) {
+        Minecraft.getInstance().displayGuiScreen(new GuiShapeCard(fromTE));
     }
 
 }

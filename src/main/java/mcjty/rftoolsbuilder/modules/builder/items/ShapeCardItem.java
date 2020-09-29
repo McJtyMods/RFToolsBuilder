@@ -594,7 +594,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
         ItemStack stack = player.getHeldItem(hand);
         if (world.isRemote) {
-            GuiShapeCard.open();
+            GuiShapeCard.open(false);
             return new ActionResult<>(ActionResultType.SUCCESS, stack);
         }
         return new ActionResult<>(ActionResultType.SUCCESS, stack);
