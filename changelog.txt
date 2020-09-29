@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed the lockup that happened when someone tried to open the shapecard gui from within the Builder gui. Also closing the shapecard gui will now reopen the Builder gui
+
 1.16-3.0.6:
 - Fixed the shield projector no longer accepting power
 
