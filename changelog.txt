@@ -1,4 +1,4 @@
-Upcoming:
+1.15-2.1.11:
 - Fixed the lockup that happened when someone tried to open the shapecard gui from within the Builder gui. Also closing the shapecard gui will now reopen the Builder gui
 
 1.15-2.1.10:
