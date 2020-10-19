@@ -1,3 +1,7 @@
+Upcoming:
+- The shield projector is now infusable again
+- When the shield projector is upgraded it will keep the current settings
+
 1.16-3.0.7:
 - Fixed the lockup that happened when someone tried to open the shapecard gui from within the Builder gui. Also closing the shapecard gui will now reopen the Builder gui
 

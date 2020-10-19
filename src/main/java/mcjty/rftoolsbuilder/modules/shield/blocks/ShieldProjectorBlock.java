@@ -25,6 +25,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -35,6 +36,7 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     public ShieldProjectorBlock(Supplier<TileEntity> te, int max) {
         super(new BlockBuilder()
                 .manualEntry(ManualHelper.create("rftoolsbuilder:shield/shield_intro"))
+                .infusable()
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(), gold(), parameter("info", stack -> Integer.toString(max)))
                 .tileEntitySupplier(te));
@@ -47,7 +49,7 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
 
     @Override
     public Collection<String> getTagsToPreserve() {
-        return null;    // @todo 1.14
+        return Collections.singleton("BlockEntityTag");
     }
 
     // @todo 1.14
