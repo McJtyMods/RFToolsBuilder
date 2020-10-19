@@ -75,7 +75,7 @@ import static mcjty.lib.container.SlotDefinition.generic;
 import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
 
-public class ShieldProjectorTileEntity extends GenericTileEntity implements ISmartWrenchSelector, ITickableTileEntity { // @todo }, IPeripheral {
+public class ShieldProjectorTileEntity extends GenericTileEntity implements ISmartWrenchSelector, ITickableTileEntity {
 
     public static final String CMD_ADDFILTER = "shield.addFilter";
     public static final Key<Integer> PARAM_ACTION = new Key<>("action", Type.INTEGER);
