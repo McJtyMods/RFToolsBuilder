@@ -1216,7 +1216,14 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
                     if (filterCache.get() != null) {
-                        boolean match = filterCache.get().test(block.getItem(world, srcPos, srcState));
+                        boolean match;
+                        try {
+                            match = filterCache.get().test(block.getItem(world, srcPos, srcState));
+                        } catch (Exception e) {
+                            // In case block.getItem() fails (like can happen for banner blocks because the getItem()
+                            // for that fails on servers due to calling a client-side method)
+                            match = false;
+                        }
                         if (!match) {
                             energyStorage.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get()));
                             return skip();   // Skip this
