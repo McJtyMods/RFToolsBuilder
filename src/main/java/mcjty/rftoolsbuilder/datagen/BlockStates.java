@@ -47,9 +47,10 @@ public class BlockStates extends BaseBlockStateProvider {
         simpleBlock(ShieldModule.SHIELD_BLOCK3.get(), shieldModel);
         simpleBlock(ShieldModule.SHIELD_BLOCK4.get(), shieldModel);
 
-        ModelFile.UncheckedModelFile emptyModel = new ModelFile.UncheckedModelFile(new ResourceLocation("rftoolsbase", "block/empty_model"));
-        simpleBlock(ShieldModule.SHIELDING_SOLID.get(), emptyModel);
-        simpleBlock(ShieldModule.SHIELDING_TRANSLUCENT.get(), emptyModel);
-        simpleBlock(ShieldModule.SHIELDING_CUTOUT.get(), emptyModel);
+//        ModelFile.UncheckedModelFile emptyModel = new ModelFile.UncheckedModelFile(new ResourceLocation("rftoolsbase", "block/empty_model"));
+        ModelFile.UncheckedModelFile shieldingModel = new ModelFile.UncheckedModelFile(new ResourceLocation(RFToolsBuilder.MODID, "block/shielding"));
+        simpleBlock(ShieldModule.SHIELDING_SOLID.get(), shieldingModel);
+        simpleBlock(ShieldModule.SHIELDING_TRANSLUCENT.get(), shieldingModel);
+        simpleBlock(ShieldModule.SHIELDING_CUTOUT.get(), shieldingModel);
     }
 }

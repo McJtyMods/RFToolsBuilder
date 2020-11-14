@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed the shield. All render modes were broken
+
 1.15-2.1.12:
 - The shield projector is now infusable again
 - When the shield projector is upgraded it will keep the current settings
