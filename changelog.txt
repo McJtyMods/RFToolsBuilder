@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed the shield. All render modes were broken
+
 1.16-3.0.9:
 - Safety fix for the builder so that it will no longer crash on blocks that do weird things (like the banner). Mining a banner caused a crash on servers
 

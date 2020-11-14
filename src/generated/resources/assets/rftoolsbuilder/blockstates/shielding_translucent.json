@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "rftoolsbase:block/empty_model"
+      "model": "rftoolsbuilder:block/shielding"
     }
   }
 }
