@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-public class ShieldModelLoader implements IModelLoader<ShieldModelLoader.TankModelGeometry> {
+public class ShieldModelLoader implements IModelLoader<ShieldModelLoader.ShieldModelGeometry> {
 
     public static void register(ModelRegistryEvent event) {
         ModelLoaderRegistry.registerLoader(new ResourceLocation(RFToolsBuilder.MODID, "shieldloader"), new ShieldModelLoader());
@@ -34,11 +34,11 @@ public class ShieldModelLoader implements IModelLoader<ShieldModelLoader.TankMod
     }
 
     @Override
-    public TankModelGeometry read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
-        return new TankModelGeometry();
+    public ShieldModelGeometry read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
+        return new ShieldModelGeometry();
     }
 
-    public static class TankModelGeometry implements IModelGeometry<TankModelGeometry> {
+    public static class ShieldModelGeometry implements IModelGeometry<ShieldModelGeometry> {
         @Override
         public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation) {
             return new ShieldBakedModel();
