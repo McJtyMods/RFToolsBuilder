@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed crashes with the Builder in combination with liquids
+
 1.15-2.1.13:
 - Fixed the shield. All render modes were broken
 
