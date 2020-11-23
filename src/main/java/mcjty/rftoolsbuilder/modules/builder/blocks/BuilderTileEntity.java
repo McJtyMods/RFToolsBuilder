@@ -1272,7 +1272,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         if (isEmptyOrReplacable(world, srcPos)) {
             FluidStack stack = consumeLiquid(world, srcPos);
-            if (stack == null) {
+            if (stack.isEmpty()) {
                 return waitOrSkip("Cannot find liquid!\nor no usable tank\nabove or below");    // We could not find a block. Wait
             }
 
@@ -1611,14 +1611,16 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return TakeableItem.EMPTY;
     }
 
+    @Nonnull
     private FluidStack consumeLiquid(World srcWorld, BlockPos srcPos) {
         FluidStack b = consumeLiquid(Direction.UP, srcWorld, srcPos);
-        if (b == null) {
+        if (b.isEmpty()) {
             b = consumeLiquid(Direction.DOWN, srcWorld, srcPos);
         }
         return b;
     }
 
+    @Nonnull
     private FluidStack consumeLiquid(Direction direction, World srcWorld, BlockPos srcPos) {
         TileEntity te = world.getTileEntity(getPos().offset(direction));
         if (te != null) {
@@ -1627,12 +1629,13 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 fluid = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
             }
             if (fluid.isPresent()) {
-                return fluid.map(h -> findAndConsumeLiquid(h, srcWorld, srcPos)).orElse(null);
+                return fluid.map(h -> findAndConsumeLiquid(h, srcWorld, srcPos)).orElse(FluidStack.EMPTY);
             }
         }
-        return null;
+        return FluidStack.EMPTY;
     }
 
+    @Nonnull
     private FluidStack findAndConsumeLiquid(IFluidHandler tank, World srcWorld, BlockPos srcPos) {
         for (int i = 0; i < tank.getTanks(); i++) {
             FluidStack contents = tank.getFluidInTank(i);
@@ -1646,7 +1649,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 }
             }
         }
-        return null;
+        return FluidStack.EMPTY;
     }
 
     private TakeableItem createTakeableItem(World srcWorld, BlockPos srcPos, BlockState state) {
