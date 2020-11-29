@@ -190,7 +190,8 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     @Override
     public Collection<String> getTagsToPreserve() {
         return Arrays.asList("mod_op", "mod_flipy", "mod_rot", "ghost_block", "children", "dimX", "dimY", "dimZ",
-                "offsetX", "offsetY", "offsetZ", "mode");
+                "offsetX", "offsetY", "offsetZ", "mode", "selectedX", "selectedY", "selectedZ", "selectedDim",
+                "corner1x", "corner1y", "corner1z");
     }
 
     public static void setData(CompoundNBT tagCompound, int scanID) {
@@ -272,7 +273,13 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     public static int getMode(ItemStack itemStack) {
         CompoundNBT tagCompound = itemStack.getTag();
         if (tagCompound != null) {
-            return tagCompound.getInt("mode");
+            int mode = tagCompound.getInt("mode");
+            GlobalCoordinate block = getCurrentBlock(itemStack);
+            if (block == null) {
+                // Safety: if there is no selected block we consider mode to be NONE
+                return MODE_NONE;
+            }
+            return mode;
         } else {
             return MODE_NONE;
         }
