@@ -1,4 +1,4 @@
-Upcoming:
+1.16-3.0.12:
 - Fixed a problem with shapecards becoming somewhat inconsistant if they are upgraded in the middle of selecting an area using the two corner points
 
 1.16-3.0.11:
