@@ -1,4 +1,4 @@
-Upcoming:
+1.16-3.0.13:
 - Fixed the shield template recipe. It only gave one template per craft
 
 1.16-3.0.12:
