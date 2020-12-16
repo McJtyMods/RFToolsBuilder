@@ -51,22 +51,22 @@ public class Recipes extends BaseRecipeProvider {
                         .addCriterion("machine_frame", hasItem(VariousModule.MACHINE_FRAME.get())),
                 "nOs", "OMO", "sOn");
 
-        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldModule.TEMPLATE_BLUE.get())
+        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldModule.TEMPLATE_BLUE.get(), 8)
                         .key('w', ItemTags.WOOL)
                         .key('l', Tags.Items.DYES_BLUE)
                         .addCriterion("glass", hasItem(Items.GLASS)),
                 "www", "lGl", "www");
-        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldModule.TEMPLATE_RED.get())
+        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldModule.TEMPLATE_RED.get(), 8)
                         .key('w', ItemTags.WOOL)
                         .key('l', Tags.Items.DYES_RED)
                         .addCriterion("glass", hasItem(Items.GLASS)),
                 "www", "lGl", "www");
-        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldModule.TEMPLATE_YELLOW.get())
+        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldModule.TEMPLATE_YELLOW.get(), 8)
                         .key('w', ItemTags.WOOL)
                         .key('l', Tags.Items.DYES_YELLOW)
                         .addCriterion("glass", hasItem(Items.GLASS)),
                 "www", "lGl", "www");
-        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldModule.TEMPLATE_GREEN.get())
+        build(consumer, ShapedRecipeBuilder.shapedRecipe(ShieldModule.TEMPLATE_GREEN.get(), 8)
                         .key('w', ItemTags.WOOL)
                         .key('l', Tags.Items.DYES_GREEN)
                         .addCriterion("glass", hasItem(Items.GLASS)),

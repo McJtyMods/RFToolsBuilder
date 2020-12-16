@@ -17,6 +17,7 @@
     }
   },
   "result": {
-    "item": "rftoolsbuilder:blue_shield_template_block"
+    "item": "rftoolsbuilder:blue_shield_template_block",
+    "count": 8
   }
 }
