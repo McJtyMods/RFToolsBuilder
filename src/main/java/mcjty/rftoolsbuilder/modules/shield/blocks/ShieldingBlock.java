@@ -1,19 +1,13 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
-import mcjty.rftoolsbase.api.screens.IModuleProvider;
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
-import mcjty.rftoolsbuilder.modules.shield.filters.*;
+import mcjty.rftoolsbuilder.modules.shield.filters.ShieldFilter;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.EnumProperty;
 import net.minecraft.state.StateContainer;
@@ -157,74 +151,27 @@ public class ShieldingBlock extends Block {
 
     @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
-        Entity entity = context.getEntity();
-        if (state.get(BLOCKED_HOSTILE)) {
-            if (entity instanceof IMob) {
-                if (checkEntityCD(world, pos, HostileFilter.HOSTILE)) {
-                    return COLLISION_SHAPE;
-                }
-                return VoxelShapes.empty();
-            }
+        Boolean blkHostile = state.get(BLOCKED_HOSTILE);
+        Boolean blkPassive = state.get(BLOCKED_PASSIVE);
+        Boolean blkPlayer = state.get(BLOCKED_PLAYERS);
+        Boolean blkItems = state.get(BLOCKED_ITEMS);
+
+        if (!blkHostile && !blkPassive && !blkPlayer && !blkItems) {
+            return VoxelShapes.empty();
         }
-        if (state.get(BLOCKED_PASSIVE)) {
-            if (entity instanceof AnimalEntity && !(entity instanceof IMob)) {
-                if (checkEntityCD(world, pos, AnimalFilter.ANIMAL)) {
-                    return COLLISION_SHAPE;
-                }
-                return VoxelShapes.empty();
-            }
-        }
-        if (state.get(BLOCKED_PLAYERS)) {
-            if (entity instanceof PlayerEntity) {
-                if (checkPlayerCD(world, pos, (PlayerEntity) entity)) {
-                    return COLLISION_SHAPE;
-                }
-                return VoxelShapes.empty();
-            }
-        }
-        if (state.get(BLOCKED_ITEMS)) {
-            if (!(entity instanceof LivingEntity)) {
-                if (checkEntityCD(world, pos, ItemFilter.ITEM)) {
-                    return COLLISION_SHAPE;
-                }
-                return VoxelShapes.empty();
-            }
+
+        ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
+        if (projector != null && checkEntityAction(projector, context.getEntity(), ShieldFilter.ACTION_SOLID)) {
+            return COLLISION_SHAPE;
         }
         return VoxelShapes.empty();
     }
 
-    private boolean checkEntityCD(IBlockReader world, BlockPos pos, String filterName) {
-        ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
-        if (projector != null) {
-            List<ShieldFilter> filters = projector.getFilters();
-            for (ShieldFilter filter : filters) {
-                if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
-                    return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
-                } else if (filterName.equals(filter.getFilterName())) {
-                    return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
-                }
-            }
-        }
-        return false;
-    }
-
-
-    private boolean checkPlayerCD(IBlockReader world, BlockPos pos, PlayerEntity entity) {
-        ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
-        if (projector != null) {
-            List<ShieldFilter> filters = projector.getFilters();
-            for (ShieldFilter filter : filters) {
-                if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
-                    return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
-                } else if (PlayerFilter.PLAYER.equals(filter.getFilterName())) {
-                    PlayerFilter playerFilter = (PlayerFilter) filter;
-                    String name = playerFilter.getName();
-                    if ((name == null || name.isEmpty())) {
-                        return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
-                    } else if (name.equals(entity.getName().getString())) { // @todo getFormattedText
-                        return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
-                    }
-                }
+    private boolean checkEntityAction(@Nonnull ShieldProjectorTileEntity projector, Entity entity, int action) {
+        List<ShieldFilter> filters = projector.getFilters();
+        for (ShieldFilter filter : filters) {
+            if (filter.match(entity)) {
+                return (filter.getAction() & action) != 0;
             }
         }
         return false;
@@ -237,12 +184,6 @@ public class ShieldingBlock extends Block {
 
     @Override
     public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
-        if (!(entity instanceof LivingEntity)) {
-            if (!state.get(BLOCKED_ITEMS)) {
-                // Items should be able to pass through. We just move the entity to below this block.
-                entity.setPosition(entity.getPosX(), entity.getPosY() - 1, entity.getPosZ());
-            }
-        }
         handleDamage(state, world, pos, entity);
     }
 
@@ -278,56 +219,9 @@ public class ShieldingBlock extends Block {
 
         if (entity.getBoundingBox().intersects(beamBox)) {
             ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
-            if (projector != null) {
-                if (dmgItems && entity instanceof ItemEntity) {
-                    if (checkEntityDamage(projector, ItemFilter.ITEM)) {
-                        projector.applyDamageToEntity(entity);
-                    }
-                } else if (dmgHostile && entity instanceof IMob) {
-                    if (checkEntityDamage(projector, HostileFilter.HOSTILE)) {
-                        projector.applyDamageToEntity(entity);
-                    }
-                } else if (dmgPassive && (entity instanceof LivingEntity) && !(entity instanceof IMob)) {
-                    if (checkEntityDamage(projector, AnimalFilter.ANIMAL)) {
-                        projector.applyDamageToEntity(entity);
-                    }
-                } else if (dmgPlayer && entity instanceof PlayerEntity) {
-                    if (checkPlayerDamage(projector, (PlayerEntity) entity)) {
-                        projector.applyDamageToEntity(entity);
-                    }
-                }
+            if (projector != null && checkEntityAction(projector, entity, ShieldFilter.ACTION_DAMAGE)) {
+                projector.applyDamageToEntity(entity);
             }
         }
     }
-
-    private boolean checkEntityDamage(@Nonnull ShieldProjectorTileEntity shieldTileEntity, String filterName) {
-        List<ShieldFilter> filters = shieldTileEntity.getFilters();
-        for (ShieldFilter filter : filters) {
-            if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
-                return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
-            } else if (filterName.equals(filter.getFilterName())) {
-                return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
-            }
-        }
-        return false;
-    }
-
-    private boolean checkPlayerDamage(@Nonnull ShieldProjectorTileEntity shieldTileEntity, PlayerEntity entity) {
-        List<ShieldFilter> filters = shieldTileEntity.getFilters();
-        for (ShieldFilter filter : filters) {
-            if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
-                return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
-            } else if (PlayerFilter.PLAYER.equals(filter.getFilterName())) {
-                PlayerFilter playerFilter = (PlayerFilter) filter;
-                String name = playerFilter.getName();
-                if ((name == null || name.isEmpty())) {
-                    return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
-                } else if (name.equals(entity.getName().getString())) { // @todo getFormattedText
-                    return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
-                }
-            }
-        }
-        return false;
-    }
-
 }

@@ -1,8 +1,8 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.AnimalEntity;
 
 public class AnimalFilter extends AbstractShieldFilter {
 
@@ -10,7 +10,7 @@ public class AnimalFilter extends AbstractShieldFilter {
 
     @Override
     public boolean match(Entity entity) {
-        return entity instanceof AnimalEntity && !(entity instanceof IMob);
+        return entity instanceof MobEntity && !(entity instanceof IMob);
     }
 
     @Override
