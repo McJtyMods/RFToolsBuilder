@@ -36,6 +36,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
@@ -49,7 +50,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
     private final ShapeCardType type;
 
-    private final TooltipBuilder tooltipBuilder = new TooltipBuilder()
+    private final Lazy<TooltipBuilder> tooltipBuilder = () -> new TooltipBuilder()
             .info(key("message.rftoolsbuilder.shiftmessage"))
             .infoShift(warning(stack -> isDisabledInConfig()),
                     header(),
@@ -327,7 +328,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     public void addInformation(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
         super.addInformation(itemStack, world, list, flag);
         // Use custom RL so that we don't have to duplicate the translation for every shape card
-        tooltipBuilder.makeTooltip(new ResourceLocation(RFToolsBuilder.MODID, "shape_card"), itemStack, list, flag);
+        tooltipBuilder.get().makeTooltip(new ResourceLocation(RFToolsBuilder.MODID, "shape_card"), itemStack, list, flag);
     }
 
     /**

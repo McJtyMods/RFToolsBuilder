@@ -8,6 +8,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.IBlockReader;
+import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -21,7 +22,7 @@ public class ShieldTemplateBlock extends Block implements ITooltipSettings {
         BLUE, RED, GREEN, YELLOW
     }
 
-    private final TooltipBuilder tooltipBuilder = new TooltipBuilder()
+    private final Lazy<TooltipBuilder> tooltipBuilder = () -> new TooltipBuilder()
             .info(key("message.rftoolsbuilder.shiftmessage"))
             .infoShift(header());
 
@@ -39,6 +40,6 @@ public class ShieldTemplateBlock extends Block implements ITooltipSettings {
     @Override
     public void addInformation(ItemStack stack, @Nullable IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        tooltipBuilder.makeTooltip(getRegistryName(), stack, tooltip, flagIn);
+        tooltipBuilder.get().makeTooltip(getRegistryName(), stack, tooltip, flagIn);
     }
 }
