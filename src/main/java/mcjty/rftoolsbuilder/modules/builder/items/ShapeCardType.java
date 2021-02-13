@@ -107,7 +107,7 @@ public enum ShapeCardType {
         // @todo 1.14, re-evaluate
         BlockState state = BuilderConfiguration.getQuarryReplace();
         Block block = state.getBlock();
-        Item item = Item.getItemFromBlock(block);
+        Item item = block.asItem();
         if(item == Items.AIR) {
             return block.getTranslationKey();
         } else {
