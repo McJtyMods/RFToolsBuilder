@@ -1,3 +1,6 @@
+Upcoming:
+- The Builder will now give a warning when it can't quarry a block to remind people that they might need to enable fake players
+
 1.16-3.0.13:
 - Fixed the shield template recipe. It only gave one template per craft
 

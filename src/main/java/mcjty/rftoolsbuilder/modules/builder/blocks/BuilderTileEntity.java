@@ -500,6 +500,11 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return false;
     }
 
+    private boolean skip(String error) {
+        lastError = error;
+        return false;
+    }
+
     public boolean suspend(int rfNeeded, BlockPos srcPos, BlockState srcState, BlockState pickState) {
         lastError = null;
         return true;
@@ -1150,7 +1155,20 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return FilterModuleItem.getCache(items.getStackInSlot(SLOT_FILTER));
     }
 
-    public static boolean allowedToBreak(BlockState state, World world, BlockPos pos, PlayerEntity player) {
+    private boolean allowedToBreak(BlockState state, World world, BlockPos pos, PlayerEntity player) {
+        if (!state.getBlock().canEntityDestroy(state, world, pos, player)) {
+            return skip("Cannot destroy!\nAre fake players\nallowed?");
+        }
+        BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
+        MinecraftForge.EVENT_BUS.post(event);
+        if (event.isCanceled()) {
+            return skip("Break was canceled!");
+        }
+        return skip("Cannot destroy!\nAre fake players\nallowed?");
+//        return false;
+    }
+
+    private static boolean allowedToBreakS(BlockState state, World world, BlockPos pos, PlayerEntity player) {
         if (!state.getBlock().canEntityDestroy(state, world, pos, player)) {
             return false;
         }
@@ -1252,6 +1270,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     }
                 }
                 clearOrDirtBlock(rfNeeded, srcPos, srcState, clear);
+            } else {
+                return waitOrSkip(lastError);
             }
         }
         return false;
@@ -1345,6 +1365,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     return skip();
                 }
                 return waitOrSkip("No room for liquid\nor no usable tank\nabove or below!");    // No room in tanks or not a valid tank: wait
+            } else {
+                return waitOrSkip(lastError);
             }
         }
         return skip();
@@ -1384,6 +1406,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 world.setBlockState(srcPos, Blocks.AIR.getDefaultState());
                 energyStorage.consumeEnergy(rfNeeded);
             }
+        } else {
+            return waitOrSkip(lastError);
         }
         return skip();
     }
@@ -1666,7 +1690,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             return BlockInformation.FREE;
         }
 
-        if (!allowedToBreak(state, world, pos, fakePlayer)) {
+        if (!allowedToBreakS(state, world, pos, fakePlayer)) {
             return BlockInformation.INVALID;
         }
 
