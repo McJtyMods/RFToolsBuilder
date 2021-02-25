@@ -1,3 +1,6 @@
+1.16-3.0.15:
+- Fixed a problem with the builder which was no longer able to break blocks
+
 1.16-3.0.14:
 - The Builder will now give a warning when it can't quarry a block to remind people that they might need to enable fake players
 

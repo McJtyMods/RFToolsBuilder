@@ -1164,8 +1164,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (event.isCanceled()) {
             return skip("Break was canceled!");
         }
-        return skip("Cannot destroy!\nAre fake players\nallowed?");
-//        return false;
+        return true;
     }
 
     private static boolean allowedToBreakS(BlockState state, World world, BlockPos pos, PlayerEntity player) {
