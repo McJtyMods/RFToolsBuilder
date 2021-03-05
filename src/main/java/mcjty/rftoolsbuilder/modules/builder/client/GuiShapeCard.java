@@ -7,6 +7,7 @@ import mcjty.lib.client.RenderHelper;
 import mcjty.lib.client.GuiTools;
 import mcjty.lib.gui.IKeyReceiver;
 import mcjty.lib.gui.Window;
+import mcjty.lib.gui.WindowManager;
 import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.layout.VerticalLayout;
 import mcjty.lib.gui.widgets.*;
@@ -474,6 +475,27 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
                 super.charTyped(codePoint, 0); // @todo 1.14: modifiers?
             }
         }
+    }
+
+    @Override
+    public boolean mouseClickedFromEvent(double x, double y, int button) {
+        WindowManager manager = getWindow().getWindowManager();
+        manager.mouseClicked(x, y, button);
+        return true;
+    }
+
+    @Override
+    public boolean mouseReleasedFromEvent(double x, double y, int button) {
+        WindowManager manager = getWindow().getWindowManager();
+        manager.mouseReleased(x, y, button);
+        return true;
+    }
+
+    @Override
+    public boolean mouseScrolledFromEvent(double x, double y, double amount) {
+        WindowManager manager = getWindow().getWindowManager();
+        manager.mouseScrolled(x, y, amount);
+        return true;
     }
 
     @Override
