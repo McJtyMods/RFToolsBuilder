@@ -1256,7 +1256,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                     int fortune = getCardType().isFortune() ? 3 : 0;
                     LootContext.Builder builder = new LootContext.Builder((ServerWorld) world)
                             .withRandom(world.rand)
-                            .withParameter(LootParameters.field_237457_g_, new Vector3d(srcPos.getX(), srcPos.getY(), srcPos.getZ()))
+                            .withParameter(LootParameters.ORIGIN, new Vector3d(srcPos.getX(), srcPos.getY(), srcPos.getZ()))
                             .withParameter(LootParameters.TOOL, getHarvesterTool(silk, fortune))
                             .withNullableParameter(LootParameters.BLOCK_ENTITY, world.getTileEntity(srcPos));
                     if (fortune > 0) {
