@@ -457,7 +457,11 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 //    }
 
     private FakePlayer getFakePlayer() {
-        FakePlayer fakePlayer = FakePlayerFactory.get((ServerWorld) world, new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_builder"));
+        UUID owner = getOwnerUUID();
+        if (owner == null) {
+            owner = UUID.nameUUIDFromBytes("rftools_shield".getBytes());
+        }
+        FakePlayer fakePlayer = FakePlayerFactory.get((ServerWorld) world, new GameProfile(owner, "rftools_shield"));
         fakePlayer.setWorld(world);
         fakePlayer.setPosition(pos.getX(), pos.getY(), pos.getZ());
         new FakePlayerConnection(fakePlayer);
@@ -615,7 +619,11 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             source = DamageSource.GENERIC;
         } else {
             rf = ShieldConfiguration.rfDamagePlayer.get();
-            FakePlayer killer = FakePlayerFactory.get(WorldTools.getOverworld(world), new GameProfile(UUID.nameUUIDFromBytes("rftools_shield".getBytes()), "rftools_shield"));
+            UUID owner = getOwnerUUID();
+            if (owner == null) {
+                owner = UUID.nameUUIDFromBytes("rftools_shield".getBytes());
+            }
+            FakePlayer killer = FakePlayerFactory.get(WorldTools.getOverworld(world), new GameProfile(owner, "rftools_shield"));
             killer.setWorld(world);
             killer.setPosition(pos.getX(), pos.getY(), pos.getZ());
             new FakePlayerConnection(killer);

@@ -276,7 +276,11 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private FakePlayer getHarvester() {
-        FakePlayer player = FakePlayerFactory.get((ServerWorld) world, new GameProfile(UUID.nameUUIDFromBytes("rftools_builder".getBytes()), "rftools_builder"));
+        UUID owner = getOwnerUUID();
+        if (owner == null) {
+            owner = UUID.nameUUIDFromBytes("rftools_builder".getBytes());
+        }
+        FakePlayer player = FakePlayerFactory.get((ServerWorld) world, new GameProfile(owner, "rftools_builder"));
         player.setWorld(world);
         player.setPosition(pos.getX(), pos.getY(), pos.getZ());
         return player;
