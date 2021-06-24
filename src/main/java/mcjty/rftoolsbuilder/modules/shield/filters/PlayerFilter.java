@@ -34,12 +34,12 @@ public class PlayerFilter extends AbstractShieldFilter {
             return false;
         }
 
-        if (name == null) {
+        if (name == null || name.isEmpty()) {
             return true;
         }
 
-        PlayerEntity PlayerEntity = (PlayerEntity) entity;
-        return name.equals(PlayerEntity.getName());
+        PlayerEntity playerEntity = (PlayerEntity) entity;
+        return name.equals(playerEntity.getGameProfile().getName());
     }
 
     @Override
