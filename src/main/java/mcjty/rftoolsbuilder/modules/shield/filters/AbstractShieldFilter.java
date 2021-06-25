@@ -21,7 +21,7 @@ public abstract class AbstractShieldFilter implements ShieldFilter {
     public void toBytes(PacketBuffer buf) {
         CompoundNBT tagCompound = new CompoundNBT();
         writeToNBT(tagCompound);
-        buf.writeCompoundTag(tagCompound);
+        buf.writeNbt(tagCompound);
     }
 
     @Override
@@ -36,7 +36,7 @@ public abstract class AbstractShieldFilter implements ShieldFilter {
     }
 
     public static ShieldFilter createFilter(PacketBuffer buf) {
-        CompoundNBT compound = buf.readCompoundTag();
+        CompoundNBT compound = buf.readNbt();
         return createFilter(compound);
     }
 

@@ -109,9 +109,9 @@ public enum ShapeCardType {
         Block block = state.getBlock();
         Item item = block.asItem();
         if(item == Items.AIR) {
-            return block.getTranslationKey();
+            return block.getDescriptionId();
         } else {
-            return new ItemStack(item, 1).getDisplayName().getString() /* was getFormattedText() */; // TODO see if this can be made less fragile
+            return new ItemStack(item, 1).getHoverName().getString() /* was getFormattedText() */; // TODO see if this can be made less fragile
         }
     }
 

@@ -99,7 +99,7 @@ public class ShapeDataManagerServer {
 
                 for (ServerPlayerEntity player : unit.getPlayers()) {
                     RFToolsBuilderMessages.INSTANCE.sendTo(new PacketReturnShapeData(shapeID, positions, statePalette, dimension, cnt, unit.getOffsetY(), ""),
-                            player.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+                            player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
                 }
                 if (cnt > 0) {
                     pertick -= dimension.getX() * dimension.getZ();

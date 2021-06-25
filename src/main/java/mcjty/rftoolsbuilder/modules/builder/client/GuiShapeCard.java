@@ -105,8 +105,8 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     }
 
     @Override
-    public void onClose() {
-        super.onClose();
+    public void removed() {
+        super.removed();
         if (fromTE) {
             RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketOpenBuilderGui(fromTEPos));
         }
@@ -138,10 +138,10 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     private ItemStack getStackToEdit() {
         if (fromTE) {
-            TileEntity te = minecraft.world.getTileEntity(fromTEPos);
+            TileEntity te = minecraft.level.getBlockEntity(fromTEPos);
             return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(fromTEStackSlot)).orElse(ItemStack.EMPTY);
         } else {
-            return minecraft.player.getHeldItem(Hand.MAIN_HAND);
+            return minecraft.player.getItemInHand(Hand.MAIN_HAND);
         }
     }
 
@@ -561,7 +561,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
             int y = GuiTools.getRelativeY(this);
             // @todo check on 1.16
             List<ITextProperties> properties = tooltips.stream().map(StringTextComponent::new).collect(Collectors.toList());
-            List<IReorderingProcessor> processors = LanguageMap.getInstance().func_244260_a(properties);
+            List<IReorderingProcessor> processors = LanguageMap.getInstance().getVisualOrder(properties);
             renderTooltip(matrixStack, processors, x - guiLeft, y - guiTop);
         }
     }
@@ -581,25 +581,25 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         float f1 = (color >> 8 & 255) / 255.0F;
         float f2 = (color & 255) / 255.0F;
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
+        BufferBuilder buffer = tessellator.getBuilder();
 
         buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
-        GlStateManager.enableBlend();
-        GlStateManager.disableTexture();
-        GlStateManager.disableDepthTest();
+        GlStateManager._enableBlend();
+        GlStateManager._disableTexture();
+        GlStateManager._disableDepthTest();
         GL11.glLineWidth(2.0f);
-        GlStateManager.blendFuncSeparate(770, 771, 1, 0);
-        GlStateManager.color4f(f, f1, f2, f3);
-        buffer.pos(x1, y1, 0.0D).endVertex();
-        buffer.pos(x2, y2, 0.0D).endVertex();
-        tessellator.draw();
-        GlStateManager.enableTexture();
-        GlStateManager.enableDepthTest();
-        GlStateManager.disableBlend();
+        GlStateManager._blendFuncSeparate(770, 771, 1, 0);
+        GlStateManager._color4f(f, f1, f2, f3);
+        buffer.vertex(x1, y1, 0.0D).endVertex();
+        buffer.vertex(x2, y2, 0.0D).endVertex();
+        tessellator.end();
+        GlStateManager._enableTexture();
+        GlStateManager._enableDepthTest();
+        GlStateManager._disableBlend();
     }
 
     public static void open(boolean fromTE) {
-        Minecraft.getInstance().displayGuiScreen(new GuiShapeCard(fromTE));
+        Minecraft.getInstance().setScreen(new GuiShapeCard(fromTE));
     }
 
 }

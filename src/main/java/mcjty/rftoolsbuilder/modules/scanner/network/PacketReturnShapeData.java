@@ -41,9 +41,9 @@ public class PacketReturnShapeData {
             for (BlockState state : statePalette.getPalette()) {
                 BlockState blockState = state;
                 if (blockState.getBlock().getRegistryName() == null) {
-                    blockState = Blocks.STONE.getDefaultState();
+                    blockState = Blocks.STONE.defaultBlockState();
                 }
-                buf.writeString(blockState.getBlock().getRegistryName().toString());
+                buf.writeUtf(blockState.getBlock().getRegistryName().toString());
                 //                buf.writeInt(state.getBlock().getMetaFromState(state));   // @todo 1.14 persist blockstate here!
             }
         }
@@ -72,11 +72,11 @@ public class PacketReturnShapeData {
         } else {
             statePalette = new StatePalette();
             while (size > 0) {
-                String r = buf.readString(32767);
+                String r = buf.readUtf(32767);
 //                int m = buf.readInt();    // @todo 1.14 no meta!
 //                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));
                 Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));
-                statePalette.add(block.getDefaultState());
+                statePalette.add(block.defaultBlockState());
                 size--;
             }
         }
@@ -113,7 +113,7 @@ public class PacketReturnShapeData {
             RenderData.RenderPlane plane = null;
 
             if (rle != null) {
-                BlockState dummy = BuilderModule.SUPPORT.get().getDefaultState();
+                BlockState dummy = BuilderModule.SUPPORT.get().defaultBlockState();
 
                 rle.reset();
 //                for (int oy = 0; oy < dy; oy++) {

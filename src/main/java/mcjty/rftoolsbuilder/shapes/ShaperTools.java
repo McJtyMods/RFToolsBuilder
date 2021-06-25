@@ -14,13 +14,13 @@ import net.minecraftforge.fml.network.NetworkDirection;
 public class ShaperTools {
 
     public static void requestExtraShapeData(PlayerEntity player, int scanId) {
-        ScanExtraData extraData = ScanDataManager.get(player.getEntityWorld()).getExtraData(scanId);
-        RFToolsBuilderMessages.INSTANCE.sendTo(new PacketReturnExtraData(scanId, extraData), ((ServerPlayerEntity) player).connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+        ScanExtraData extraData = ScanDataManager.get(player.getCommandSenderWorld()).getExtraData(scanId);
+        RFToolsBuilderMessages.INSTANCE.sendTo(new PacketReturnExtraData(scanId, extraData), ((ServerPlayerEntity) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
     }
 
     public static void requestLocatorEnergyConsumption(PlayerEntity player, BlockPos pos) {
-        World world = player.getEntityWorld();
-        TileEntity te = world.getTileEntity(pos);
+        World world = player.getCommandSenderWorld();
+        TileEntity te = world.getBlockEntity(pos);
         // @todo 1.14 locator
 //        if (te instanceof LocatorTileEntity) {
 //            int energy = ((LocatorTileEntity) te).getEnergyPerScan();
@@ -30,7 +30,7 @@ public class ShaperTools {
     }
 
     public static void requestScanDirty(PlayerEntity player, int scanId) {
-        int counter = ScanDataManager.get(player.getEntityWorld()).loadScan(player.getEntityWorld(), scanId).getDirtyCounter();
+        int counter = ScanDataManager.get(player.getCommandSenderWorld()).loadScan(player.getCommandSenderWorld(), scanId).getDirtyCounter();
         RFToolsBuilderMessages.sendToClient(player, ClientCommandHandler.CMD_RETURN_SCAN_DIRTY,
                 TypedMap.builder().put(ClientCommandHandler.PARAM_SCANID, scanId).put(ClientCommandHandler.PARAM_COUNTER, counter));
     }

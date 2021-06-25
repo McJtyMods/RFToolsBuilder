@@ -16,6 +16,8 @@ import java.util.List;
 import static mcjty.lib.builder.TooltipBuilder.header;
 import static mcjty.lib.builder.TooltipBuilder.key;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 public class ShieldTemplateBlock extends Block implements ITooltipSettings {
 
     public enum TemplateColor {
@@ -29,7 +31,7 @@ public class ShieldTemplateBlock extends Block implements ITooltipSettings {
     private final TemplateColor color;
 
     public ShieldTemplateBlock(TemplateColor color) {
-        super(Properties.create(Material.GLASS).notSolid());
+        super(Properties.of(Material.GLASS).noOcclusion());
         this.color = color;
     }
 
@@ -38,8 +40,8 @@ public class ShieldTemplateBlock extends Block implements ITooltipSettings {
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-        super.addInformation(stack, worldIn, tooltip, flagIn);
+    public void appendHoverText(ItemStack stack, @Nullable IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
+        super.appendHoverText(stack, worldIn, tooltip, flagIn);
         tooltipBuilder.get().makeTooltip(getRegistryName(), stack, tooltip, flagIn);
     }
 }

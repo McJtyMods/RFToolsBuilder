@@ -17,7 +17,7 @@ public class PacketRequestShapeData {
     private ShapeID id;
 
     public void toBytes(PacketBuffer buf) {
-        buf.writeItemStack(card);
+        buf.writeItem(card);
         id.toBytes(buf);
     }
 
@@ -25,7 +25,7 @@ public class PacketRequestShapeData {
     }
 
     public PacketRequestShapeData(PacketBuffer buf) {
-        card = buf.readItemStack();
+        card = buf.readItem();
         id = new ShapeID(buf);
     }
 
@@ -47,7 +47,7 @@ public class PacketRequestShapeData {
 
             IFormula formula = shape.getFormulaFactory().get();
             formula = formula.correctFormula(solid);
-            formula.setup(ctx.getSender().getServerWorld(), new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), card.getTag());
+            formula.setup(ctx.getSender().getLevel(), new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), card.getTag());
 
             for (int y = 0 ; y < dy ; y++) {
                 ShapeDataManagerServer.pushWork(id, card, y, formula, ctx.getSender());

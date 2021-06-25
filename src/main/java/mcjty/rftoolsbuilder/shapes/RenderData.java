@@ -133,15 +133,15 @@ public class RenderData {
 
         public void render() {
             if (vbo != null) {
-                vbo.bindBuffer();
-                GlStateManager.enableClientState(GL11.GL_VERTEX_ARRAY);
-                GlStateManager.vertexPointer(3, GL11.GL_FLOAT, 16, 0);
-                GlStateManager.enableClientState(GL11.GL_COLOR_ARRAY);
-                GlStateManager.colorPointer(4, GL11.GL_UNSIGNED_BYTE, 16, 12);
+                vbo.bind();
+                GlStateManager._enableClientState(GL11.GL_VERTEX_ARRAY);
+                GlStateManager._vertexPointer(3, GL11.GL_FLOAT, 16, 0);
+                GlStateManager._enableClientState(GL11.GL_COLOR_ARRAY);
+                GlStateManager._colorPointer(4, GL11.GL_UNSIGNED_BYTE, 16, 12);
                 vbo.draw(IDENTITY, GL11.GL_QUADS);
-                vbo.unbindBuffer();
-                GlStateManager.disableClientState(GL11.GL_COLOR_ARRAY);
-                GlStateManager.disableClientState(GL11.GL_VERTEX_ARRAY);
+                vbo.unbind();
+                GlStateManager._disableClientState(GL11.GL_COLOR_ARRAY);
+                GlStateManager._disableClientState(GL11.GL_VERTEX_ARRAY);
             }
         }
 
@@ -150,10 +150,10 @@ public class RenderData {
         }
 
         public void performRenderToList() {
-            vboBuffer.finishDrawing();
+            vboBuffer.end();
 //            vboBuffer.reset();
             vbo.upload(vboBuffer);
-            vboBuffer.reset();
+            vboBuffer.clear();
         }
     }
 

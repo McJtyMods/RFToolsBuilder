@@ -14,7 +14,7 @@ public class SuperHarvestingTool extends ToolItem {
     }
 
     @Override
-    public boolean canHarvestBlock(BlockState state) {
+    public boolean isCorrectToolForDrops(BlockState state) {
         return true;
     }
 }

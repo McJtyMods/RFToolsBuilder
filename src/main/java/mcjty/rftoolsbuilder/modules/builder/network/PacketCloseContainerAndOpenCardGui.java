@@ -21,7 +21,7 @@ public class PacketCloseContainerAndOpenCardGui {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            ctx.getSender().closeContainer();
+            ctx.getSender().doCloseContainer();
             RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.PLAYER.with(ctx::getSender), new PacketOpenCardGuiFromBuilder());
         });
         ctx.setPacketHandled(true);

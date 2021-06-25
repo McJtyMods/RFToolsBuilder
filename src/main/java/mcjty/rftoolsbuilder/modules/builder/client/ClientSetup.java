@@ -6,6 +6,6 @@ import net.minecraft.client.renderer.RenderTypeLookup;
 
 public class ClientSetup {
     public static void initClient() {
-        RenderTypeLookup.setRenderLayer(BuilderModule.SUPPORT.get(), RenderType.getTranslucent());
+        RenderTypeLookup.setRenderLayer(BuilderModule.SUPPORT.get(), RenderType.translucent());
     }
 }

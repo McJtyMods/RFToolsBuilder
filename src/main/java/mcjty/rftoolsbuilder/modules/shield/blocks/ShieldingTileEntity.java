@@ -37,21 +37,21 @@ public class ShieldingTileEntity extends TileEntity {
     @Override
     public SUpdateTileEntityPacket getUpdatePacket() {
         CompoundNBT nbtTag = new CompoundNBT();
-        this.write(nbtTag);
-        return new SUpdateTileEntityPacket(pos, 1, nbtTag);
+        this.save(nbtTag);
+        return new SUpdateTileEntityPacket(worldPosition, 1, nbtTag);
     }
 
     @Override
     public CompoundNBT getUpdateTag() {
-        return this.write(new CompoundNBT());
+        return this.save(new CompoundNBT());
     }
 
     @Override
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-        read(getBlockState(), pkt.getNbtCompound());
+        load(getBlockState(), pkt.getTag());
         ModelDataManager.requestModelDataRefresh(this);
-        BlockState state = world.getBlockState(pos);
-        world.notifyBlockUpdate(pos, state, state, Constants.BlockFlags.BLOCK_UPDATE + Constants.BlockFlags.NOTIFY_NEIGHBORS);
+        BlockState state = level.getBlockState(worldPosition);
+        level.sendBlockUpdated(worldPosition, state, state, Constants.BlockFlags.BLOCK_UPDATE + Constants.BlockFlags.NOTIFY_NEIGHBORS);
     }
 
     public BlockPos getShieldProjector() {
@@ -60,7 +60,7 @@ public class ShieldingTileEntity extends TileEntity {
 
     public void setShieldProjector(BlockPos shieldProjector) {
         this.shieldProjector = shieldProjector;
-        markDirty();
+        setChanged();
 
     }
 
@@ -70,7 +70,7 @@ public class ShieldingTileEntity extends TileEntity {
 
     public void setMimic(BlockState mimic) {
         this.mimic = mimic;
-        markDirty();
+        setChanged();
     }
 
     private static final ShieldRenderData DEFAULT_RENDER_DATA = new ShieldRenderData(1.0f, 1.0f, 1.0f, 1.0f, ShieldTexture.SHIELD);
@@ -78,14 +78,14 @@ public class ShieldingTileEntity extends TileEntity {
     @Nonnull
     @Override
     public IModelData getModelData() {
-        int x = pos.getX();
-        int y = pos.getY();
-        int z = pos.getZ();
+        int x = worldPosition.getX();
+        int y = worldPosition.getY();
+        int z = worldPosition.getZ();
         int topdown = (z & 0x1) * 2 + (x & 0x1);
         int side = (y & 0x1) * 2 + ((x + z) & 0x1);
         ShieldRenderData renderData = DEFAULT_RENDER_DATA;
         if (shieldProjector != null) {
-            TileEntity te = world.getTileEntity(shieldProjector);
+            TileEntity te = level.getBlockEntity(shieldProjector);
             if (te instanceof ShieldProjectorTileEntity) {
                 renderData = ((ShieldProjectorTileEntity) te).getRenderData();
             }
@@ -99,8 +99,8 @@ public class ShieldingTileEntity extends TileEntity {
     }
 
     @Override
-    public void read(BlockState state, CompoundNBT tag) {
-        super.read(state, tag);
+    public void load(BlockState state, CompoundNBT tag) {
+        super.load(state, tag);
         shieldProjector = new BlockPos(tag.getInt("sx"), tag.getInt("sy"), tag.getInt("sz"));
         if (tag.contains("mimic")) {
             mimic = NBTUtil.readBlockState(tag.getCompound("mimic"));
@@ -110,7 +110,7 @@ public class ShieldingTileEntity extends TileEntity {
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT tag) {
+    public CompoundNBT save(CompoundNBT tag) {
         tag.putInt("sx", shieldProjector.getX());
         tag.putInt("sy", shieldProjector.getY());
         tag.putInt("sz", shieldProjector.getZ());
@@ -118,6 +118,6 @@ public class ShieldingTileEntity extends TileEntity {
             CompoundNBT camoNbt = NBTUtil.writeBlockState(mimic);
             tag.put("mimic", camoNbt);
         }
-        return super.write(tag);
+        return super.save(tag);
     }
 }

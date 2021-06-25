@@ -67,9 +67,9 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     }
 
     private void openCardGui() {
-        ItemStack cardStack = container.getSlot(SLOT_TAB).getStack();
+        ItemStack cardStack = menu.getSlot(SLOT_TAB).getItem();
         if (!cardStack.isEmpty()) {
-            GuiShapeCard.fromTEPos = tileEntity.getPos();
+            GuiShapeCard.fromTEPos = tileEntity.getBlockPos();
             GuiShapeCard.fromTEStackSlot = SLOT_TAB;
             RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketCloseContainerAndOpenCardGui());
         }
@@ -97,7 +97,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     }
 
     @Override
-    protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(MatrixStack matrixStack, float partialTicks, int mouseX, int mouseY) {
         int cury = getCurrentLevelClientSide();
         currentLevel.text("Y: " + (cury == -1 ? "stop" : cury));
 

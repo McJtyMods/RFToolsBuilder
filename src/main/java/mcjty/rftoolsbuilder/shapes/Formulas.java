@@ -223,19 +223,19 @@ public class Formulas {
 
                 BlockPos dim = ShapeCardItem.getClampedDimension(childTag, ScannerConfiguration.maxScannerDimension.get());
                 BlockPos off = ShapeCardItem.getClampedOffset(childTag, ScannerConfiguration.maxScannerOffset.get());
-                BlockPos o = off.add(offset);
+                BlockPos o = off.offset(offset);
                 formula.setup(world, thisCoord, dim, o, childTag);
                 formulas.add(formula);
 
                 dim = rotation.transformDimension(dim);
                 BlockPos tl = new BlockPos(o.getX() - dim.getX()/2, o.getY() - dim.getY()/2, o.getZ() - dim.getZ()/2);
-                bounds.add(new Bounds(tl, tl.add(dim), o));
+                bounds.add(new Bounds(tl, tl.offset(dim), o));
 
                 BlockState state = null;
                 if (childTag.contains("ghost_block")) {
                     Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(childTag.getString("ghost_block")));
                     if (block != null) {
-                        state = block.getDefaultState();
+                        state = block.defaultBlockState();
                     }
                 }
                 blockStates.add(state);
@@ -264,7 +264,7 @@ public class Formulas {
                     BlockState state = null;
                     Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(childTag.getString("ghost_block")));
                     if (block != null) {
-                        crc.add(Block.getStateId(block.getDefaultState()));
+                        crc.add(Block.getId(block.defaultBlockState()));
                     }
                 }
             }

@@ -69,8 +69,8 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     public GuiShield(ShieldProjectorTileEntity shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
         super(shieldTileEntity, container, inventory, ShieldModule.SHIELD_BLOCK1.get().getManualEntry());
 
-        xSize = SHIELD_WIDTH;
-        ySize = SHIELD_HEIGHT;
+        imageWidth = SHIELD_WIDTH;
+        imageHeight = SHIELD_HEIGHT;
     }
 
     public static void register() {
@@ -129,7 +129,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
                 visibilityOptions, shieldTextures, redstoneMode, filterPanel, actionOptions,
                 typeOptions, player, controlPanel, damageType,
                 colorSelector, lootingBonus, light);
-        toplevel.bounds(guiLeft, guiTop, xSize, ySize);
+        toplevel.bounds(leftPos, topPos, imageWidth, imageHeight);
 
         window = new Window(this, toplevel);
 
@@ -184,7 +184,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     private void requestFilters() {
-        RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetFilters(tileEntity.getPos()));
+        RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetFilters(tileEntity.getBlockPos()));
     }
 
     private void requestListsIfNeeded() {
@@ -380,7 +380,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     @Override
-    protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float v, int i, int i2) {
+    protected void renderBg(MatrixStack matrixStack, float v, int i, int i2) {
         requestListsIfNeeded();
         populateFilters();
         enableButtons();

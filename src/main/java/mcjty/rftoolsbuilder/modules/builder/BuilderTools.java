@@ -27,7 +27,7 @@ import java.util.Map;
 public class BuilderTools {
 
     public static void returnChamberInfo(PlayerEntity player) {
-        ItemStack cardItem = player.getHeldItem(Hand.MAIN_HAND);
+        ItemStack cardItem = player.getItemInHand(Hand.MAIN_HAND);
         if (cardItem.isEmpty() || cardItem.getTag() == null) {
             return;
         }
@@ -37,14 +37,14 @@ public class BuilderTools {
             return;
         }
 
-        SpaceChamberRepository repository = SpaceChamberRepository.get(player.getEntityWorld());
+        SpaceChamberRepository repository = SpaceChamberRepository.get(player.getCommandSenderWorld());
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = repository.getChannel(channel);
         if (chamberChannel == null) {
             return;
         }
 
         DimensionId dimension = chamberChannel.getDimension();
-        World world = dimension.loadWorld(player.getEntityWorld());
+        World world = dimension.loadWorld(player.getCommandSenderWorld());
         if (world == null) {
             return;
         }
@@ -63,19 +63,19 @@ public class BuilderTools {
         findEntities(world, minCorner, maxCorner, entitiesWithCount, entitiesWithCost, firstEntity);
 
         RFToolsBuilderMessages.INSTANCE.sendTo(new PacketChamberInfoReady(blocks, costs, stacks,
-                entitiesWithCount, entitiesWithCost, firstEntity), ((ServerPlayerEntity) player).connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+                entitiesWithCount, entitiesWithCost, firstEntity), ((ServerPlayerEntity) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
     }
 
     private static void findEntities(World world, BlockPos minCorner, BlockPos maxCorner,
                                  Counter<String> entitiesWithCount, Counter<String> entitiesWithCost, Map<String, Entity> firstEntity) {
-        List<Entity> entities = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(
+        List<Entity> entities = world.getEntities(null, new AxisAlignedBB(
                 minCorner.getX(), minCorner.getY(), minCorner.getZ(), maxCorner.getX() + 1, maxCorner.getY() + 1, maxCorner.getZ() + 1));
         for (Entity entity : entities) {
             String canonicalName = entity.getClass().getCanonicalName();
             if (entity instanceof ItemEntity) {
                 ItemEntity entityItem = (ItemEntity) entity;
                 if (!entityItem.getItem().isEmpty()) {
-                    String displayName = entityItem.getItem().getDisplayName().getString() /* was getFormattedText() */;
+                    String displayName = entityItem.getItem().getHoverName().getString() /* was getFormattedText() */;
                     canonicalName += " (" + displayName + ")";
                 }
             }
@@ -105,13 +105,13 @@ public class BuilderTools {
                         blocks.increment(state);
 
                         if (!stacks.containsKey(state)) {
-                            ItemStack item = block.getItem(world, p, state);
+                            ItemStack item = block.getCloneItemStack(world, p, state);
                             if (!item.isEmpty()) {
                                 stacks.put(state, item);
                             }
                         }
 
-                        TileEntity te = world.getTileEntity(p);
+                        TileEntity te = world.getBlockEntity(p);
                         BlockInformation info = BuilderTileEntity.getBlockInformation(harvester, world, p, block, te);
                         if (info.getBlockLevel() == SupportBlock.STATUS_ERROR) {
                             costs.put(state, -1);

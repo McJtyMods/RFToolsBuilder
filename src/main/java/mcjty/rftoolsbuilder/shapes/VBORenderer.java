@@ -17,7 +17,7 @@ public class VBORenderer implements Closeable {
 
         BUILDER.begin(glMode, fmt);
         vertexProducer.accept(BUILDER, fmt);
-        BUILDER.reset();
+        BUILDER.clear();
         // 1.14: vbo.bufferData(BUILDER.getByteBuffer());
         vbo.upload(BUILDER);
         return new VBORenderer(vbo, glMode);

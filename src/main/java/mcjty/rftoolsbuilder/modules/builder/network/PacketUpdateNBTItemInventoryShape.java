@@ -24,7 +24,7 @@ public class PacketUpdateNBTItemInventoryShape {
     public PacketUpdateNBTItemInventoryShape(PacketBuffer buf) {
         pos = buf.readBlockPos();
         slotIndex = buf.readInt();
-        tagCompound = buf.readCompoundTag();
+        tagCompound = buf.readNbt();
     }
 
     public PacketUpdateNBTItemInventoryShape(BlockPos pos, int slotIndex, CompoundNBT tagCompound) {
@@ -40,14 +40,14 @@ public class PacketUpdateNBTItemInventoryShape {
     public void toBytes(PacketBuffer buf) {
         buf.writeBlockPos(pos);
         buf.writeInt(slotIndex);
-        buf.writeCompoundTag(tagCompound);
+        buf.writeNbt(tagCompound);
     }
 
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            World world = ctx.getSender().getEntityWorld();
-            TileEntity te = world.getTileEntity(pos);
+            World world = ctx.getSender().getCommandSenderWorld();
+            TileEntity te = world.getBlockEntity(pos);
             if (te != null) {
                 if (!isValidBlock(world, pos, te)) {
                     return;

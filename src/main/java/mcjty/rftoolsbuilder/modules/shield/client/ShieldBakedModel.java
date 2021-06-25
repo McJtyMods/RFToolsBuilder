@@ -48,7 +48,7 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
         initTextures();
-        ShieldRenderingMode mode = state.get(ShieldingBlock.RENDER_MODE);
+        ShieldRenderingMode mode = state.getValue(ShieldingBlock.RENDER_MODE);
         switch (mode) {
             case INVISIBLE:
                 return Collections.emptyList();
@@ -159,12 +159,12 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
 
     private IBakedModel getModel(@Nonnull BlockState facadeState) {
         initTextures();
-        return Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(facadeState);
+        return Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(facadeState);
     }
 
 
     @Override
-    public TextureAtlasSprite getParticleTexture() {
+    public TextureAtlasSprite getParticleIcon() {
         initTextures();
         return shieldfull;
     }

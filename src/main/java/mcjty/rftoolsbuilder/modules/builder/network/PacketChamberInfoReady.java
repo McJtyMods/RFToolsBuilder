@@ -34,7 +34,7 @@ public class PacketChamberInfoReady {
         buf.writeInt(blocks.size());
         for (Map.Entry<BlockState, Integer> entry : blocks.entrySet()) {
             BlockState bm = entry.getKey();
-            buf.writeInt(Block.getStateId(bm));
+            buf.writeInt(Block.getId(bm));
             buf.writeInt(entry.getValue());
             buf.writeInt(costs.get(bm));
             if (stacks.containsKey(bm)) {
@@ -47,16 +47,16 @@ public class PacketChamberInfoReady {
         buf.writeInt(entities.size());
         for (Map.Entry<String, Integer> entry : entities.entrySet()) {
             String name = entry.getKey();
-            buf.writeString(name);
+            buf.writeUtf(name);
             buf.writeInt(entry.getValue());
             buf.writeInt(entityCosts.get(name));
             if (realEntities.containsKey(name)) {
                 Entity entity = realEntities.get(name);
                 if (entity instanceof PlayerEntity) {
                     buf.writeByte(ENTITY_PLAYER);
-                    int entityId = entity.getEntityId();
+                    int entityId = entity.getId();
                     buf.writeInt(entityId);
-                    buf.writeString(entity.getDisplayName().getString());   // @todo getFormattedText
+                    buf.writeUtf(entity.getDisplayName().getString());   // @todo getFormattedText
                 } else {
                     buf.writeByte(ENTITY_NORMAL);
                     CompoundNBT nbt = entity.serializeNBT();
@@ -69,13 +69,13 @@ public class PacketChamberInfoReady {
     }
 
     private static CompoundNBT readNBT(PacketBuffer buf) {
-        return buf.readCompoundTag();
+        return buf.readNbt();
     }
 
     private static void writeNBT(PacketBuffer dataOut, CompoundNBT nbt) {
         PacketBuffer buf = new PacketBuffer(dataOut);
         try {
-            buf.writeCompoundTag(nbt);
+            buf.writeNbt(nbt);
         } catch (Exception e) {
             Logging.logError("Error writing packet chamber info", e);
         }
@@ -91,7 +91,7 @@ public class PacketChamberInfoReady {
         costs = new HashMap<>(size);
         stacks = new HashMap<>();
         for (int i = 0 ; i < size ; i++) {
-            BlockState bm = Block.getStateById(buf.readInt());
+            BlockState bm = Block.stateById(buf.readInt());
             int count = buf.readInt();
             int cost = buf.readInt();
             blocks.put(bm, count);
@@ -108,7 +108,7 @@ public class PacketChamberInfoReady {
         realEntities = new HashMap<>();
         playerNames = new HashMap<>();
         for (int i = 0 ; i < size ; i++) {
-            String className = buf.readString(32767);
+            String className = buf.readUtf(32767);
             int count = buf.readInt();
             int cost = buf.readInt();
             entities.put(className, count);
@@ -126,8 +126,8 @@ public class PacketChamberInfoReady {
 //                realEntities.put(className, entity);
             } else if (how == ENTITY_PLAYER) {
                 int entityId = buf.readInt();
-                String entityName = buf.readString(32767);
-                Entity entity = McJtyLib.proxy.getClientWorld().getEntityByID(entityId);
+                String entityName = buf.readUtf(32767);
+                Entity entity = McJtyLib.proxy.getClientWorld().getEntity(entityId);
                 if (entity != null) {
                     realEntities.put(className, entity);
                 }

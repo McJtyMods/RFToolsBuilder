@@ -65,16 +65,16 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
 
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+    public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 // @todo 1.14
         //        restoreBlockFromNBT(world, pos, stack);
-        super.onBlockPlacedBy(world, pos, state, placer, stack);
+        super.setPlacedBy(world, pos, state, placer, stack);
         setOwner(world, pos, placer);
     }
 
     @Override
-    public void onBlockClicked(BlockState state, World world, BlockPos pos, PlayerEntity player) {
-        if (!world.isRemote) {
+    public void attack(BlockState state, World world, BlockPos pos, PlayerEntity player) {
+        if (!world.isClientSide) {
             composeDecomposeShield(world, pos, true);
             // @todo achievements
 //            Achievements.trigger(playerIn, Achievements.shieldSafety);
@@ -91,13 +91,13 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
 
     @Override
     protected boolean wrenchSneakSelect(World world, BlockPos pos, PlayerEntity player) {
-        if (!world.isRemote) {
-            Optional<GlobalCoordinate> currentBlock = SmartWrenchItem.getCurrentBlock(player.getHeldItem(Hand.MAIN_HAND));
+        if (!world.isClientSide) {
+            Optional<GlobalCoordinate> currentBlock = SmartWrenchItem.getCurrentBlock(player.getItemInHand(Hand.MAIN_HAND));
             if (!currentBlock.isPresent()) {
-                SmartWrenchItem.setCurrentBlock(player.getHeldItem(Hand.MAIN_HAND), new GlobalCoordinate(pos, world));
+                SmartWrenchItem.setCurrentBlock(player.getItemInHand(Hand.MAIN_HAND), new GlobalCoordinate(pos, world));
                 Logging.message(player, TextFormatting.YELLOW + "Selected block");
             } else {
-                SmartWrenchItem.setCurrentBlock(player.getHeldItem(Hand.MAIN_HAND), null);
+                SmartWrenchItem.setCurrentBlock(player.getItemInHand(Hand.MAIN_HAND), null);
                 Logging.message(player, TextFormatting.YELLOW + "Cleared selected block");
             }
         }
@@ -105,8 +105,8 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     }
 
     private void composeDecomposeShield(World world, BlockPos pos, boolean ctrl) {
-        if (!world.isRemote) {
-            TileEntity te = world.getTileEntity(pos);
+        if (!world.isClientSide) {
+            TileEntity te = world.getBlockEntity(pos);
             if (te instanceof ShieldProjectorTileEntity) {
                 ((ShieldProjectorTileEntity)te).composeDecomposeShield(ctrl);
             }
@@ -114,29 +114,29 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     }
 
     @Override
-    public void onReplaced(BlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
+    public void onRemove(BlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
         if (newstate.getBlock() != this) {
             removeShield(world, pos);
         }
-        super.onReplaced(state, world, pos, newstate, isMoving);
+        super.onRemove(state, world, pos, newstate, isMoving);
     }
 
     @Override
-    public void onPlayerDestroy(IWorld world, BlockPos pos, BlockState state) {
+    public void destroy(IWorld world, BlockPos pos, BlockState state) {
         removeShield(world, pos);
-        super.onPlayerDestroy(world, pos, state);
+        super.destroy(world, pos, state);
     }
 
     @Override
-    public void onExplosionDestroy(World world, BlockPos pos, Explosion explosionIn) {
+    public void wasExploded(World world, BlockPos pos, Explosion explosionIn) {
         removeShield(world, pos);
-        super.onExplosionDestroy(world, pos, explosionIn);
+        super.wasExploded(world, pos, explosionIn);
     }
 
     private void removeShield(IWorld world, BlockPos pos) {
-        TileEntity te = world.getTileEntity(pos);
+        TileEntity te = world.getBlockEntity(pos);
         if (te instanceof ShieldProjectorTileEntity) {
-            if (!world.isRemote()) {
+            if (!world.isClientSide()) {
                 ShieldProjectorTileEntity shieldTileEntity = (ShieldProjectorTileEntity) te;
                 if (shieldTileEntity.isShieldComposed()) {
                     shieldTileEntity.decomposeShield();

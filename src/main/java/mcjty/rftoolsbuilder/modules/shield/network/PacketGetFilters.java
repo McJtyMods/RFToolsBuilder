@@ -44,9 +44,9 @@ public class PacketGetFilters {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            World world = ctx.getSender().getEntityWorld();
-            if (world.isBlockLoaded(pos)) {
-                TileEntity te = world.getTileEntity(pos);
+            World world = ctx.getSender().getCommandSenderWorld();
+            if (world.hasChunkAt(pos)) {
+                TileEntity te = world.getBlockEntity(pos);
                 if (!(te instanceof ICommandHandler)) {
                     Logging.log("createStartScanPacket: TileEntity is not a CommandHandler!");
                     return;
@@ -54,7 +54,7 @@ public class PacketGetFilters {
                 ICommandHandler commandHandler = (ICommandHandler) te;
                 List<ShieldFilter> list = commandHandler.executeWithResultList(ShieldProjectorTileEntity.CMD_GETFILTERS, params, Type.create(ShieldFilter.class));
                 RFToolsBuilderMessages.INSTANCE.sendTo(new PacketFiltersReady(pos, ShieldProjectorTileEntity.CLIENTCMD_GETFILTERS, list),
-                        ctx.getSender().connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+                        ctx.getSender().connection.connection, NetworkDirection.PLAY_TO_CLIENT);
             }
         });
         ctx.setPacketHandled(true);

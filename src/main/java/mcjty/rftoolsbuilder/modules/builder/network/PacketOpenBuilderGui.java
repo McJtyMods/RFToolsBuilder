@@ -29,8 +29,8 @@ public class PacketOpenBuilderGui {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            World world = ctx.getSender().getEntityWorld();
-            TileEntity te = world.getTileEntity(pos);
+            World world = ctx.getSender().getCommandSenderWorld();
+            TileEntity te = world.getBlockEntity(pos);
             if (te == null) {
                 return;
             }

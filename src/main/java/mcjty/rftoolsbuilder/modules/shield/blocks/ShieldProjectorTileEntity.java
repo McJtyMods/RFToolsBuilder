@@ -118,7 +118,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     // If true the shield is currently made.
     private boolean shieldComposed = false;
     // The state for the template blocks that were used.
-    private BlockState templateState = Blocks.AIR.getDefaultState();
+    private BlockState templateState = Blocks.AIR.defaultBlockState();
     // If true the shield is currently active.
     private boolean shieldActive = false;
     // Timeout in case power is low. Here we wait a bit before trying again.
@@ -161,7 +161,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     private final GenericEnergyStorage energyStorage;
     private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(this::getEnergyStorage);
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
-            .containerSupplier((windowId,player) -> new GenericContainer(ShieldModule.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY.get(), getPos(), ShieldProjectorTileEntity.this))
+            .containerSupplier((windowId,player) -> new GenericContainer(ShieldModule.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY.get(), getBlockPos(), ShieldProjectorTileEntity.this))
             .energyHandler(this::getEnergyStorage)
             .itemHandler(() -> items));
 
@@ -225,8 +225,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         if (oldColor != shieldColor || oldTexture != shieldTexture) {
             renderData = null;
             // @todo this doesn't help to automatically update the color
-            BlockState state = world.getBlockState(pos);
-            world.notifyBlockUpdate(pos, state, state, Constants.BlockFlags.BLOCK_UPDATE + Constants.BlockFlags.NOTIFY_NEIGHBORS);
+            BlockState state = level.getBlockState(worldPosition);
+            level.sendBlockUpdated(worldPosition, state, state, Constants.BlockFlags.BLOCK_UPDATE + Constants.BlockFlags.NOTIFY_NEIGHBORS);
         }
     }
 
@@ -461,9 +461,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         if (owner == null) {
             owner = UUID.nameUUIDFromBytes("rftools_shield".getBytes());
         }
-        FakePlayer fakePlayer = FakePlayerFactory.get((ServerWorld) world, new GameProfile(owner, "rftools_shield"));
-        fakePlayer.setWorld(world);
-        fakePlayer.setPosition(pos.getX(), pos.getY(), pos.getZ());
+        FakePlayer fakePlayer = FakePlayerFactory.get((ServerWorld) level, new GameProfile(owner, "rftools_shield"));
+        fakePlayer.setLevel(level);
+        fakePlayer.setPos(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
         new FakePlayerConnection(fakePlayer);
         return fakePlayer;
     }
@@ -475,13 +475,13 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         if (item instanceof BlockItem) {
             BlockItem blockItem = (BlockItem) item;
             FakePlayer player = getFakePlayer();
-            player.setHeldItem(Hand.MAIN_HAND, stack);
-            BlockRayTraceResult result = new BlockRayTraceResult(new Vector3d(.5, 0, .5), Direction.UP, pos, false);
+            player.setItemInHand(Hand.MAIN_HAND, stack);
+            BlockRayTraceResult result = new BlockRayTraceResult(new Vector3d(.5, 0, .5), Direction.UP, worldPosition, false);
             BlockItemUseContext context = new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, result));
             BlockState stateForPlacement = blockItem.getBlock().getStateForPlacement(context);
-            return stateForPlacement == null ? blockItem.getBlock().getDefaultState() : stateForPlacement;
+            return stateForPlacement == null ? blockItem.getBlock().defaultBlockState() : stateForPlacement;
         } else {
-            return Blocks.AIR.getDefaultState();
+            return Blocks.AIR.defaultBlockState();
         }
     }
 
@@ -503,7 +503,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     private BlockState calculateShieldBlock(BlockState mimic, boolean blockLight) {
         if (!shieldActive || powerTimeout > 0) {
-            return Blocks.AIR.getDefaultState();
+            return Blocks.AIR.defaultBlockState();
         }
 
         ShieldRenderingMode render = shieldRenderingMode;
@@ -515,9 +515,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         }
 
         BlockState shielding;
-        shielding = getShieldingBlock(render, mimic).getDefaultState();
-        shielding = shielding.with(FLAG_OPAQUE, !blockLight);
-        shielding = shielding.with(RENDER_MODE, render);
+        shielding = getShieldingBlock(render, mimic).defaultBlockState();
+        shielding = shielding.setValue(FLAG_OPAQUE, !blockLight);
+        shielding = shielding.setValue(RENDER_MODE, render);
         shielding = calculateShieldCollisionData(shielding);
         shielding = calculateDamageBits(shielding);
         return shielding;
@@ -550,15 +550,15 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         for (ShieldFilter filter : filters) {
             if ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0) {
                 if (ItemFilter.ITEM.equals(filter.getFilterName())) {
-                    shielding = shielding.with(DAMAGE_ITEMS, true);
+                    shielding = shielding.setValue(DAMAGE_ITEMS, true);
                 } else if (AnimalFilter.ANIMAL.equals(filter.getFilterName())) {
-                    shielding = shielding.with(DAMAGE_PASSIVE, true);
+                    shielding = shielding.setValue(DAMAGE_PASSIVE, true);
                 } else if (HostileFilter.HOSTILE.equals(filter.getFilterName())) {
-                    shielding = shielding.with(DAMAGE_HOSTILE, true);
+                    shielding = shielding.setValue(DAMAGE_HOSTILE, true);
                 } else if (PlayerFilter.PLAYER.equals(filter.getFilterName())) {
-                    shielding = shielding.with(DAMAGE_PLAYERS, true);
+                    shielding = shielding.setValue(DAMAGE_PLAYERS, true);
                 } else if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
-                    shielding = shielding.with(DAMAGE_ITEMS, true).with(DAMAGE_PASSIVE, true).with(DAMAGE_HOSTILE, true).with(DAMAGE_PLAYERS, true);
+                    shielding = shielding.setValue(DAMAGE_ITEMS, true).setValue(DAMAGE_PASSIVE, true).setValue(DAMAGE_HOSTILE, true).setValue(DAMAGE_PLAYERS, true);
                 }
             }
         }
@@ -569,15 +569,15 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         for (ShieldFilter filter : filters) {
             if ((filter.getAction() & ShieldFilter.ACTION_SOLID) != 0) {
                 if (ItemFilter.ITEM.equals(filter.getFilterName())) {
-                    shielding = shielding.with(BLOCKED_ITEMS, true);
+                    shielding = shielding.setValue(BLOCKED_ITEMS, true);
                 } else if (AnimalFilter.ANIMAL.equals(filter.getFilterName())) {
-                    shielding = shielding.with(BLOCKED_PASSIVE, true);
+                    shielding = shielding.setValue(BLOCKED_PASSIVE, true);
                 } else if (HostileFilter.HOSTILE.equals(filter.getFilterName())) {
-                    shielding = shielding.with(BLOCKED_HOSTILE, true);
+                    shielding = shielding.setValue(BLOCKED_HOSTILE, true);
                 } else if (PlayerFilter.PLAYER.equals(filter.getFilterName())) {
-                    shielding = shielding.with(BLOCKED_PLAYERS, true);
+                    shielding = shielding.setValue(BLOCKED_PLAYERS, true);
                 } else if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
-                    shielding = shielding.with(BLOCKED_ITEMS, true).with(BLOCKED_PASSIVE, true).with(BLOCKED_HOSTILE, true).with(BLOCKED_PLAYERS, true);
+                    shielding = shielding.setValue(BLOCKED_ITEMS, true).setValue(BLOCKED_PASSIVE, true).setValue(BLOCKED_HOSTILE, true).setValue(BLOCKED_PLAYERS, true);
                 }
             }
         }
@@ -623,22 +623,22 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             if (owner == null) {
                 owner = UUID.nameUUIDFromBytes("rftools_shield".getBytes());
             }
-            FakePlayer killer = FakePlayerFactory.get(WorldTools.getOverworld(world), new GameProfile(owner, "rftools_shield"));
-            killer.setWorld(world);
-            killer.setPosition(pos.getX(), pos.getY(), pos.getZ());
+            FakePlayer killer = FakePlayerFactory.get(WorldTools.getOverworld(level), new GameProfile(owner, "rftools_shield"));
+            killer.setLevel(level);
+            killer.setPos(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
             new FakePlayerConnection(killer);
             ItemStack shards = items.getStackInSlot(SLOT_SHARD);
             if (!shards.isEmpty() && shards.getCount() >= ShieldConfiguration.shardsPerLootingKill.get()) {
                 items.extractItem(SLOT_SHARD, ShieldConfiguration.shardsPerLootingKill.get(), false);
                 if (lootingSword.isEmpty()) {
-                    lootingSword = createEnchantedItem(Items.DIAMOND_SWORD, Enchantments.LOOTING, ShieldConfiguration.lootingKillBonus.get());
+                    lootingSword = createEnchantedItem(Items.DIAMOND_SWORD, Enchantments.MOB_LOOTING, ShieldConfiguration.lootingKillBonus.get());
                 }
-                lootingSword.setDamage(0);
-                killer.setHeldItem(Hand.MAIN_HAND, lootingSword);
+                lootingSword.setDamageValue(0);
+                killer.setItemInHand(Hand.MAIN_HAND, lootingSword);
             } else {
-                killer.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
+                killer.setItemInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
             }
-            source = DamageSource.causePlayerDamage(killer);
+            source = DamageSource.playerAttack(killer);
         }
 
         float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
@@ -653,7 +653,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         damage *= damageFactor;
         damage = damage * (1.0f + factor / 2.0f);
 
-        entity.attackEntityFrom(source, damage);
+        entity.hurt(source, damage);
     }
 
     public static ItemStack createEnchantedItem(Item item, Enchantment effectId, int amount) {
@@ -666,10 +666,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     @Override
     public void tick() {
-        if( world == null )
+        if( level == null )
             return;
 
-        if (!world.isRemote) {
+        if (!level.isClientSide) {
             checkStateServer();
         }
     }
@@ -691,7 +691,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         boolean checkPower = false;
         if (powerTimeout > 0) {
             powerTimeout--;
-            markDirty();
+            setChanged();
             if (powerTimeout > 0) {
                 return;
             } else {
@@ -723,7 +723,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
         if (needsUpdate) {
             updateShield();
-            markDirty();
+            setChanged();
         }
     }
 
@@ -751,7 +751,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
         if (isShapedShield()) {
             // Special shaped mode.
-            templateState = Blocks.AIR.getDefaultState();
+            templateState = Blocks.AIR.defaultBlockState();
 
             ItemStack shapeItem = items.getStackInSlot(SLOT_SHAPE);
             Shape shape = ShapeCardItem.getShape(shapeItem);
@@ -759,19 +759,19 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             BlockPos dimension = ShapeCardItem.getClampedDimension(shapeItem, ShieldConfiguration.maxShieldDimension.get());
             BlockPos offset = ShapeCardItem.getClampedOffset(shapeItem, ShieldConfiguration.maxShieldOffset.get());
             Map<BlockPos, BlockState> col = new HashMap<>();
-            ShapeCardItem.composeFormula(shapeItem, shape.getFormulaFactory().get(), getWorld(), getPos(), dimension, offset, col, supportedBlocks, solid, false, null);
+            ShapeCardItem.composeFormula(shapeItem, shape.getFormulaFactory().get(), getLevel(), getBlockPos(), dimension, offset, col, supportedBlocks, solid, false, null);
             coordinates = col;
         } else {
             if(!findTemplateState()) return;
 
             Map<BlockPos, BlockState> col = new HashMap<>();
-            findTemplateBlocks(col, templateState, ctrl, getPos());
+            findTemplateBlocks(col, templateState, ctrl, getBlockPos());
             coordinates = col;
         }
 
-        int xCoord = getPos().getX();
-        int yCoord = getPos().getY();
-        int zCoord = getPos().getZ();
+        int xCoord = getBlockPos().getX();
+        int yCoord = getBlockPos().getY();
+        int zCoord = getBlockPos().getZ();
         for (Map.Entry<BlockPos, BlockState> entry : coordinates.entrySet()) {
             BlockPos c = entry.getKey();
             BlockState state = entry.getValue();
@@ -789,7 +789,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 }
             }
             shieldBlocks.add(new RelCoordinateShield(c.getX() - xCoord, c.getY() - yCoord, c.getZ() - zCoord, st));
-            getWorld().setBlockState(c, Blocks.AIR.getDefaultState());
+            getLevel().setBlockAndUpdate(c, Blocks.AIR.defaultBlockState());
         }
 
         shieldComposed = true;
@@ -802,9 +802,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     private boolean findTemplateState() {
         for (Direction dir : OrientationTools.DIRECTION_VALUES) {
-            BlockPos p = getPos().offset(dir);
-            if (p.getY() >= 0 && p.getY() < getWorld().getHeight()) {
-                BlockState state = getWorld().getBlockState(p);
+            BlockPos p = getBlockPos().relative(dir);
+            if (p.getY() >= 0 && p.getY() < getLevel().getMaxBuildHeight()) {
+                BlockState state = getLevel().getBlockState(p);
                 if (state.getBlock() instanceof ShieldTemplateBlock) {
                     templateState = state;
                     return true;
@@ -821,24 +821,24 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             return;
         }
 
-        float squaredDistance = (float) getPos().distanceSq(pos);
+        float squaredDistance = (float) getBlockPos().distSqr(pos);
         if (squaredDistance > ShieldConfiguration.maxDisjointShieldDistance.get() * ShieldConfiguration.maxDisjointShieldDistance.get()) {
             Logging.message(player, TextFormatting.YELLOW + "This template is too far to connect to the shield!");
             return;
         }
 
-        int xCoord = getPos().getX();
-        int yCoord = getPos().getY();
-        int zCoord = getPos().getZ();
+        int xCoord = getBlockPos().getX();
+        int yCoord = getBlockPos().getY();
+        int zCoord = getBlockPos().getZ();
 
-        Block origBlock = getWorld().getBlockState(pos).getBlock();
+        Block origBlock = getLevel().getBlockState(pos).getBlock();
         if (origBlock instanceof ShieldTemplateBlock) {
             if (isShapedShield()) {
                 Logging.message(player, TextFormatting.YELLOW + "You cannot add template blocks to a shaped shield (using a shape card)!");
                 return;
             }
             Map<BlockPos, BlockState> templateBlocks = new HashMap<>();
-            BlockState state = getWorld().getBlockState(pos);
+            BlockState state = getLevel().getBlockState(pos);
             templateBlocks.put(pos, null);
             findTemplateBlocks(templateBlocks, state, false, pos);
 
@@ -854,7 +854,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         } else if (origBlock instanceof ShieldingBlock) {
             //@todo
             shieldBlocks.remove(new RelCoordinate(pos.getX() - xCoord, pos.getY() - yCoord, pos.getZ() - zCoord));
-            getWorld().setBlockState(pos, templateState, 2);
+            getLevel().setBlock(pos, templateState, 2);
         } else {
             Logging.message(player, TextFormatting.YELLOW + "The selected shield can't do anything with this block!");
             return;
@@ -868,16 +868,16 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     private void updateShield() {
         BlockState mimic = calculateMimic();
         BlockState shielding = calculateShieldBlock(mimic, blockLight);
-        int xCoord = getPos().getX();
-        int yCoord = getPos().getY();
-        int zCoord = getPos().getZ();
+        int xCoord = getBlockPos().getX();
+        int yCoord = getBlockPos().getY();
+        int zCoord = getBlockPos().getZ();
         BlockPos.Mutable pos = new BlockPos.Mutable();
         for (RelCoordinateShield c : shieldBlocks) {
             if (Blocks.AIR.equals(shielding.getBlock())) {
-                pos.setPos(xCoord + c.getDx(), yCoord + c.getDy(), zCoord + c.getDz());
-                BlockState oldState = getWorld().getBlockState(pos);
+                pos.set(xCoord + c.getDx(), yCoord + c.getDy(), zCoord + c.getDz());
+                BlockState oldState = getLevel().getBlockState(pos);
                 if (oldState.getBlock() instanceof ShieldingBlock) {
-                    getWorld().setBlockState(pos, Blocks.AIR.getDefaultState());
+                    getLevel().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
                 }
             } else {
                 updateShieldBlock(mimic, shielding, c);
@@ -887,11 +887,11 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     private void updateShieldBlock(BlockState mimic, BlockState shielding, RelCoordinateShield c) {
-        int xCoord = getPos().getX();
-        int yCoord = getPos().getY();
-        int zCoord = getPos().getZ();
+        int xCoord = getBlockPos().getX();
+        int yCoord = getBlockPos().getY();
+        int zCoord = getBlockPos().getZ();
         BlockPos pp = new BlockPos(xCoord + c.getDx(), yCoord + c.getDy(), zCoord + c.getDz());
-        BlockState oldState = getWorld().getBlockState(pp);
+        BlockState oldState = getLevel().getBlockState(pp);
         if (!(oldState.getBlock() instanceof ShieldingBlock)) {
             if ((!oldState.getMaterial().isReplaceable()) && !(oldState.getBlock() instanceof ShieldTemplateBlock)) {
                 return;
@@ -899,10 +899,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         }
 
         // To force an update set it to air first
-        world.setBlockState(pp, Blocks.AIR.getDefaultState());
-        world.setBlockState(pp, shielding, Constants.BlockFlags.BLOCK_UPDATE);
+        level.setBlockAndUpdate(pp, Blocks.AIR.defaultBlockState());
+        level.setBlock(pp, shielding, Constants.BlockFlags.BLOCK_UPDATE);
 
-        TileEntity te = getWorld().getTileEntity(pp);
+        TileEntity te = getLevel().getBlockEntity(pp);
         if (te instanceof ShieldingTileEntity) {
             ShieldingTileEntity shieldingTE = (ShieldingTileEntity) te;
             if (c.getState() != -1) {
@@ -911,27 +911,27 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             } else {
                 shieldingTE.setMimic(mimic);
             }
-            shieldingTE.setShieldProjector(pos);
+            shieldingTE.setShieldProjector(worldPosition);
         }
     }
 
     public void decomposeShield() {
-        int xCoord = getPos().getX();
-        int yCoord = getPos().getY();
-        int zCoord = getPos().getZ();
+        int xCoord = getBlockPos().getX();
+        int yCoord = getBlockPos().getY();
+        int zCoord = getBlockPos().getZ();
         BlockPos.Mutable pp = new BlockPos.Mutable();
         for (RelCoordinate c : shieldBlocks) {
             int cx = xCoord + c.getDx();
             int cy = yCoord + c.getDy();
             int cz = zCoord + c.getDz();
-            pp.setPos(cx, cy, cz);
-            Block block = getWorld().getBlockState(pp).getBlock();
-            if (getWorld().isAirBlock(pp) || block instanceof ShieldingBlock) {
-                getWorld().setBlockState(new BlockPos(pp), templateState, 2);
+            pp.set(cx, cy, cz);
+            Block block = getLevel().getBlockState(pp).getBlock();
+            if (getLevel().isEmptyBlock(pp) || block instanceof ShieldingBlock) {
+                getLevel().setBlock(new BlockPos(pp), templateState, 2);
             } else if (templateState.getMaterial() != Material.AIR){
                 if (!isShapedShield()) {
                     // No room, just spawn the block
-                    InventoryHelper.spawnItemStack(getWorld(), cx, cy, cz, templateState.getBlock().getItem(getWorld(), new BlockPos(cx, cy, cz), templateState));
+                    InventoryHelper.dropItemStack(getLevel(), cx, cy, cz, templateState.getBlock().getCloneItemStack(getLevel(), new BlockPos(cx, cy, cz), templateState));
                 }
             }
         }
@@ -970,10 +970,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     private void addToTodoStraight(Map<BlockPos, BlockState> coordinateSet, Deque<BlockPos> todo, BlockPos coordinate, BlockState templateState) {
         for (Direction dir : OrientationTools.DIRECTION_VALUES) {
-            BlockPos pp = coordinate.offset(dir);
-            if (pp.getY() >= 0 && pp.getY() < getWorld().getHeight()) {
+            BlockPos pp = coordinate.relative(dir);
+            if (pp.getY() >= 0 && pp.getY() < getLevel().getMaxBuildHeight()) {
                 if (!coordinateSet.containsKey(pp)) {
-                    BlockState state = getWorld().getBlockState(pp);
+                    BlockState state = getLevel().getBlockState(pp);
                     if (state == templateState) {
                         if (!todo.contains(pp)) {
                             todo.addLast(pp);
@@ -993,13 +993,13 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             for (int yy = y-1 ; yy <= y+1 ; yy++) {
                 for (int zz = z-1 ; zz <= z+1 ; zz++) {
                     if (xx != x || yy != y || zz != z) {
-                        if (yy >= 0 && yy < getWorld().getHeight()) {
-                            c.setPos(xx, yy, zz);
+                        if (yy >= 0 && yy < getLevel().getMaxBuildHeight()) {
+                            c.set(xx, yy, zz);
                             if (!coordinateSet.containsKey(c)) {
-                                BlockState state = getWorld().getBlockState(c);
+                                BlockState state = getLevel().getBlockState(c);
                                 if (state == templateState) {
                                     if (!todo.contains(c)) {
-                                        todo.addLast(c.toImmutable());
+                                        todo.addLast(c.immutable());
                                     }
                                 }
                             }
@@ -1051,20 +1051,20 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
             switch (color) {
                 case BLUE:
-                    templateState = ShieldModule.TEMPLATE_BLUE.get().getDefaultState();
+                    templateState = ShieldModule.TEMPLATE_BLUE.get().defaultBlockState();
                     break;
                 case RED:
-                    templateState = ShieldModule.TEMPLATE_RED.get().getDefaultState();
+                    templateState = ShieldModule.TEMPLATE_RED.get().defaultBlockState();
                     break;
                 case GREEN:
-                    templateState = ShieldModule.TEMPLATE_GREEN.get().getDefaultState();
+                    templateState = ShieldModule.TEMPLATE_GREEN.get().defaultBlockState();
                     break;
                 case YELLOW:
-                    templateState = ShieldModule.TEMPLATE_YELLOW.get().getDefaultState();
+                    templateState = ShieldModule.TEMPLATE_YELLOW.get().defaultBlockState();
                     break;
             }
         } else {
-            templateState = Blocks.AIR.getDefaultState();
+            templateState = Blocks.AIR.defaultBlockState();
         }
 
         readEnergyCap(tagCompound);
@@ -1123,23 +1123,23 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
                 switch (color) {
                     case BLUE:
-                        templateState = ShieldModule.TEMPLATE_BLUE.get().getDefaultState();
+                        templateState = ShieldModule.TEMPLATE_BLUE.get().defaultBlockState();
                         break;
                     case RED:
-                        templateState = ShieldModule.TEMPLATE_RED.get().getDefaultState();
+                        templateState = ShieldModule.TEMPLATE_RED.get().defaultBlockState();
                         break;
                     case GREEN:
-                        templateState = ShieldModule.TEMPLATE_GREEN.get().getDefaultState();
+                        templateState = ShieldModule.TEMPLATE_GREEN.get().defaultBlockState();
                         break;
                     case YELLOW:
-                        templateState = ShieldModule.TEMPLATE_YELLOW.get().getDefaultState();
+                        templateState = ShieldModule.TEMPLATE_YELLOW.get().defaultBlockState();
                         break;
                 }
             } else {
-                templateState = Blocks.AIR.getDefaultState();
+                templateState = Blocks.AIR.defaultBlockState();
             }
         } else {
-            templateState = Blocks.AIR.getDefaultState();
+            templateState = Blocks.AIR.defaultBlockState();
         }
 
         shieldBlocks.clear();
@@ -1166,7 +1166,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                     block = Blocks.STONE;
                     m = 0;
                 }
-                BlockState state = block.getDefaultState(); // @todo 1.14 getStateFromMeta(m);
+                BlockState state = block.defaultBlockState(); // @todo 1.14 getStateFromMeta(m);
                 blockStateTable.add(state);
             }
         } else {
@@ -1212,8 +1212,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT tagCompound) {
-        super.write(tagCompound);
+    public CompoundNBT save(CompoundNBT tagCompound) {
+        super.save(tagCompound);
         tagCompound.putBoolean("composed", shieldComposed);
         tagCompound.putBoolean("active", shieldActive);
         tagCompound.putInt("powerTimeout", powerTimeout);

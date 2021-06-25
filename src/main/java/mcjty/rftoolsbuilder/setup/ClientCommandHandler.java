@@ -50,7 +50,7 @@ public class ClientCommandHandler {
         McJtyLib.registerClientCommand(RFToolsBuilder.MODID, CMD_POSITION_TO_CLIENT, (player, arguments) -> {
             BlockPos tePos = arguments.get(PARAM_POS);
             BlockPos scanPos = arguments.get(PARAM_SCAN);
-            TileEntity te = McJtyLib.proxy.getClientWorld().getTileEntity(tePos);
+            TileEntity te = McJtyLib.proxy.getClientWorld().getBlockEntity(tePos);
             if (te instanceof BuilderTileEntity) {
                 BuilderTileEntity.setScanLocationClient(tePos, scanPos);
             }

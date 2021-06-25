@@ -16,6 +16,8 @@ import net.minecraft.world.World;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 public class SupportBlock extends Block {
 
     public static final int STATUS_OK = 0;
@@ -25,35 +27,35 @@ public class SupportBlock extends Block {
     public static IntegerProperty STATUS = IntegerProperty.create("status", 0, 2);
 
     public SupportBlock() {
-        super(Properties.create(Material.GLASS).setOpaque((state, world, pos) -> false));
+        super(Properties.of(Material.GLASS).isRedstoneConductor((state, world, pos) -> false));
     }
 
     @Override
-    public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
-        if (!world.isRemote) {
+    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+        if (!world.isClientSide) {
             // Find all connected blocks and remove them.
             Deque<BlockPos> todo = new ArrayDeque<>();
             todo.add(pos);
             removeBlock(world, todo);
         }
-        return super.onBlockActivated(state, world, pos, player, handIn, hit);
+        return super.use(state, world, pos, player, handIn, hit);
     }
 
     private void removeBlock(World world, Deque<BlockPos> todo) {
         while (!todo.isEmpty()) {
             BlockPos c = todo.pollFirst();
-            world.setBlockState(c, Blocks.AIR.getDefaultState());
+            world.setBlockAndUpdate(c, Blocks.AIR.defaultBlockState());
             if (world.getBlockState(c.west()).getBlock() == this) {
                 todo.push(c.west());
             }
             if (world.getBlockState(c.east()).getBlock() == this) {
                 todo.push(c.east());
             }
-            if (world.getBlockState(c.down()).getBlock() == this) {
-                todo.push(c.down());
+            if (world.getBlockState(c.below()).getBlock() == this) {
+                todo.push(c.below());
             }
-            if (world.getBlockState(c.up()).getBlock() == this) {
-                todo.push(c.up());
+            if (world.getBlockState(c.above()).getBlock() == this) {
+                todo.push(c.above());
             }
             if (world.getBlockState(c.south()).getBlock() == this) {
                 todo.push(c.south());
@@ -85,7 +87,7 @@ public class SupportBlock extends Block {
 
 
     @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         builder.add(STATUS);
     }
 

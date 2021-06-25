@@ -105,7 +105,7 @@ public class GuiChamberDetails extends GuiItemScreen {
             if (stack.getItem() == null) {
                 nameLabel.text("?").desiredWidth(160);
             } else {
-                nameLabel.text(stack.getDisplayName().getString()).desiredWidth(160);   // @todo getFormattedText
+                nameLabel.text(stack.getHoverName().getString()).desiredWidth(160);   // @todo getFormattedText
             }
 
             Label countLabel = label(String.valueOf(count)).color(StyleConfig.colorTextInListNormal);
@@ -148,7 +148,7 @@ public class GuiChamberDetails extends GuiItemScreen {
             } else {
                 try {
                     Class<?> aClass = Class.forName(className);
-                    entity = (Entity) aClass.getConstructor(World.class).newInstance(minecraft.world);
+                    entity = (Entity) aClass.getConstructor(World.class).newInstance(minecraft.level);
                     entityName = aClass.getSimpleName();
                 } catch (ClassNotFoundException e) {
                 } catch (InstantiationException e) {

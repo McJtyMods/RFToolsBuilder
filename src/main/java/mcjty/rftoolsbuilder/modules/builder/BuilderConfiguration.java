@@ -163,7 +163,7 @@ public class BuilderConfiguration {
         if (quarryReplaceBlock == null) {
             int index = quarryReplace.get().indexOf(' ');
             if(index == -1) {
-                quarryReplaceBlock = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(quarryReplace.get())).getDefaultState();
+                quarryReplaceBlock = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(quarryReplace.get())).defaultBlockState();
             } else {
                 // @todo 1.14
 //                try {
@@ -173,7 +173,7 @@ public class BuilderConfiguration {
 //                }
             }
             if (quarryReplaceBlock == null) {
-                quarryReplaceBlock = Blocks.DIRT.getDefaultState();
+                quarryReplaceBlock = Blocks.DIRT.defaultBlockState();
             }
         }
         return quarryReplaceBlock;

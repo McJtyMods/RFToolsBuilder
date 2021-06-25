@@ -104,21 +104,21 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
     }
 
     public static void listScans(PlayerEntity sender) {
-        ScanDataManager scans = get(sender.getEntityWorld());
+        ScanDataManager scans = get(sender.getCommandSenderWorld());
         for (Map.Entry<Integer, Scan> entry : scans.scans.entrySet()) {
             Integer scanid = entry.getKey();
-            scans.loadScan(sender.getEntityWorld(), scanid);
+            scans.loadScan(sender.getCommandSenderWorld(), scanid);
             Scan scan = entry.getValue();
             BlockPos dim = scan.getDataDim();
             if (dim == null) {
                 sender.sendMessage(new StringTextComponent(
                         TextFormatting.YELLOW + "Scan: " + TextFormatting.WHITE + scanid +
-                                TextFormatting.RED + "   Invalid"), Util.DUMMY_UUID);
+                                TextFormatting.RED + "   Invalid"), Util.NIL_UUID);
             } else {
                 sender.sendMessage(new StringTextComponent(
                         TextFormatting.YELLOW + "Scan: " + TextFormatting.WHITE + scanid +
                                 TextFormatting.YELLOW + "   Dim: " + TextFormatting.WHITE + dim.getX() + "," + dim.getY() + "," + dim.getZ() +
-                                TextFormatting.YELLOW + "   Size: " + TextFormatting.WHITE + scan.getRledata().length + " bytes"), Util.DUMMY_UUID);
+                                TextFormatting.YELLOW + "   Size: " + TextFormatting.WHITE + scan.getRledata().length + " bytes"), Util.NIL_UUID);
             }
         }
     }
@@ -131,7 +131,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
     }
 
     @Override
-    public void read(CompoundNBT tagCompound) {
+    public void load(CompoundNBT tagCompound) {
         scans.clear();
         ListNBT lst = tagCompound.getList("scans", Constants.NBT.TAG_COMPOUND);
         for (int i = 0; i < lst.size(); i++) {
@@ -146,7 +146,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
 
     @SuppressWarnings("NullableProblems")
     @Override
-    public CompoundNBT write(CompoundNBT tagCompound) {
+    public CompoundNBT save(CompoundNBT tagCompound) {
         ListNBT lst = new ListNBT();
         for (Map.Entry<Integer, Scan> entry : scans.entrySet()) {
             CompoundNBT tc = new CompoundNBT();

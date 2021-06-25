@@ -46,6 +46,8 @@ import java.util.*;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 
+import net.minecraft.item.Item.Properties;
+
 public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITooltipSettings {
 
     private final ShapeCardType type;
@@ -84,7 +86,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     public static final int MODE_CORNER2 = 2;
 
     public ShapeCardItem(ShapeCardType type) {
-        super(new Properties().maxStackSize(1).defaultMaxDamage(0).group(RFToolsBuilder.setup.getTab()));
+        super(new Properties().stacksTo(1).defaultDurability(0).tab(RFToolsBuilder.setup.getTab()));
         this.type = type;
     }
 
@@ -122,17 +124,17 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     @Override
-    public ActionResultType onItemUse(ItemUseContext context) {
-        World world = context.getWorld();
+    public ActionResultType useOn(ItemUseContext context) {
+        World world = context.getLevel();
         PlayerEntity player = context.getPlayer();
-        if (!world.isRemote && player != null) {
+        if (!world.isClientSide && player != null) {
             Hand hand = context.getHand();
-            BlockPos pos = context.getPos();
-            ItemStack stack = context.getItem();
+            BlockPos pos = context.getClickedPos();
+            ItemStack stack = context.getItemInHand();
             int mode = getMode(stack);
             if (mode == MODE_NONE) {
-                if (player.isSneaking()) {
-                    if (world.getTileEntity(pos) instanceof BuilderTileEntity) {
+                if (player.isShiftKeyDown()) {
+                    if (world.getBlockEntity(pos) instanceof BuilderTileEntity) {
                         setCurrentBlock(stack, new GlobalCoordinate(pos, world));
                         Logging.message(player, TextFormatting.GREEN + "Now select the first corner");
                         setMode(stack, MODE_CORNER1);
@@ -210,7 +212,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             tag.remove("ghost_block");
 //            tag.remove("ghost_meta");         // @todo 1.14 not more meta
         } else {
-            Block block = Block.getBlockFromItem(materialGhost.getItem());
+            Block block = Block.byItem(materialGhost.getItem());
             if (block == null) {
                 tag.remove("ghost_block");
 //                tag.remove("ghost_meta");     // @todo 1.14 not more meta
@@ -325,8 +327,8 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
 
     @Override
-    public void addInformation(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
-        super.addInformation(itemStack, world, list, flag);
+    public void appendHoverText(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
+        super.appendHoverText(itemStack, world, list, flag);
         // Use custom RL so that we don't have to duplicate the translation for every shape card
         tooltipBuilder.get().makeTooltip(new ResourceLocation(RFToolsBuilder.MODID, "shape_card"), itemStack, list, flag);
     }
@@ -351,7 +353,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     private static void addBlocks(Set<Block> blocks, Block block, ITag<Block> tag, boolean tagMatching) {
         blocks.add(block);
         if (tagMatching && tag != null) {
-            for (Block b : tag.getAllElements()) {
+            for (Block b : tag.getValues()) {
                 blocks.add(b);
             }
         }
@@ -600,9 +602,9 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
-        ItemStack stack = player.getHeldItem(hand);
-        if (world.isRemote) {
+    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (world.isClientSide) {
             GuiShapeCard.open(false);
             return new ActionResult<>(ActionResultType.SUCCESS, stack);
         }
@@ -650,7 +652,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             return;
         }
         if (forquarry) {
-            if (worldObj.isAirBlock(c)) {
+            if (worldObj.isEmptyBlock(c)) {
                 return;
             }
             blocks.put(c, state);
@@ -722,7 +724,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                         cnt++;
                         BlockState lastState = formula.getLastState();
                         if (lastState == null) {
-                            lastState = Blocks.STONE.getDefaultState();
+                            lastState = Blocks.STONE.defaultBlockState();
                         }
                         v = statePalette.alloc(lastState, 0) + 1;
                     }
@@ -790,7 +792,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
     private static boolean validFile(PlayerEntity player, String filename) {
         if (filename.contains("\\") || filename.contains("/") || filename.contains(":")) {
-            player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "Invalid filename '" + filename + "'! Cannot be a path!"), false);
+            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Invalid filename '" + filename + "'! Cannot be a path!"), false);
             return false;
         }
         return true;
@@ -809,7 +811,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
         RLE positions = new RLE();
         StatePalette statePalette = new StatePalette();
-        int cnt = getDataPositions(player.getEntityWorld(), card, shape, solid, positions, statePalette);
+        int cnt = getDataPositions(player.getCommandSenderWorld(), card, shape, solid, positions, statePalette);
 
         byte[] data = positions.getData();
 
@@ -830,10 +832,10 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             byte[] encoded = Base64.getEncoder().encode(data);
             writer.write(new String(encoded));
         } catch (FileNotFoundException e) {
-            player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "Cannot write to file '" + filename + "'!"), false);
+            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Cannot write to file '" + filename + "'!"), false);
             return;
         }
-        player.sendStatusMessage(new StringTextComponent(TextFormatting.GREEN + "Saved shape to file '" + file.getPath() + "'"), false);
+        player.displayClientMessage(new StringTextComponent(TextFormatting.GREEN + "Saved shape to file '" + file.getPath() + "'"), false);
     }
 
     public static void load(PlayerEntity player, ItemStack card, String filename) {
@@ -844,14 +846,14 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         Shape shape = ShapeCardItem.getShape(card);
 
         if (shape != Shape.SHAPE_SCAN) {
-            player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "To load a file into this card you need a linked 'scan' type card!"), false);
+            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "To load a file into this card you need a linked 'scan' type card!"), false);
             return;
         }
 
         CompoundNBT compound = card.getOrCreateTag();
         int scanId = compound.getInt("scanid");
         if (scanId == 0) {
-            player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "This card is not linked to scan data!"), false);
+            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "This card is not linked to scan data!"), false);
             return;
         }
 
@@ -862,18 +864,18 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
             String s = reader.readLine();
             if (!"SHAPE".equals(s)) {
-                player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
                 return;
             }
             s = reader.readLine();
             if (!s.startsWith("DIM:")) {
-                player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
                 return;
             }
             BlockPos dim = parse(s.substring(4));
             s = reader.readLine();
             if (!s.startsWith("OFF:")) {
-                player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
                 return;
             }
             BlockPos off = parse(s.substring(4));
@@ -884,12 +886,12 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                 Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(split[0]));
                 int meta = Integer.parseInt(split[1]);
                 if (block == null) {
-                    player.sendStatusMessage(new StringTextComponent(TextFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);
+                    player.displayClientMessage(new StringTextComponent(TextFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);
                     block = Blocks.STONE;
                     meta = 0;
                 }
 //                statePalette.add(block.getStateFromMeta(meta));
-                statePalette.add(block.getDefaultState());  // @todo 1.14 no more meta!
+                statePalette.add(block.defaultBlockState());  // @todo 1.14 no more meta!
                 s = reader.readLine();
             }
             s = reader.readLine();
@@ -897,19 +899,19 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
             setDataFromFile(scanId, card, dim, off, decoded, statePalette);
         } catch (FileNotFoundException e) {
-            player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
+            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
             return;
         } catch (IOException e) {
-            player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
+            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
             return;
         } catch (NullPointerException e) {
-            player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "File '" + filename + "' is too short!"), false);
+            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "File '" + filename + "' is too short!"), false);
             return;
         } catch (ArrayIndexOutOfBoundsException e) {
-            player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "File '" + filename + "' contains invalid entries!"), false);
+            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "File '" + filename + "' contains invalid entries!"), false);
             return;
         }
-        player.sendStatusMessage(new StringTextComponent(TextFormatting.GREEN + "Loaded shape from file '" + file.getPath() + "'"), false);
+        player.displayClientMessage(new StringTextComponent(TextFormatting.GREEN + "Loaded shape from file '" + file.getPath() + "'"), false);
     }
 
     private static void setDataFromFile(int scanId, ItemStack card, BlockPos dimension, BlockPos offset, byte[] data, StatePalette palette) {
