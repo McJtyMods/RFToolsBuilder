@@ -2,9 +2,13 @@ package mcjty.rftoolsbuilder.modules.builder.blocks;
 
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.varia.BlockPosTools;
+import mcjty.lib.varia.DimensionId;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
+import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
+import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 
@@ -13,6 +17,10 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
     private BlockPos minCorner;
     private BlockPos maxCorner;
     private int channel = -1;
+
+    public SpaceChamberControllerTileEntity() {
+        super(BuilderModule.TYPE_SPACE_CHAMBER_CONTROLLER.get());
+    }
 
     public BlockPos getMinCorner() {
         return minCorner;
@@ -32,16 +40,16 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         int z2 = z1;
         for (int i = 1; i < BuilderConfiguration.maxSpaceChamberDimension.get(); i++) {
             if (x2 == x1) {
-                if (getLevel().getBlockState(new BlockPos(x1 - i, y1, z1)).getBlock() == BuilderSetup.spaceChamberBlock) {
+                if (getLevel().getBlockState(new BlockPos(x1 - i, y1, z1)).getBlock() == BuilderModule.SPACE_CHAMBER.get()) {
                     x2 = x1-i;
-                } else if (getWorld().getBlockState(new BlockPos(x1 + i, y1, z1)).getBlock() == BuilderSetup.spaceChamberBlock) {
+                } else if (level.getBlockState(new BlockPos(x1 + i, y1, z1)).getBlock() == BuilderModule.SPACE_CHAMBER.get()) {
                     x2 = x1+i;
                 }
             }
             if (z2 == z1) {
-                if (getWorld().getBlockState(new BlockPos(x1, y1, z1 - i)).getBlock() == BuilderSetup.spaceChamberBlock) {
+                if (level.getBlockState(new BlockPos(x1, y1, z1 - i)).getBlock() == BuilderModule.SPACE_CHAMBER.get()) {
                     z2 = z1-i;
-                } else if (getWorld().getBlockState(new BlockPos(x1, y1, z1 + i)).getBlock() == BuilderSetup.spaceChamberBlock) {
+                } else if (level.getBlockState(new BlockPos(x1, y1, z1 + i)).getBlock() == BuilderModule.SPACE_CHAMBER.get()) {
                     z2 = z1+i;
                 }
             }
@@ -52,17 +60,17 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
             return;
         }
 
-        if (getWorld().getBlockState(new BlockPos(x2, y1, z2)).getBlock() != BuilderSetup.spaceChamberBlock) {
+        if (level.getBlockState(new BlockPos(x2, y1, z2)).getBlock() != BuilderModule.SPACE_CHAMBER.get()) {
             Logging.message(player, TextFormatting.RED + "Not a valid chamber shape!");
             return;
         }
 
         for (int i = 1 ; i < BuilderConfiguration.maxSpaceChamberDimension.get(); i++) {
-            if (getWorld().getBlockState(new BlockPos(x1, y1 - i, z1)).getBlock() == BuilderSetup.spaceChamberBlock) {
+            if (level.getBlockState(new BlockPos(x1, y1 - i, z1)).getBlock() == BuilderModule.SPACE_CHAMBER.get()) {
                 y2 = y1-i;
                 break;
             }
-            if (getWorld().getBlockState(new BlockPos(x1, y1 + i, z1)).getBlock() == BuilderSetup.spaceChamberBlock) {
+            if (level.getBlockState(new BlockPos(x1, y1 + i, z1)).getBlock() == BuilderModule.SPACE_CHAMBER.get()) {
                 y2 = y1+i;
                 break;
             }
@@ -73,17 +81,17 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
             return;
         }
 
-        if (getWorld().getBlockState(new BlockPos(x2, y2, z2)).getBlock() != BuilderSetup.spaceChamberBlock) {
+        if (level.getBlockState(new BlockPos(x2, y2, z2)).getBlock() != BuilderModule.SPACE_CHAMBER.get()) {
             Logging.message(player, TextFormatting.RED + "Not a valid chamber shape!");
             return;
         }
 
-        if (getWorld().getBlockState(new BlockPos(x1, y2, z2)).getBlock() != BuilderSetup.spaceChamberBlock) {
+        if (level.getBlockState(new BlockPos(x1, y2, z2)).getBlock() != BuilderModule.SPACE_CHAMBER.get()) {
             Logging.message(player, TextFormatting.RED + "Not a valid chamber shape!");
             return;
         }
 
-        if (getWorld().getBlockState(new BlockPos(x2, y2, z1)).getBlock() != BuilderSetup.spaceChamberBlock) {
+        if (level.getBlockState(new BlockPos(x2, y2, z1)).getBlock() != BuilderModule.SPACE_CHAMBER.get()) {
             Logging.message(player, TextFormatting.RED + "Not a valid chamber shape!");
             return;
         }
@@ -100,9 +108,9 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
 
         Logging.message(player, TextFormatting.WHITE + "Chamber succesfully created!");
 
-        SpaceChamberRepository chamberRepository = SpaceChamberRepository.getChannels(getWorld());
+        SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(level);
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = chamberRepository.getOrCreateChannel(channel);
-        chamberChannel.setDimension(getWorld().provider.getDimension());
+        chamberChannel.setDimension(DimensionId.fromWorld(level));
         chamberChannel.setMinCorner(minCorner);
         chamberChannel.setMaxCorner(maxCorner);
         chamberRepository.save();
@@ -121,7 +129,7 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         if (minCorner == null) {
             return -1;
         }
-        return BlockPosTools.area(minCorner, maxCorner);
+        return (maxCorner.getX() - minCorner.getX()) * (maxCorner.getY() - minCorner.getY()) * (maxCorner.getZ() - minCorner.getZ());
     }
 
     public void setChannel(int channel) {
@@ -130,29 +138,31 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound tagCompound) {
-        super.readFromNBT(tagCompound);
-        minCorner = BlockPosTools.readFromNBT(tagCompound, "minCorner");
-        maxCorner = BlockPosTools.readFromNBT(tagCompound, "maxCorner");
+    public void read(CompoundNBT tagCompound) {
+        super.read(tagCompound);
+        minCorner = BlockPosTools.read(tagCompound, "minCorner");
+        maxCorner = BlockPosTools.read(tagCompound, "maxCorner");
     }
 
-    @Override
-    public void readRestorableFromNBT(NBTTagCompound tagCompound) {
-        super.readRestorableFromNBT(tagCompound);
-        channel = tagCompound.getInteger("channel");
-    }
+    // @todo 1.16 loot table
+//    @Override
+//    public void readRestorableFromNBT(CompoundNBT tagCompound) {
+//        super.readRestorableFromNBT(tagCompound);
+//        channel = tagCompound.getInteger("channel");
+//    }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound tagCompound) {
-        super.writeToNBT(tagCompound);
-        BlockPosTools.writeToNBT(tagCompound, "minCorner", minCorner);
-        BlockPosTools.writeToNBT(tagCompound, "maxCorner", maxCorner);
+    public CompoundNBT save(CompoundNBT tagCompound) {
+        super.save(tagCompound);
+        BlockPosTools.write(tagCompound, "minCorner", minCorner);
+        BlockPosTools.write(tagCompound, "maxCorner", maxCorner);
         return tagCompound;
     }
 
-    @Override
-    public void writeRestorableToNBT(NBTTagCompound tagCompound) {
-        super.writeRestorableToNBT(tagCompound);
-        tagCompound.setInteger("channel", channel);
-    }
+    // @todo 1.16 loot table
+//    @Override
+//    public void writeRestorableToNBT(CompoundNBT tagCompound) {
+//        super.writeRestorableToNBT(tagCompound);
+//        tagCompound.setInteger("channel", channel);
+//    }
 }

@@ -1,15 +1,19 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
 import mcjty.lib.blocks.BaseBlock;
+import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
+import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerBlock;
+import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.client.BuilderRenderer;
 import mcjty.rftoolsbuilder.modules.builder.client.ClientSetup;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
+import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
@@ -20,7 +24,6 @@ import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.registries.ObjectHolder;
 
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
@@ -34,6 +37,14 @@ public class BuilderModule implements IModule {
 //    public static BaseBlock locatorBlock;
 
     public static final RegistryObject<SupportBlock> SUPPORT = BLOCKS.register("support_block", SupportBlock::new);
+
+    public static final RegistryObject<BaseBlock> SPACE_CHAMBER = BLOCKS.register("space_chamber", () -> new BaseBlock(new BlockBuilder()));    // @todo
+    public static final RegistryObject<Item> SPACE_CHAMBER_ITEM = ITEMS.register("space_chamber", () -> new BlockItem(SPACE_CHAMBER.get(), Registration.createStandardProperties()));
+
+    public static final RegistryObject<SpaceChamberControllerBlock> SPACE_CHAMBER_CONTROLLER = BLOCKS.register("space_chamber_controller", SpaceChamberControllerBlock::new);
+    public static final RegistryObject<Item> SPACE_CHAMBER_CONTROLLER_ITEM = ITEMS.register("space_chamber_controller", () -> new BlockItem(SPACE_CHAMBER_CONTROLLER.get(), Registration.createStandardProperties()));
+    public static final RegistryObject<TileEntityType<SpaceChamberControllerTileEntity>> TYPE_SPACE_CHAMBER_CONTROLLER = TILES.register("space_chamber_controller", () -> TileEntityType.Builder.of(SpaceChamberControllerTileEntity::new, SPACE_CHAMBER_CONTROLLER.get()).build(null));
+    public static final RegistryObject<Item> SPACE_CHAMBER_CARD = ITEMS.register("space_chamber_card", SpaceChamberCardItem::new);
 
     public static final RegistryObject<BaseBlock> BUILDER = BLOCKS.register("builder", BuilderTileEntity::createBlock);
     public static final RegistryObject<Item> BUILDER_ITEM = ITEMS.register("builder", () -> new BlockItem(BUILDER.get(), Registration.createStandardProperties()));
@@ -71,10 +82,6 @@ public class BuilderModule implements IModule {
 
 //    @ObjectHolder("rftools:modifier")
 //    public static ContainerType<GenericContainer> CONTAINER_MODIFIER;
-
-    //    public static SpaceChamberCardItem spaceChamberCardItem;
-    @ObjectHolder("rftoolsbuilder:space_chamber_card")
-    public static Item SPACE_CHAMBER_CARD;    // @todo 1.14
 
 
     @Override

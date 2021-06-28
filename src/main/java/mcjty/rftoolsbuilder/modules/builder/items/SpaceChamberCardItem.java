@@ -3,18 +3,15 @@ package mcjty.rftoolsbuilder.modules.builder.items;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.tooltips.ITooltipSettings;
 import mcjty.lib.varia.Logging;
-import mcjty.rftools.RFTools;
-import mcjty.rftools.blocks.builder.SpaceChamberControllerTileEntity;
-import mcjty.rftools.setup.GuiProxy;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
+import mcjty.rftoolsbuilder.modules.builder.client.GuiChamberDetails;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
@@ -104,19 +101,19 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
         }
 
         if (channel == -1) {
-            showDetails(world, player, stack);
+            showDetails(level, player, stack);
         } else {
-            tagCompound.setInteger("channel", channel);
-            if (world.isRemote) {
+            tagCompound.putInt("channel", channel);
+            if (level.isClientSide) {
                 Logging.message(player, "Card is set to channel '" + channel + "'");
             }
         }
-        return EnumActionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 
     private void showDetails(World world, PlayerEntity player, ItemStack stack) {
-        if (stack.getTagCompound() != null && stack.getTagCompound().hasKey("channel")) {
-            int channel = stack.getTagCompound().getInteger("channel");
+        if (stack.getTag() != null && stack.getTag().contains("channel")) {
+            int channel = stack.getTag().getInt("channel");
             if (channel != -1) {
                 showDetailsGui(world, player);
             } else {
@@ -125,9 +122,9 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
         }
     }
 
-    private void showDetailsGui(World world, EntityPlayer player) {
-        if (world.isRemote) {
-            player.openGui(RFTools.instance, GuiProxy.GUI_CHAMBER_DETAILS, player.getEntityWorld(), (int) player.posX, (int) player.posY, (int) player.posZ);
+    private void showDetailsGui(World world, PlayerEntity player) {
+        if (world.isClientSide) {
+            GuiChamberDetails.open();
         }
     }
 

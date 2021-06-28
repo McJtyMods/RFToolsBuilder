@@ -11,6 +11,7 @@ import mcjty.lib.gui.widgets.*;
 import mcjty.rftoolsbuilder.setup.CommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -26,13 +27,13 @@ public class GuiChamberDetails extends GuiItemScreen {
     private static final int CHAMBER_XSIZE = 390;
     private static final int CHAMBER_YSIZE = 210;
 
-    private static Map<BlockState,Integer> items = null;
-    private static Map<BlockState,Integer> costs = null;
-    private static Map<BlockState,ItemStack> stacks = null;
-    private static Map<String,Integer> entities = null;
-    private static Map<String,Integer> entityCosts = null;
-    private static Map<String,Entity> realEntities = null;
-    private static Map<String,String> playerNames = null;
+    private static Map<BlockState, Integer> items = null;
+    private static Map<BlockState, Integer> costs = null;
+    private static Map<BlockState, ItemStack> stacks = null;
+    private static Map<String, Integer> entities = null;
+    private static Map<String, Integer> entityCosts = null;
+    private static Map<String, Entity> realEntities = null;
+    private static Map<String, String> playerNames = null;
 
     private WidgetList blockList;
     private Label infoLabel;
@@ -43,11 +44,11 @@ public class GuiChamberDetails extends GuiItemScreen {
         requestChamberInfoFromServer();
     }
 
-    public static void setItemsWithCount(Map<BlockState,Integer> items, Map<BlockState,Integer> costs,
-                                         Map<BlockState,ItemStack> stacks,
-                                         Map<String,Integer> entities, Map<String,Integer> entityCosts,
-                                         Map<String,Entity> realEntities,
-                                         Map<String,String> playerNames) {
+    public static void setItemsWithCount(Map<BlockState, Integer> items, Map<BlockState, Integer> costs,
+                                         Map<BlockState, ItemStack> stacks,
+                                         Map<String, Integer> entities, Map<String, Integer> entityCosts,
+                                         Map<String, Entity> realEntities,
+                                         Map<String, String> playerNames) {
         GuiChamberDetails.items = new HashMap<>(items);
         GuiChamberDetails.costs = new HashMap<>(costs);
         GuiChamberDetails.stacks = new HashMap<>(stacks);
@@ -193,5 +194,9 @@ public class GuiChamberDetails extends GuiItemScreen {
         populateLists();
 
         drawWindow(matrixStack);
+    }
+
+    public static void open() {
+        Minecraft.getInstance().setScreen(new GuiChamberDetails());
     }
 }

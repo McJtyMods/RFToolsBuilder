@@ -133,5 +133,18 @@ public class Recipes extends BaseRecipeProvider {
                         .key('M', BuilderModule.SHAPE_CARD_DEF.get())
                         .addCriterion("shape_card", has(BuilderModule.SHAPE_CARD_DEF.get())),
                 "xOx", "OMO", "xOx");
+
+        build(consumer, ShapedRecipeBuilder.shaped(BuilderModule.SPACE_CHAMBER_CARD.get(), 1)
+                        .unlockedBy("glass", has(Items.GLASS)),
+                " B ", "rir", " B ");
+        build(consumer, ShapedRecipeBuilder.shaped(BuilderModule.SPACE_CHAMBER.get(), 1)
+                        .define('x', Tags.Items.DYES_BLUE)
+                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                "xGx", "GFG", "xGx");
+        build(consumer, ShapedRecipeBuilder.shaped(BuilderModule.SPACE_CHAMBER_CONTROLLER.get(), 1)
+                        .define('x', Tags.Items.DYES_BLUE)
+                        .define('F', BuilderModule.SPACE_CHAMBER.get())
+                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                " o ", "TFT", " o ");
     }
 }

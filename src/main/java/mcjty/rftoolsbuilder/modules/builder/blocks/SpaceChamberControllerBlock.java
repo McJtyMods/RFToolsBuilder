@@ -3,18 +3,19 @@ package mcjty.rftoolsbuilder.modules.builder.blocks;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
+import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+
+import javax.annotation.Nonnull;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 
@@ -22,6 +23,10 @@ public class SpaceChamberControllerBlock extends BaseBlock {
 
     public SpaceChamberControllerBlock() {
         super(new BlockBuilder()
+//                .properties(AbstractBlock.Properties.of(Material.METAL)
+//                        .strength(2.0f)
+//                        .sound(SoundType.METAL)
+//                        .noOcclusion())
                 .tileEntitySupplier(SpaceChamberControllerTileEntity::new)
 //                .manualEntry(ManualHelper.create("rftoolsbuilder:builder/builder_intro"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
@@ -89,23 +94,23 @@ public class SpaceChamberControllerBlock extends BaseBlock {
 
 
     @Override
-    protected boolean wrenchUse(World world, BlockPos pos, EnumFacing side, EntityPlayer player) {
-        if (world.isRemote) {
-            SoundEvent pling = SoundEvent.REGISTRY.getObject(new ResourceLocation("block.note.pling"));
-            world.playSound(pos.getX(), pos.getY(), pos.getZ(), pling, SoundCategory.BLOCKS, 1.0f, 1.0f, false);
+    protected boolean wrenchUse(World level, BlockPos pos, Direction side, PlayerEntity player) {
+        if (level.isClientSide) {
+            SoundEvent pling = SoundEvents.NOTE_BLOCK_BELL;
+            level.playSound(player, pos, pling, SoundCategory.BLOCKS, 1.0f, 1.0f);
         } else {
-            SpaceChamberControllerTileEntity chamberControllerTileEntity = (SpaceChamberControllerTileEntity) world.getTileEntity(pos);
+            SpaceChamberControllerTileEntity chamberControllerTileEntity = (SpaceChamberControllerTileEntity) level.getBlockEntity(pos);
             chamberControllerTileEntity.createChamber(player);
         }
         return true;
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase entityLivingBase, ItemStack itemStack) {
-        super.onBlockPlacedBy(world, pos, state, entityLivingBase, itemStack);
-        if (!world.isRemote) {
-            SpaceChamberRepository chamberRepository = SpaceChamberRepository.getChannels(world);
-            SpaceChamberControllerTileEntity te = (SpaceChamberControllerTileEntity) world.getTileEntity(pos);
+    public void onPlace(BlockState state, World level, BlockPos pos, BlockState state2, boolean p_220082_5_) {
+        super.onPlace(state, level, pos, state2, p_220082_5_);
+        if (!level.isClientSide) {
+            SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(level);
+            SpaceChamberControllerTileEntity te = (SpaceChamberControllerTileEntity) level.getBlockEntity(pos);
             if (te.getChannel() == -1) {
                 int id = chamberRepository.newChannel();
                 te.setChannel(id);
@@ -117,32 +122,15 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     }
 
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        if (!world.isRemote) {
-            SpaceChamberRepository chamberRepository = SpaceChamberRepository.getChannels(world);
-            SpaceChamberControllerTileEntity te = (SpaceChamberControllerTileEntity) world.getTileEntity(pos);
+    public void onRemove(BlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
+        if (!world.isClientSide) {
+            SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(world);
+            SpaceChamberControllerTileEntity te = (SpaceChamberControllerTileEntity) world.getBlockEntity(pos);
             if (te.getChannel() != -1) {
                 chamberRepository.deleteChannel(te.getChannel());
                 chamberRepository.save();
             }
         }
-        super.breakBlock(world, pos, state);
-    }
-
-
-    @Override
-    public boolean isBlockNormalCube(IBlockState state) {
-        return false;
-    }
-
-    @Override
-    public boolean isOpaqueCube(IBlockState state) {
-        return false;
-    }
-
-    @SideOnly(Side.CLIENT)
-    @Override
-    public BlockRenderLayer getBlockLayer() {
-        return BlockRenderLayer.TRANSLUCENT;
+        super.onRemove(state, world, pos, newstate, isMoving);
     }
 }
