@@ -142,9 +142,8 @@ public class Recipes extends BaseRecipeProvider {
                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
                 "xGx", "GFG", "xGx");
         build(consumer, ShapedRecipeBuilder.shaped(BuilderModule.SPACE_CHAMBER_CONTROLLER.get(), 1)
-                        .define('x', Tags.Items.DYES_BLUE)
-                        .define('F', BuilderModule.SPACE_CHAMBER.get())
+                        .define('X', BuilderModule.SPACE_CHAMBER.get())
                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
-                " o ", "TFT", " o ");
+                " o ", "TXT", " o ");
     }
 }

@@ -38,9 +38,9 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     private static String getChannelDescription(ItemStack stack) {
         CompoundNBT tag = stack.getTag();
         int channel = -1;
-        // @todo WRONG TAG FOR CHANNEL
-        if (tag != null) {
-            channel = tag.getInt("channel");
+        CompoundNBT info = tag == null ? null : tag.getCompound("BlockEntityTag").getCompound("Info");
+        if (info != null) {
+            channel = info.getInt("channel");
         }
         if (channel != -1) {
             return "Channel: " + channel;

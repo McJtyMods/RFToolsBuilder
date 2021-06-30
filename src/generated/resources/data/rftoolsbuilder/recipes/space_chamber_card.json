@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "rir",
+    " B "
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:bricks"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    },
+    "i": {
+      "tag": "forge:ingots/iron"
+    }
+  },
+  "result": {
+    "item": "rftoolsbuilder:space_chamber_card"
+  }
+}
