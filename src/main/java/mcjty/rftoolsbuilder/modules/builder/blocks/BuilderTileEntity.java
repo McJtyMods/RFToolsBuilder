@@ -31,6 +31,7 @@ import mcjty.rftoolsbase.api.client.IHudSupport;
 import mcjty.rftoolsbase.modules.filter.items.FilterModuleItem;
 import mcjty.rftoolsbase.modules.hud.network.PacketGetHudLog;
 import mcjty.rftoolsbase.tools.ManualHelper;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BlockInformation;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
@@ -78,6 +79,7 @@ import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.*;
+import net.minecraftforge.common.world.ForgeChunkManager;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fluids.FluidStack;
@@ -176,9 +178,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private final Cached<Predicate<ItemStack>> filterCache = Cached.of(this::createFilterCache);
 
-    // For chunkloading with the quarry.
-    // @todo 1.14
-//    private ForgeChunkManager.Ticket ticket = null;
     // The currently forced chunk.
     private ChunkPos forcedChunk = null;
 
@@ -2113,11 +2112,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private void chunkUnload() {
-        // @todo 1.14
-//        if (forcedChunk != null && ticket != null) {
-//            ForgeChunkManager.unforceChunk(ticket, forcedChunk);
-//            forcedChunk = null;
-//        }
+        if (forcedChunk != null) {
+            if (getOwnerUUID() != null) {
+                ForgeChunkManager.forceChunk((ServerWorld) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
+            }
+            forcedChunk = null;
+        }
     }
 
     private boolean chunkLoad(int x, int z) {
@@ -2129,25 +2129,19 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         }
 
         if (BuilderConfiguration.quarryChunkloads.get()) {
-            // @todo 1.14
-//            if (ticket == null) {
-//                ticket = ForgeChunkManager.requestTicket(RFTools.instance, world, ForgeChunkManager.Type.NORMAL);
-//                if (ticket == null) {
-//                    // Chunk is not loaded and we can't get a ticket.
-//                    return false;
-//                }
-//            }
-
             ChunkPos pair = new ChunkPos(cx, cz);
             if (pair.equals(forcedChunk)) {
                 return true;
             }
-            // @todo 1.14
-//            if (forcedChunk != null) {
-//                ForgeChunkManager.unforceChunk(ticket, forcedChunk);
-//            }
-//            forcedChunk = pair;
-//            ForgeChunkManager.forceChunk(ticket, forcedChunk);
+            if (forcedChunk != null) {
+                if (getOwnerUUID() != null) {
+                    ForgeChunkManager.forceChunk((ServerWorld) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
+                }
+            }
+            forcedChunk = pair;
+            if (getOwnerUUID() != null) {
+                ForgeChunkManager.forceChunk((ServerWorld) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, true, false);
+            }
             return true;
         }
         // Chunk is not loaded and we don't do chunk loading so we cannot proceed.
