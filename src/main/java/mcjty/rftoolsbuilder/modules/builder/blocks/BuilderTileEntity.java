@@ -338,7 +338,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     @Override
-    public BlockPos getBlockPos() {
+    public BlockPos getHudPos() {
         return getBlockPos();
     }
 

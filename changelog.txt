@@ -1,3 +1,6 @@
+Upcoming:
+- Small fix for mojang mappings
+
 1.16-3.0.17:
 - The Builder and Shield will now (if possible) use a fake player with the same UUID as the player that placed the builder
 
