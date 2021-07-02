@@ -17,6 +17,9 @@ import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.SoundType;
+import net.minecraft.block.material.Material;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -38,7 +41,11 @@ public class BuilderModule implements IModule {
 
     public static final RegistryObject<SupportBlock> SUPPORT = BLOCKS.register("support_block", SupportBlock::new);
 
-    public static final RegistryObject<BaseBlock> SPACE_CHAMBER = BLOCKS.register("space_chamber", () -> new BaseBlock(new BlockBuilder()));    // @todo
+    public static final RegistryObject<BaseBlock> SPACE_CHAMBER = BLOCKS.register("space_chamber", () -> new BaseBlock(new BlockBuilder()
+        .properties(AbstractBlock.Properties.of(Material.METAL)
+                .strength(2.0f)
+                .sound(SoundType.METAL)
+                .noOcclusion())));    // @todo
     public static final RegistryObject<Item> SPACE_CHAMBER_ITEM = ITEMS.register("space_chamber", () -> new BlockItem(SPACE_CHAMBER.get(), Registration.createStandardProperties()));
 
     public static final RegistryObject<SpaceChamberControllerBlock> SPACE_CHAMBER_CONTROLLER = BLOCKS.register("space_chamber_controller", SpaceChamberControllerBlock::new);

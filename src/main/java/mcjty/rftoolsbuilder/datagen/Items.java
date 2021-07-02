@@ -26,8 +26,8 @@ public class Items extends BaseItemModelProvider {
         parentedBlock(ShieldModule.SHIELD_BLOCK4.get(), "block/shield_block");
 
         parentedBlock(BuilderModule.BUILDER.get(),"block/builder");
-        parentedBlock(BuilderModule.SPACE_CHAMBER.get(),"block/machinespacechamber");
-        parentedBlock(BuilderModule.SPACE_CHAMBER_CONTROLLER.get(),"block/machinespacechambercontroller");
+        parentedBlock(BuilderModule.SPACE_CHAMBER.get(),"block/space_chamber");
+        parentedBlock(BuilderModule.SPACE_CHAMBER_CONTROLLER.get(),"block/space_chamber_controller");
 
         itemGenerated(BuilderModule.SPACE_CHAMBER_CARD.get(), "item/spacechambercarditem");
 

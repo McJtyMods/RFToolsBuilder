@@ -4,7 +4,10 @@ import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.SoundType;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -23,10 +26,10 @@ public class SpaceChamberControllerBlock extends BaseBlock {
 
     public SpaceChamberControllerBlock() {
         super(new BlockBuilder()
-//                .properties(AbstractBlock.Properties.of(Material.METAL)
-//                        .strength(2.0f)
-//                        .sound(SoundType.METAL)
-//                        .noOcclusion())
+                .properties(AbstractBlock.Properties.of(Material.METAL)
+                        .strength(2.0f)
+                        .sound(SoundType.METAL)
+                        .noOcclusion())
                 .tileEntitySupplier(SpaceChamberControllerTileEntity::new)
 //                .manualEntry(ManualHelper.create("rftoolsbuilder:builder/builder_intro"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
