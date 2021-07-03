@@ -6,6 +6,7 @@ import mcjty.lib.tooltips.ITooltipSettings;
 import mcjty.lib.varia.*;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
+import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiShapeCard;
 import mcjty.rftoolsbuilder.shapes.IFormula;
@@ -346,6 +347,9 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     public static ShapeCardType getType(ItemStack stack) {
         if (stack.getItem() instanceof ShapeCardItem) {
             return ((ShapeCardItem) stack.getItem()).type;
+        }
+        if (stack.getItem() == BuilderModule.SPACE_CHAMBER_CARD.get()) {
+            return ShapeCardType.CARD_SPACE;
         }
         return ShapeCardType.CARD_UNKNOWN;
     }

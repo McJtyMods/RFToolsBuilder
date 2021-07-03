@@ -1960,13 +1960,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         tc.putInt("x", destpos.getX());
         tc.putInt("y", destpos.getY());
         tc.putInt("z", destpos.getZ());
-// @todo 1.14
-        //        TileEntity tileEntity = TileEntity.create(destWorld, tc);
-//        if (tileEntity != null) {
-//            destWorld.getChunkFromBlockCoords(destpos).addTileEntity(tileEntity);
-//            tileEntity.markDirty();
-//            destWorld.notifyBlockUpdate(destpos, newDestState, newDestState, 3);
-//        }
+        TileEntity tileEntity = TileEntity.loadStatic(newDestState, tc);
+        if (tileEntity != null) {
+            destWorld.getChunk(destpos).setBlockEntity(destpos, tileEntity);
+            tileEntity.setChanged();
+            destWorld.sendBlockUpdated(destpos, newDestState, newDestState, 3);
+        }
     }
 
     private void swapBlock(World srcWorld, BlockPos srcPos, World destWorld, BlockPos dstPos) {

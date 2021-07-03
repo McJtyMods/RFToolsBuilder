@@ -82,7 +82,7 @@ public class BuilderConfiguration {
                 .defineInRange("builderRfPerPlayer", 40000, 0, Integer.MAX_VALUE);
         teMode = SERVER_BUILDER
                 .comment("Can Tile Entities be moved? 'forbidden' means never, 'whitelist' means only whitelisted, 'blacklist' means all except blacklisted, 'allowed' means all")
-                .defineEnum("tileEntityMode", BuilderTileEntityMode.MOVE_WHITELIST, BuilderTileEntityMode.values());
+                .defineEnum("tileEntityMode", BuilderTileEntityMode.MOVE_BLACKLIST, BuilderTileEntityMode.values());
         maxSpaceChamberDimension = SERVER_BUILDER
                 .comment("Maximum dimension for the space chamber")
                 .defineInRange("maxSpaceChamberDimension", 128, 0, 100000);
