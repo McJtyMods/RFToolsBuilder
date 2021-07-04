@@ -32,6 +32,7 @@ import mcjty.rftoolsbase.modules.filter.items.FilterModuleItem;
 import mcjty.rftoolsbase.modules.hud.network.PacketGetHudLog;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.BlockInformation;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
@@ -252,6 +253,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
                 .tileEntitySupplier(BuilderTileEntity::new)
+                .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
                 .manualEntry(ManualHelper.create("rftoolsbuilder:builder/builder_intro"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
@@ -2403,30 +2405,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public AxisAlignedBB getRenderBoundingBox() {
         return new AxisAlignedBB(worldPosition, worldPosition.offset(1, 2, 1));
     }
-
-//    @Optional.Method(modid = "theoneprobe")
-//    @Override
-//    public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, PlayerEntity player, World world, BlockState blockState, IProbeHitData data) {
-//        super.addProbeInfo(mode, probeInfo, player, world, blockState, data);
-//        int scan = getCurrentLevel();
-//        probeInfo.text(TextFormatting.GREEN + "Current level: " + (scan == -1 ? "not scanning" : scan));
-//    }
-
-    private static long lastTime = 0;
-
-//    @SideOnly(Side.CLIENT)
-//    @Override
-//    @Optional.Method(modid = "waila")
-//    public void addWailaBody(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor, IWailaConfigHandler config) {
-//        super.addWailaBody(itemStack, currenttip, accessor, config);
-//        if (System.currentTimeMillis() - lastTime > 250) {
-//            lastTime = System.currentTimeMillis();
-//            requestCurrentLevel();
-//        }
-//        int scan = BuilderTileEntity.getCurrentLevelClientSide();
-//        currenttip.add(TextFormatting.GREEN + "Current level: " + (scan == -1 ? "not scanning" : scan));
-//    }
-
 
     @Override
     public void rotateBlock(Rotation axis) {

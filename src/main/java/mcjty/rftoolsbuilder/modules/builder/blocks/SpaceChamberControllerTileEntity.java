@@ -144,13 +144,6 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         maxCorner = BlockPosTools.read(tagCompound, "maxCorner");
     }
 
-    // @todo 1.16 loot table
-//    @Override
-//    public void readRestorableFromNBT(CompoundNBT tagCompound) {
-//        super.readRestorableFromNBT(tagCompound);
-//        channel = tagCompound.getInteger("channel");
-//    }
-
     @Override
     public CompoundNBT save(CompoundNBT tagCompound) {
         super.save(tagCompound);
@@ -158,11 +151,4 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         BlockPosTools.write(tagCompound, "maxCorner", maxCorner);
         return tagCompound;
     }
-
-    // @todo 1.16 loot table
-//    @Override
-//    public void writeRestorableToNBT(CompoundNBT tagCompound) {
-//        super.writeRestorableToNBT(tagCompound);
-//        tagCompound.setInteger("channel", channel);
-//    }
 }

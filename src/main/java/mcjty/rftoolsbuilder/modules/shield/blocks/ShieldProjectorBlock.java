@@ -4,11 +4,11 @@ import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.crafting.INBTPreservingIngredient;
-import mcjty.lib.varia.DimensionId;
 import mcjty.lib.varia.GlobalCoordinate;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbase.modules.various.items.SmartWrenchItem;
 import mcjty.rftoolsbase.tools.ManualHelper;
+import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -36,6 +36,7 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     public ShieldProjectorBlock(Supplier<TileEntity> te, int max) {
         super(new BlockBuilder()
                 .manualEntry(ManualHelper.create("rftoolsbuilder:shield/shield_intro"))
+                .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(), gold(), parameter("info", stack -> Integer.toString(max)))

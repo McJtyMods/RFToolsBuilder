@@ -3,6 +3,7 @@ package mcjty.rftoolsbuilder.modules.builder.blocks;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
+import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
@@ -30,6 +31,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
                         .strength(2.0f)
                         .sound(SoundType.METAL)
                         .noOcclusion())
+                .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .tileEntitySupplier(SpaceChamberControllerTileEntity::new)
 //                .manualEntry(ManualHelper.create("rftoolsbuilder:builder/builder_intro"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
@@ -56,45 +58,6 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     public RotationType getRotationType() {
         return RotationType.NONE;
     }
-
-//    @SideOnly(Side.CLIENT)
-//    @Override
-//    public void addInformation(ItemStack itemStack, World player, List<String> list, ITooltipFlag whatIsThis) {
-//        super.addInformation(itemStack, player, list, whatIsThis);
-//        NBTTagCompound tagCompound = itemStack.getTagCompound();
-//        if (tagCompound != null) {
-//            int channel = tagCompound.getInteger("channel");
-//            list.add(TextFormatting.GREEN + "Channel: " + channel);
-//        }
-//
-//        if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
-//            list.add(TextFormatting.WHITE + "This block is one of the eight corners of an");
-//            list.add(TextFormatting.WHITE + "area of space you want to copy/move elsewhere");
-//        } else {
-//            list.add(TextFormatting.WHITE + GuiProxy.SHIFT_MESSAGE);
-//        }
-//    }
-
-//    @Override
-//    @Optional.Method(modid = "theoneprobe")
-//    public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, EntityPlayer player, World world, IBlockState blockState, IProbeHitData data) {
-//        super.addProbeInfo(mode, probeInfo, player, world, blockState, data);
-//        TileEntity te = world.getTileEntity(data.getPos());
-//        if (te instanceof SpaceChamberControllerTileEntity) {
-//            SpaceChamberControllerTileEntity spaceChamberControllerTileEntity = (SpaceChamberControllerTileEntity) te;
-//            int channel = spaceChamberControllerTileEntity.getChannel();
-//            probeInfo.text(TextFormatting.GREEN + "Channel: " + channel);
-//            if (channel != -1) {
-//                int size = spaceChamberControllerTileEntity.getChamberSize();
-//                if (size == -1) {
-//                    probeInfo.text(TextFormatting.YELLOW + "Chamber not formed!");
-//                } else {
-//                    probeInfo.text(TextFormatting.GREEN + "Area: " + size + " blocks");
-//                }
-//            }
-//        }
-//    }
-
 
     @Override
     protected boolean wrenchUse(World level, BlockPos pos, Direction side, PlayerEntity player) {
