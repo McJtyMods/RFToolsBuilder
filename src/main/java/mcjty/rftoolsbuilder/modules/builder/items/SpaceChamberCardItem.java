@@ -4,6 +4,7 @@ import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.tooltips.ITooltipSettings;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiChamberDetails;
 import net.minecraft.client.util.ITooltipFlag;
@@ -16,7 +17,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -32,8 +32,14 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
     private final Lazy<TooltipBuilder> tooltipBuilder = () -> new TooltipBuilder()
             .info(key("message.rftoolsbuilder.shiftmessage"))
             .infoShift(header(), gold(),
-                    parameter("channel", this::getChannelDescription)
+                    parameter("cost", this::getCostDescription),
+                    parameter("channel", this::getChannelDescription),
+                    general("extra", TextFormatting.GRAY)
                     );
+
+    private String getCostDescription(ItemStack stack) {
+        return BuilderConfiguration.builderRfPerOperation.get() + " RF/t per block";
+    }
 
     private String getChannelDescription(ItemStack stack) {
         CompoundNBT tag = stack.getTag();
@@ -55,27 +61,8 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
     @Override
     public void appendHoverText(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
         super.appendHoverText(itemStack, world, list, flag);
-        // Use custom RL so that we don't have to duplicate the translation for every shape card
-        tooltipBuilder.get().makeTooltip(new ResourceLocation(RFToolsBuilder.MODID, "shape_card"), itemStack, list, flag);
+        tooltipBuilder.get().makeTooltip(getRegistryName(), itemStack, list, flag);
     }
-
-    // @todo lang file
-//    @Override
-//    public void addInformation(ItemStack itemStack, World player, List<String> list, ITooltipFlag whatIsThis) {
-//        if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
-//            list.add(TextFormatting.WHITE + "Sneak right-click on a space chamber controller");
-//            list.add(TextFormatting.WHITE + "to set the channel for this card.");
-//            list.add(TextFormatting.WHITE + "Right-click in the air to show an overview of");
-//            list.add(TextFormatting.WHITE + "the area contents.");
-//            list.add(TextFormatting.WHITE + "Insert it in a builder to copy/move the");
-//            list.add(TextFormatting.WHITE + "linked area");
-//            list.add(TextFormatting.GREEN + "Base cost: " + BuilderConfiguration.builderRfPerOperation.get() + " RF/t per block");
-//            list.add(TextFormatting.GREEN + "(final cost depends on infusion level)");
-//        } else {
-//            list.add(TextFormatting.WHITE + GuiProxy.SHIFT_MESSAGE);
-//        }
-//    }
-
 
     @Override
     public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {

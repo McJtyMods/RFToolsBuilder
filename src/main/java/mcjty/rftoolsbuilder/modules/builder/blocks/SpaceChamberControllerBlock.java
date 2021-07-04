@@ -33,7 +33,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
                 .tileEntitySupplier(SpaceChamberControllerTileEntity::new)
 //                .manualEntry(ManualHelper.create("rftoolsbuilder:builder/builder_intro"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
-                .infoShift(header(), gold(),
+                .infoShift(header(),
                         parameter("channel", SpaceChamberControllerBlock::getChannelDescription)
                 ));
     }

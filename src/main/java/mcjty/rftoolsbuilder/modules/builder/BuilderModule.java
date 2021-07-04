@@ -31,13 +31,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
 public class BuilderModule implements IModule {
-//    public static SpaceChamberBlock spaceChamberBlock;
-//    public static SpaceChamberControllerBlock spaceChamberControllerBlock;
-//    public static BaseBlock composerBlock;
-//    public static BaseBlock scannerBlock;
-//    public static BaseBlock remoteScannerBlock;
-//    public static BaseBlock projectorBlock;
-//    public static BaseBlock locatorBlock;
 
     public static final RegistryObject<SupportBlock> SUPPORT = BLOCKS.register("support_block", SupportBlock::new);
 
@@ -45,12 +38,13 @@ public class BuilderModule implements IModule {
         .properties(AbstractBlock.Properties.of(Material.METAL)
                 .strength(2.0f)
                 .sound(SoundType.METAL)
-                .noOcclusion())));    // @todo
+                .noOcclusion())));
     public static final RegistryObject<Item> SPACE_CHAMBER_ITEM = ITEMS.register("space_chamber", () -> new BlockItem(SPACE_CHAMBER.get(), Registration.createStandardProperties()));
 
     public static final RegistryObject<SpaceChamberControllerBlock> SPACE_CHAMBER_CONTROLLER = BLOCKS.register("space_chamber_controller", SpaceChamberControllerBlock::new);
     public static final RegistryObject<Item> SPACE_CHAMBER_CONTROLLER_ITEM = ITEMS.register("space_chamber_controller", () -> new BlockItem(SPACE_CHAMBER_CONTROLLER.get(), Registration.createStandardProperties()));
     public static final RegistryObject<TileEntityType<SpaceChamberControllerTileEntity>> TYPE_SPACE_CHAMBER_CONTROLLER = TILES.register("space_chamber_controller", () -> TileEntityType.Builder.of(SpaceChamberControllerTileEntity::new, SPACE_CHAMBER_CONTROLLER.get()).build(null));
+
     public static final RegistryObject<Item> SPACE_CHAMBER_CARD = ITEMS.register("space_chamber_card", SpaceChamberCardItem::new);
 
     public static final RegistryObject<BaseBlock> BUILDER = BLOCKS.register("builder", BuilderTileEntity::createBlock);
