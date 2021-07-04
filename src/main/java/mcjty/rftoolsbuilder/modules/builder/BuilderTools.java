@@ -113,7 +113,7 @@ public class BuilderTools {
 
                         TileEntity te = world.getBlockEntity(p);
                         BlockInformation info = BuilderTileEntity.getBlockInformation(harvester, world, p, block, te);
-                        if (info.getBlockLevel() == SupportBlock.STATUS_ERROR) {
+                        if (info.getBlockLevel() == SupportBlock.SupportStatus.STATUS_ERROR) {
                             costs.put(state, -1);
                         } else {
                             costs.increment(state, (int) (BuilderConfiguration.builderRfPerOperation.get() * info.getCostFactor()));

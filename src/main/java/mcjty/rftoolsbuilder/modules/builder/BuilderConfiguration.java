@@ -1,10 +1,13 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
+import com.google.common.collect.Lists;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.List;
 
 public class BuilderConfiguration {
     public static final String CATEGORY_BUILDER = "builder";
@@ -21,6 +24,10 @@ public class BuilderConfiguration {
     public static ForgeConfigSpec.DoubleValue dimensionCostFactor;
 
     public static ForgeConfigSpec.ConfigValue<BuilderTileEntityMode> teMode;
+
+    private static String[] blackWhiteListedBlocksAr = new String[] {
+    };
+    public static ForgeConfigSpec.ConfigValue<List<? extends String>> blackWhiteListedBlocks;
 
     public static ForgeConfigSpec.BooleanValue showProgressHud;
 
@@ -83,6 +90,9 @@ public class BuilderConfiguration {
         teMode = SERVER_BUILDER
                 .comment("Can Tile Entities be moved? 'forbidden' means never, 'whitelist' means only whitelisted, 'blacklist' means all except blacklisted, 'allowed' means all")
                 .defineEnum("tileEntityMode", BuilderTileEntityMode.MOVE_BLACKLIST, BuilderTileEntityMode.values());
+        blackWhiteListedBlocks = SERVER_BUILDER
+                .comment("This is a list of blocks that are either blacklisted or whitelisted from the Builder when it tries to move tile entities (format <id>=<cost>)")
+                .defineList("blackWhiteListedBlocks", Lists.newArrayList(blackWhiteListedBlocksAr), s -> s instanceof String);
         maxSpaceChamberDimension = SERVER_BUILDER
                 .comment("Maximum dimension for the space chamber")
                 .defineInRange("maxSpaceChamberDimension", 128, 0, 100000);

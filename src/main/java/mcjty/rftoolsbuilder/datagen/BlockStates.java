@@ -34,13 +34,13 @@ public class BlockStates extends BaseBlockStateProvider {
         BlockModelBuilder support1 = models().cubeAll("supportblock_status1", modLoc("block/supportyellowblock"));
         BlockModelBuilder support2 = models().cubeAll("supportblock_status2", modLoc("block/supportredblock"));
         VariantBlockStateBuilder builder = getVariantBuilder(BuilderModule.SUPPORT.get());
-        builder.partialState().with(SupportBlock.STATUS, SupportBlock.STATUS_OK)
+        builder.partialState().with(SupportBlock.STATUS, SupportBlock.SupportStatus.STATUS_OK)
                 .modelForState().modelFile(support0)
                 .addModel();
-        builder.partialState().with(SupportBlock.STATUS, SupportBlock.STATUS_WARN)
+        builder.partialState().with(SupportBlock.STATUS, SupportBlock.SupportStatus.STATUS_WARN)
                 .modelForState().modelFile(support1)
                 .addModel();
-        builder.partialState().with(SupportBlock.STATUS, SupportBlock.STATUS_ERROR)
+        builder.partialState().with(SupportBlock.STATUS, SupportBlock.SupportStatus.STATUS_ERROR)
                 .modelForState().modelFile(support2)
                 .addModel();
 

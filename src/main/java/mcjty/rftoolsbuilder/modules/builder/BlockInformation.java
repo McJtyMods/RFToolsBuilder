@@ -1,23 +1,21 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import mcjty.lib.varia.BlockTools;
-import mcjty.lib.varia.Logging;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import net.minecraft.block.Block;
+import net.minecraft.util.ResourceLocation;
 
-import java.io.*;
+import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class BlockInformation {
 
-    private static Map<String,BlockInformation> blockInformationMap = new HashMap<>();
+    private static Map<ResourceLocation,BlockInformation> blockInformationMap = null;
 
-    private final String blockName;
-    private final int blockLevel; // One of SupportBlock.SUPPORT_ERROR/WARN
+    private final ResourceLocation blockName;
+    private final SupportBlock.SupportStatus blockLevel;
     private final double costFactor;
     private final int rotateInfo;
 
@@ -25,9 +23,9 @@ public class BlockInformation {
     public static final int ROTATE_mmmm = 0;
     public static final int ROTATE_mfff = 1;
 
-    public static final BlockInformation INVALID = new BlockInformation("", SupportBlock.STATUS_ERROR, 1.0);
-    public static final BlockInformation OK = new BlockInformation("", SupportBlock.STATUS_OK, 1.0, ROTATE_mmmm);
-    public static final BlockInformation FREE = new BlockInformation("", SupportBlock.STATUS_OK, 0.0, ROTATE_mmmm);
+    public static final BlockInformation INVALID = new BlockInformation(null, SupportBlock.SupportStatus.STATUS_ERROR, 1.0);
+    public static final BlockInformation OK = new BlockInformation(null, SupportBlock.SupportStatus.STATUS_OK, 1.0, ROTATE_mmmm);
+    public static final BlockInformation FREE = new BlockInformation(null, SupportBlock.SupportStatus.STATUS_OK, 0.0, ROTATE_mmmm);
 
     private static int rotateStringToId(String rotateString) {
         if ("mmmm".equals(rotateString)) {
@@ -39,14 +37,36 @@ public class BlockInformation {
         }
     }
 
-    public BlockInformation(String blockName, int blockLevel, double costFactor) {
+    private static void initMap() {
+        if (blockInformationMap == null) {
+            blockInformationMap = new HashMap<>();
+            List<? extends String> blocks = BuilderConfiguration.blackWhiteListedBlocks.get();
+            for (String block : blocks) {
+                String costS = "1.0f";
+                if (block.contains("=")) {
+                    String[] split = block.split("=");
+                    block = split[0];
+                    costS = split[1];
+                }
+                double cost = Double.parseDouble(costS);
+                ResourceLocation id = new ResourceLocation(block);
+                if (BuilderConfiguration.teMode.get() == BuilderTileEntityMode.MOVE_BLACKLIST) {
+                    blockInformationMap.put(id, new BlockInformation(id, SupportBlock.SupportStatus.STATUS_ERROR, cost));
+                } else if (BuilderConfiguration.teMode.get() == BuilderTileEntityMode.MOVE_WHITELIST) {
+                    blockInformationMap.put(id, new BlockInformation(id, SupportBlock.SupportStatus.STATUS_OK, cost));
+                }
+            }
+        }
+    }
+
+    public BlockInformation(ResourceLocation blockName, SupportBlock.SupportStatus blockLevel, double costFactor) {
         this.blockName = blockName;
         this.blockLevel = blockLevel;
         this.costFactor = costFactor;
         this.rotateInfo = ROTATE_mmmm;
     }
 
-    public BlockInformation(String blockName, int blockLevel, double costFactor, int rotateInfo) {
+    public BlockInformation(ResourceLocation blockName, SupportBlock.SupportStatus blockLevel, double costFactor, int rotateInfo) {
         this.blockName = blockName;
         this.blockLevel = blockLevel;
         this.costFactor = costFactor;
@@ -57,96 +77,21 @@ public class BlockInformation {
         this(other.blockName, other.blockLevel, other.costFactor, rotateStringToId(rotateInfo));
     }
 
-    public BlockInformation(BlockInformation other, String blockName, int blockLevel, double costFactor) {
+    public BlockInformation(BlockInformation other, ResourceLocation blockName, SupportBlock.SupportStatus blockLevel, double costFactor) {
         this(blockName, blockLevel, costFactor, other.rotateInfo);
     }
 
-    static void readBuilderBlocksInternal() {
-        try(InputStream inputstream = RFToolsBuilder.class.getResourceAsStream("/data/rftoolsbuilder/text/builder.json")) {
-            parseBuilderJson(inputstream);
-        } catch (IOException e) {
-            Logging.logError("Error reading builder.json", e);
-        }
-    }
-
-    static void readBuilderBlocksConfig() {
-        // @todo 1.14
-//        File modConfigDir = RFTools.setup.getModConfigDir();
-//        File file = new File(modConfigDir.getPath() + File.separator + "rftools", "userbuilder.json");
-//        try(FileInputStream inputstream = new FileInputStream(file)) {
-//            parseBuilderJson(inputstream);
-//        } catch (IOException e) {
-//            Logging.log("Could not read 'userbuilder.json', this is not an error!");
-//        }
-    }
-
-    private static void parseBuilderJson(InputStream inputstream) throws UnsupportedEncodingException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(br);
-        for (Map.Entry<String, JsonElement> entry : element.getAsJsonObject().entrySet()) {
-            if ("movables".equals(entry.getKey())) {
-                readMovablesFromJson(entry.getValue());
-            } else if ("rotatables".equals(entry.getKey())) {
-                readRotatablesFromJson(entry.getValue());
-            }
-        }
-    }
-
-    private static void readMovablesFromJson(JsonElement element) {
-        for (JsonElement entry : element.getAsJsonArray()) {
-            String blockName = entry.getAsJsonArray().get(0).getAsString();
-            String warningType = entry.getAsJsonArray().get(1).getAsString();
-            double costFactor = entry.getAsJsonArray().get(2).getAsDouble();
-            int status;
-            if ("-".equals(warningType)) {
-                status = SupportBlock.STATUS_ERROR;
-            } else if ("+".equals(warningType)) {
-                status = SupportBlock.STATUS_OK;
-            } else {
-                status = SupportBlock.STATUS_WARN;
-            }
-            BlockInformation old = blockInformationMap.get(blockName);
-            if (old == null) {
-                old = OK;
-            }
-
-            blockInformationMap.put(blockName, new BlockInformation(old, blockName, status, costFactor));
-        }
-    }
-
-    private static void readRotatablesFromJson(JsonElement element) {
-        for (JsonElement entry : element.getAsJsonArray()) {
-            String blockName = entry.getAsJsonArray().get(0).getAsString();
-            String rotatable = entry.getAsJsonArray().get(1).getAsString();
-            BlockInformation old = blockInformationMap.get(blockName);
-            if (old == null) {
-                old = OK;
-            }
-            blockInformationMap.put(blockName, new BlockInformation(old, rotatable));
-        }
-    }
-
+    @Nullable
     public static BlockInformation getBlockInformation(Block block) {
-        BlockInformation information = blockInformationMap.get(block.getRegistryName().toString());
-        if (information == null) {
-            String modid = BlockTools.getModidForBlock(block);
-            information = blockInformationMap.get("modid:" + modid);
-        }
-        return information;
+        initMap();
+        return blockInformationMap.get(block.getRegistryName());
     }
 
-    // @todo 1.14 call me?
-    public static void init() {
-        readBuilderBlocksInternal();
-        readBuilderBlocksConfig();
-    }
-
-    public int getBlockLevel() {
+    public SupportBlock.SupportStatus getBlockLevel() {
         return blockLevel;
     }
 
-    public String getBlockName() {
+    public ResourceLocation getBlockName() {
         return blockName;
     }
 

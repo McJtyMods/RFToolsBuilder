@@ -366,7 +366,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         Shape shape = ShapeCardItem.getShape(shapeCard);
         Map<BlockPos, BlockState> blocks = new HashMap<>();
         ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), level, getBlockPos(), dimension, offset, blocks, BuilderConfiguration.maxBuilderDimension.get() * 256 * BuilderConfiguration.maxBuilderDimension.get(), false, false, null);
-        BlockState state = BuilderModule.SUPPORT.get().defaultBlockState().setValue(SupportBlock.STATUS, SupportBlock.STATUS_OK);
+        BlockState state = BuilderModule.SUPPORT.get().defaultBlockState().setValue(SupportBlock.STATUS, SupportBlock.SupportStatus.STATUS_OK);
         for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
             BlockPos p = entry.getKey();
             if (level.isEmptyBlock(p)) {
@@ -400,14 +400,14 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                         Block srcBlock = srcState.getBlock();
                         BlockState dstState = world.getBlockState(dest);
                         Block dstBlock = dstState.getBlock();
-                        int error = SupportBlock.STATUS_OK;
+                        SupportBlock.SupportStatus error = SupportBlock.SupportStatus.STATUS_OK;
                         if (mode != MODE_COPY) {
                             TileEntity srcTileEntity = world.getBlockEntity(src);
                             TileEntity dstTileEntity = world.getBlockEntity(dest);
 
-                            int error1 = isMovable(world, src, srcBlock, srcTileEntity);
-                            int error2 = isMovable(world, dest, dstBlock, dstTileEntity);
-                            error = Math.max(error1, error2);
+                            SupportBlock.SupportStatus error1 = isMovable(world, src, srcBlock, srcTileEntity);
+                            SupportBlock.SupportStatus error2 = isMovable(world, dest, dstBlock, dstTileEntity);
+                            error = SupportBlock.SupportStatus.max(error1, error2);
                         }
                         if (isEmpty(srcState, srcBlock) && !isEmpty(dstState, dstBlock)) {
                             world.setBlock(src, BuilderModule.SUPPORT.get().defaultBlockState().setValue(SupportBlock.STATUS, error), 3);
@@ -1703,12 +1703,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 case MOVE_FORBIDDEN:
                     return BlockInformation.INVALID;
                 case MOVE_WHITELIST:
-                    if (blockInformation == null || blockInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
+                    if (blockInformation == null || blockInformation.getBlockLevel() == SupportBlock.SupportStatus.STATUS_ERROR) {
                         return BlockInformation.INVALID;
                     }
                     break;
                 case MOVE_BLACKLIST:
-                    if (blockInformation != null && blockInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
+                    if (blockInformation != null && blockInformation.getBlockLevel() == SupportBlock.SupportStatus.STATUS_ERROR) {
                         return BlockInformation.INVALID;
                     }
                     break;
@@ -1722,7 +1722,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return BlockInformation.OK;
     }
 
-    private int isMovable(World world, BlockPos pos, Block block, TileEntity tileEntity) {
+    private SupportBlock.SupportStatus isMovable(World world, BlockPos pos, Block block, TileEntity tileEntity) {
         return getBlockInformation(harvester.get(), world, pos, block, tileEntity).getBlockLevel();
     }
 
@@ -1921,7 +1921,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             }
             TileEntity srcTileEntity = srcWorld.getBlockEntity(srcPos);
             BlockInformation srcInformation = getBlockInformation(harvester.get(), srcWorld, srcPos, srcBlock, srcTileEntity);
-            if (srcInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
+            if (srcInformation.getBlockLevel() == SupportBlock.SupportStatus.STATUS_ERROR) {
                 return;
             }
 
@@ -1982,12 +1982,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         }
 
         BlockInformation srcInformation = getBlockInformation(harvester.get(), srcWorld, srcPos, srcBlock, srcTileEntity);
-        if (srcInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
+        if (srcInformation.getBlockLevel() == SupportBlock.SupportStatus.STATUS_ERROR) {
             return;
         }
 
         BlockInformation dstInformation = getBlockInformation(harvester.get(), destWorld, dstPos, dstBlock, dstTileEntity);
-        if (dstInformation.getBlockLevel() == SupportBlock.STATUS_ERROR) {
+        if (dstInformation.getBlockLevel() == SupportBlock.SupportStatus.STATUS_ERROR) {
             return;
         }
 

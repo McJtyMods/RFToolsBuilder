@@ -5,10 +5,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.state.EnumProperty;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
+import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.World;
@@ -16,15 +18,40 @@ import net.minecraft.world.World;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import net.minecraft.block.AbstractBlock.Properties;
-
 public class SupportBlock extends Block {
 
-    public static final int STATUS_OK = 0;
-    public static final int STATUS_WARN = 1;
-    public static final int STATUS_ERROR = 2;
+    public enum SupportStatus implements IStringSerializable {
+        STATUS_OK("ok"),
+        STATUS_WARN("warn"),
+        STATUS_ERROR("error");
 
-    public static IntegerProperty STATUS = IntegerProperty.create("status", 0, 2);
+        private final String name;
+
+        SupportStatus(String name) {
+            this.name = name;
+        }
+
+        public static SupportStatus max(SupportStatus error1, SupportStatus error2) {
+            if (error1 == STATUS_ERROR || error2 == STATUS_ERROR) {
+                return STATUS_ERROR;
+            }
+            if (error1 == STATUS_WARN || error2 == STATUS_WARN) {
+                return STATUS_WARN;
+            }
+            return STATUS_OK;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return name;
+        }
+    }
+
+    public static EnumProperty<SupportStatus> STATUS = EnumProperty.create("status", SupportStatus.class);
 
     public SupportBlock() {
         super(Properties.of(Material.GLASS).isRedstoneConductor((state, world, pos) -> false));
