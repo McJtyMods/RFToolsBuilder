@@ -14,6 +14,7 @@ public class LootTables extends BaseLootTableProvider {
     @Override
     protected void addTables() {
         lootTables.put(BuilderModule.BUILDER.get(), createStandardTable("builder", BuilderModule.BUILDER.get()));
+        lootTables.put(BuilderModule.SPACE_CHAMBER_CONTROLLER.get(), createStandardTable("space_chamber_controller", BuilderModule.SPACE_CHAMBER_CONTROLLER.get()));
         lootTables.put(ShieldModule.SHIELD_BLOCK1.get(), createStandardTable("shield_block1", ShieldModule.SHIELD_BLOCK1.get()));
         lootTables.put(ShieldModule.SHIELD_BLOCK2.get(), createStandardTable("shield_block1", ShieldModule.SHIELD_BLOCK2.get()));
         lootTables.put(ShieldModule.SHIELD_BLOCK3.get(), createStandardTable("shield_block1", ShieldModule.SHIELD_BLOCK3.get()));
@@ -22,6 +23,7 @@ public class LootTables extends BaseLootTableProvider {
         lootTables.put(ShieldModule.TEMPLATE_GREEN.get(), createSimpleTable("template_green", ShieldModule.TEMPLATE_GREEN.get()));
         lootTables.put(ShieldModule.TEMPLATE_RED.get(), createSimpleTable("template_red", ShieldModule.TEMPLATE_RED.get()));
         lootTables.put(ShieldModule.TEMPLATE_BLUE.get(), createSimpleTable("template_blue", ShieldModule.TEMPLATE_BLUE.get()));
+        lootTables.put(BuilderModule.SPACE_CHAMBER.get(), createSimpleTable("space_chamber", BuilderModule.SPACE_CHAMBER.get()));
     }
 
     @Override
