@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.builder.blocks;
 
-import com.mojang.authlib.GameProfile;
 import mcjty.lib.api.container.CapabilityContainerProvider;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.infusable.CapabilityInfusable;
@@ -79,7 +78,9 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.*;
+import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.Lazy;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.common.world.ForgeChunkManager;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.event.world.BlockEvent;
@@ -192,7 +193,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     // Drops from a block that we broke but couldn't fit in an inventory
     private LazyList<ItemStack> overflowItems = new LazyList<>();
 
-    private final Lazy<FakePlayer> harvester = Lazy.of(this::getHarvester);
+    private final FakePlayerGetter harvester = new FakePlayerGetter(this, "rftools_builder");
 
     private final NoDirectionItemHander items = createItemHandler();
     private final LazyOptional<AutomationFilterItemHander> itemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
@@ -275,17 +276,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     @Override
     protected boolean needsRedstoneMode() {
         return true;
-    }
-
-    private FakePlayer getHarvester() {
-        UUID owner = getOwnerUUID();
-        if (owner == null) {
-            owner = UUID.nameUUIDFromBytes("rftools_builder".getBytes());
-        }
-        FakePlayer player = FakePlayerFactory.get((ServerWorld) level, new GameProfile(owner, "rftools_builder"));
-        player.setLevel(level);
-        player.setPos(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
-        return player;
     }
 
     @Override
@@ -391,6 +381,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 return;
             }
 
+            PlayerEntity player = harvester.get();
             BlockPos.Mutable src = new BlockPos.Mutable();
             BlockPos.Mutable dest = new BlockPos.Mutable();
             for (int x = minBox.getX(); x <= maxBox.getX(); x++) {
@@ -407,8 +398,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                             TileEntity srcTileEntity = world.getBlockEntity(src);
                             TileEntity dstTileEntity = world.getBlockEntity(dest);
 
-                            SupportBlock.SupportStatus error1 = isMovable(world, src, srcBlock, srcTileEntity);
-                            SupportBlock.SupportStatus error2 = isMovable(world, dest, dstBlock, dstTileEntity);
+                            SupportBlock.SupportStatus error1 = isMovable(player, world, src, srcBlock, srcTileEntity);
+                            SupportBlock.SupportStatus error2 = isMovable(player, world, dest, dstBlock, dstTileEntity);
                             error = SupportBlock.SupportStatus.max(error1, error2);
                         }
                         if (isEmpty(srcState, srcBlock) && !isEmpty(dstState, dstBlock)) {
@@ -1082,7 +1073,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 return waitOrSkip("Cannot find block!\nor missing inventory\non top or below");    // We could not find a block. Wait
             }
 
-            FakePlayer fakePlayer = harvester.get();
+            PlayerEntity fakePlayer = harvester.get();
             BlockState newState = BlockTools.placeStackAt(fakePlayer, stack, level, srcPos, pickState);
             if (newState == null) {
                 return waitOrSkip("Cannot place block!");
@@ -1234,7 +1225,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 return skip();
             }
 
-            FakePlayer fakePlayer = harvester.get();
+            PlayerEntity fakePlayer = harvester.get();
             if (allowedToBreak(srcState, level, srcPos, fakePlayer)) {
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
@@ -1307,7 +1298,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             } else {
                 // We assume here the liquid is placable.
                 Block block = fluid.defaultFluidState().createLegacyBlock().getBlock();   // @todo 1.14 check blockstate
-                FakePlayer fakePlayer = harvester.get();
+                PlayerEntity fakePlayer = harvester.get();
                 level.setBlock(srcPos, block.defaultBlockState(), 11);
 
                 if (!silent) {
@@ -1351,7 +1342,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 //        }
 
         if (srcState.getDestroySpeed(level, srcPos) >= 0) {
-            FakePlayer fakePlayer = harvester.get();
+            PlayerEntity fakePlayer = harvester.get();
             if (allowedToBreak(srcState, level, srcPos, fakePlayer)) {
                 if (checkAndInsertFluids(fluidStack)) {
                     energyStorage.consumeEnergy(rfNeeded);
@@ -1389,7 +1380,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             // Skip a 3x3x3 block around the builder.
             return skip();
         }
-        FakePlayer fakePlayer = harvester.get();
+        PlayerEntity fakePlayer = harvester.get();
         if (allowedToBreak(srcState, level, srcPos, fakePlayer)) {
             assert level != null;
             if (srcState.getDestroySpeed(level, srcPos) >= 0) {
@@ -1724,8 +1715,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return BlockInformation.OK;
     }
 
-    private SupportBlock.SupportStatus isMovable(World world, BlockPos pos, Block block, TileEntity tileEntity) {
-        return getBlockInformation(harvester.get(), world, pos, block, tileEntity).getBlockLevel();
+    private SupportBlock.SupportStatus isMovable(PlayerEntity harvester, World world, BlockPos pos, Block block, TileEntity tileEntity) {
+        return getBlockInformation(harvester, world, pos, block, tileEntity).getBlockLevel();
     }
 
     public static boolean isEmptyOrReplacable(World world, BlockPos pos) {
@@ -1789,7 +1780,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 return;
             }
 
-            FakePlayer fakePlayer = harvester.get();
+            PlayerEntity fakePlayer = harvester.get();
             BlockState newState = BlockTools.placeStackAt(fakePlayer, consumedStack, destWorld, destPos, srcState);
             if (newState == null) {
                 // This block can't be placed

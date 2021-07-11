@@ -2,6 +2,8 @@ package mcjty.rftoolsbuilder.modules.shield.blocks;
 
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.IPacket;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketDirection;
@@ -9,13 +11,12 @@ import net.minecraft.network.play.ServerPlayNetHandler;
 import net.minecraft.network.play.client.*;
 import net.minecraft.network.play.server.SPlayerPositionLookPacket;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraftforge.common.util.FakePlayer;
 
 import java.util.Set;
 
 public class FakePlayerConnection extends ServerPlayNetHandler {
 
-    public FakePlayerConnection(FakePlayer player) {
+    public FakePlayerConnection(ServerPlayerEntity player) {
         super(null, new NetworkManager(PacketDirection.CLIENTBOUND), player);
     }
 

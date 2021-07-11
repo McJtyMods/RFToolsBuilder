@@ -20,10 +20,7 @@ import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
-import mcjty.lib.varia.Logging;
-import mcjty.lib.varia.OrientationTools;
-import mcjty.lib.varia.RedstoneMode;
-import mcjty.lib.varia.WorldTools;
+import mcjty.lib.varia.*;
 import mcjty.rftoolsbase.modules.various.VariousModule;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.shield.*;
@@ -40,6 +37,7 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.*;
@@ -145,6 +143,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     private final List<RelCoordinateShield> shieldBlocks = new ArrayList<>();
     private final List<BlockState> blockStateTable = new ArrayList<>();
+
+    private final FakePlayerGetter fakePlayer = new FakePlayerGetter(this, "rftools_shield");
 
     public static final int SLOT_BUFFER = 0;
     public static final int SLOT_SHAPE = 1;
@@ -456,25 +456,12 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 //        return index == ShieldContainer.SLOT_SHARD && itemStackIn.getItem() == ModItems.dimensionalShardItem;
 //    }
 
-    private FakePlayer getFakePlayer() {
-        UUID owner = getOwnerUUID();
-        if (owner == null) {
-            owner = UUID.nameUUIDFromBytes("rftools_shield".getBytes());
-        }
-        FakePlayer fakePlayer = FakePlayerFactory.get((ServerWorld) level, new GameProfile(owner, "rftools_shield"));
-        fakePlayer.setLevel(level);
-        fakePlayer.setPos(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
-        new FakePlayerConnection(fakePlayer);
-        return fakePlayer;
-    }
-
-
     @Nonnull
     private BlockState getStateFromItem(ItemStack stack) {
         Item item = stack.getItem();
         if (item instanceof BlockItem) {
             BlockItem blockItem = (BlockItem) item;
-            FakePlayer player = getFakePlayer();
+            PlayerEntity player = fakePlayer.get();
             player.setItemInHand(Hand.MAIN_HAND, stack);
             BlockRayTraceResult result = new BlockRayTraceResult(new Vector3d(.5, 0, .5), Direction.UP, worldPosition, false);
             BlockItemUseContext context = new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, result));
@@ -619,11 +606,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             source = DamageSource.GENERIC;
         } else {
             rf = ShieldConfiguration.rfDamagePlayer.get();
-            UUID owner = getOwnerUUID();
-            if (owner == null) {
-                owner = UUID.nameUUIDFromBytes("rftools_shield".getBytes());
-            }
-            FakePlayer killer = FakePlayerFactory.get(WorldTools.getOverworld(level), new GameProfile(owner, "rftools_shield"));
+            ServerPlayerEntity killer = fakePlayer.get();
             killer.setLevel(level);
             killer.setPos(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
             new FakePlayerConnection(killer);
