@@ -54,7 +54,7 @@ public class SupportBlock extends Block {
     public static EnumProperty<SupportStatus> STATUS = EnumProperty.create("status", SupportStatus.class);
 
     public SupportBlock() {
-        super(Properties.of(Material.GLASS).isRedstoneConductor((state, world, pos) -> false));
+        super(Properties.of(Material.GLASS).noOcclusion().isRedstoneConductor((state, world, pos) -> false));
     }
 
     @Override

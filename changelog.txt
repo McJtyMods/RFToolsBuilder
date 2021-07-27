@@ -1,5 +1,6 @@
 Upcoming:
 - The builder and shield projector use a better fake player that matches the name of the real player if online
+- Fixed xray problem with the support blocks
 
 1.16-3.1.0:
 - Small fix for mojang mappings
