@@ -891,6 +891,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private boolean collectItem(World world, float infusedFactor, ItemEntity item) {
         ItemStack stack = item.getItem();
+
+        Predicate<ItemStack> predicate = filterCache.get();
+        if (predicate != null && !predicate.test(stack)) {
+            return false;
+        }
+
         long rf = energyStorage.getEnergyStored();
         int rfNeeded = (int) (BuilderConfiguration.collectRFPerItem.get() * infusedFactor) * stack.getCount();
         if (rfNeeded > rf) {
