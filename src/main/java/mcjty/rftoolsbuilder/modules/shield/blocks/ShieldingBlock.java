@@ -1,8 +1,8 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
-import mcjty.rftoolsbase.api.screens.IModuleProvider;
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -10,9 +10,9 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.EnumProperty;
@@ -30,8 +30,6 @@ import net.minecraft.world.World;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-
-import net.minecraft.block.AbstractBlock;
 
 public class ShieldingBlock extends Block {
 
@@ -157,11 +155,30 @@ public class ShieldingBlock extends Block {
         return super.getOcclusionShape(state, world, pos);
     }
 
+    public static boolean isHostile(Entity entity) {
+        return entity instanceof IMob;
+    }
+
+    public static boolean isPassive(Entity entity) {
+        if (entity instanceof IMob) {
+            return false;
+        }
+        if (entity instanceof PlayerEntity) {
+            return false;
+        }
+        return entity instanceof MobEntity;
+    }
+
+    public static boolean isItem(Entity entity) {
+//        return entity instanceof ItemEntity;
+        return !(entity instanceof LivingEntity);
+    }
+
     @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
         Entity entity = context.getEntity();
         if (state.getValue(BLOCKED_HOSTILE)) {
-            if (entity instanceof IMob) {
+            if (isHostile(entity)) {
                 if (checkEntityCD(world, pos, HostileFilter.HOSTILE)) {
                     return COLLISION_SHAPE;
                 }
@@ -169,7 +186,7 @@ public class ShieldingBlock extends Block {
             }
         }
         if (state.getValue(BLOCKED_PASSIVE)) {
-            if (entity instanceof AnimalEntity && !(entity instanceof IMob)) {
+            if (isPassive(entity)) {
                 if (checkEntityCD(world, pos, AnimalFilter.ANIMAL)) {
                     return COLLISION_SHAPE;
                 }
@@ -185,7 +202,7 @@ public class ShieldingBlock extends Block {
             }
         }
         if (state.getValue(BLOCKED_ITEMS)) {
-            if (!(entity instanceof LivingEntity)) {
+            if (isItem(entity)) {
                 if (checkEntityCD(world, pos, ItemFilter.ITEM)) {
                     return COLLISION_SHAPE;
                 }
@@ -285,11 +302,11 @@ public class ShieldingBlock extends Block {
                     if (checkEntityDamage(projector, ItemFilter.ITEM)) {
                         projector.applyDamageToEntity(entity);
                     }
-                } else if (dmgHostile && entity instanceof IMob) {
+                } else if (dmgHostile && isHostile(entity)) {
                     if (checkEntityDamage(projector, HostileFilter.HOSTILE)) {
                         projector.applyDamageToEntity(entity);
                     }
-                } else if (dmgPassive && (entity instanceof LivingEntity) && !(entity instanceof IMob)) {
+                } else if (dmgPassive && isPassive(entity)) {
                     if (checkEntityDamage(projector, AnimalFilter.ANIMAL)) {
                         projector.applyDamageToEntity(entity);
                     }

@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed the shield so that it blocks more passive creatures (like villagers)
+
 1.16-3.1.1:
 - The builder and shield projector use a better fake player that matches the name of the real player if online
 - Fixed xray problem with the support blocks

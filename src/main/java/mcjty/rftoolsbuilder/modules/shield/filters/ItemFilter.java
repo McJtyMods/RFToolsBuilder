@@ -1,7 +1,7 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
+import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.ItemEntity;
 
 public class ItemFilter extends AbstractShieldFilter {
 
@@ -9,7 +9,7 @@ public class ItemFilter extends AbstractShieldFilter {
 
     @Override
     public boolean match(Entity entity) {
-        return entity instanceof ItemEntity;
+        return ShieldingBlock.isItem(entity);
     }
 
     @Override
