@@ -1,4 +1,4 @@
-Upcoming:
+1.16-3.1.2:
 - Fixed the shield so that it blocks more passive creatures (like villagers)
 
 1.16-3.1.1:
