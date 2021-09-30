@@ -66,7 +66,6 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
-import net.minecraft.util.IntReferenceHolder;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -205,18 +204,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             .containerSupplier((windowId, player) -> new GenericContainer(BuilderModule.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY.get(), getBlockPos(), BuilderTileEntity.this))
             .itemHandler(() -> items)
             .energyHandler(() -> energyStorage)
-            .shortListener(new IntReferenceHolder() {
-                @Override
-                public int get() {
-                    return scan == null ? -1 : scan.getY();
-                }
-
-                @Override
-                public void set(int val) {
-                    currentLevel = val;
-                }
-            })
-    );
+            .shortListener(Tools.holder(() -> scan == null ? -1 : scan.getY(), v -> currentLevel = v)));
     private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(BuilderTileEntity.this));
     private final LazyOptional<IModuleSupport> moduleSupportHandler = LazyOptional.of(() -> new DefaultModuleSupport(SLOT_TAB) {
         @Override
