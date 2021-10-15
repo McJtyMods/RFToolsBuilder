@@ -2,7 +2,6 @@ package mcjty.rftoolsbuilder.modules.builder.blocks;
 
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.varia.BlockPosTools;
-import mcjty.lib.varia.DimensionId;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
@@ -110,7 +109,7 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
 
         SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(level);
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = chamberRepository.getOrCreateChannel(channel);
-        chamberChannel.setDimension(DimensionId.fromWorld(level));
+        chamberChannel.setDimension(level.dimension());
         chamberChannel.setMinCorner(minCorner);
         chamberChannel.setMaxCorner(maxCorner);
         chamberRepository.save();

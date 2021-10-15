@@ -3,7 +3,10 @@ package mcjty.rftoolsbuilder.modules.builder.items;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.crafting.INBTPreservingIngredient;
 import mcjty.lib.tooltips.ITooltipSettings;
-import mcjty.lib.varia.*;
+import mcjty.lib.varia.BlockPosTools;
+import mcjty.lib.varia.Check32;
+import mcjty.lib.varia.Logging;
+import mcjty.lib.varia.RLE;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
@@ -24,13 +27,11 @@ import net.minecraft.item.ItemUseContext;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.tags.ITag;
-import net.minecraft.tags.Tag;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.GlobalPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -46,8 +47,6 @@ import java.io.*;
 import java.util.*;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
-
-import net.minecraft.item.Item.Properties;
 
 public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITooltipSettings {
 
@@ -136,7 +135,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             if (mode == MODE_NONE) {
                 if (player.isShiftKeyDown()) {
                     if (world.getBlockEntity(pos) instanceof BuilderTileEntity) {
-                        setCurrentBlock(stack, new GlobalCoordinate(pos, world));
+                        setCurrentBlock(stack, GlobalPos.of(world.dimension(), pos));
                         Logging.message(player, TextFormatting.GREEN + "Now select the first corner");
                         setMode(stack, MODE_CORNER1);
                         setCorner1(stack, null);
@@ -147,12 +146,12 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                     return ActionResultType.SUCCESS;
                 }
             } else if (mode == MODE_CORNER1) {
-                GlobalCoordinate currentBlock = getCurrentBlock(stack);
+                GlobalPos currentBlock = getCurrentBlock(stack);
                 if (currentBlock == null) {
                     Logging.message(player, TextFormatting.RED + "There is no Builder selected!");
-                } else if (!currentBlock.getDimension().sameDimension(world)) {
+                } else if (!currentBlock.dimension().equals(world.dimension())) {
                     Logging.message(player, TextFormatting.RED + "The Builder is in another dimension!");
-                } else if (currentBlock.getCoordinate().equals(pos)) {
+                } else if (currentBlock.pos().equals(pos)) {
                     Logging.message(player, TextFormatting.RED + "Cleared area selection mode!");
                     setMode(stack, MODE_NONE);
                 } else {
@@ -161,12 +160,12 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                     setCorner1(stack, pos);
                 }
             } else {
-                GlobalCoordinate currentBlock = getCurrentBlock(stack);
+                GlobalPos currentBlock = getCurrentBlock(stack);
                 if (currentBlock == null) {
                     Logging.message(player, TextFormatting.RED + "There is no Builder selected!");
-                } else if (!currentBlock.getDimension().sameDimension(world)) {
+                } else if (!currentBlock.dimension().equals(world.dimension())) {
                     Logging.message(player, TextFormatting.RED + "The Builder is in another dimension!");
-                } else if (currentBlock.getCoordinate().equals(pos)) {
+                } else if (currentBlock.pos().equals(pos)) {
                     Logging.message(player, TextFormatting.RED + "Cleared area selection mode!");
                     setMode(stack, MODE_NONE);
                 } else {
@@ -179,7 +178,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                         Logging.message(player, TextFormatting.GREEN + "New settings copied to the shape card!");
                         BlockPos center = new BlockPos((int) Math.ceil((c1.getX() + pos.getX()) / 2.0f), (int) Math.ceil((c1.getY() + pos.getY()) / 2.0f), (int) Math.ceil((c1.getZ() + pos.getZ()) / 2.0f));
                         setDimension(stack, Math.abs(c1.getX() - pos.getX()) + 1, Math.abs(c1.getY() - pos.getY()) + 1, Math.abs(c1.getZ() - pos.getZ()) + 1);
-                        setOffset(stack, center.getX() - currentBlock.getCoordinate().getX(), center.getY() - currentBlock.getCoordinate().getY(), center.getZ() - currentBlock.getCoordinate().getZ());
+                        setOffset(stack, center.getX() - currentBlock.pos().getX(), center.getY() - currentBlock.pos().getY(), center.getZ() - currentBlock.pos().getZ());
 
                         setMode(stack, MODE_NONE);
                         setCorner1(stack, null);
@@ -278,7 +277,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         CompoundNBT tagCompound = itemStack.getTag();
         if (tagCompound != null) {
             int mode = tagCompound.getInt("mode");
-            GlobalCoordinate block = getCurrentBlock(itemStack);
+            GlobalPos block = getCurrentBlock(itemStack);
             if (block == null) {
                 // Safety: if there is no selected block we consider mode to be NONE
                 return MODE_NONE;
@@ -297,7 +296,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         tagCompound.putInt("mode", mode);
     }
 
-    public static void setCurrentBlock(ItemStack itemStack, GlobalCoordinate c) {
+    public static void setCurrentBlock(ItemStack itemStack, GlobalPos c) {
         CompoundNBT tagCompound = itemStack.getOrCreateTag();
 
         if (c == null) {
@@ -306,22 +305,22 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             tagCompound.remove("selectedZ");
             tagCompound.remove("selectedDim");
         } else {
-            tagCompound.putInt("selectedX", c.getCoordinate().getX());
-            tagCompound.putInt("selectedY", c.getCoordinate().getY());
-            tagCompound.putInt("selectedZ", c.getCoordinate().getZ());
-            tagCompound.putString("selectedDim", c.getDimension().getRegistryName().toString());
+            tagCompound.putInt("selectedX", c.pos().getX());
+            tagCompound.putInt("selectedY", c.pos().getY());
+            tagCompound.putInt("selectedZ", c.pos().getZ());
+            tagCompound.putString("selectedDim", c.dimension().location().toString());
         }
     }
 
     @Nullable
-    private static GlobalCoordinate getCurrentBlock(ItemStack itemStack) {
+    private static GlobalPos getCurrentBlock(ItemStack itemStack) {
         CompoundNBT tagCompound = itemStack.getTag();
         if (tagCompound != null && tagCompound.contains("selectedX")) {
             int x = tagCompound.getInt("selectedX");
             int y = tagCompound.getInt("selectedY");
             int z = tagCompound.getInt("selectedZ");
             String dim = tagCompound.getString("selectedDim");
-            return new GlobalCoordinate(new BlockPos(x, y, z), DimensionId.fromResourceLocation(new ResourceLocation(dim)));
+            return GlobalPos.of(RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(dim)), new BlockPos(x, y, z));
         }
         return null;
     }

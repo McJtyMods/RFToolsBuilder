@@ -15,6 +15,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -43,8 +44,8 @@ public class BuilderTools {
             return;
         }
 
-        DimensionId dimension = chamberChannel.getDimension();
-        World world = dimension.loadWorld(player.getCommandSenderWorld());
+        RegistryKey<World> dimension = chamberChannel.getDimension();
+        World world = player.getCommandSenderWorld().getServer().getLevel(dimension);
         if (world == null) {
             return;
         }

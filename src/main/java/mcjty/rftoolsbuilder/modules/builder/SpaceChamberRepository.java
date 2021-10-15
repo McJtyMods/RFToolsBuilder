@@ -4,10 +4,11 @@ import mcjty.lib.varia.BlockPosTools;
 import mcjty.lib.worlddata.AbstractWorldData;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import mcjty.lib.varia.DimensionId;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.HashMap;
@@ -60,7 +61,7 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
             int channel = tc.getInt("channel");
 
             SpaceChamberChannel value = new SpaceChamberChannel();
-            value.setDimension(DimensionId.fromResourceLocation(new ResourceLocation(tc.getString("dimension"))));
+            value.setDimension(RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(tc.getString("dimension"))));
             value.setMinCorner(BlockPosTools.read(tc, "minCorner"));
             value.setMaxCorner(BlockPosTools.read(tc, "maxCorner"));
             channels.put(channel, value);
@@ -85,15 +86,15 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
     }
 
     public static class SpaceChamberChannel {
-        private DimensionId dimension;
+        private RegistryKey<World> dimension;
         private BlockPos minCorner = null;
         private BlockPos maxCorner = null;
 
-        public DimensionId getDimension() {
+        public RegistryKey<World> getDimension() {
             return dimension;
         }
 
-        public void setDimension(DimensionId dimension) {
+        public void setDimension(RegistryKey<World> dimension) {
             this.dimension = dimension;
         }
 

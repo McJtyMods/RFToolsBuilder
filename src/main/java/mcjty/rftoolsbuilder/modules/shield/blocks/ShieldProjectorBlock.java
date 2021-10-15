@@ -4,7 +4,6 @@ import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.crafting.INBTPreservingIngredient;
-import mcjty.lib.varia.GlobalCoordinate;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbase.modules.various.items.SmartWrenchItem;
 import mcjty.rftoolsbase.tools.ManualHelper;
@@ -17,6 +16,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IWorld;
@@ -93,9 +93,9 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     @Override
     protected boolean wrenchSneakSelect(World world, BlockPos pos, PlayerEntity player) {
         if (!world.isClientSide) {
-            Optional<GlobalCoordinate> currentBlock = SmartWrenchItem.getCurrentBlock(player.getItemInHand(Hand.MAIN_HAND));
+            Optional<GlobalPos> currentBlock = SmartWrenchItem.getCurrentBlock(player.getItemInHand(Hand.MAIN_HAND));
             if (!currentBlock.isPresent()) {
-                SmartWrenchItem.setCurrentBlock(player.getItemInHand(Hand.MAIN_HAND), new GlobalCoordinate(pos, world));
+                SmartWrenchItem.setCurrentBlock(player.getItemInHand(Hand.MAIN_HAND), GlobalPos.of(world.dimension(), pos));
                 Logging.message(player, TextFormatting.YELLOW + "Selected block");
             } else {
                 SmartWrenchItem.setCurrentBlock(player.getItemInHand(Hand.MAIN_HAND), null);

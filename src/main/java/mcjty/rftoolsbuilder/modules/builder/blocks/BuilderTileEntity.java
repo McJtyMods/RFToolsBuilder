@@ -66,6 +66,7 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -363,7 +364,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = calculateBox();
         if (chamberChannel != null) {
-            DimensionId dimension = chamberChannel.getDimension();
+            RegistryKey<World> dimension = chamberChannel.getDimension();
             World world = WorldTools.getWorld(this.level, dimension);
             if (world == null) {
                 return;
@@ -430,7 +431,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = calculateBox();
         if (chamberChannel != null) {
-            DimensionId dimension = chamberChannel.getDimension();
+            RegistryKey<World> dimension = chamberChannel.getDimension();
             World world = WorldTools.getWorld(this.level, dimension);
 
             BlockPos.Mutable src = new BlockPos.Mutable();
@@ -773,7 +774,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             return;
         }
 
-        DimensionId dimension = chamberChannel.getDimension();
+        RegistryKey<World> dimension = chamberChannel.getDimension();
         World world = WorldTools.getWorld(this.level, dimension);
         if (world == null) {
             // The other location must be loaded.
