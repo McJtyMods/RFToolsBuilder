@@ -3,8 +3,8 @@ package mcjty.rftoolsbuilder.modules.builder.client;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import mcjty.lib.base.StyleConfig;
-import mcjty.lib.client.RenderHelper;
 import mcjty.lib.client.GuiTools;
+import mcjty.lib.client.RenderHelper;
 import mcjty.lib.gui.IKeyReceiver;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.WindowManager;
@@ -14,7 +14,6 @@ import mcjty.lib.gui.widgets.*;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
-import mcjty.lib.varia.DimensionId;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
@@ -43,6 +42,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextProperties;
 import net.minecraft.util.text.LanguageMap;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import org.lwjgl.opengl.GL11;
 
@@ -128,7 +128,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     private ShapeID getShapeID() {
         ItemStack stackToEdit = getStackToEdit();
-        return new ShapeID(DimensionId.overworld(), null, ShapeCardItem.getScanId(stackToEdit), false, ShapeCardItem.isSolid(stackToEdit));
+        return new ShapeID(World.OVERWORLD, null, ShapeCardItem.getScanId(stackToEdit), false, ShapeCardItem.isSolid(stackToEdit));
     }
 
     @Override

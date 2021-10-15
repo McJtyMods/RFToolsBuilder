@@ -1,20 +1,22 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import mcjty.lib.varia.DimensionId;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
 /// ID to identify a shape for a player/projector/scanner/...
 public final class ShapeID {
-    private final DimensionId dimension;
+    private final RegistryKey<World> dimension;
     @Nullable private final BlockPos pos;     // null if there is a scanId (shapecard in hand or projector)
     private final int scanId;
     private final boolean grayscale;
     private final boolean solid;
 
-    public ShapeID(DimensionId dimension, BlockPos pos, int scanId, boolean grayscale, boolean solid) {
+    public ShapeID(RegistryKey<World> dimension, BlockPos pos, int scanId, boolean grayscale, boolean solid) {
         this.dimension = dimension;
         this.pos = pos;
         this.scanId = scanId;
@@ -23,10 +25,10 @@ public final class ShapeID {
     }
 
     public ShapeID(PacketBuffer buf) {
-        DimensionId dim = DimensionId.overworld();
+        RegistryKey<World> dim = World.OVERWORLD;
         BlockPos p = null;
         if (buf.readBoolean()) {
-            dim = DimensionId.fromPacket(buf);
+            dim = RegistryKey.create(Registry.DIMENSION_REGISTRY, buf.readResourceLocation());
             p = buf.readBlockPos();
         }
         scanId = buf.readInt();
@@ -41,7 +43,7 @@ public final class ShapeID {
             buf.writeBoolean(false);
         } else {
             buf.writeBoolean(true);
-            getDimension().toBytes(buf);
+            buf.writeResourceLocation(getDimension().location());
             buf.writeBlockPos(getPos());
         }
         buf.writeInt(scanId);
@@ -49,7 +51,7 @@ public final class ShapeID {
         buf.writeBoolean(solid);
     }
 
-    public DimensionId getDimension() {
+    public RegistryKey<World> getDimension() {
         return dimension;
     }
 
