@@ -802,7 +802,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             int z = scan.getZ();
             double sqradius = 30 * 30;
             for (ServerPlayerEntity player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
-                if (DimensionId.fromWorld(player.getCommandSenderWorld()).equals(DimensionId.fromWorld(level))) {
+                if (Objects.equals(player.getCommandSenderWorld().dimension(), level.dimension())) {
                     double d0 = x - player.getX();
                     double d1 = y - player.getY();
                     double d2 = z - player.getZ();
@@ -1807,7 +1807,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     private double getDimensionCostFactor(World world, World destWorld) {
-        return DimensionId.fromWorld(destWorld).equals(DimensionId.fromWorld(world)) ? 1.0 : BuilderConfiguration.dimensionCostFactor.get();
+        return (Objects.equals(destWorld.dimension(), world.dimension())) ? 1.0 : BuilderConfiguration.dimensionCostFactor.get();
     }
 
     private boolean consumeEntityEnergy(int rfNeeded, int rfNeededPlayer, Entity entity) {

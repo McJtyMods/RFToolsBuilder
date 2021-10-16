@@ -75,7 +75,7 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
         for (Map.Entry<Integer, SpaceChamberChannel> entry : channels.entrySet()) {
             CompoundNBT tc = new CompoundNBT();
             tc.putInt("channel", entry.getKey());
-            tc.putString("dimension", entry.getValue().getDimension().getRegistryName().toString());
+            tc.putString("dimension", entry.getValue().getDimension().location().toString());
             BlockPosTools.write(tc, "minCorner", entry.getValue().getMinCorner());
             BlockPosTools.write(tc, "maxCorner", entry.getValue().getMaxCorner());
             lst.add(tc);
