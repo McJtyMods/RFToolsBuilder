@@ -39,7 +39,7 @@ public class PlayerFilter extends AbstractShieldFilter {
         }
 
         PlayerEntity PlayerEntity = (PlayerEntity) entity;
-        return name.equals(PlayerEntity.getName());
+        return name.equals(PlayerEntity.getName().getString());
     }
 
     @Override
