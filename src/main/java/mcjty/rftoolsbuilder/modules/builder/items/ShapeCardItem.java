@@ -3,10 +3,7 @@ package mcjty.rftoolsbuilder.modules.builder.items;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.crafting.INBTPreservingIngredient;
 import mcjty.lib.tooltips.ITooltipSettings;
-import mcjty.lib.varia.BlockPosTools;
-import mcjty.lib.varia.Check32;
-import mcjty.lib.varia.Logging;
-import mcjty.lib.varia.RLE;
+import mcjty.lib.varia.*;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
@@ -27,11 +24,13 @@ import net.minecraft.item.ItemUseContext;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.tags.ITag;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.GlobalPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -320,7 +319,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             int y = tagCompound.getInt("selectedY");
             int z = tagCompound.getInt("selectedZ");
             String dim = tagCompound.getString("selectedDim");
-            return GlobalPos.of(RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(dim)), new BlockPos(x, y, z));
+            return GlobalPos.of(WorldTools.getId(dim), new BlockPos(x, y, z));
         }
         return null;
     }

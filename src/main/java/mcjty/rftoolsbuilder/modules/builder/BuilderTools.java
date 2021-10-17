@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
 import mcjty.lib.varia.Counter;
+import mcjty.lib.varia.WorldTools;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
@@ -43,8 +44,7 @@ public class BuilderTools {
             return;
         }
 
-        RegistryKey<World> dimension = chamberChannel.getDimension();
-        World world = player.getCommandSenderWorld().getServer().getLevel(dimension);
+        World world = WorldTools.getLevel(player.getCommandSenderWorld(), chamberChannel.getDimension());
         if (world == null) {
             return;
         }

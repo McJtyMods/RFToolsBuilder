@@ -1,9 +1,9 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import mcjty.lib.varia.WorldTools;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -28,7 +28,7 @@ public final class ShapeID {
         RegistryKey<World> dim = World.OVERWORLD;
         BlockPos p = null;
         if (buf.readBoolean()) {
-            dim = RegistryKey.create(Registry.DIMENSION_REGISTRY, buf.readResourceLocation());
+            dim = WorldTools.getId(buf.readResourceLocation());
             p = buf.readBlockPos();
         }
         scanId = buf.readInt();

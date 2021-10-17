@@ -1,13 +1,12 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
 import mcjty.lib.varia.BlockPosTools;
+import mcjty.lib.varia.WorldTools;
 import mcjty.lib.worlddata.AbstractWorldData;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
@@ -61,7 +60,7 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
             int channel = tc.getInt("channel");
 
             SpaceChamberChannel value = new SpaceChamberChannel();
-            value.setDimension(RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(tc.getString("dimension"))));
+            value.setDimension(WorldTools.getId(tc.getString("dimension")));
             value.setMinCorner(BlockPosTools.read(tc, "minCorner"));
             value.setMaxCorner(BlockPosTools.read(tc, "maxCorner"));
             channels.put(channel, value);

@@ -365,7 +365,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = calculateBox();
         if (chamberChannel != null) {
             RegistryKey<World> dimension = chamberChannel.getDimension();
-            World world = WorldTools.getWorld(this.level, dimension);
+            World world = WorldTools.getLevel(this.level, dimension);
             if (world == null) {
                 return;
             }
@@ -432,7 +432,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = calculateBox();
         if (chamberChannel != null) {
             RegistryKey<World> dimension = chamberChannel.getDimension();
-            World world = WorldTools.getWorld(this.level, dimension);
+            World world = WorldTools.getLevel(this.level, dimension);
 
             BlockPos.Mutable src = new BlockPos.Mutable();
             BlockPos.Mutable dest = new BlockPos.Mutable();
@@ -775,7 +775,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         }
 
         RegistryKey<World> dimension = chamberChannel.getDimension();
-        World world = WorldTools.getWorld(this.level, dimension);
+        World world = WorldTools.getLevel(this.level, dimension);
         if (world == null) {
             // The other location must be loaded.
             return;
