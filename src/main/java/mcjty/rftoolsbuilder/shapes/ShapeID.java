@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import mcjty.lib.varia.WorldTools;
+import mcjty.lib.varia.LevelTools;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
@@ -28,7 +28,7 @@ public final class ShapeID {
         RegistryKey<World> dim = World.OVERWORLD;
         BlockPos p = null;
         if (buf.readBoolean()) {
-            dim = WorldTools.getId(buf.readResourceLocation());
+            dim = LevelTools.getId(buf.readResourceLocation());
             p = buf.readBlockPos();
         }
         scanId = buf.readInt();

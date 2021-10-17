@@ -1,7 +1,7 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
 import mcjty.lib.varia.Counter;
-import mcjty.lib.varia.WorldTools;
+import mcjty.lib.varia.LevelTools;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
@@ -15,7 +15,6 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -44,7 +43,7 @@ public class BuilderTools {
             return;
         }
 
-        World world = WorldTools.getLevel(player.getCommandSenderWorld(), chamberChannel.getDimension());
+        World world = LevelTools.getLevel(player.getCommandSenderWorld(), chamberChannel.getDimension());
         if (world == null) {
             return;
         }

@@ -319,7 +319,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             int y = tagCompound.getInt("selectedY");
             int z = tagCompound.getInt("selectedZ");
             String dim = tagCompound.getString("selectedDim");
-            return GlobalPos.of(WorldTools.getId(dim), new BlockPos(x, y, z));
+            return GlobalPos.of(LevelTools.getId(dim), new BlockPos(x, y, z));
         }
         return null;
     }
