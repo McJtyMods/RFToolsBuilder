@@ -1069,7 +1069,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             }
 
             PlayerEntity fakePlayer = harvester.get();
-            BlockState newState = BlockTools.placeStackAt(fakePlayer, stack, level, srcPos, pickState);
+            BlockState newState = Tools.placeStackAt(fakePlayer, stack, level, srcPos, pickState);
             if (newState == null) {
                 return waitOrSkip("Cannot place block!");
             }
@@ -1776,7 +1776,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             }
 
             PlayerEntity fakePlayer = harvester.get();
-            BlockState newState = BlockTools.placeStackAt(fakePlayer, consumedStack, destWorld, destPos, srcState);
+            BlockState newState = Tools.placeStackAt(fakePlayer, consumedStack, destWorld, destPos, srcState);
             if (newState == null) {
                 // This block can't be placed
                 return;
