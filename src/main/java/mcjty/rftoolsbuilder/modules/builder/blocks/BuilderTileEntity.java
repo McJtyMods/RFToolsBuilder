@@ -206,8 +206,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             .containerSupplier((windowId, player) -> new GenericContainer(BuilderModule.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY.get(), getBlockPos(), BuilderTileEntity.this))
             .itemHandler(() -> items)
             .energyHandler(() -> energyStorage)
-            .dataListener(Tools.values(new ResourceLocation(RFToolsBuilder.MODID, "data"), this))
-            .shortListener(Tools.holder(() -> scan == null ? -1 : scan.getY(), v -> currentLevel = v)));
+            .dataListener(Sync.values(new ResourceLocation(RFToolsBuilder.MODID, "data"), this))
+            .shortListener(Sync.integer(() -> scan == null ? -1 : scan.getY(), v -> currentLevel = v)));
     private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(BuilderTileEntity.this));
     private final LazyOptional<IModuleSupport> moduleSupportHandler = LazyOptional.of(() -> new DefaultModuleSupport(SLOT_TAB) {
         @Override
