@@ -114,7 +114,7 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         chamberChannel.setMaxCorner(maxCorner);
         chamberRepository.save();
 
-        markDirtyClient();
+        setChanged();
     }
 
     public int getChannel() {
@@ -133,7 +133,7 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
 
     public void setChannel(int channel) {
         this.channel = channel;
-        markDirtyClient();
+        setChanged();
     }
 
     @Override

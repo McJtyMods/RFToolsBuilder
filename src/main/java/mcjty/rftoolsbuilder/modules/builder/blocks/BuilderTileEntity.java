@@ -67,6 +67,7 @@ import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -205,6 +206,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             .containerSupplier((windowId, player) -> new GenericContainer(BuilderModule.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY.get(), getBlockPos(), BuilderTileEntity.this))
             .itemHandler(() -> items)
             .energyHandler(() -> energyStorage)
+            .dataListener(Tools.values(new ResourceLocation(RFToolsBuilder.MODID, "data"), this))
             .shortListener(Tools.holder(() -> scan == null ? -1 : scan.getY(), v -> currentLevel = v)));
     private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(BuilderTileEntity.this));
     private final LazyOptional<IModuleSupport> moduleSupportHandler = LazyOptional.of(() -> new DefaultModuleSupport(SLOT_TAB) {
@@ -471,7 +473,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     public void setWaitMode(boolean waitMode) {
         this.waitMode = waitMode;
-        markDirtyClient();
+        setChanged();
     }
 
     private boolean waitOrSkip(String error) {
@@ -507,7 +509,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     public void setLoopMode(boolean loopMode) {
         this.loopMode = loopMode;
-        markDirtyClient();
+        setChanged();
     }
 
     public boolean hasEntityMode() {
@@ -516,7 +518,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     public void setEntityMode(boolean entityMode) {
         this.entityMode = entityMode;
-        markDirtyClient();
+        setChanged();
     }
 
     public boolean hasSupportMode() {
@@ -530,7 +532,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         } else {
             clearSupportBlocks();
         }
-        markDirtyClient();
+        setChanged();
     }
 
     public boolean isSilent() {
@@ -539,7 +541,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     public void setSilent(boolean silent) {
         this.silent = silent;
-        markDirtyClient();
+        setChanged();
     }
 
     public int getMode() {
@@ -550,7 +552,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (mode != this.mode) {
             this.mode = mode;
             restartScan();
-            markDirtyClient();
+            setChanged();
         }
     }
 
@@ -586,7 +588,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (supportMode) {
             makeSupportBlocks();
         }
-        markDirtyClient();
+        setChanged();
     }
 
     // Give a dimension, return a min coordinate of the box right in front of the builder
@@ -639,7 +641,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (supportMode) {
             makeSupportBlocks();
         }
-        markDirtyClient();
+        setChanged();
     }
 
     @Override

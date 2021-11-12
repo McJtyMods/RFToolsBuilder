@@ -359,7 +359,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public void setBlockLight(boolean blockLight) {
         this.blockLight = blockLight;
         updateTimeout = 10;
-        markDirtyClient();
+        setChanged();
     }
 
     public int getShieldColor() {
@@ -369,13 +369,13 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public void setShieldColor(int shieldColor) {
         this.shieldColor = shieldColor;
         updateTimeout = 10;
-        markDirtyClient();
+        setChanged();
     }
 
     private void delFilter(int selected) {
         filters.remove(selected);
         updateTimeout = 10;
-        markDirtyClient();
+        setChanged();
     }
 
     private void upFilter(int selected) {
@@ -383,7 +383,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         ShieldFilter filter2 = filters.get(selected);
         filters.set(selected - 1, filter2);
         filters.set(selected, filter1);
-        markDirtyClient();
+        setChanged();
     }
 
     private void downFilter(int selected) {
@@ -391,7 +391,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         ShieldFilter filter2 = filters.get(selected+1);
         filters.set(selected, filter2);
         filters.set(selected + 1, filter1);
-        markDirtyClient();
+        setChanged();
     }
 
     private void addFilter(int action, String type, String player, int selected) {
@@ -406,7 +406,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             filters.add(selected, filter);
         }
         updateTimeout = 10;
-        markDirtyClient();
+        setChanged();
     }
 
     public DamageTypeMode getDamageMode() {
@@ -415,7 +415,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     public void setDamageMode(DamageTypeMode damageMode) {
         this.damageMode = damageMode;
-        markDirtyClient();
+        setChanged();
     }
 
     public ShieldRenderingMode getShieldRenderingMode() {
@@ -425,7 +425,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public void setShieldRenderingMode(ShieldRenderingMode shieldRenderingMode) {
         this.shieldRenderingMode = shieldRenderingMode;
         updateTimeout = 10;
-        markDirtyClient();
+        setChanged();
     }
 
     public ShieldTexture getShieldTexture() {
@@ -435,7 +435,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public void setShieldTexture(ShieldTexture shieldTexture) {
         this.shieldTexture = shieldTexture;
         updateTimeout = 10;
-        markDirtyClient();
+        setChanged();
     }
 
 //    @Override
@@ -842,7 +842,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             Logging.message(player, TextFormatting.YELLOW + "The selected shield can't do anything with this block!");
             return;
         }
-        markDirtyClient();
+        setChanged();
     }
 
     /**
@@ -866,7 +866,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 updateShieldBlock(mimic, shielding, c);
             }
         }
-        markDirtyClient();
+        setChanged();
     }
 
     private void updateShieldBlock(BlockState mimic, BlockState shielding, RelCoordinateShield c) {
@@ -922,7 +922,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         shieldActive = false;
         shieldBlocks.clear();
         blockStateTable.clear();
-        markDirtyClient();
+        setChanged();
     }
 
     /**
