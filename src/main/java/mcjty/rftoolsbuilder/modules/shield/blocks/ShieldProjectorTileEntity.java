@@ -172,6 +172,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     @Cap(type = CapType.INFUSABLE)
     private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldProjectorTileEntity.this));
+
     @Cap(type = CapType.POWER_INFO)
     private final LazyOptional<IPowerInformation> powerInfoHandler = LazyOptional.of(this::createPowerInfo);
 

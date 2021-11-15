@@ -197,10 +197,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     @Cap(type = CapType.ITEMS)
     private final LazyOptional<AutomationFilterItemHander> itemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
 
+    @Cap(type = CapType.ENERGY)
     private final GenericEnergyStorage energyStorage = new GenericEnergyStorage(
             this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get());
-    @Cap(type = CapType.ENERGY)
-    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(() -> energyStorage);
+
     @Cap(type = CapType.CONTAINER)
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
             .containerSupplier((windowId, player) -> new GenericContainer(BuilderModule.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY.get(), getBlockPos(), BuilderTileEntity.this))
@@ -208,8 +208,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             .energyHandler(() -> energyStorage)
             .dataListener(Sync.values(new ResourceLocation(RFToolsBuilder.MODID, "data"), this))
             .shortListener(Sync.integer(() -> scan == null ? -1 : scan.getY(), v -> currentLevel = v)));
+
     @Cap(type = CapType.INFUSABLE)
     private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(BuilderTileEntity.this));
+
     @Cap(type = CapType.MODULE)
     private final LazyOptional<IModuleSupport> moduleSupportHandler = LazyOptional.of(() -> new DefaultModuleSupport(SLOT_TAB) {
         @Override
