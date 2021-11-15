@@ -7,7 +7,6 @@ import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.api.smartwrench.ISmartWrenchSelector;
 import mcjty.lib.bindings.DefaultValue;
 import mcjty.lib.bindings.IValue;
-import mcjty.lib.container.AutomationFilterItemHander;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.NoDirectionItemHander;
@@ -156,9 +155,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             .slot(specific(s -> s.getItem() == VariousModule.DIMENSIONALSHARD.get()).in().out(), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118)
             .playerSlots(85, 142));
 
+    @Cap(type = CapType.ITEMS_AUTOMATION)
     private final NoDirectionItemHander items = createItemHandler();
-    @Cap(type = CapType.ITEMS)
-    private final LazyOptional<AutomationFilterItemHander> itemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
 
     private final GenericEnergyStorage energyStorage;
     @Cap(type = CapType.ENERGY)
