@@ -1,11 +1,7 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
-import com.mojang.authlib.GameProfile;
-import mcjty.lib.api.container.CapabilityContainerProvider;
 import mcjty.lib.api.container.DefaultContainerProvider;
-import mcjty.lib.api.information.CapabilityPowerInformation;
 import mcjty.lib.api.information.IPowerInformation;
-import mcjty.lib.api.infusable.CapabilityInfusable;
 import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.api.smartwrench.ISmartWrenchSelector;
@@ -15,12 +11,17 @@ import mcjty.lib.container.AutomationFilterItemHander;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.NoDirectionItemHander;
+import mcjty.lib.tileentity.Cap;
+import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
-import mcjty.lib.varia.*;
+import mcjty.lib.varia.FakePlayerGetter;
+import mcjty.lib.varia.Logging;
+import mcjty.lib.varia.OrientationTools;
+import mcjty.lib.varia.RedstoneMode;
 import mcjty.rftoolsbase.modules.various.VariousModule;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.shield.*;
@@ -57,10 +58,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.*;
-import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.Lazy;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -157,15 +157,22 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             .playerSlots(85, 142));
 
     private final NoDirectionItemHander items = createItemHandler();
+    @Cap(type = CapType.ITEMS)
     private final LazyOptional<AutomationFilterItemHander> itemHandler = LazyOptional.of(() -> new AutomationFilterItemHander(items));
+
     private final GenericEnergyStorage energyStorage;
+    @Cap(type = CapType.ENERGY)
     private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(this::getEnergyStorage);
+
+    @Cap(type = CapType.CONTAINER)
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
             .containerSupplier((windowId,player) -> new GenericContainer(ShieldModule.CONTAINER_SHIELD.get(), windowId, CONTAINER_FACTORY.get(), getBlockPos(), ShieldProjectorTileEntity.this))
             .energyHandler(this::getEnergyStorage)
             .itemHandler(() -> items));
 
+    @Cap(type = CapType.INFUSABLE)
     private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldProjectorTileEntity.this));
+    @Cap(type = CapType.POWER_INFO)
     private final LazyOptional<IPowerInformation> powerInfoHandler = LazyOptional.of(this::createPowerInfo);
 
     private final int maxEnergy;
@@ -1350,26 +1357,5 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 return shieldActive ? "active" : "idle";
             }
         };
-    }
-
-    @Nonnull
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction facing) {
-        if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return itemHandler.cast();
-        }
-        if (cap == CapabilityEnergy.ENERGY) {
-            return energyHandler.cast();
-        }
-        if (cap == CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY) {
-            return screenHandler.cast();
-        }
-        if (cap == CapabilityInfusable.INFUSABLE_CAPABILITY) {
-            return infusableHandler.cast();
-        }
-        if (cap == CapabilityPowerInformation.POWER_INFORMATION_CAPABILITY) {
-            return powerInfoHandler.cast();
-        }
-        return super.getCapability(cap, facing);
     }
 }
