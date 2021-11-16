@@ -58,12 +58,30 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         anchor[2] = window.findChild("anchor2");
         anchor[3] = window.findChild("anchor3");
 
+        updateFields();
+    }
+
+    private void updateFields() {
         ((ChoiceLabel) window.findChild("mode")).choice(MODES[tileEntity.getMode()]);
         ChoiceLabel rotateButton = window.findChild("rotate");
         rotateButton.choice(String.valueOf(tileEntity.getRotate() * 90));
         if (!isShapeCard()) {
             anchor[tileEntity.getAnchor()].setCurrentChoice(1);
         }
+
+        int cury = getCurrentLevelClientSide();
+        currentLevel.text("Y: " + (cury == -1 ? "stop" : cury));
+
+        ItemStack card = tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY);
+        if (card.isEmpty()) {
+            window.setFlag("!validcard");
+        } else if (card.getItem() instanceof ShapeCardItem) {
+            window.setFlag("!validcard");
+        } else {
+            window.setFlag("validcard");
+        }
+        updateAnchorSettings(tileEntity.getAnchor());
+        updateEnergyBar(energyBar);
     }
 
     private void openCardGui() {
@@ -98,20 +116,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
 
     @Override
     protected void renderBg(MatrixStack matrixStack, float partialTicks, int mouseX, int mouseY) {
-        int cury = getCurrentLevelClientSide();
-        currentLevel.text("Y: " + (cury == -1 ? "stop" : cury));
-
-        ItemStack card = tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY);
-        if (card.isEmpty()) {
-            window.setFlag("!validcard");
-        } else if (card.getItem() instanceof ShapeCardItem) {
-            window.setFlag("!validcard");
-        } else {
-            window.setFlag("validcard");
-        }
-        updateAnchorSettings(tileEntity.getAnchor());
-
+        updateFields();
         drawWindow(matrixStack);
-        updateEnergyBar(energyBar);
     }
 }
