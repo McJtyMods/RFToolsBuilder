@@ -7,6 +7,8 @@ import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.api.smartwrench.ISmartWrenchSelector;
 import mcjty.lib.bindings.DefaultValue;
 import mcjty.lib.bindings.IValue;
+import mcjty.lib.blockcommands.Command;
+import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.NoDirectionItemHander;
@@ -73,16 +75,6 @@ import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
 
 public class ShieldProjectorTileEntity extends GenericTileEntity implements ISmartWrenchSelector, ITickableTileEntity {
-
-    public static final String CMD_ADDFILTER = "shield.addFilter";
-    public static final Key<Integer> PARAM_ACTION = new Key<>("action", Type.INTEGER);
-    public static final Key<String> PARAM_TYPE = new Key<>("type", Type.STRING);
-    public static final Key<String> PARAM_PLAYER = new Key<>("player", Type.STRING);
-    public static final Key<Integer> PARAM_SELECTED = new Key<>("selected", Type.INTEGER);
-
-    public static final String CMD_DELFILTER = "shield.delFilter";
-    public static final String CMD_UPFILTER = "shield.upFilter";
-    public static final String CMD_DOWNFILTER = "shield.downFilter";
 
     public static final String CMD_GETFILTERS = "getFilters";
     public static final String CLIENTCMD_GETFILTERS = "getFilters";
@@ -1258,35 +1250,23 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         tagCompound.put("filters", filterList);
     }
 
-    @Override
-    public boolean execute(PlayerEntity playerMP, String command, TypedMap params) {
-        boolean rc = super.execute(playerMP, command, params);
-        if (rc) {
-            return true;
-        }
-        if (CMD_ADDFILTER.equals(command)) {
-            int action = params.get(PARAM_ACTION);
-            String type = params.get(PARAM_TYPE);
-            String player = params.get(PARAM_PLAYER);
-            int selected = params.get(PARAM_SELECTED);
-            addFilter(action, type, player, selected);
-            return true;
-        } else if (CMD_DELFILTER.equals(command)) {
-            int selected = params.get(PARAM_SELECTED);
-            delFilter(selected);
-            return true;
-        } else if (CMD_UPFILTER.equals(command)) {
-            int selected = params.get(PARAM_SELECTED);
-            upFilter(selected);
-            return true;
-        } else if (CMD_DOWNFILTER.equals(command)) {
-            int selected = params.get(PARAM_SELECTED);
-            downFilter(selected);
-            return true;
-        }
+    public static final Key<Integer> PARAM_ACTION = new Key<>("action", Type.INTEGER);
+    public static final Key<String> PARAM_TYPE = new Key<>("type", Type.STRING);
+    public static final Key<String> PARAM_PLAYER = new Key<>("player", Type.STRING);
+    public static final Key<Integer> PARAM_SELECTED = new Key<>("selected", Type.INTEGER);
+    @ServerCommand
+    public static final Command<?> CMD_ADDFILTER = Command.<ShieldProjectorTileEntity>create("shield.addFilter",
+        (te, player, params) -> te.addFilter(params.get(PARAM_ACTION), params.get(PARAM_TYPE), params.get(PARAM_PLAYER), params.get(PARAM_SELECTED)));
 
-        return false;
-    }
+    @ServerCommand
+    public static final Command<?> CMD_DELFILTER = Command.<ShieldProjectorTileEntity>create("shield.delFilter",
+        (te, player, params) -> te.delFilter(params.get(PARAM_SELECTED)));
+    @ServerCommand
+    public static final Command<?> CMD_UPFILTER = Command.<ShieldProjectorTileEntity>create("shield.upFilter",
+        (te, player, params) -> te.upFilter(params.get(PARAM_SELECTED)));
+    @ServerCommand
+    public static final Command<?> CMD_DOWNFILTER = Command.<ShieldProjectorTileEntity>create("shield.downFilter",
+        (te, player, params) -> te.downFilter(params.get(PARAM_SELECTED)));
 
     @Nonnull
     @Override

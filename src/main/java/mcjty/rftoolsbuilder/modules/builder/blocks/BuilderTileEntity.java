@@ -2331,17 +2331,17 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     @ServerCommand
-    public static final Command<?> CMD_SETMODE = Command.<BuilderTileEntity>create("builder.setMode")
-        .buildCommand((te, playerEntity, params) -> te.setMode(params.get(ChoiceLabel.PARAM_CHOICE_IDX)));
+    public static final Command<?> CMD_SETMODE = Command.<BuilderTileEntity>create("builder.setMode",
+        (te, playerEntity, params) -> te.setMode(params.get(ChoiceLabel.PARAM_CHOICE_IDX)));
 
     @ServerCommand
-    public static final Command<?> CMD_SETROTATE = Command.<BuilderTileEntity>create("builder.setRotate")
-            .buildCommand((te, playerEntity, params) -> te.setRotate(Integer.parseInt(params.get(ChoiceLabel.PARAM_CHOICE)) / 90));
+    public static final Command<?> CMD_SETROTATE = Command.<BuilderTileEntity>create("builder.setRotate",
+            (te, playerEntity, params) -> te.setRotate(Integer.parseInt(params.get(ChoiceLabel.PARAM_CHOICE)) / 90));
 
     public static final Key<Integer> PARAM_ANCHOR_INDEX = new Key<>("anchorIndex", Type.INTEGER);
     @ServerCommand
-    public static final Command<?> CMD_SETANCHOR = Command.<BuilderTileEntity>create("builder.setAnchor")
-            .buildCommand((te, playerEntity, params) -> te.setAnchor(params.get(PARAM_ANCHOR_INDEX)));
+    public static final Command<?> CMD_SETANCHOR = Command.<BuilderTileEntity>create("builder.setAnchor",
+            (te, playerEntity, params) -> te.setAnchor(params.get(PARAM_ANCHOR_INDEX)));
 
     @Nonnull
     @Override
