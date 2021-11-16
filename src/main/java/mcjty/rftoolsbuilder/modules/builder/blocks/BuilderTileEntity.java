@@ -9,6 +9,8 @@ import mcjty.lib.bindings.DefaultAction;
 import mcjty.lib.bindings.DefaultValue;
 import mcjty.lib.bindings.IAction;
 import mcjty.lib.bindings.IValue;
+import mcjty.lib.blockcommands.Command;
+import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
@@ -102,12 +104,6 @@ import static mcjty.lib.container.ContainerFactory.CONTAINER_CONTAINER;
 import static mcjty.lib.container.SlotDefinition.specific;
 
 public class BuilderTileEntity extends GenericTileEntity implements ITickableTileEntity, IHudSupport {
-
-    public static final String CMD_SETMODE = "builder.setMode";
-    public static final String CMD_SETROTATE = "builder.setRotate";
-
-    public static final String CMD_SETANCHOR = "builder.setAnchor";
-    public static final Key<Integer> PARAM_ANCHOR_INDEX = new Key<>("anchorIndex", Type.INTEGER);
 
     public static final int SLOT_TAB = 0;
     public static final int SLOT_FILTER = 1;
@@ -2334,24 +2330,18 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return scan == null ? -1 : scan.getY();
     }
 
-    @Override
-    public boolean execute(PlayerEntity playerMP, String command, TypedMap params) {
-        boolean rc = super.execute(playerMP, command, params);
-        if (rc) {
-            return true;
-        }
-        if (CMD_SETROTATE.equals(command)) {
-            setRotate(Integer.parseInt(params.get(ChoiceLabel.PARAM_CHOICE)) / 90);
-            return true;
-        } else if (CMD_SETANCHOR.equals(command)) {
-            setAnchor(params.get(PARAM_ANCHOR_INDEX));
-            return true;
-        } else if (CMD_SETMODE.equals(command)) {
-            setMode(params.get(ChoiceLabel.PARAM_CHOICE_IDX));
-            return true;
-        }
-        return false;
-    }
+    @ServerCommand
+    public static final Command<?> CMD_SETMODE = Command.<BuilderTileEntity>create("builder.setMode")
+        .buildCommand((te, playerEntity, params) -> te.setMode(params.get(ChoiceLabel.PARAM_CHOICE_IDX)));
+
+    @ServerCommand
+    public static final Command<?> CMD_SETROTATE = Command.<BuilderTileEntity>create("builder.setRotate")
+            .buildCommand((te, playerEntity, params) -> te.setRotate(Integer.parseInt(params.get(ChoiceLabel.PARAM_CHOICE)) / 90));
+
+    public static final Key<Integer> PARAM_ANCHOR_INDEX = new Key<>("anchorIndex", Type.INTEGER);
+    @ServerCommand
+    public static final Command<?> CMD_SETANCHOR = Command.<BuilderTileEntity>create("builder.setAnchor")
+            .buildCommand((te, playerEntity, params) -> te.setAnchor(params.get(PARAM_ANCHOR_INDEX)));
 
     @Nonnull
     @Override
