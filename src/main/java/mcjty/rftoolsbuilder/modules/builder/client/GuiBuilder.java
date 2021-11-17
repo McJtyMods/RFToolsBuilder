@@ -64,6 +64,9 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     }
 
     private void updateFields() {
+        if (window == null) {
+            return;
+        }
         ((ChoiceLabel) window.findChild("mode")).choice(MODES[tileEntity.getMode()]);
         ChoiceLabel rotateButton = window.findChild("rotate");
         rotateButton.choice(String.valueOf(tileEntity.getRotate() * 90));
