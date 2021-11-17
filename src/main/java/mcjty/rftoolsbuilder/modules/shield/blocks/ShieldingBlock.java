@@ -78,7 +78,7 @@ public class ShieldingBlock extends Block {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(@Nonnull StateContainer.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(BLOCKED_ITEMS, BLOCKED_HOSTILE, BLOCKED_PASSIVE, BLOCKED_PLAYERS,
                 DAMAGE_ITEMS, DAMAGE_HOSTILE, DAMAGE_PASSIVE, DAMAGE_PLAYERS,
@@ -86,17 +86,18 @@ public class ShieldingBlock extends Block {
     }
 
     @Override
-    public int getLightBlock(BlockState state, IBlockReader world, BlockPos pos) {
+    public int getLightBlock(BlockState state, @Nonnull IBlockReader world, @Nonnull BlockPos pos) {
         return state.getValue(FLAG_OPAQUE) ? 0 : 255;
     }
 
+    @Nonnull
     @Override
     public BlockRenderType getRenderShape(BlockState state) {
         return state.getValue(RENDER_MODE) == ShieldRenderingMode.INVISIBLE ? BlockRenderType.INVISIBLE : BlockRenderType.MODEL;
     }
 
     @Override
-    public float getShadeBrightness(BlockState state, IBlockReader worldIn, BlockPos pos) {
+    public float getShadeBrightness(@Nonnull BlockState state, @Nonnull IBlockReader worldIn, @Nonnull BlockPos pos) {
         return super.getShadeBrightness(state, worldIn, pos);
     }
 
@@ -105,13 +106,15 @@ public class ShieldingBlock extends Block {
         return false;
     }
 
+    @Nonnull
     @Override
-    public PushReaction getPistonPushReaction(BlockState state) {
+    public PushReaction getPistonPushReaction(@Nonnull BlockState state) {
         return PushReaction.BLOCK;
     }
 
+    @Nonnull
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
+    public VoxelShape getShape(@Nonnull BlockState state, IBlockReader world, @Nonnull BlockPos pos, @Nonnull ISelectionContext context) {
         TileEntity te = world.getBlockEntity(pos);
         if (te instanceof ShieldingTileEntity) {
             BlockState mimic = ((ShieldingTileEntity) te).getMimic();
@@ -127,8 +130,9 @@ public class ShieldingBlock extends Block {
     }
 
 
+    @Nonnull
     @Override
-    public VoxelShape getInteractionShape(BlockState state, IBlockReader world, BlockPos pos) {
+    public VoxelShape getInteractionShape(@Nonnull BlockState state, IBlockReader world, @Nonnull BlockPos pos) {
         TileEntity te = world.getBlockEntity(pos);
         if (te instanceof ShieldingTileEntity) {
             BlockState mimic = ((ShieldingTileEntity) te).getMimic();
@@ -143,8 +147,9 @@ public class ShieldingBlock extends Block {
         }
     }
 
+    @Nonnull
     @Override
-    public VoxelShape getOcclusionShape(BlockState state, IBlockReader world, BlockPos pos) {
+    public VoxelShape getOcclusionShape(@Nonnull BlockState state, IBlockReader world, @Nonnull BlockPos pos) {
         TileEntity te = world.getBlockEntity(pos);
         if (te instanceof ShieldingTileEntity) {
             BlockState mimic = ((ShieldingTileEntity) te).getMimic();
@@ -174,8 +179,9 @@ public class ShieldingBlock extends Block {
         return !(entity instanceof LivingEntity);
     }
 
+    @Nonnull
     @Override
-    public VoxelShape getCollisionShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, @Nonnull IBlockReader world, @Nonnull BlockPos pos, ISelectionContext context) {
         Entity entity = context.getEntity();
         if (state.getValue(BLOCKED_HOSTILE)) {
             if (isHostile(entity)) {
@@ -250,12 +256,12 @@ public class ShieldingBlock extends Block {
     }
 
     @Override
-    public boolean skipRendering(BlockState state, BlockState adjacentBlockState, Direction side) {
+    public boolean skipRendering(@Nonnull BlockState state, BlockState adjacentBlockState, @Nonnull Direction side) {
         return adjacentBlockState.getBlock() == this ? true : super.skipRendering(state, adjacentBlockState, side);
     }
 
     @Override
-    public void entityInside(BlockState state, World world, BlockPos pos, Entity entity) {
+    public void entityInside(@Nonnull BlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull Entity entity) {
         if (!(entity instanceof LivingEntity)) {
             if (!state.getValue(BLOCKED_ITEMS)) {
                 // Items should be able to pass through. We just move the entity to below this block.

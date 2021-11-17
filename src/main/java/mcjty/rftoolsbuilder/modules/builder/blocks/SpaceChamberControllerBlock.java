@@ -72,7 +72,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     }
 
     @Override
-    public void onPlace(BlockState state, World level, BlockPos pos, BlockState state2, boolean p_220082_5_) {
+    public void onPlace(@Nonnull BlockState state, @Nonnull World level, @Nonnull BlockPos pos, @Nonnull BlockState state2, boolean p_220082_5_) {
         super.onPlace(state, level, pos, state2, p_220082_5_);
         if (!level.isClientSide) {
             SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(level);
@@ -88,7 +88,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     }
 
     @Override
-    public void onRemove(BlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
+    public void onRemove(@Nonnull BlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
         if (!world.isClientSide) {
             SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(world);
             SpaceChamberControllerTileEntity te = (SpaceChamberControllerTileEntity) world.getBlockEntity(pos);

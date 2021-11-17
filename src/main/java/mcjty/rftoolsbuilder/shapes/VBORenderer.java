@@ -23,8 +23,8 @@ public class VBORenderer implements Closeable {
         return new VBORenderer(vbo, glMode);
     }
 
-    final VertexBuffer vbo;
-    final int glMode;
+    private final VertexBuffer vbo;
+    private final int glMode;
 
     public VBORenderer(VertexBuffer vbo, int glMode) {
         this.vbo = vbo;

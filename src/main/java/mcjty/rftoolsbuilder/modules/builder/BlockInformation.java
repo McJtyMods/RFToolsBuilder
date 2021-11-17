@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
-import mcjty.lib.varia.BlockTools;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;

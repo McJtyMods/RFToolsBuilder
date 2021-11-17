@@ -10,6 +10,8 @@ import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 
+import javax.annotation.Nonnull;
+
 
 public class BuilderRenderer extends TileEntityRenderer<BuilderTileEntity> {
 
@@ -18,7 +20,7 @@ public class BuilderRenderer extends TileEntityRenderer<BuilderTileEntity> {
     }
 
     @Override
-    public void render(BuilderTileEntity te, float v, MatrixStack matrixStack, IRenderTypeBuffer buffer, int i, int i1) {
+    public void render(@Nonnull BuilderTileEntity te, float v, @Nonnull MatrixStack matrixStack, @Nonnull IRenderTypeBuffer buffer, int i, int i1) {
         if (BuilderConfiguration.showProgressHud.get()) {
             HudRenderer.renderHud(matrixStack, buffer, te);
         }

@@ -294,9 +294,6 @@ public class Formulas {
                     int tz = z;
                     BlockPos o = bounds.getOffset();
                     switch (modifier.getRotation()) {
-                        default:
-                        case NONE:
-                            break;
                         case X:
                             tx = x;
                             ty = (z-o.getZ()) + o.getY();
@@ -311,6 +308,9 @@ public class Formulas {
                             tx = (y-o.getY()) + o.getX();
                             ty = (x-o.getX()) + o.getY();
                             tz = z;
+                            break;
+                        case NONE:
+                        default:
                             break;
                     }
 

@@ -119,7 +119,9 @@ public enum ShapeCardType {
     private final ModelResourceLocation modelResourceLocation;
     private final SingleBlockHandler singleBlockHandler;
     private final String hudLogEntry;
-    private final boolean quarry, clearing, fortune;
+    private final boolean quarry;
+    private final boolean clearing;
+    private final boolean fortune;
     private final List<ITextComponent> information;
     private final String resourceSuffix;
 

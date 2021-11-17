@@ -7,6 +7,8 @@ import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
+import javax.annotation.Nonnull;
+
 public class Items extends BaseItemModelProvider {
 
     public Items(DataGenerator generator, ExistingFileHelper existingFileHelper) {
@@ -44,6 +46,7 @@ public class Items extends BaseItemModelProvider {
         itemGenerated(BuilderModule.SHAPE_CARD_VOID.get(), "item/shapecardvoiditem");
     }
 
+    @Nonnull
     @Override
     public String getName() {
         return "RFTools Builder Item Models";

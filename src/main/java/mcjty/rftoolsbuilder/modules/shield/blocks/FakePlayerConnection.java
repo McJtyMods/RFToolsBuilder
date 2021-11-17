@@ -2,7 +2,6 @@ package mcjty.rftoolsbuilder.modules.shield.blocks;
 
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.IPacket;
 import net.minecraft.network.NetworkManager;
@@ -12,6 +11,7 @@ import net.minecraft.network.play.client.*;
 import net.minecraft.network.play.server.SPlayerPositionLookPacket;
 import net.minecraft.util.text.ITextComponent;
 
+import javax.annotation.Nonnull;
 import java.util.Set;
 
 public class FakePlayerConnection extends ServerPlayNetHandler {
@@ -21,11 +21,11 @@ public class FakePlayerConnection extends ServerPlayNetHandler {
     }
 
     @Override
-    public void disconnect(ITextComponent textComponent) {
+    public void disconnect(@Nonnull ITextComponent textComponent) {
     }
 
     @Override
-    public void onDisconnect(ITextComponent reason) {
+    public void onDisconnect(@Nonnull ITextComponent reason) {
     }
 
     @Override
@@ -33,183 +33,183 @@ public class FakePlayerConnection extends ServerPlayNetHandler {
     }
 
     @Override
-    public void handleLockDifficulty(CLockDifficultyPacket p_217261_1_) {
+    public void handleLockDifficulty(@Nonnull CLockDifficultyPacket p_217261_1_) {
     }
 
     @Override
-    public void handleChangeDifficulty(CSetDifficultyPacket p_217263_1_) {
+    public void handleChangeDifficulty(@Nonnull CSetDifficultyPacket p_217263_1_) {
     }
 
     @Override
-    public void handleSetJigsawBlock(CUpdateJigsawBlockPacket p_217262_1_) {
+    public void handleSetJigsawBlock(@Nonnull CUpdateJigsawBlockPacket p_217262_1_) {
     }
 
     @Override
-    public void handleAnimate(CAnimateHandPacket packetIn) {
+    public void handleAnimate(@Nonnull CAnimateHandPacket packetIn) {
     }
 
     @Override
-    public void handleClientCommand(CClientStatusPacket packetIn) {
+    public void handleClientCommand(@Nonnull CClientStatusPacket packetIn) {
     }
 
     @Override
-    public void handleMovePlayer(CPlayerPacket packetIn) {
+    public void handleMovePlayer(@Nonnull CPlayerPacket packetIn) {
     }
 
     @Override
-    public void handleContainerButtonClick(CEnchantItemPacket packetIn) {
+    public void handleContainerButtonClick(@Nonnull CEnchantItemPacket packetIn) {
     }
 
     @Override
-    public void handleContainerClose(CCloseWindowPacket packetIn) {
+    public void handleContainerClose(@Nonnull CCloseWindowPacket packetIn) {
     }
 
     @Override
-    public void handleSeenAdvancements(CSeenAdvancementsPacket packetIn) {
+    public void handleSeenAdvancements(@Nonnull CSeenAdvancementsPacket packetIn) {
     }
 
     @Override
-    public void handleMoveVehicle(CMoveVehiclePacket packetIn) {
+    public void handleMoveVehicle(@Nonnull CMoveVehiclePacket packetIn) {
     }
 
     @Override
-    public void handleResourcePackResponse(CResourcePackStatusPacket packetIn) {
+    public void handleResourcePackResponse(@Nonnull CResourcePackStatusPacket packetIn) {
     }
 
     @Override
-    public void handleChat(CChatMessagePacket packetIn) {
+    public void handleChat(@Nonnull CChatMessagePacket packetIn) {
     }
 
     @Override
-    public void handleTeleportToEntityPacket(CSpectatePacket packetIn) {
+    public void handleTeleportToEntityPacket(@Nonnull CSpectatePacket packetIn) {
     }
 
     @Override
-    public void handleClientInformation(CClientSettingsPacket packetIn) {
+    public void handleClientInformation(@Nonnull CClientSettingsPacket packetIn) {
     }
 
     @Override
-    public void handleContainerClick(CClickWindowPacket packetIn) {
+    public void handleContainerClick(@Nonnull CClickWindowPacket packetIn) {
     }
 
     @Override
-    public void handleCustomPayload(CCustomPayloadPacket packetIn) {
+    public void handleCustomPayload(@Nonnull CCustomPayloadPacket packetIn) {
     }
 
     @Override
-    public void handleSetCreativeModeSlot(CCreativeInventoryActionPacket packetIn) {
+    public void handleSetCreativeModeSlot(@Nonnull CCreativeInventoryActionPacket packetIn) {
     }
 
     @Override
-    public void handleAcceptTeleportPacket(CConfirmTeleportPacket packetIn) {
+    public void handleAcceptTeleportPacket(@Nonnull CConfirmTeleportPacket packetIn) {
     }
 
     @Override
-    public void handlePlayerCommand(CEntityActionPacket packetIn) {
+    public void handlePlayerCommand(@Nonnull CEntityActionPacket packetIn) {
     }
 
     @Override
-    public void handleContainerAck(CConfirmTransactionPacket packetIn) {
+    public void handleContainerAck(@Nonnull CConfirmTransactionPacket packetIn) {
     }
 
     @Override
-    public void handlePlayerInput(CInputPacket packetIn) {
+    public void handlePlayerInput(@Nonnull CInputPacket packetIn) {
     }
 
     @Override
-    public void handleEditBook(CEditBookPacket packetIn) {
+    public void handleEditBook(@Nonnull CEditBookPacket packetIn) {
     }
 
     @Override
-    public void handleBlockEntityTagQuery(CQueryTileEntityNBTPacket packetIn) {
+    public void handleBlockEntityTagQuery(@Nonnull CQueryTileEntityNBTPacket packetIn) {
     }
 
     @Override
-    public void handleSetCarriedItem(CHeldItemChangePacket packetIn) {
+    public void handleSetCarriedItem(@Nonnull CHeldItemChangePacket packetIn) {
     }
 
     @Override
-    public void handlePlaceRecipe(CPlaceRecipePacket packetIn) {
+    public void handlePlaceRecipe(@Nonnull CPlaceRecipePacket packetIn) {
     }
 
     @Override
-    public void handleKeepAlive(CKeepAlivePacket packetIn) {
+    public void handleKeepAlive(@Nonnull CKeepAlivePacket packetIn) {
     }
 
     @Override
-    public void handlePlayerAction(CPlayerDiggingPacket packetIn) {
+    public void handlePlayerAction(@Nonnull CPlayerDiggingPacket packetIn) {
     }
 
     @Override
-    public void handleEntityTagQuery(CQueryEntityNBTPacket packetIn) {
+    public void handleEntityTagQuery(@Nonnull CQueryEntityNBTPacket packetIn) {
     }
 
     @Override
-    public void handleSelectTrade(CSelectTradePacket packetIn) {
+    public void handleSelectTrade(@Nonnull CSelectTradePacket packetIn) {
     }
 
     @Override
-    public void handlePickItem(CPickItemPacket packetIn) {
+    public void handlePickItem(@Nonnull CPickItemPacket packetIn) {
     }
 
     @Override
-    public void handleCustomCommandSuggestions(CTabCompletePacket packetIn) {
+    public void handleCustomCommandSuggestions(@Nonnull CTabCompletePacket packetIn) {
     }
 
     @Override
-    public void handlePlayerAbilities(CPlayerAbilitiesPacket packetIn) {
+    public void handlePlayerAbilities(@Nonnull CPlayerAbilitiesPacket packetIn) {
     }
 
     @Override
-    public void handleUseItemOn(CPlayerTryUseItemOnBlockPacket packetIn) {
+    public void handleUseItemOn(@Nonnull CPlayerTryUseItemOnBlockPacket packetIn) {
     }
 
     @Override
-    public void handlePaddleBoat(CSteerBoatPacket packetIn) {
+    public void handlePaddleBoat(@Nonnull CSteerBoatPacket packetIn) {
     }
 
     @Override
-    public void handleSetCommandBlock(CUpdateCommandBlockPacket packetIn) {
+    public void handleSetCommandBlock(@Nonnull CUpdateCommandBlockPacket packetIn) {
     }
 
     @Override
-    public void handleRenameItem(CRenameItemPacket packetIn) {
+    public void handleRenameItem(@Nonnull CRenameItemPacket packetIn) {
     }
 
     @Override
-    public void handleSignUpdate(CUpdateSignPacket packetIn) {
+    public void handleSignUpdate(@Nonnull CUpdateSignPacket packetIn) {
     }
 
     @Override
-    public void handleUseItem(CPlayerTryUseItemPacket packetIn) {
+    public void handleUseItem(@Nonnull CPlayerTryUseItemPacket packetIn) {
     }
 
     @Override
-    public void handleInteract(CUseEntityPacket packetIn) {
+    public void handleInteract(@Nonnull CUseEntityPacket packetIn) {
     }
 
     @Override
-    public void handleSetCommandMinecart(CUpdateMinecartCommandBlockPacket packetIn) {
+    public void handleSetCommandMinecart(@Nonnull CUpdateMinecartCommandBlockPacket packetIn) {
     }
 
     @Override
-    public void handleSetStructureBlock(CUpdateStructureBlockPacket packetIn) {
+    public void handleSetStructureBlock(@Nonnull CUpdateStructureBlockPacket packetIn) {
     }
 
     @Override
-    public void handleSetBeaconPacket(CUpdateBeaconPacket packetIn) {
+    public void handleSetBeaconPacket(@Nonnull CUpdateBeaconPacket packetIn) {
     }
 
     @Override
-    public void send(IPacket<?> packetIn, GenericFutureListener<? extends Future<? super Void>> futureListeners) {
+    public void send(@Nonnull IPacket<?> packetIn, GenericFutureListener<? extends Future<? super Void>> futureListeners) {
     }
 
     @Override
-    public void teleport(double x, double y, double z, float yaw, float pitch, Set<SPlayerPositionLookPacket.Flags> relativeSet) {
+    public void teleport(double x, double y, double z, float yaw, float pitch, @Nonnull Set<SPlayerPositionLookPacket.Flags> relativeSet) {
     }
 
     @Override
-    public void send(IPacket<?> packetIn) {
+    public void send(@Nonnull IPacket<?> packetIn) {
     }
 
     @Override

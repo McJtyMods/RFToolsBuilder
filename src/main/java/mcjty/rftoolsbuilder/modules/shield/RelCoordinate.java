@@ -11,6 +11,10 @@ public class RelCoordinate {
         this.dz = dz;
     }
 
+    public boolean matches(int dx, int dy, int dz) {
+        return dx == this.dx && dy == this.dy && dz == this.dz;
+    }
+
     public int getDx() {
         return dx;
     }

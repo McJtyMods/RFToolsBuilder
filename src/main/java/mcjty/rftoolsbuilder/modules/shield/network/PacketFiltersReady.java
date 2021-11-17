@@ -17,9 +17,9 @@ import java.util.function.Supplier;
 
 public class PacketFiltersReady {
 
-    public BlockPos pos;
-    public List<ShieldFilter> list;
-    public String command;
+    private BlockPos pos;
+    private List<ShieldFilter> list;
+    private String command;
 
     public PacketFiltersReady() {
     }

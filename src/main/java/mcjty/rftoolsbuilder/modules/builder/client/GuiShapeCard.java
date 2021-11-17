@@ -46,6 +46,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import org.lwjgl.opengl.GL11;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -511,7 +512,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     private static int updateCounter = 20;
 
     @Override
-    public void render(MatrixStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
+    public void render(@Nonnull MatrixStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
         // If not initialized yet we do nothing
         if (window == null) {
             return;

@@ -41,6 +41,7 @@ import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.util.*;
@@ -122,6 +123,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         return BlockPosTools.toString(getOffset(itemStack));
     }
 
+    @Nonnull
     @Override
     public ActionResultType useOn(ItemUseContext context) {
         World world = context.getLevel();
@@ -212,13 +214,8 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 //            tag.remove("ghost_meta");         // @todo 1.14 not more meta
         } else {
             Block block = Block.byItem(materialGhost.getItem());
-            if (block == null) {
-                tag.remove("ghost_block");
-//                tag.remove("ghost_meta");     // @todo 1.14 not more meta
-            } else {
-                tag.putString("ghost_block", block.getRegistryName().toString());
+            tag.putString("ghost_block", block.getRegistryName().toString());
 //                tag.putInt("ghost_meta", materialGhost.getMetadata());        // @todo 1.14 no more meta
-            }
         }
     }
 
@@ -326,7 +323,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
 
     @Override
-    public void appendHoverText(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
+    public void appendHoverText(@Nonnull ItemStack itemStack, World world, @Nonnull List<ITextComponent> list, @Nonnull ITooltipFlag flag) {
         super.appendHoverText(itemStack, world, list, flag);
         // Use custom RL so that we don't have to duplicate the translation for every shape card
         tooltipBuilder.get().makeTooltip(new ResourceLocation(RFToolsBuilder.MODID, "shape_card"), itemStack, list, flag);
@@ -603,8 +600,9 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         return o;
     }
 
+    @Nonnull
     @Override
-    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+    public ActionResult<ItemStack> use(World world, PlayerEntity player, @Nonnull Hand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (world.isClientSide) {
             GuiShapeCard.open(false);
@@ -711,7 +709,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         int dz = clamped.getZ();
 
         formula = formula.correctFormula(solid);
-        formula.setup(world, new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), stack != null ? stack.getTag() : null);
+        formula.setup(world, new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), !stack.isEmpty() ? stack.getTag() : null);
 
         // For saving shape cards we need to do X/Z/Y (scanner order) instead of the usual Y/X/Z (render order)
         int cnt = 0;

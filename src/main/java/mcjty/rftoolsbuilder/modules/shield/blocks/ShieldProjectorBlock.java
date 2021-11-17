@@ -66,7 +66,7 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
 
 
     @Override
-    public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+    public void setPlacedBy(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nullable LivingEntity placer, @Nonnull ItemStack stack) {
 // @todo 1.14
         //        restoreBlockFromNBT(world, pos, stack);
         super.setPlacedBy(world, pos, state, placer, stack);
@@ -74,7 +74,7 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     }
 
     @Override
-    public void attack(BlockState state, World world, BlockPos pos, PlayerEntity player) {
+    public void attack(@Nonnull BlockState state, World world, @Nonnull BlockPos pos, @Nonnull PlayerEntity player) {
         if (!world.isClientSide) {
             composeDecomposeShield(world, pos, true);
             // @todo achievements
@@ -115,7 +115,7 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     }
 
     @Override
-    public void onRemove(BlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
+    public void onRemove(@Nonnull BlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
         if (newstate.getBlock() != this) {
             removeShield(world, pos);
         }
@@ -123,13 +123,13 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     }
 
     @Override
-    public void destroy(IWorld world, BlockPos pos, BlockState state) {
+    public void destroy(@Nonnull IWorld world, @Nonnull BlockPos pos, @Nonnull BlockState state) {
         removeShield(world, pos);
         super.destroy(world, pos, state);
     }
 
     @Override
-    public void wasExploded(World world, BlockPos pos, Explosion explosionIn) {
+    public void wasExploded(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull Explosion explosionIn) {
         removeShield(world, pos);
         super.wasExploded(world, pos, explosionIn);
     }

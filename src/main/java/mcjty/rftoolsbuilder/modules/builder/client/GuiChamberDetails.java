@@ -18,6 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -107,11 +108,8 @@ public class GuiChamberDetails extends GuiItemScreen {
             BlockRender blockRender = new BlockRender().renderItem(stack).offsetX(-1).offsetY(-1);
 
             Label nameLabel = new Label().horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(StyleConfig.colorTextInListNormal);
-            if (stack.getItem() == null) {
-                nameLabel.text("?").desiredWidth(160);
-            } else {
-                nameLabel.text(stack.getHoverName().getString()).desiredWidth(160);   // @todo getFormattedText
-            }
+            stack.getItem();
+            nameLabel.text(stack.getHoverName().getString()).desiredWidth(160);   // @todo getFormattedText
 
             Label countLabel = label(String.valueOf(count)).color(StyleConfig.colorTextInListNormal);
             countLabel.horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).desiredWidth(50);
@@ -191,7 +189,7 @@ public class GuiChamberDetails extends GuiItemScreen {
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
+    public void render(@Nonnull MatrixStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
         super.render(matrixStack, xSize_lo, ySize_lo, par3);
 
         populateLists();

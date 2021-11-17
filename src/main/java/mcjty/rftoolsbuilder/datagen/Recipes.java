@@ -14,6 +14,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.Tags;
 
+import javax.annotation.Nonnull;
 import java.util.function.Consumer;
 
 public class Recipes extends BaseRecipeProvider {
@@ -25,7 +26,7 @@ public class Recipes extends BaseRecipeProvider {
     }
 
     @Override
-    protected void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer) {
+    protected void buildShapelessRecipes(@Nonnull Consumer<IFinishedRecipe> consumer) {
         build(consumer, ShapedRecipeBuilder.shaped(BuilderModule.BUILDER.get())
                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
                 "BoB", "rFr", "BrB");

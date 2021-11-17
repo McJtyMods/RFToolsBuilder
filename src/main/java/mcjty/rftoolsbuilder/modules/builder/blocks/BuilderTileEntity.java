@@ -1296,7 +1296,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
         FluidState fluidState = level.getFluidState(srcPos);
 
-        if (fluidState == null) {
+        if (fluidState.isEmpty()) {
             return skip();
         }
 
@@ -1641,9 +1641,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             if (!contents.isEmpty()) {
                 if (contents.getFluid() != null) {
                     if (contents.getAmount() >= 1000) {
-                        FluidStack drained = tank.drain(new FluidStack(contents.getFluid(), 1000, contents.getTag()), IFluidHandler.FluidAction.EXECUTE);
-//                        System.out.println("drained = " + drained);
-                        return drained;
+                        return tank.drain(new FluidStack(contents.getFluid(), 1000, contents.getTag()), IFluidHandler.FluidAction.EXECUTE);
                     }
                 }
             }
@@ -1916,7 +1914,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             clearBlock(srcWorld, srcPos);
 
             destWorld.setBlock(destPos, srcState, 3);
-            if (srcTileEntity != null && tc != null) {
+            if (srcTileEntity != null) {
                 setTileEntityNBT(destWorld, tc, destPos, srcState);
             }
             if (!silent) {
@@ -2260,8 +2258,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         maxBox = BlockPosTools.read(info, "maxBox");
     }
 
+    @Nonnull
     @Override
-    public CompoundNBT save(CompoundNBT tagCompound) {
+    public CompoundNBT save(@Nonnull CompoundNBT tagCompound) {
         super.save(tagCompound);
         if (!overflowItems.isEmpty()) {
             ListNBT overflowItemsNbt = new ListNBT();

@@ -16,6 +16,7 @@ import net.minecraftforge.client.model.IModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,12 +30,13 @@ public class ShieldModelLoader implements IModelLoader<ShieldModelLoader.TankMod
     }
 
     @Override
-    public void onResourceManagerReload(IResourceManager resourceManager) {
+    public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {
 
     }
 
+    @Nonnull
     @Override
-    public TankModelGeometry read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
+    public TankModelGeometry read(@Nonnull JsonDeserializationContext deserializationContext, @Nonnull JsonObject modelContents) {
         return new TankModelGeometry();
     }
 

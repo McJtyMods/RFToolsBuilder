@@ -23,6 +23,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Lazy;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
@@ -59,19 +60,21 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
+    public void appendHoverText(@Nonnull ItemStack itemStack, World world, @Nonnull List<ITextComponent> list, @Nonnull ITooltipFlag flag) {
         super.appendHoverText(itemStack, world, list, flag);
         tooltipBuilder.get().makeTooltip(getRegistryName(), itemStack, list, flag);
     }
 
+    @Nonnull
     @Override
-    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+    public ActionResult<ItemStack> use(@Nonnull World world, PlayerEntity player, @Nonnull Hand hand) {
         if (!player.isCrouching()) {
             showDetails(world, player, player.getItemInHand(hand));
         }
         return super.use(world, player, hand);
     }
 
+    @Nonnull
     @Override
     public ActionResultType useOn(ItemUseContext context) {
         PlayerEntity player = context.getPlayer();

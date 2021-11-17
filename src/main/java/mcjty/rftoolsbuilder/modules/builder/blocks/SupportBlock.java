@@ -6,7 +6,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.state.EnumProperty;
-import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
@@ -15,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -45,20 +45,22 @@ public class SupportBlock extends Block {
             return name;
         }
 
+        @Nonnull
         @Override
         public String getSerializedName() {
             return name;
         }
     }
 
-    public static EnumProperty<SupportStatus> STATUS = EnumProperty.create("status", SupportStatus.class);
+    public static final EnumProperty<SupportStatus> STATUS = EnumProperty.create("status", SupportStatus.class);
 
     public SupportBlock() {
         super(Properties.of(Material.GLASS).noOcclusion().isRedstoneConductor((state, world, pos) -> false));
     }
 
+    @Nonnull
     @Override
-    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+    public ActionResultType use(@Nonnull BlockState state, World world, @Nonnull BlockPos pos, @Nonnull PlayerEntity player, @Nonnull Hand handIn, @Nonnull BlockRayTraceResult hit) {
         if (!world.isClientSide) {
             // Find all connected blocks and remove them.
             Deque<BlockPos> todo = new ArrayDeque<>();

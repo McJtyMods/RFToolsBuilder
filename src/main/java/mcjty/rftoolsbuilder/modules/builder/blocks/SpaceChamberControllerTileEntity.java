@@ -11,6 +11,8 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 
+import javax.annotation.Nonnull;
+
 public class SpaceChamberControllerTileEntity extends GenericTileEntity {
 
     private BlockPos minCorner;
@@ -143,8 +145,9 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         maxCorner = BlockPosTools.read(tagCompound, "maxCorner");
     }
 
+    @Nonnull
     @Override
-    public CompoundNBT save(CompoundNBT tagCompound) {
+    public CompoundNBT save(@Nonnull CompoundNBT tagCompound) {
         super.save(tagCompound);
         BlockPosTools.write(tagCompound, "minCorner", minCorner);
         BlockPosTools.write(tagCompound, "maxCorner", maxCorner);

@@ -41,6 +41,7 @@ public class ShieldingTileEntity extends TileEntity {
         return new SUpdateTileEntityPacket(worldPosition, 1, nbtTag);
     }
 
+    @Nonnull
     @Override
     public CompoundNBT getUpdateTag() {
         return this.save(new CompoundNBT());
@@ -99,7 +100,7 @@ public class ShieldingTileEntity extends TileEntity {
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT tag) {
+    public void load(@Nonnull BlockState state, @Nonnull CompoundNBT tag) {
         super.load(state, tag);
         shieldProjector = new BlockPos(tag.getInt("sx"), tag.getInt("sy"), tag.getInt("sz"));
         if (tag.contains("mimic")) {
@@ -109,6 +110,7 @@ public class ShieldingTileEntity extends TileEntity {
         }
     }
 
+    @Nonnull
     @Override
     public CompoundNBT save(CompoundNBT tag) {
         tag.putInt("sx", shieldProjector.getX());

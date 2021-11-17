@@ -20,6 +20,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.items.CapabilityItemHandler;
 
+import javax.annotation.Nonnull;
+
 import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity.*;
 
 public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericContainer> {
@@ -115,7 +117,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     }
 
     @Override
-    protected void renderBg(MatrixStack matrixStack, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(@Nonnull MatrixStack matrixStack, float partialTicks, int mouseX, int mouseY) {
         updateFields();
         drawWindow(matrixStack);
     }

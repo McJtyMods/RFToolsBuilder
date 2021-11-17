@@ -5,6 +5,8 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import net.minecraft.data.DataGenerator;
 
+import javax.annotation.Nonnull;
+
 public class LootTables extends BaseLootTableProvider {
 
     public LootTables(DataGenerator dataGeneratorIn) {
@@ -26,6 +28,7 @@ public class LootTables extends BaseLootTableProvider {
         lootTables.put(BuilderModule.SPACE_CHAMBER.get(), createSimpleTable("space_chamber", BuilderModule.SPACE_CHAMBER.get()));
     }
 
+    @Nonnull
     @Override
     public String getName() {
         return "RFToolsBuilder LootTables";

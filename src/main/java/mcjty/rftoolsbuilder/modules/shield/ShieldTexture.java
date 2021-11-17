@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.modules.shield;
 
 import net.minecraft.util.IStringSerializable;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ public enum ShieldTexture implements IStringSerializable {
         }
     }
 
+    @Nonnull
     @Override
     public String getSerializedName() {
         return name().toLowerCase();

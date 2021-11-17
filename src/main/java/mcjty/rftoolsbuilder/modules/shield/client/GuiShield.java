@@ -21,6 +21,7 @@ import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.ResourceLocation;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -380,7 +381,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     @Override
-    protected void renderBg(MatrixStack matrixStack, float v, int i, int i2) {
+    protected void renderBg(@Nonnull MatrixStack matrixStack, float v, int i, int i2) {
         requestListsIfNeeded();
         populateFilters();
         enableButtons();

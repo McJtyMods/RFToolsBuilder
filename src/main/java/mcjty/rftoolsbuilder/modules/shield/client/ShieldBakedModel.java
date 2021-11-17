@@ -163,6 +163,7 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
     }
 
 
+    @Nonnull
     @Override
     public TextureAtlasSprite getParticleIcon() {
         initTextures();

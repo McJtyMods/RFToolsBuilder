@@ -10,6 +10,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,8 +69,9 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
         lastId = tagCompound.getInt("lastId");
     }
 
+    @Nonnull
     @Override
-    public CompoundNBT save(CompoundNBT tagCompound) {
+    public CompoundNBT save(@Nonnull CompoundNBT tagCompound) {
         ListNBT lst = new ListNBT();
         for (Map.Entry<Integer, SpaceChamberChannel> entry : channels.entrySet()) {
             CompoundNBT tc = new CompoundNBT();

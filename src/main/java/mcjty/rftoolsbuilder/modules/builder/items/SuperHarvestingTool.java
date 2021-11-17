@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemTier;
 import net.minecraft.item.ToolItem;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 
 public class SuperHarvestingTool extends ToolItem {
@@ -14,7 +15,7 @@ public class SuperHarvestingTool extends ToolItem {
     }
 
     @Override
-    public boolean isCorrectToolForDrops(BlockState state) {
+    public boolean isCorrectToolForDrops(@Nonnull BlockState state) {
         return true;
     }
 }

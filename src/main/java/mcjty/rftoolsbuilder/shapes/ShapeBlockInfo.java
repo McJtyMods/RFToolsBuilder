@@ -192,10 +192,8 @@ public class ShapeBlockInfo {
 //            col = COL_SCANNER;
         } else if (block == BuilderModule.SUPPORT.get()) {
             col = COL_DEFAULT;
-        } else if (mapColor != null) {
-            col = new Col(((mapColor.col >> 16) & 0xff) / 255.0f, ((mapColor.col >> 8) & 0xff) / 255.0f, (mapColor.col & 0xff) / 255.0f);
         } else {
-            col = COL_DEFAULT;
+            col = new Col(((mapColor.col >> 16) & 0xff) / 255.0f, ((mapColor.col >> 8) & 0xff) / 255.0f, (mapColor.col & 0xff) / 255.0f);
         }
         float r = col.getR();
         float g = col.getG();

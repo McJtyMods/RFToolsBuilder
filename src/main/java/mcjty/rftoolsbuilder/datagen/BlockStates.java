@@ -1,7 +1,6 @@
 package mcjty.rftoolsbuilder.datagen;
 
 import mcjty.lib.datagen.BaseBlockStateProvider;
-import mcjty.rftoolsbase.RFToolsBase;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;

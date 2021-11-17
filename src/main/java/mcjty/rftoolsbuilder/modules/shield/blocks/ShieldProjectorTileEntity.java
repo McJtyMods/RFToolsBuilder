@@ -68,6 +68,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.IntStream;
 
 import static mcjty.lib.container.ContainerFactory.CONTAINER_CONTAINER;
 import static mcjty.lib.container.SlotDefinition.generic;
@@ -244,14 +245,14 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 //        }
 //    }
 
-    private Object[] setDamageMode(String mode) {
-        DamageTypeMode damageMode = DamageTypeMode.getMode(mode);
-        if (damageMode == null) {
-            throw new IllegalArgumentException("Not a valid mode");
-        }
-        setDamageMode(damageMode);
-        return null;
-    }
+//    private Object[] setDamageMode(String mode) {
+//        DamageTypeMode damageMode = DamageTypeMode.getMode(mode);
+//        if (damageMode == null) {
+//            throw new IllegalArgumentException("Not a valid mode");
+//        }
+//        setDamageMode(damageMode);
+//        return null;
+//    }
 
 //    @Callback(doc = "Get or set the current redstone mode. Values are 'Ignored', 'Off', or 'On'", getter = true, setter = true)
 //    @Optional.Method(modid = "opencomputers")
@@ -264,14 +265,14 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 //        }
 //    }
 
-    private Object[] setRedstoneMode(String mode) {
-        RedstoneMode redstoneMode = RedstoneMode.getMode(mode);
-        if (redstoneMode == null) {
-            throw new IllegalArgumentException("Not a valid mode");
-        }
-        setRSMode(redstoneMode);
-        return null;
-    }
+//    private Object[] setRedstoneMode(String mode) {
+//        RedstoneMode redstoneMode = RedstoneMode.getMode(mode);
+//        if (redstoneMode == null) {
+//            throw new IllegalArgumentException("Not a valid mode");
+//        }
+//        setRSMode(redstoneMode);
+//        return null;
+//    }
 
 //    @Callback(doc = "Get or set the current shield rendering mode. Values are 'Invisible', 'Shield', or 'Solid'", getter = true, setter = true)
 //    @Optional.Method(modid = "opencomputers")
@@ -284,14 +285,14 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 //        }
 //    }
 
-    private Object[] setShieldRenderingMode(String mode) {
-        ShieldRenderingMode renderingMode = ShieldRenderingMode.getMode(mode);
-        if (renderingMode == null) {
-            throw new IllegalArgumentException("Not a valid mode");
-        }
-        setShieldRenderingMode(renderingMode);
-        return null;
-    }
+//    private Object[] setShieldRenderingMode(String mode) {
+//        ShieldRenderingMode renderingMode = ShieldRenderingMode.getMode(mode);
+//        if (renderingMode == null) {
+//            throw new IllegalArgumentException("Not a valid mode");
+//        }
+//        setShieldRenderingMode(renderingMode);
+//        return null;
+//    }
 
 //    @Callback(doc = "Return true if the shield is active", getter = true)
 //    @Optional.Method(modid = "opencomputers")
@@ -833,7 +834,13 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             }
         } else if (origBlock instanceof ShieldingBlock) {
             //@todo
-            shieldBlocks.remove(new RelCoordinate(pos.getX() - xCoord, pos.getY() - yCoord, pos.getZ() - zCoord));
+            int dx = pos.getX() - xCoord;
+            int dy = pos.getY() - yCoord;
+            int dz = pos.getZ() - zCoord;
+            int idx = IntStream.range(0, shieldBlocks.size()).filter(i -> shieldBlocks.get(i).matches(dx, dy, dz)).findFirst().orElse(-1);
+            if (idx != -1) {
+                shieldBlocks.remove(idx);
+            }
             getLevel().setBlock(pos, templateState, 2);
         } else {
             Logging.message(player, TextFormatting.YELLOW + "The selected shield can't do anything with this block!");
@@ -1191,8 +1198,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         }
     }
 
+    @Nonnull
     @Override
-    public CompoundNBT save(CompoundNBT tagCompound) {
+    public CompoundNBT save(@Nonnull CompoundNBT tagCompound) {
         super.save(tagCompound);
         tagCompound.putBoolean("composed", shieldComposed);
         tagCompound.putBoolean("active", shieldActive);
@@ -1306,6 +1314,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         };
     }
 
+    @Nonnull
     private IPowerInformation createPowerInfo() {
         return new IPowerInformation() {
             @Override

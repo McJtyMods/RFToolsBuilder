@@ -16,7 +16,7 @@ public final class ShapeID {
     private final boolean grayscale;
     private final boolean solid;
 
-    public ShapeID(RegistryKey<World> dimension, BlockPos pos, int scanId, boolean grayscale, boolean solid) {
+    public ShapeID(RegistryKey<World> dimension, @Nullable BlockPos pos, int scanId, boolean grayscale, boolean solid) {
         this.dimension = dimension;
         this.pos = pos;
         this.scanId = scanId;
