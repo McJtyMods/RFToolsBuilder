@@ -8,6 +8,7 @@ import mcjty.lib.api.module.IModuleSupport;
 import mcjty.lib.bindings.Val;
 import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
+import mcjty.lib.blockcommands.ListCommand;
 import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
@@ -26,7 +27,6 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
 import mcjty.rftoolsbase.api.client.IHudSupport;
 import mcjty.rftoolsbase.modules.filter.items.FilterModuleItem;
-import mcjty.rftoolsbase.modules.hud.network.PacketGetHudLog;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
@@ -100,6 +100,7 @@ import java.util.function.Predicate;
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.lib.container.ContainerFactory.CONTAINER_CONTAINER;
 import static mcjty.lib.container.SlotDefinition.specific;
+import static mcjty.rftoolsbase.modules.hud.network.PacketGetHudLog.COMMAND_GETHUDLOG;
 
 public class BuilderTileEntity extends GenericTileEntity implements ITickableTileEntity, IHudSupport {
 
@@ -2329,32 +2330,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public static final Command<?> CMD_SETANCHOR = Command.<BuilderTileEntity>create("builder.setAnchor",
             (te, playerEntity, params) -> te.setAnchor(params.get(PARAM_ANCHOR_INDEX)));
 
-    @Nonnull
-    @Override
-    public <T> List<T> executeWithResultList(String command, TypedMap args, Type<T> type) {
-        List<T> rc = super.executeWithResultList(command, args, type);
-        if (!rc.isEmpty()) {
-            return rc;
-        }
-        if (PacketGetHudLog.CMD_GETHUDLOG.equals(command)) {
-            return type.convert(getHudLog());
-        }
-        return rc;
-    }
-
-    @Override
-    public <T> boolean receiveListFromServer(String command, List<T> list, Type<T> type) {
-        boolean rc = super.receiveListFromServer(command, list, type);
-        if (rc) {
-            return true;
-        }
-        if (PacketGetHudLog.CLIENTCMD_GETHUDLOG.equals(command)) {
-            clientHudLog = Type.STRING.convert(list);
-            return true;
-        }
-        return false;
-    }
-
+    @ServerCommand
+    public static final ListCommand<?, ?> CMD_GETHUDLOG = ListCommand.<BuilderTileEntity, String>create(COMMAND_GETHUDLOG,
+            (te, player, params) -> te.getHudLog(),
+            (te, player, params, list) -> te.clientHudLog = list);
 
     @Override
     public void onReplaced(World world, BlockPos pos, BlockState state, BlockState newstate) {

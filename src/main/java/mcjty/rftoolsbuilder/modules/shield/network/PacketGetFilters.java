@@ -1,8 +1,7 @@
 package mcjty.rftoolsbuilder.modules.shield.network;
 
-import mcjty.lib.network.ICommandHandler;
 import mcjty.lib.network.TypedMapTools;
-import mcjty.lib.typed.Type;
+import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity;
@@ -47,14 +46,14 @@ public class PacketGetFilters {
             World world = ctx.getSender().getCommandSenderWorld();
             if (world.hasChunkAt(pos)) {
                 TileEntity te = world.getBlockEntity(pos);
-                if (!(te instanceof ICommandHandler)) {
-                    Logging.log("createStartScanPacket: TileEntity is not a CommandHandler!");
+                if (te instanceof GenericTileEntity) {
+                    List<ShieldFilter> list = ((GenericTileEntity) te).executeServerCommandList(ShieldProjectorTileEntity.CMD_GETFILTERS.getName(), ctx.getSender(), params, ShieldFilter.class);
+                    RFToolsBuilderMessages.INSTANCE.sendTo(new PacketFiltersReady(pos, ShieldProjectorTileEntity.CMD_GETFILTERS.getName(), list),
+                            ctx.getSender().connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+                } else {
+                    Logging.log("Command not handled!");
                     return;
                 }
-                ICommandHandler commandHandler = (ICommandHandler) te;
-                List<ShieldFilter> list = commandHandler.executeWithResultList(ShieldProjectorTileEntity.CMD_GETFILTERS, params, Type.create(ShieldFilter.class));
-                RFToolsBuilderMessages.INSTANCE.sendTo(new PacketFiltersReady(pos, ShieldProjectorTileEntity.CLIENTCMD_GETFILTERS, list),
-                        ctx.getSender().connection.connection, NetworkDirection.PLAY_TO_CLIENT);
             }
         });
         ctx.setPacketHandled(true);

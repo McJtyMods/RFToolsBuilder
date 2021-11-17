@@ -8,6 +8,7 @@ import mcjty.lib.api.smartwrench.ISmartWrenchSelector;
 import mcjty.lib.bindings.Val;
 import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
+import mcjty.lib.blockcommands.ListCommand;
 import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
@@ -18,7 +19,6 @@ import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
-import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.FakePlayerGetter;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.OrientationTools;
@@ -76,9 +76,6 @@ import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
 
 public class ShieldProjectorTileEntity extends GenericTileEntity implements ISmartWrenchSelector, ITickableTileEntity {
-
-    public static final String CMD_GETFILTERS = "getFilters";
-    public static final String CLIENTCMD_GETFILTERS = "getFilters";
 
     public static final String COMPONENT_NAME = "shield_projector";
 
@@ -1275,31 +1272,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public static final Command<?> CMD_DOWNFILTER = Command.<ShieldProjectorTileEntity>create("shield.downFilter",
         (te, player, params) -> te.downFilter(params.get(PARAM_SELECTED)));
 
-    @Nonnull
-    @Override
-    public <T> List<T> executeWithResultList(String command, TypedMap args, Type<T> type) {
-        List<T> rc = super.executeWithResultList(command, args, type);
-        if (!rc.isEmpty()) {
-            return rc;
-        }
-        if (CMD_GETFILTERS.equals(command)) {
-            return type.convert(getFilters());
-        }
-        return Collections.emptyList();
-    }
-
-    @Override
-    public <T> boolean receiveListFromServer(String command, List<T> list, Type<T> type) {
-        boolean rc = super.receiveListFromServer(command, list, type);
-        if (rc) {
-            return true;
-        }
-        if (CLIENTCMD_GETFILTERS.equals(command)) {
-            GuiShield.storeFiltersForClient(Type.create(ShieldFilter.class).convert(list));
-            return true;
-        }
-        return false;
-    }
+    @ServerCommand
+    public static final ListCommand<?, ?> CMD_GETFILTERS = ListCommand.<ShieldProjectorTileEntity, ShieldFilter>create("getFilters",
+            (te, player, params) -> te.getFilters(),
+            (te, player, params, list) -> GuiShield.storeFiltersForClient(list));
 
     private NoDirectionItemHander createItemHandler() {
         return new NoDirectionItemHander(ShieldProjectorTileEntity.this, CONTAINER_FACTORY.get()) {
