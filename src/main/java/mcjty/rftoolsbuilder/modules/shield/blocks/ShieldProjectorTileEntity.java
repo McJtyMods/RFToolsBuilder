@@ -5,8 +5,8 @@ import mcjty.lib.api.information.IPowerInformation;
 import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.api.smartwrench.ISmartWrenchSelector;
-import mcjty.lib.bindings.DefaultValue;
-import mcjty.lib.bindings.IValue;
+import mcjty.lib.bindings.Val;
+import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.container.ContainerFactory;
@@ -81,23 +81,22 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     public static final String COMPONENT_NAME = "shield_projector";
 
-    public static final Key<Integer> VALUE_SHIELDVISMODE = new Key<>("shieldVisMode", Type.INTEGER);
-    public static final Key<Integer> VALUE_SHIELDTEXTURE = new Key<>("shieldTexture", Type.INTEGER);
-    public static final Key<Integer> VALUE_DAMAGEMODE = new Key<>("damageMode", Type.INTEGER);
-    public static final Key<Integer> VALUE_COLOR = new Key<>("color", Type.INTEGER);
-    public static final Key<Boolean> VALUE_LIGHT = new Key<>("light", Type.BOOLEAN);
-
-    @Override
-    public IValue<?>[] getValues() {
-        return new IValue[]{
-                new DefaultValue<>(VALUE_RSMODE, this::getRSModeInt, this::setRSModeInt),
-                new DefaultValue<>(VALUE_SHIELDVISMODE, () -> this.getShieldRenderingMode().ordinal(), (value) -> this.setShieldRenderingMode(ShieldRenderingMode.values()[value])),
-                new DefaultValue<>(VALUE_SHIELDTEXTURE, () -> this.getShieldTexture().ordinal(), (value) -> this.setShieldTexture(ShieldTexture.values()[value])),
-                new DefaultValue<>(VALUE_DAMAGEMODE, () -> this.getDamageMode().ordinal(), (value) -> this.setDamageMode(DamageTypeMode.values()[value])),
-                new DefaultValue<>(VALUE_COLOR, this::getShieldColor, this::setShieldColor),
-                new DefaultValue<>(VALUE_LIGHT, this::isBlockLight, this::setBlockLight),
-        };
-    }
+    @Val
+    public static final Value<?, Integer> VALUE_SHIELDVISMODE = Value.<ShieldProjectorTileEntity, Integer>create("shieldVisMode", Type.INTEGER,
+            te -> te.getShieldRenderingMode().ordinal(),
+            (te, v) -> te.setShieldRenderingMode(ShieldRenderingMode.values()[v]));
+    @Val
+    public static final Value<?, Integer> VALUE_SHIELDTEXTURE = Value.<ShieldProjectorTileEntity, Integer>create("shieldTexture", Type.INTEGER,
+            te -> te.getShieldTexture().ordinal(),
+            (te, v) -> te.setShieldTexture(ShieldTexture.values()[v]));
+    @Val
+    public static final Value<?, Integer> VALUE_DAMAGEMODE = Value.<ShieldProjectorTileEntity, Integer>create("damageMode", Type.INTEGER,
+            te -> te.getDamageMode().ordinal(),
+            (te, v) -> te.setDamageMode(DamageTypeMode.values()[v]));
+    @Val
+    public static final Value<?, Integer> VALUE_COLOR = Value.<ShieldProjectorTileEntity, Integer>create("color", Type.INTEGER, ShieldProjectorTileEntity::getShieldColor, ShieldProjectorTileEntity::setShieldColor);
+    @Val
+    public static final Value<?, Boolean> VALUE_LIGHT = Value.<ShieldProjectorTileEntity, Boolean>create("color", Type.BOOLEAN, ShieldProjectorTileEntity::isBlockLight, ShieldProjectorTileEntity::setBlockLight);
 
     // Client side
     private ShieldRenderData renderData;

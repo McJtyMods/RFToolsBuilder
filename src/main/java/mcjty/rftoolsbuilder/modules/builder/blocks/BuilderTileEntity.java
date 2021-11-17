@@ -6,9 +6,9 @@ import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.api.module.DefaultModuleSupport;
 import mcjty.lib.api.module.IModuleSupport;
 import mcjty.lib.bindings.DefaultAction;
-import mcjty.lib.bindings.DefaultValue;
 import mcjty.lib.bindings.IAction;
-import mcjty.lib.bindings.IValue;
+import mcjty.lib.bindings.Val;
+import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
@@ -220,25 +220,18 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
 
-    public static final Key<Boolean> VALUE_WAIT = new Key<>("wait", Type.BOOLEAN);
-    public static final Key<Boolean> VALUE_LOOP = new Key<>("loop", Type.BOOLEAN);
-    public static final Key<Boolean> VALUE_HILIGHT = new Key<>("hilight", Type.BOOLEAN);
-    public static final Key<Boolean> VALUE_SUPPORT = new Key<>("support", Type.BOOLEAN);
-    public static final Key<Boolean> VALUE_SILENT = new Key<>("silent", Type.BOOLEAN);
-    public static final Key<Boolean> VALUE_ENTITIES = new Key<>("entities", Type.BOOLEAN);
-
-    @Override
-    public IValue<?>[] getValues() {
-        return new IValue[]{
-                new DefaultValue<>(VALUE_RSMODE, this::getRSModeInt, this::setRSModeInt),
-                new DefaultValue<>(VALUE_WAIT, this::isWaitMode, this::setWaitMode),
-                new DefaultValue<>(VALUE_LOOP, this::hasLoopMode, this::setLoopMode),
-                new DefaultValue<>(VALUE_HILIGHT, this::isHilightMode, this::setHilightMode),
-                new DefaultValue<>(VALUE_SUPPORT, this::hasSupportMode, this::setSupportMode),
-                new DefaultValue<>(VALUE_SILENT, this::isSilent, this::setSilent),
-                new DefaultValue<>(VALUE_ENTITIES, this::hasEntityMode, this::setEntityMode),
-        };
-    }
+    @Val
+    public static final Value<?, Boolean> VALUE_WAIT = Value.<BuilderTileEntity, Boolean>create("wait", Type.BOOLEAN, BuilderTileEntity::isWaitMode, BuilderTileEntity::setWaitMode);
+    @Val
+    public static final Value<?, Boolean> VALUE_LOOP = Value.<BuilderTileEntity, Boolean>create("loop", Type.BOOLEAN, BuilderTileEntity::hasLoopMode, BuilderTileEntity::setLoopMode);
+    @Val
+    public static final Value<?, Boolean> VALUE_HILIGHT = Value.<BuilderTileEntity, Boolean>create("hilight", Type.BOOLEAN, BuilderTileEntity::isHilightMode, BuilderTileEntity::setHilightMode);
+    @Val
+    public static final Value<?, Boolean> VALUE_SUPPORT = Value.<BuilderTileEntity, Boolean>create("support", Type.BOOLEAN, BuilderTileEntity::hasSupportMode, BuilderTileEntity::setSupportMode);
+    @Val
+    public static final Value<?, Boolean> VALUE_SILENT = Value.<BuilderTileEntity, Boolean>create("silent", Type.BOOLEAN, BuilderTileEntity::isSilent, BuilderTileEntity::setSilent);
+    @Val
+    public static final Value<?, Boolean> VALUE_ENTITIES = Value.<BuilderTileEntity, Boolean>create("entities", Type.BOOLEAN, BuilderTileEntity::hasEntityMode, BuilderTileEntity::setEntityMode);
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
