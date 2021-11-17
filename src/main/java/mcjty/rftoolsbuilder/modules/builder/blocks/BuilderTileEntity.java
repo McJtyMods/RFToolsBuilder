@@ -5,8 +5,6 @@ import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.api.module.DefaultModuleSupport;
 import mcjty.lib.api.module.IModuleSupport;
-import mcjty.lib.bindings.DefaultAction;
-import mcjty.lib.bindings.IAction;
 import mcjty.lib.bindings.Val;
 import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
@@ -245,13 +243,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             public RotationType getRotationType() {
                 return RotationType.HORIZROTATION;
             }
-        };
-    }
-
-    @Override
-    public IAction[] getActions() {
-        return new IAction[]{
-                new DefaultAction("restart", this::restartScan)
         };
     }
 
@@ -2064,6 +2055,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
                 break;
         }
     }
+
+    @ServerCommand
+    public static final Command<?> CMD_RESTART = Command.<BuilderTileEntity>create("restart", (te, player, params) -> te.restartScan());
 
     private void restartScan() {
         lastError = null;
