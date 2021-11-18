@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
+import mcjty.lib.McJtyLib;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.information.IPowerInformation;
 import mcjty.lib.api.infusable.DefaultInfusable;
@@ -1272,7 +1273,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public static final Command<?> CMD_DOWNFILTER = Command.<ShieldProjectorTileEntity>create("shield.downFilter",
         (te, player, params) -> te.downFilter(params.get(PARAM_SELECTED)));
 
-    @ServerCommand
+    @ServerCommand(type = ShieldFilter.class, serializer = ShieldFilter.Serializer.class)
     public static final ListCommand<?, ?> CMD_GETFILTERS = ListCommand.<ShieldProjectorTileEntity, ShieldFilter>create("rftoolsbuilder.shield.getFilters",
             (te, player, params) -> te.getFilters(),
             (te, player, params, list) -> GuiShield.storeFiltersForClient(list));
