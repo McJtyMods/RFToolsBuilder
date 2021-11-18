@@ -5,7 +5,7 @@ import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.api.module.DefaultModuleSupport;
 import mcjty.lib.api.module.IModuleSupport;
-import mcjty.lib.bindings.Val;
+import mcjty.lib.bindings.GuiValue;
 import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.ListCommand;
@@ -219,17 +219,17 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
 
-    @Val
+    @GuiValue
     public static final Value<?, Boolean> VALUE_WAIT = Value.<BuilderTileEntity, Boolean>create("wait", Type.BOOLEAN, BuilderTileEntity::isWaitMode, BuilderTileEntity::setWaitMode);
-    @Val
+    @GuiValue
     public static final Value<?, Boolean> VALUE_LOOP = Value.<BuilderTileEntity, Boolean>create("loop", Type.BOOLEAN, BuilderTileEntity::hasLoopMode, BuilderTileEntity::setLoopMode);
-    @Val
+    @GuiValue
     public static final Value<?, Boolean> VALUE_HILIGHT = Value.<BuilderTileEntity, Boolean>create("hilight", Type.BOOLEAN, BuilderTileEntity::isHilightMode, BuilderTileEntity::setHilightMode);
-    @Val
+    @GuiValue
     public static final Value<?, Boolean> VALUE_SUPPORT = Value.<BuilderTileEntity, Boolean>create("support", Type.BOOLEAN, BuilderTileEntity::hasSupportMode, BuilderTileEntity::setSupportMode);
-    @Val
+    @GuiValue
     public static final Value<?, Boolean> VALUE_SILENT = Value.<BuilderTileEntity, Boolean>create("silent", Type.BOOLEAN, BuilderTileEntity::isSilent, BuilderTileEntity::setSilent);
-    @Val
+    @GuiValue
     public static final Value<?, Boolean> VALUE_ENTITIES = Value.<BuilderTileEntity, Boolean>create("entities", Type.BOOLEAN, BuilderTileEntity::hasEntityMode, BuilderTileEntity::setEntityMode);
 
     public static BaseBlock createBlock() {

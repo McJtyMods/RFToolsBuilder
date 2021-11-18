@@ -1,12 +1,11 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
-import mcjty.lib.McJtyLib;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.information.IPowerInformation;
 import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.api.smartwrench.ISmartWrenchSelector;
-import mcjty.lib.bindings.Val;
+import mcjty.lib.bindings.GuiValue;
 import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.ListCommand;
@@ -80,21 +79,21 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     public static final String COMPONENT_NAME = "shield_projector";
 
-    @Val
+    @GuiValue
     public static final Value<?, Integer> VALUE_SHIELDVISMODE = Value.<ShieldProjectorTileEntity, Integer>create("shieldVisMode", Type.INTEGER,
             te -> te.getShieldRenderingMode().ordinal(),
             (te, v) -> te.setShieldRenderingMode(ShieldRenderingMode.values()[v]));
-    @Val
+    @GuiValue
     public static final Value<?, Integer> VALUE_SHIELDTEXTURE = Value.<ShieldProjectorTileEntity, Integer>create("shieldTexture", Type.INTEGER,
             te -> te.getShieldTexture().ordinal(),
             (te, v) -> te.setShieldTexture(ShieldTexture.values()[v]));
-    @Val
+    @GuiValue
     public static final Value<?, Integer> VALUE_DAMAGEMODE = Value.<ShieldProjectorTileEntity, Integer>create("damageMode", Type.INTEGER,
             te -> te.getDamageMode().ordinal(),
             (te, v) -> te.setDamageMode(DamageTypeMode.values()[v]));
-    @Val
+    @GuiValue
     public static final Value<?, Integer> VALUE_COLOR = Value.<ShieldProjectorTileEntity, Integer>create("color", Type.INTEGER, ShieldProjectorTileEntity::getShieldColor, ShieldProjectorTileEntity::setShieldColor);
-    @Val
+    @GuiValue
     public static final Value<?, Boolean> VALUE_LIGHT = Value.<ShieldProjectorTileEntity, Boolean>create("color", Type.BOOLEAN, ShieldProjectorTileEntity::isBlockLight, ShieldProjectorTileEntity::setBlockLight);
 
     // Client side
