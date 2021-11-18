@@ -100,7 +100,7 @@ import java.util.function.Predicate;
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.lib.container.ContainerFactory.CONTAINER_CONTAINER;
 import static mcjty.lib.container.SlotDefinition.specific;
-import static mcjty.rftoolsbase.modules.hud.network.PacketGetHudLog.COMMAND_GETHUDLOG;
+import static mcjty.rftoolsbase.modules.hud.Hud.COMMAND_GETHUDLOG;
 
 public class BuilderTileEntity extends GenericTileEntity implements ITickableTileEntity, IHudSupport {
 

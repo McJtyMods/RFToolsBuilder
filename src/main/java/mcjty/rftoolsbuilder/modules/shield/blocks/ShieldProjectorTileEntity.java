@@ -1273,7 +1273,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         (te, player, params) -> te.downFilter(params.get(PARAM_SELECTED)));
 
     @ServerCommand
-    public static final ListCommand<?, ?> CMD_GETFILTERS = ListCommand.<ShieldProjectorTileEntity, ShieldFilter>create("getFilters",
+    public static final ListCommand<?, ?> CMD_GETFILTERS = ListCommand.<ShieldProjectorTileEntity, ShieldFilter>create("rftoolsbuilder.shield.getFilters",
             (te, player, params) -> te.getFilters(),
             (te, player, params, list) -> GuiShield.storeFiltersForClient(list));
 
