@@ -139,9 +139,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public static final int SLOT_SHARD = 2;
     public static final int BUFFER_SIZE = 3;
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(BUFFER_SIZE)
-            .slot(generic().in(), CONTAINER_CONTAINER, SLOT_BUFFER, 26, 142)
-            .slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), CONTAINER_CONTAINER, SLOT_SHAPE, 26, 200)
-            .slot(specific(s -> s.getItem() == VariousModule.DIMENSIONALSHARD.get()).in().out(), CONTAINER_CONTAINER, SLOT_SHARD, 229, 118)
+            .slot(generic().in(), SLOT_BUFFER, 26, 142)
+            .slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), SLOT_SHAPE, 26, 200)
+            .slot(specific(s -> s.getItem() == VariousModule.DIMENSIONALSHARD.get()).in().out(), SLOT_SHARD, 229, 118)
             .playerSlots(85, 142));
 
     @Cap(type = CapType.ITEMS_AUTOMATION)

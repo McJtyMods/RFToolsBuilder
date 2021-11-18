@@ -108,10 +108,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public static final int SLOT_FILTER = 1;
 
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(2)
-            .slot(specific(s -> (s.getItem() instanceof ShapeCardItem) || (s.getItem() instanceof SpaceChamberCardItem)).in().out(),
-                    CONTAINER_CONTAINER, SLOT_TAB, 100, 10)
-            .slot(specific(s -> s.getItem() instanceof FilterModuleItem).in().out(),
-                    CONTAINER_CONTAINER, SLOT_FILTER, 84, 46)
+            .slot(specific(s -> (s.getItem() instanceof ShapeCardItem) || (s.getItem() instanceof SpaceChamberCardItem)).in().out(), SLOT_TAB, 100, 10)
+            .slot(specific(s -> s.getItem() instanceof FilterModuleItem).in().out(), SLOT_FILTER, 84, 46)
             .playerSlots(10, 70));
 
     public static final int MODE_COPY = 0;
