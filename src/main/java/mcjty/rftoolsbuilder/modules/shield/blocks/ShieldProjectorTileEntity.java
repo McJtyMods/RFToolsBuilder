@@ -94,7 +94,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     @GuiValue
     public static final Value<?, Integer> VALUE_COLOR = Value.<ShieldProjectorTileEntity, Integer>create("color", Type.INTEGER, ShieldProjectorTileEntity::getShieldColor, ShieldProjectorTileEntity::setShieldColor);
     @GuiValue
-    public static final Value<?, Boolean> VALUE_LIGHT = Value.<ShieldProjectorTileEntity, Boolean>create("color", Type.BOOLEAN, ShieldProjectorTileEntity::isBlockLight, ShieldProjectorTileEntity::setBlockLight);
+    public static final Value<?, Boolean> VALUE_LIGHT = Value.<ShieldProjectorTileEntity, Boolean>create("light", Type.BOOLEAN, ShieldProjectorTileEntity::isBlockLight, ShieldProjectorTileEntity::setBlockLight);
 
     // Client side
     private ShieldRenderData renderData;

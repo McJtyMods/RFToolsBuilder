@@ -17,6 +17,7 @@ import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.NoDirectionItemHander;
 import mcjty.lib.gui.widgets.ChoiceLabel;
+import mcjty.lib.sync.SyncToGui;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
@@ -131,9 +132,14 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public static final int ANCHOR_NE = 3;
 
     private String lastError = null;
+
+    @SyncToGui
     private int mode = MODE_COPY;
+    @SyncToGui
     private int rotate = 0;
+    @SyncToGui
     private int anchor = ANCHOR_SW;
+
     private boolean silent = false;
     private boolean supportMode = false;
     private boolean entityMode = false;
@@ -198,7 +204,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             .itemHandler(() -> items)
             .energyHandler(() -> energyStorage)
             .dataListener(Sync.values(new ResourceLocation(RFToolsBuilder.MODID, "data"), this))
-            .shortListener(Sync.integer(() -> scan == null ? -1 : scan.getY(), v -> currentLevel = v)));
+            .shortListener(Sync.integer(() -> scan == null ? -1 : scan.getY(), v -> currentLevel = v))
+            .setupSync(this));
 
     @Cap(type = CapType.INFUSABLE)
     private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(BuilderTileEntity.this));
@@ -2239,9 +2246,15 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         } else {
             lastError = null;
         }
-        mode = info.getInt("mode");
-        anchor = info.getInt("anchor");
-        rotate = info.getInt("rotate");
+        if (info.contains("mode")) {
+            mode = info.getInt("mode");
+        }
+        if (info.contains("anchor")) {
+            anchor = info.getInt("anchor");
+        }
+        if (info.contains("rotate")) {
+            rotate = info.getInt("rotate");
+        }
         silent = info.getBoolean("silent");
         supportMode = info.getBoolean("support");
         entityMode = info.getBoolean("entityMode");
