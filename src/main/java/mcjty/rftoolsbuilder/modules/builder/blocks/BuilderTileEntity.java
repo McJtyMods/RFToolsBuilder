@@ -225,17 +225,17 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
 
     @GuiValue
-    public static final Value<?, Boolean> VALUE_WAIT = Value.<BuilderTileEntity, Boolean>create("wait", Type.BOOLEAN, BuilderTileEntity::isWaitMode, BuilderTileEntity::setWaitMode);
+    public static final Value<?, Boolean> VALUE_WAIT = Value.create("wait", Type.BOOLEAN, BuilderTileEntity::isWaitMode, BuilderTileEntity::setWaitMode);
     @GuiValue
-    public static final Value<?, Boolean> VALUE_LOOP = Value.<BuilderTileEntity, Boolean>create("loop", Type.BOOLEAN, BuilderTileEntity::hasLoopMode, BuilderTileEntity::setLoopMode);
+    public static final Value<?, Boolean> VALUE_LOOP = Value.create("loop", Type.BOOLEAN, BuilderTileEntity::hasLoopMode, BuilderTileEntity::setLoopMode);
     @GuiValue
-    public static final Value<?, Boolean> VALUE_HILIGHT = Value.<BuilderTileEntity, Boolean>create("hilight", Type.BOOLEAN, BuilderTileEntity::isHilightMode, BuilderTileEntity::setHilightMode);
+    public static final Value<?, Boolean> VALUE_HILIGHT = Value.create("hilight", Type.BOOLEAN, BuilderTileEntity::isHilightMode, BuilderTileEntity::setHilightMode);
     @GuiValue
-    public static final Value<?, Boolean> VALUE_SUPPORT = Value.<BuilderTileEntity, Boolean>create("support", Type.BOOLEAN, BuilderTileEntity::hasSupportMode, BuilderTileEntity::setSupportMode);
+    public static final Value<?, Boolean> VALUE_SUPPORT = Value.create("support", Type.BOOLEAN, BuilderTileEntity::hasSupportMode, BuilderTileEntity::setSupportMode);
     @GuiValue
-    public static final Value<?, Boolean> VALUE_SILENT = Value.<BuilderTileEntity, Boolean>create("silent", Type.BOOLEAN, BuilderTileEntity::isSilent, BuilderTileEntity::setSilent);
+    public static final Value<?, Boolean> VALUE_SILENT = Value.create("silent", Type.BOOLEAN, BuilderTileEntity::isSilent, BuilderTileEntity::setSilent);
     @GuiValue
-    public static final Value<?, Boolean> VALUE_ENTITIES = Value.<BuilderTileEntity, Boolean>create("entities", Type.BOOLEAN, BuilderTileEntity::hasEntityMode, BuilderTileEntity::setEntityMode);
+    public static final Value<?, Boolean> VALUE_ENTITIES = Value.create("entities", Type.BOOLEAN, BuilderTileEntity::hasEntityMode, BuilderTileEntity::setEntityMode);
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
