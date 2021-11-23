@@ -1,8 +1,6 @@
     window {
         size(180,152)
 
-        event('rotate','builder.setRotate')
-
         action('restart','restart')
 
         bind('redstone','rsmode')
@@ -13,6 +11,7 @@
         bind('hilight','hilight')
         bind('support','support')
         bind('mode', 'mode')
+        bind('rotate', 'rotate')
 
         panel('','positional') {
             bg1('rftoolsbuilder:textures/gui/builder.png')

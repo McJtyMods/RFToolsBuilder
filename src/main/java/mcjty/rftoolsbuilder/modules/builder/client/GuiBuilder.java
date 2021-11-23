@@ -5,16 +5,18 @@ import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.widgets.Button;
-import mcjty.lib.gui.widgets.ChoiceLabel;
 import mcjty.lib.gui.widgets.EnergyBar;
 import mcjty.lib.gui.widgets.ImageChoiceLabel;
+import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
+import mcjty.rftoolsbuilder.modules.builder.blocks.AnchorMode;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenCardGui;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -67,12 +69,6 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         if (window == null) {
             return;
         }
-//        ((ChoiceLabel) window.findChild("mode")).choice(MODES[tileEntity.getMode()]);
-        ChoiceLabel rotateButton = window.findChild("rotate");
-        rotateButton.choice(String.valueOf(tileEntity.getRotate() * 90));
-        if (!isShapeCard()) {
-            anchor[tileEntity.getAnchor()].setCurrentChoice(1);
-        }
 
         int cury = getCurrentLevelClientSide();
         currentLevel.text("Y: " + (cury == -1 ? "stop" : cury));
@@ -100,16 +96,19 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
 
     private void selectAnchor(String name) {
         int index = name.charAt(name.length()-1)-48;
-        updateAnchorSettings(index);
-        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, CMD_SETANCHOR, TypedMap.builder().put(PARAM_ANCHOR_INDEX, index).build());
+        updateAnchorSettings(AnchorMode.values()[index]);
+        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, Minecraft.getInstance().level.dimension(), GenericTileEntity.COMMAND_SYNC_BINDING.getName(),
+                TypedMap.builder()
+                        .put(VALUE_ANCHOR.getKey(), AnchorMode.values()[index].getName())
+                        .build());
     }
 
-    private void updateAnchorSettings(int index) {
+    private void updateAnchorSettings(AnchorMode index) {
         for (int i = 0 ; i < anchor.length ; i++) {
             if (isShapeCard()) {
                 anchor[i].setCurrentChoice(0);
             } else {
-                anchor[i].setCurrentChoice(i == index ? 1 : 0);
+                anchor[i].setCurrentChoice(i == index.ordinal() ? 1 : 0);
             }
         }
     }

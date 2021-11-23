@@ -16,13 +16,11 @@ import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.NoDirectionItemHander;
-import mcjty.lib.gui.widgets.ChoiceLabel;
 import mcjty.lib.sync.SyncToGui;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.GenericTileEntity;
-import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
@@ -101,6 +99,7 @@ import java.util.function.Predicate;
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.rftoolsbase.modules.hud.Hud.COMMAND_GETHUDLOG;
+import static mcjty.rftoolsbuilder.modules.builder.blocks.AnchorMode.*;
 import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderMode.*;
 
 public class BuilderTileEntity extends GenericTileEntity implements ITickableTileEntity, IHudSupport {
@@ -113,30 +112,22 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             .slot(specific(s -> s.getItem() instanceof FilterModuleItem).in().out(), SLOT_FILTER, 84, 46)
             .playerSlots(10, 70));
 
-    public static final String ROTATE_0 = "0";
-    public static final String ROTATE_90 = "90";
-    public static final String ROTATE_180 = "180";
-    public static final String ROTATE_270 = "270";
-
-    public static final int ANCHOR_SW = 0;
-    public static final int ANCHOR_SE = 1;
-    public static final int ANCHOR_NW = 2;
-    public static final int ANCHOR_NE = 3;
-
     private String lastError = null;
 
     @SyncToGui
     private BuilderMode mode = MODE_COPY;
     @GuiValue
     public static final Value<BuilderTileEntity, String> VALUE_MODE = Value.createEnum("mode", BuilderMode.values(), BuilderTileEntity::getMode, BuilderTileEntity::setMode);
-//    @ServerCommand
-//    public static final Command<?> CMD_SETMODE = Command.<BuilderTileEntity>create("builder.setMode",
-//            (te, playerEntity, params) -> te.setMode(params.get(ChoiceLabel.PARAM_CHOICE_IDX)));
 
     @SyncToGui
-    private int rotate = 0;
+    private RotateMode rotate = RotateMode.ROTATE_0;
+    @GuiValue
+    public static final Value<BuilderTileEntity, String> VALUE_ROTATE = Value.createEnum("rotate", RotateMode.values(), BuilderTileEntity::getRotate, BuilderTileEntity::setRotate);
+
     @SyncToGui
-    private int anchor = ANCHOR_SW;
+    private AnchorMode anchor = AnchorMode.ANCHOR_SW;
+    @GuiValue
+    public static final Value<BuilderTileEntity, String> VALUE_ANCHOR = Value.createEnum("anchor", AnchorMode.values(), BuilderTileEntity::getAnchor, BuilderTileEntity::setAnchor);
 
     private boolean silent = false;
     private boolean supportMode = false;
@@ -537,7 +528,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     public void setMode(BuilderMode mode) {
         if (mode != this.mode) {
             this.mode = mode;
-            restartScan();
+            if (!level.isClientSide()) {
+                restartScan();
+            }
             setChanged();
         }
     }
@@ -546,12 +539,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         boxValid = false;
     }
 
-    public int getAnchor() {
+    public AnchorMode getAnchor() {
         return anchor;
     }
 
-    public void setAnchor(int anchor) {
-        if (supportMode) {
+    public void setAnchor(AnchorMode anchor) {
+        if (supportMode && !level.isClientSide()) {
             clearSupportBlocks();
         }
         boxValid = false;
@@ -571,7 +564,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             ShapeCardItem.setOffset(shapeCard, offset.getX(), offset.getY(), offset.getZ());
         }
 
-        if (supportMode) {
+        if (supportMode && !level.isClientSide()) {
             makeSupportBlocks();
         }
         setChanged();
@@ -614,17 +607,17 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
 
-    public int getRotate() {
+    public RotateMode getRotate() {
         return rotate;
     }
 
-    public void setRotate(int rotate) {
-        if (supportMode) {
+    public void setRotate(RotateMode rotate) {
+        if (supportMode && !level.isClientSide()) {
             clearSupportBlocks();
         }
         boxValid = false;
         this.rotate = rotate;
-        if (supportMode) {
+        if (supportMode && !level.isClientSide()) {
             makeSupportBlocks();
         }
         setChanged();
@@ -1731,12 +1724,12 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         }
     }
 
-    private int oppositeRotate() {
+    private RotateMode oppositeRotate() {
         switch (rotate) {
-            case 1:
-                return 3;
-            case 3:
-                return 1;
+            case ROTATE_90:
+                return RotateMode.ROTATE_270;
+            case ROTATE_270:
+                return RotateMode.ROTATE_90;
         }
         return rotate;
     }
@@ -1884,7 +1877,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         return false;
     }
 
-    private void moveBlock(World srcWorld, BlockPos srcPos, World destWorld, BlockPos destPos, int rotMode) {
+    private void moveBlock(World srcWorld, BlockPos srcPos, World destWorld, BlockPos destPos, RotateMode rotMode) {
         BlockState oldDestState = destWorld.getBlockState(destPos);
         Block oldDestBlock = oldDestState.getBlock();
         if (isEmpty(oldDestState, oldDestBlock)) {
@@ -2023,13 +2016,13 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private BlockPos rotate(BlockPos c) {
         switch (rotate) {
-            case 0:
+            case ROTATE_0:
                 return c;
-            case 1:
+            case ROTATE_90:
                 return new BlockPos(-c.getZ(), c.getY(), c.getX());
-            case 2:
+            case ROTATE_180:
                 return new BlockPos(-c.getX(), c.getY(), -c.getZ());
-            case 3:
+            case ROTATE_270:
                 return new BlockPos(c.getZ(), c.getY(), -c.getX());
         }
         return c;
@@ -2043,16 +2036,16 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private void rotate(BlockPos c, BlockPos.Mutable dest) {
         switch (rotate) {
-            case 0:
+            case ROTATE_0:
                 dest.set(c);
                 break;
-            case 1:
+            case ROTATE_90:
                 dest.set(-c.getZ(), c.getY(), c.getX());
                 break;
-            case 2:
+            case ROTATE_180:
                 dest.set(-c.getX(), c.getY(), -c.getZ());
                 break;
-            case 3:
+            case ROTATE_270:
                 dest.set(c.getZ(), c.getY(), -c.getX());
                 break;
         }
@@ -2245,10 +2238,10 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             mode = BuilderMode.values()[info.getInt("mode")];
         }
         if (info.contains("anchor")) {
-            anchor = info.getInt("anchor");
+            anchor = AnchorMode.values()[info.getInt("anchor")];
         }
         if (info.contains("rotate")) {
-            rotate = info.getInt("rotate");
+            rotate = RotateMode.values()[info.getInt("rotate")];
         }
         silent = info.getBoolean("silent");
         supportMode = info.getBoolean("support");
@@ -2280,8 +2273,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             tagCompound.putString("lastError", lastError);
         }
         tagCompound.putInt("mode", mode.ordinal());
-        tagCompound.putInt("anchor", anchor);
-        tagCompound.putInt("rotate", rotate);
+        tagCompound.putInt("anchor", anchor.ordinal());
+        tagCompound.putInt("rotate", rotate.ordinal());
         tagCompound.putBoolean("silent", silent);
         tagCompound.putBoolean("support", supportMode);
         tagCompound.putBoolean("entityMode", entityMode);
@@ -2302,8 +2295,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             infoTag.putString("lastError", lastError);
         }
         infoTag.putInt("mode", mode.ordinal());
-        infoTag.putInt("anchor", anchor);
-        infoTag.putInt("rotate", rotate);
+        infoTag.putInt("anchor", anchor.ordinal());
+        infoTag.putInt("rotate", rotate.ordinal());
         infoTag.putBoolean("silent", silent);
         infoTag.putBoolean("support", supportMode);
         infoTag.putBoolean("entityMode", entityMode);
@@ -2325,15 +2318,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     @ServerCommand
     public static final Command<?> CMD_RESTART = Command.<BuilderTileEntity>create("restart", (te, player, params) -> te.restartScan());
-
-    @ServerCommand
-    public static final Command<?> CMD_SETROTATE = Command.<BuilderTileEntity>create("builder.setRotate",
-            (te, playerEntity, params) -> te.setRotate(Integer.parseInt(params.get(ChoiceLabel.PARAM_CHOICE)) / 90));
-
-    public static final Key<Integer> PARAM_ANCHOR_INDEX = new Key<>("anchorIndex", Type.INTEGER);
-    @ServerCommand
-    public static final Command<?> CMD_SETANCHOR = Command.<BuilderTileEntity>create("builder.setAnchor",
-            (te, playerEntity, params) -> te.setAnchor(params.get(PARAM_ANCHOR_INDEX)));
 
     @ServerCommand
     public static final ListCommand<?, ?> CMD_GETHUDLOG = ListCommand.<BuilderTileEntity, String>create(COMMAND_GETHUDLOG,
