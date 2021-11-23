@@ -67,7 +67,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         if (window == null) {
             return;
         }
-        ((ChoiceLabel) window.findChild("mode")).choice(MODES[tileEntity.getMode()]);
+//        ((ChoiceLabel) window.findChild("mode")).choice(MODES[tileEntity.getMode()]);
         ChoiceLabel rotateButton = window.findChild("rotate");
         rotateButton.choice(String.valueOf(tileEntity.getRotate() * 90));
         if (!isShapeCard()) {

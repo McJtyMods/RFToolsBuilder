@@ -99,9 +99,9 @@ import java.util.*;
 import java.util.function.Predicate;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
-import static mcjty.lib.container.ContainerFactory.CONTAINER_CONTAINER;
 import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.rftoolsbase.modules.hud.Hud.COMMAND_GETHUDLOG;
+import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderMode.*;
 
 public class BuilderTileEntity extends GenericTileEntity implements ITickableTileEntity, IHudSupport {
 
@@ -112,14 +112,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             .slot(specific(s -> (s.getItem() instanceof ShapeCardItem) || (s.getItem() instanceof SpaceChamberCardItem)).in().out(), SLOT_TAB, 100, 10)
             .slot(specific(s -> s.getItem() instanceof FilterModuleItem).in().out(), SLOT_FILTER, 84, 46)
             .playerSlots(10, 70));
-
-    public static final int MODE_COPY = 0;
-    public static final int MODE_MOVE = 1;
-    public static final int MODE_SWAP = 2;
-    public static final int MODE_BACK = 3;
-    public static final int MODE_COLLECT = 4;
-
-    public static final String[] MODES = new String[]{"Copy", "Move", "Swap", "Back", "Collect"};
 
     public static final String ROTATE_0 = "0";
     public static final String ROTATE_90 = "90";
@@ -134,7 +126,13 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     private String lastError = null;
 
     @SyncToGui
-    private int mode = MODE_COPY;
+    private BuilderMode mode = MODE_COPY;
+    @GuiValue
+    public static final Value<BuilderTileEntity, String> VALUE_MODE = Value.createEnum("mode", BuilderMode.values(), BuilderTileEntity::getMode, BuilderTileEntity::setMode);
+//    @ServerCommand
+//    public static final Command<?> CMD_SETMODE = Command.<BuilderTileEntity>create("builder.setMode",
+//            (te, playerEntity, params) -> te.setMode(params.get(ChoiceLabel.PARAM_CHOICE_IDX)));
+
     @SyncToGui
     private int rotate = 0;
     @SyncToGui
@@ -283,7 +281,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (isShapeCard()) {
             getCardType().addHudLog(list, items);
         } else {
-            list.add("    Space card: " + new String[]{"copy", "move", "swap", "back", "collect"}[mode]);
+            list.add("    Space card: " + mode.getName().toLowerCase());
         }
         if (scan != null) {
             list.add(TextFormatting.BLUE + "Progress:");
@@ -532,11 +530,11 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         setChanged();
     }
 
-    public int getMode() {
+    public BuilderMode getMode() {
         return mode;
     }
 
-    public void setMode(int mode) {
+    public void setMode(BuilderMode mode) {
         if (mode != this.mode) {
             this.mode = mode;
             restartScan();
@@ -2060,9 +2058,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         }
     }
 
-    @ServerCommand
-    public static final Command<?> CMD_RESTART = Command.<BuilderTileEntity>create("restart", (te, player, params) -> te.restartScan());
-
     private void restartScan() {
         lastError = null;
         chunkUnload();
@@ -2247,7 +2242,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             lastError = null;
         }
         if (info.contains("mode")) {
-            mode = info.getInt("mode");
+            mode = BuilderMode.values()[info.getInt("mode")];
         }
         if (info.contains("anchor")) {
             anchor = info.getInt("anchor");
@@ -2284,7 +2279,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (lastError != null) {
             tagCompound.putString("lastError", lastError);
         }
-        tagCompound.putInt("mode", mode);
+        tagCompound.putInt("mode", mode.ordinal());
         tagCompound.putInt("anchor", anchor);
         tagCompound.putInt("rotate", rotate);
         tagCompound.putBoolean("silent", silent);
@@ -2306,7 +2301,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         if (lastError != null) {
             infoTag.putString("lastError", lastError);
         }
-        infoTag.putInt("mode", mode);
+        infoTag.putInt("mode", mode.ordinal());
         infoTag.putInt("anchor", anchor);
         infoTag.putInt("rotate", rotate);
         infoTag.putBoolean("silent", silent);
@@ -2329,8 +2324,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     @ServerCommand
-    public static final Command<?> CMD_SETMODE = Command.<BuilderTileEntity>create("builder.setMode",
-        (te, playerEntity, params) -> te.setMode(params.get(ChoiceLabel.PARAM_CHOICE_IDX)));
+    public static final Command<?> CMD_RESTART = Command.<BuilderTileEntity>create("restart", (te, player, params) -> te.restartScan());
 
     @ServerCommand
     public static final Command<?> CMD_SETROTATE = Command.<BuilderTileEntity>create("builder.setRotate",
