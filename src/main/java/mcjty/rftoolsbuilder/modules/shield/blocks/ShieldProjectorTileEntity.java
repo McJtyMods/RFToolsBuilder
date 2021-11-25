@@ -12,7 +12,7 @@ import mcjty.lib.blockcommands.ListCommand;
 import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
-import mcjty.lib.container.NoDirectionItemHander;
+import mcjty.lib.container.GenericItemHandler;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
@@ -145,7 +145,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             .playerSlots(85, 142));
 
     @Cap(type = CapType.ITEMS_AUTOMATION)
-    private final NoDirectionItemHander items = createItemHandler();
+    private final GenericItemHandler items = createItemHandler();
 
     private final GenericEnergyStorage energyStorage;
     @Cap(type = CapType.ENERGY)
@@ -1278,8 +1278,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             (te, player, params) -> te.getFilters(),
             (te, player, params, list) -> GuiShield.storeFiltersForClient(list));
 
-    private NoDirectionItemHander createItemHandler() {
-        return new NoDirectionItemHander(ShieldProjectorTileEntity.this, CONTAINER_FACTORY.get()) {
+    private GenericItemHandler createItemHandler() {
+        return new GenericItemHandler(ShieldProjectorTileEntity.this, CONTAINER_FACTORY.get()) {
             @Override
             protected void onUpdate(int index) {
                 super.onUpdate(index);
