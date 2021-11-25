@@ -152,7 +152,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(this::getEnergyStorage);
 
     @Cap(type = CapType.CONTAINER)
-    private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
+    private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Shield")
             .containerSupplier(container(ShieldModule.CONTAINER_SHIELD, CONTAINER_FACTORY,this))
             .energyHandler(this::getEnergyStorage)
             .itemHandler(() -> items)
