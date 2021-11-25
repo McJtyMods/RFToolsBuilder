@@ -94,6 +94,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.rftoolsbase.modules.hud.Hud.COMMAND_GETHUDLOG;
@@ -177,7 +178,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     @Cap(type = CapType.CONTAINER)
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
-            .containerSupplier(windowId -> new GenericContainer(BuilderModule.CONTAINER_BUILDER, windowId, CONTAINER_FACTORY, this))
+            .containerSupplier(container(BuilderModule.CONTAINER_BUILDER, CONTAINER_FACTORY,this))
             .itemHandler(() -> items)
             .energyHandler(() -> energyStorage)
             .shortListener(Sync.integer(() -> scan == null ? -1 : scan.getY(), v -> currentLevel = v))

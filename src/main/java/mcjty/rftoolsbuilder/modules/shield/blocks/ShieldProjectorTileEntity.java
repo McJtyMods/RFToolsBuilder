@@ -70,6 +70,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.IntStream;
 
+import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.container.SlotDefinition.generic;
 import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
@@ -152,9 +153,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     @Cap(type = CapType.CONTAINER)
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Screen")
-            .containerSupplier(windowId -> new GenericContainer(ShieldModule.CONTAINER_SHIELD, windowId, CONTAINER_FACTORY, this))
+            .containerSupplier(container(ShieldModule.CONTAINER_SHIELD, CONTAINER_FACTORY,this))
             .energyHandler(this::getEnergyStorage)
-            .itemHandler(() -> items));
+            .itemHandler(() -> items)
+            .setupSync(this));
 
     @Cap(type = CapType.INFUSABLE)
     private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldProjectorTileEntity.this));
