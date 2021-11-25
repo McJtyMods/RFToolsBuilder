@@ -16,7 +16,6 @@ import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.NoDirectionItemHander;
-import mcjty.lib.sync.SyncToGui;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
@@ -64,7 +63,6 @@ import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -114,27 +112,17 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     private String lastError = null;
 
-    @SyncToGui
     private BuilderMode mode = MODE_COPY;
     @GuiValue
     public static final Value<BuilderTileEntity, String> VALUE_MODE = Value.createEnum("mode", BuilderMode.values(), BuilderTileEntity::getMode, BuilderTileEntity::setMode);
 
-    @SyncToGui
     private RotateMode rotate = RotateMode.ROTATE_0;
     @GuiValue
     public static final Value<BuilderTileEntity, String> VALUE_ROTATE = Value.createEnum("rotate", RotateMode.values(), BuilderTileEntity::getRotate, BuilderTileEntity::setRotate);
 
-    @SyncToGui
     private AnchorMode anchor = AnchorMode.ANCHOR_SW;
     @GuiValue
     public static final Value<BuilderTileEntity, String> VALUE_ANCHOR = Value.createEnum("anchor", AnchorMode.values(), BuilderTileEntity::getAnchor, BuilderTileEntity::setAnchor);
-
-    private boolean silent = false;
-    private boolean supportMode = false;
-    private boolean entityMode = false;
-    private boolean loopMode = false;
-    private boolean waitMode = true;
-    private boolean hilightMode = false;
 
     // For usage in the gui
     private static int currentLevel = 0;
@@ -192,7 +180,6 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
             .containerSupplier((windowId, player) -> new GenericContainer(BuilderModule.CONTAINER_BUILDER.get(), windowId, CONTAINER_FACTORY.get(), getBlockPos(), BuilderTileEntity.this))
             .itemHandler(() -> items)
             .energyHandler(() -> energyStorage)
-            .dataListener(Sync.values(new ResourceLocation(RFToolsBuilder.MODID, "data"), this))
             .shortListener(Sync.integer(() -> scan == null ? -1 : scan.getY(), v -> currentLevel = v))
             .setupSync(this));
 
@@ -212,19 +199,20 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         setRSMode(RedstoneMode.REDSTONE_ONREQUIRED);
     }
 
-
-    @GuiValue
-    public static final Value<?, Boolean> VALUE_WAIT = Value.create("wait", Type.BOOLEAN, BuilderTileEntity::isWaitMode, BuilderTileEntity::setWaitMode);
-    @GuiValue
-    public static final Value<?, Boolean> VALUE_LOOP = Value.create("loop", Type.BOOLEAN, BuilderTileEntity::hasLoopMode, BuilderTileEntity::setLoopMode);
-    @GuiValue
-    public static final Value<?, Boolean> VALUE_HILIGHT = Value.create("hilight", Type.BOOLEAN, BuilderTileEntity::isHilightMode, BuilderTileEntity::setHilightMode);
+    private boolean supportMode = false;
     @GuiValue
     public static final Value<?, Boolean> VALUE_SUPPORT = Value.create("support", Type.BOOLEAN, BuilderTileEntity::hasSupportMode, BuilderTileEntity::setSupportMode);
+
+    @GuiValue(name = "wait")
+    private boolean waitMode = true;
+    @GuiValue(name = "loop")
+    private boolean loopMode = false;
+    @GuiValue(name = "hilight")
+    private boolean hilightMode = false;
     @GuiValue
-    public static final Value<?, Boolean> VALUE_SILENT = Value.create("silent", Type.BOOLEAN, BuilderTileEntity::isSilent, BuilderTileEntity::setSilent);
-    @GuiValue
-    public static final Value<?, Boolean> VALUE_ENTITIES = Value.create("entities", Type.BOOLEAN, BuilderTileEntity::hasEntityMode, BuilderTileEntity::setEntityMode);
+    private boolean silent = false;
+    @GuiValue(name = "entities")
+    private boolean entityMode = false;
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
@@ -442,6 +430,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
     public void setHilightMode(boolean hilightMode) {
         this.hilightMode = hilightMode;
+        setChanged();
     }
 
     public boolean isWaitMode() {
