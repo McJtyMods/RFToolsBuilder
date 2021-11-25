@@ -145,7 +145,23 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             .playerSlots(85, 142));
 
     @Cap(type = CapType.ITEMS_AUTOMATION)
-    private final GenericItemHandler items = createItemHandler();
+    private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY,
+            (slot, stack) -> {
+                if (slot == SLOT_SHAPE) {
+                    return stack.getItem() instanceof ShapeCardItem;
+                } else if (slot == SLOT_SHARD) {
+                    return stack.getItem() == VariousModule.DIMENSIONALSHARD.get();
+                } else {
+                    return true;
+                }
+            },
+            (index, stack) -> {
+                if (index == SLOT_SHAPE && !stack.isEmpty()) {
+                    // Restart if we go from having a stack to not having stack or the other way around.
+                    decomposeShield();
+                }
+            });
+
 
     private final GenericEnergyStorage energyStorage;
     @Cap(type = CapType.ENERGY)
@@ -153,7 +169,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     @Cap(type = CapType.CONTAINER)
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Shield")
-            .containerSupplier(container(ShieldModule.CONTAINER_SHIELD, CONTAINER_FACTORY,this))
+            .containerSupplier(container(ShieldModule.CONTAINER_SHIELD, CONTAINER_FACTORY, this))
             .energyHandler(this::getEnergyStorage)
             .itemHandler(() -> items)
             .setupSync(this));
@@ -322,7 +338,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             composeShield(ctrl);
             done = true;
         }
-        return new Object[] { done };
+        return new Object[]{done};
     }
 
 //    @Callback(doc = "Break down the shield (decompose it)")
@@ -337,7 +353,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             decomposeShield();
             done = true;
         }
-        return new Object[] { done };
+        return new Object[]{done};
     }
 
     public boolean isPowered() {
@@ -375,7 +391,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     private void upFilter(int selected) {
-        ShieldFilter filter1 = filters.get(selected-1);
+        ShieldFilter filter1 = filters.get(selected - 1);
         ShieldFilter filter2 = filters.get(selected);
         filters.set(selected - 1, filter2);
         filters.set(selected, filter1);
@@ -384,7 +400,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     private void downFilter(int selected) {
         ShieldFilter filter1 = filters.get(selected);
-        ShieldFilter filter2 = filters.get(selected+1);
+        ShieldFilter filter2 = filters.get(selected + 1);
         filters.set(selected, filter2);
         filters.set(selected + 1, filter1);
         setChanged();
@@ -394,7 +410,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         ShieldFilter filter = AbstractShieldFilter.createFilter(type);
         filter.setAction(action);
         if (filter instanceof PlayerFilter) {
-            ((PlayerFilter)filter).setName(player);
+            ((PlayerFilter) filter).setName(player);
         }
         if (selected == -1) {
             filters.add(filter);
@@ -645,7 +661,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     @Override
     public void tick() {
-        if( level == null )
+        if (level == null)
             return;
 
         if (!level.isClientSide) {
@@ -741,7 +757,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             ShapeCardItem.composeFormula(shapeItem, shape.getFormulaFactory().get(), getLevel(), getBlockPos(), dimension, offset, col, supportedBlocks, solid, false, null);
             coordinates = col;
         } else {
-            if(!findTemplateState()) return;
+            if (!findTemplateState()) return;
 
             Map<BlockPos, BlockState> col = new HashMap<>();
             findTemplateBlocks(col, templateState, ctrl, getBlockPos());
@@ -913,7 +929,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             Block block = getLevel().getBlockState(pp).getBlock();
             if (getLevel().isEmptyBlock(pp) || block instanceof ShieldingBlock) {
                 getLevel().setBlock(new BlockPos(pp), templateState, 2);
-            } else if (templateState.getMaterial() != Material.AIR){
+            } else if (templateState.getMaterial() != Material.AIR) {
                 if (!isShapedShield()) {
                     // No room, just spawn the block
                     InventoryHelper.dropItemStack(getLevel(), cx, cy, cz, templateState.getBlock().getCloneItemStack(getLevel(), new BlockPos(cx, cy, cz), templateState));
@@ -929,9 +945,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
     /**
      * Find all template blocks recursively.
+     *
      * @param coordinateSet the set with coordinates to update during the search
      * @param templateState the state for the shield template block we support
-     * @param ctrl if true also scan for blocks in corners
+     * @param ctrl          if true also scan for blocks in corners
      */
     private void findTemplateBlocks(Map<BlockPos, BlockState> coordinateSet, BlockState templateState, boolean ctrl, BlockPos start) {
         Deque<BlockPos> todo = new ArrayDeque<>();
@@ -974,9 +991,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         int y = coordinate.getY();
         int z = coordinate.getZ();
         BlockPos.Mutable c = new BlockPos.Mutable();
-        for (int xx = x-1 ; xx <= x+1 ; xx++) {
-            for (int yy = y-1 ; yy <= y+1 ; yy++) {
-                for (int zz = z-1 ; zz <= z+1 ; zz++) {
+        for (int xx = x - 1; xx <= x + 1; xx++) {
+            for (int yy = y - 1; yy <= y + 1; yy++) {
+                for (int zz = z - 1; zz <= z + 1; zz++) {
                     if (xx != x || yy != y || zz != z) {
                         if (yy >= 0 && yy < getLevel().getMaxBuildHeight()) {
                             c.set(xx, yy, zz);
@@ -1080,7 +1097,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         tagCompound.putBoolean("active", shieldActive);
         tagCompound.putInt("powerTimeout", powerTimeout);
         if (templateState.getMaterial() != Material.AIR) {
-            tagCompound.putInt("templateColor", ((ShieldTemplateBlock)templateState.getBlock()).getColor().ordinal());
+            tagCompound.putInt("templateColor", ((ShieldTemplateBlock) templateState.getBlock()).getColor().ordinal());
         }
 
         CompoundNBT info = getOrCreateInfo(tagCompound);
@@ -1190,7 +1207,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     private void readFiltersFromNBT(CompoundNBT tagCompound) {
         filters.clear();
         ListNBT filterList = tagCompound.getList("filters", Constants.NBT.TAG_COMPOUND);
-        for (int i = 0 ; i < filterList.size() ; i++) {
+        for (int i = 0; i < filterList.size(); i++) {
             CompoundNBT compound = filterList.getCompound(i);
             filters.add(AbstractShieldFilter.createFilter(compound));
         }
@@ -1204,19 +1221,19 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         tagCompound.putBoolean("active", shieldActive);
         tagCompound.putInt("powerTimeout", powerTimeout);
         if (templateState.getMaterial() != Material.AIR) {
-            tagCompound.putInt("templateColor", ((ShieldTemplateBlock)templateState.getBlock()).getColor().ordinal());
+            tagCompound.putInt("templateColor", ((ShieldTemplateBlock) templateState.getBlock()).getColor().ordinal());
         }
         byte[] blocks = new byte[shieldBlocks.size() * 8];
         int j = 0;
         for (RelCoordinateShield c : shieldBlocks) {
-            blocks[j+0] = shortToByte1((short) c.getDx());
-            blocks[j+1] = shortToByte2((short) c.getDx());
-            blocks[j+2] = shortToByte1((short) c.getDy());
-            blocks[j+3] = shortToByte2((short) c.getDy());
-            blocks[j+4] = shortToByte1((short) c.getDz());
-            blocks[j+5] = shortToByte2((short) c.getDz());
-            blocks[j+6] = shortToByte1((short) c.getState());
-            blocks[j+7] = shortToByte2((short) c.getState());
+            blocks[j + 0] = shortToByte1((short) c.getDx());
+            blocks[j + 1] = shortToByte2((short) c.getDx());
+            blocks[j + 2] = shortToByte1((short) c.getDy());
+            blocks[j + 3] = shortToByte2((short) c.getDy());
+            blocks[j + 4] = shortToByte1((short) c.getDz());
+            blocks[j + 5] = shortToByte2((short) c.getDz());
+            blocks[j + 6] = shortToByte1((short) c.getState());
+            blocks[j + 7] = shortToByte2((short) c.getState());
             j += 8;
         }
         tagCompound.putByteArray("relcoordsNew", blocks);
@@ -1261,35 +1278,22 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     public static final Key<Integer> PARAM_SELECTED = new Key<>("selected", Type.INTEGER);
     @ServerCommand
     public static final Command<?> CMD_ADDFILTER = Command.<ShieldProjectorTileEntity>create("shield.addFilter",
-        (te, player, params) -> te.addFilter(params.get(PARAM_ACTION), params.get(PARAM_TYPE), params.get(PARAM_PLAYER), params.get(PARAM_SELECTED)));
+            (te, player, params) -> te.addFilter(params.get(PARAM_ACTION), params.get(PARAM_TYPE), params.get(PARAM_PLAYER), params.get(PARAM_SELECTED)));
 
     @ServerCommand
     public static final Command<?> CMD_DELFILTER = Command.<ShieldProjectorTileEntity>create("shield.delFilter",
-        (te, player, params) -> te.delFilter(params.get(PARAM_SELECTED)));
+            (te, player, params) -> te.delFilter(params.get(PARAM_SELECTED)));
     @ServerCommand
     public static final Command<?> CMD_UPFILTER = Command.<ShieldProjectorTileEntity>create("shield.upFilter",
-        (te, player, params) -> te.upFilter(params.get(PARAM_SELECTED)));
+            (te, player, params) -> te.upFilter(params.get(PARAM_SELECTED)));
     @ServerCommand
     public static final Command<?> CMD_DOWNFILTER = Command.<ShieldProjectorTileEntity>create("shield.downFilter",
-        (te, player, params) -> te.downFilter(params.get(PARAM_SELECTED)));
+            (te, player, params) -> te.downFilter(params.get(PARAM_SELECTED)));
 
     @ServerCommand(type = ShieldFilter.class, serializer = ShieldFilter.Serializer.class)
     public static final ListCommand<?, ?> CMD_GETFILTERS = ListCommand.<ShieldProjectorTileEntity, ShieldFilter>create("rftoolsbuilder.shield.getFilters",
             (te, player, params) -> te.getFilters(),
             (te, player, params, list) -> GuiShield.storeFiltersForClient(list));
-
-    private GenericItemHandler createItemHandler() {
-        return new GenericItemHandler(ShieldProjectorTileEntity.this, CONTAINER_FACTORY.get()) {
-            @Override
-            protected void onUpdate(int index) {
-                super.onUpdate(index);
-                if (index == SLOT_SHAPE && !getStackInSlot(index).isEmpty()) {
-                    // Restart if we go from having a stack to not having stack or the other way around.
-                    decomposeShield();
-                }
-            }
-        };
-    }
 
     @Nonnull
     private IPowerInformation createPowerInfo() {

@@ -2389,8 +2389,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
             // @todo would be better if onUpdate had an ItemStack parameter
             @Override
-            protected void onUpdate(int index) {
-                super.onUpdate(index);
+            protected void onUpdate(int index, ItemStack stack) {
+                super.onUpdate(index, stack);
                 if (index == SLOT_FILTER) {
                     filterCache.clear();
                 }
