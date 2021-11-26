@@ -145,8 +145,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             .playerSlots(85, 142));
 
     @Cap(type = CapType.ITEMS_AUTOMATION)
-    private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY,
-            (slot, stack) -> {
+    private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
+            .itemValid((slot, stack) -> {
                 if (slot == SLOT_SHAPE) {
                     return stack.getItem() instanceof ShapeCardItem;
                 } else if (slot == SLOT_SHARD) {
@@ -154,13 +154,14 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 } else {
                     return true;
                 }
-            },
-            (index, stack) -> {
+            })
+            .onUpdate((index, stack) -> {
                 if (index == SLOT_SHAPE && !stack.isEmpty()) {
                     // Restart if we go from having a stack to not having stack or the other way around.
                     decomposeShield();
                 }
-            });
+            })
+            .build();
 
 
     private final GenericEnergyStorage energyStorage;
