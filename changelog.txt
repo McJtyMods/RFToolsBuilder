@@ -1,3 +1,7 @@
+Upcoming:
+- Updated to latest version of McJtyLib
+- The hud for the Builder is full bright again making it easier to read
+
 1.16-3.1.2:
 - Fixed the shield so that it blocks more passive creatures (like villagers)
 
