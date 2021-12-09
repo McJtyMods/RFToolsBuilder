@@ -2198,8 +2198,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     @Override
-    public void read(CompoundNBT tagCompound) {
-        super.read(tagCompound);
+    public void load(CompoundNBT tagCompound) {
+        super.load(tagCompound);
         if (tagCompound.contains("overflowItems")) {
             ListNBT overflowItemsNbt = tagCompound.getList("overflowItems", Constants.NBT.TAG_COMPOUND);
             overflowItems.clear();
@@ -2210,8 +2210,8 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
     }
 
     @Override
-    protected void readInfo(CompoundNBT tagCompound) {
-        super.readInfo(tagCompound);
+    protected void loadInfo(CompoundNBT tagCompound) {
+        super.loadInfo(tagCompound);
         CompoundNBT info = tagCompound.getCompound("Info");
 
         // Workaround to get the redstone mode for old builders to default to 'on'
@@ -2248,10 +2248,9 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         maxBox = BlockPosTools.read(info, "maxBox");
     }
 
-    @Nonnull
     @Override
-    public CompoundNBT save(@Nonnull CompoundNBT tagCompound) {
-        super.save(tagCompound);
+    public void saveAdditional(@Nonnull CompoundNBT tagCompound) {
+        super.saveAdditional(tagCompound);
         if (!overflowItems.isEmpty()) {
             ListNBT overflowItemsNbt = new ListNBT();
             for (ItemStack overflow : overflowItems.getList()) {
@@ -2274,12 +2273,11 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
         BlockPosTools.write(tagCompound, "scan", scan);
         BlockPosTools.write(tagCompound, "minBox", minBox);
         BlockPosTools.write(tagCompound, "maxBox", maxBox);
-        return tagCompound;
     }
 
     @Override
-    protected void writeInfo(CompoundNBT tagCompound) {
-        super.writeInfo(tagCompound);
+    protected void saveInfo(CompoundNBT tagCompound) {
+        super.saveInfo(tagCompound);
         CompoundNBT infoTag = getOrCreateInfo(tagCompound);
         if (lastError != null) {
             infoTag.putString("lastError", lastError);

@@ -1070,7 +1070,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             templateState = Blocks.AIR.defaultBlockState();
         }
 
-        readEnergyCap(tagCompound);
+        loadEnergyCap(tagCompound);
 
         if (tagCompound.contains("Info")) {
             CompoundNBT info = tagCompound.getCompound("Info");
@@ -1111,12 +1111,12 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         info.putInt("shieldColor", shieldColor);
 
         writeFiltersToNBT(info);
-        writeEnergyCap(tagCompound);
+        saveEnergyCap(tagCompound);
     }
 
     @Override
-    public void read(CompoundNBT tagCompound) {
-        super.read(tagCompound);
+    public void load(CompoundNBT tagCompound) {
+        super.load(tagCompound);
         shieldComposed = tagCompound.getBoolean("composed");
         shieldActive = tagCompound.getBoolean("active");
         powerTimeout = tagCompound.getInt("powerTimeout");
@@ -1186,8 +1186,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     @Override
-    protected void readInfo(CompoundNBT tagCompound) {
-        super.readInfo(tagCompound);
+    protected void loadInfo(CompoundNBT tagCompound) {
+        super.loadInfo(tagCompound);
         if (tagCompound.contains("Info")) {
             CompoundNBT info = tagCompound.getCompound("Info");
             shieldRenderingMode = ShieldRenderingMode.values()[info.getInt("visMode")];
@@ -1214,10 +1214,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         }
     }
 
-    @Nonnull
     @Override
-    public CompoundNBT save(@Nonnull CompoundNBT tagCompound) {
-        super.save(tagCompound);
+    public void saveAdditional(@Nonnull CompoundNBT tagCompound) {
+        super.saveAdditional(tagCompound);
         tagCompound.putBoolean("composed", shieldComposed);
         tagCompound.putBoolean("active", shieldActive);
         tagCompound.putInt("powerTimeout", powerTimeout);
@@ -1246,12 +1245,11 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             list.add(tc);
         }
         tagCompound.put("gstates", list);
-        return tagCompound;
     }
 
     @Override
-    protected void writeInfo(CompoundNBT tagCompound) {
-        super.writeInfo(tagCompound);
+    protected void saveInfo(CompoundNBT tagCompound) {
+        super.saveInfo(tagCompound);
         CompoundNBT info = getOrCreateInfo(tagCompound);
         info.putInt("visMode", shieldRenderingMode.ordinal());
         info.putInt("shieldTexture", shieldTexture.ordinal());
