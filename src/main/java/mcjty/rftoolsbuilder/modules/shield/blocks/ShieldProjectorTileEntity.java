@@ -1044,7 +1044,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 //
 
     @Override
-    public void readClientDataFromNBT(CompoundNBT tagCompound) {
+    public void loadClientDataFromNBT(CompoundNBT tagCompound) {
         powerLevel = tagCompound.getByte("powered");
         shieldComposed = tagCompound.getBoolean("composed");
         shieldActive = tagCompound.getBoolean("active");
@@ -1092,7 +1092,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     @Override
-    public void writeClientDataToNBT(CompoundNBT tagCompound) {
+    public void saveClientDataToNBT(CompoundNBT tagCompound) {
         tagCompound.putByte("powered", (byte) powerLevel);
         tagCompound.putBoolean("composed", shieldComposed);
         tagCompound.putBoolean("active", shieldActive);
