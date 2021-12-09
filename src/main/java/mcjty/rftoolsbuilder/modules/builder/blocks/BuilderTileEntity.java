@@ -19,7 +19,7 @@ import mcjty.lib.container.GenericItemHandler;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
-import mcjty.lib.tileentity.GenericTileEntity;
+import mcjty.lib.tileentity.TickingTileEntity;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
@@ -59,7 +59,6 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.RegistryKey;
@@ -101,7 +100,7 @@ import static mcjty.rftoolsbase.modules.hud.Hud.COMMAND_GETHUDLOG;
 import static mcjty.rftoolsbuilder.modules.builder.blocks.AnchorMode.*;
 import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderMode.*;
 
-public class BuilderTileEntity extends GenericTileEntity implements ITickableTileEntity, IHudSupport {
+public class BuilderTileEntity extends TickingTileEntity implements IHudSupport {
 
     public static final int SLOT_TAB = 0;
     public static final int SLOT_FILTER = 1;
@@ -703,16 +702,7 @@ public class BuilderTileEntity extends GenericTileEntity implements ITickableTil
 
 
     @Override
-    public void tick() {
-        if( level == null )
-            return;
-
-        if (!level.isClientSide) {
-            checkStateServer();
-        }
-    }
-
-    private void checkStateServer() {
+    public void tickServer() {
         if (!overflowItems.isEmpty()) {
             insertItems(overflowItems.extractList());
         }
