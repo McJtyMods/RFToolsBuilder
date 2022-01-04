@@ -1,8 +1,8 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
-import mcjty.lib.McJtyLib;
 import mcjty.lib.network.NetworkTools;
 import mcjty.lib.varia.Logging;
+import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiChamberDetails;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -120,14 +120,14 @@ public class PacketChamberInfoReady {
                 // @todo 1.14
 //                EntityType<?> value = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(fixed));
 //
-//                entity = value.create(McJtyLib.proxy.getClientWorld(), nbt, null, null, new BlockPos(0, 0, 0), SpawnReason.COMMAND, false, false);
+//                entity = value.create(SafeClientTools.getClientWorld(), nbt, null, null, new BlockPos(0, 0, 0), SpawnReason.COMMAND, false, false);
 //
 //                Entity entity = EntityList.createEntityFromNBT(nbt, RFTools.proxy.getClientWorld());
 //                realEntities.put(className, entity);
             } else if (how == ENTITY_PLAYER) {
                 int entityId = buf.readInt();
                 String entityName = buf.readUtf(32767);
-                Entity entity = McJtyLib.proxy.getClientWorld().getEntity(entityId);
+                Entity entity = SafeClientTools.getClientWorld().getEntity(entityId);
                 if (entity != null) {
                     realEntities.put(className, entity);
                 }

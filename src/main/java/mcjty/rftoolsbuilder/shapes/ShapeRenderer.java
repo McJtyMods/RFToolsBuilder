@@ -3,8 +3,8 @@ package mcjty.rftoolsbuilder.shapes;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import mcjty.lib.McJtyLib;
 import mcjty.lib.varia.Check32;
+import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
@@ -98,7 +98,7 @@ public class ShapeRenderer {
     public void handleShapeDragging(int x, int y, boolean[] buttons) {
         MouseHelper mouse = Minecraft.getInstance().mouseHandler;
         if (x >= 100 && y <= 120) {
-            if (McJtyLib.proxy.isSneaking()) {
+            if (SafeClientTools.isSneaking()) {
                 if (prevX != -1 && buttons[0]) {
                     dx += (x - prevX);
                     dy += (y - prevY);

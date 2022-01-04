@@ -3,6 +3,7 @@ package mcjty.rftoolsbuilder.setup;
 import mcjty.lib.McJtyLib;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
+import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.shapes.ScanDataManagerClient;
@@ -50,7 +51,7 @@ public class ClientCommandHandler {
         McJtyLib.registerClientCommand(RFToolsBuilder.MODID, CMD_POSITION_TO_CLIENT, (player, arguments) -> {
             BlockPos tePos = arguments.get(PARAM_POS);
             BlockPos scanPos = arguments.get(PARAM_SCAN);
-            TileEntity te = McJtyLib.proxy.getClientWorld().getBlockEntity(tePos);
+            TileEntity te = SafeClientTools.getClientWorld().getBlockEntity(tePos);
             if (te instanceof BuilderTileEntity) {
                 BuilderTileEntity.setScanLocationClient(tePos, scanPos);
             }
