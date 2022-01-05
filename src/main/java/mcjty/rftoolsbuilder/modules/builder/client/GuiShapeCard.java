@@ -548,7 +548,8 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
         ItemStack stack = getStackToEdit();
         if (!stack.isEmpty()) {
-            getShapeRenderer().renderShape(matrixStack, this, stack, guiLeft, guiTop, true, true, true, false);
+            // @todo 1.18 DISABLED FOR NOW
+//            getShapeRenderer().renderShape(matrixStack, this, stack, guiLeft, guiTop, true, true, true, false);
         }
 
         List<String> tooltips = window.getTooltips();

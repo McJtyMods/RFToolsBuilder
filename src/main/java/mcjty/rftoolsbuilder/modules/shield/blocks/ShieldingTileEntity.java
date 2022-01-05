@@ -37,7 +37,7 @@ public class ShieldingTileEntity extends BlockEntity {
     @Override
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag nbtTag = new CompoundTag();
-        this.save(nbtTag);
+        this.saveAdditional(nbtTag);
         return ClientboundBlockEntityDataPacket.create(this, blockEntity -> nbtTag);
     }
 
