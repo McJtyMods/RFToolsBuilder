@@ -7,13 +7,13 @@ import mcjty.rftoolsbuilder.shapes.RenderData;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.function.Supplier;
@@ -27,7 +27,7 @@ public class PacketReturnShapeData {
     private String msg;
     private BlockPos dimension;
 
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         id.toBytes(buf);
         buf.writeInt(count);
         buf.writeInt(offsetY);
@@ -59,7 +59,7 @@ public class PacketReturnShapeData {
     public PacketReturnShapeData() {
     }
 
-    public PacketReturnShapeData(PacketBuffer buf) {
+    public PacketReturnShapeData(FriendlyByteBuf buf) {
         id = new ShapeID(buf);
         count = buf.readInt();
         offsetY = buf.readInt();

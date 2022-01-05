@@ -2,16 +2,16 @@ package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.lib.varia.Check32;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 public interface IFormula {
 
-    void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card);
+    void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card);
 
-    default void getCheckSumClient(CompoundNBT cardTag, Check32 crc) {
+    default void getCheckSumClient(CompoundTag cardTag, Check32 crc) {
         ShapeCardItem.getLocalChecksum(cardTag, crc);
     }
 
@@ -61,12 +61,12 @@ public interface IFormula {
         } else {
             return new IFormula() {
                 @Override
-                public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+                public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
                     IFormula.this.setup(world, thisCoord, dimension, offset, card);
                 }
 
                 @Override
-                public void getCheckSumClient(CompoundNBT cardTag, Check32 crc) {
+                public void getCheckSumClient(CompoundTag cardTag, Check32 crc) {
                     IFormula.this.getCheckSumClient(cardTag, crc);
                 }
 

@@ -5,11 +5,12 @@ import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
-import net.minecraft.client.renderer.model.*;
-import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.resources.model.*;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.IModelLoader;
@@ -30,7 +31,7 @@ public class ShieldModelLoader implements IModelLoader<ShieldModelLoader.TankMod
     }
 
     @Override
-    public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {
+    public void onResourceManagerReload(@Nonnull ResourceManager resourceManager) {
 
     }
 
@@ -42,21 +43,21 @@ public class ShieldModelLoader implements IModelLoader<ShieldModelLoader.TankMod
 
     public static class TankModelGeometry implements IModelGeometry<TankModelGeometry> {
         @Override
-        public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation) {
+        public BakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
             return new ShieldBakedModel();
         }
 
         @Override
-        public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
-            List<RenderMaterial> materials = new ArrayList<>();
+        public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
+            List<Material> materials = new ArrayList<>();
             for (ShieldTexture texture : ShieldTexture.values()) {
-                materials.add(new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield0")));
-                materials.add(new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield1")));
-                materials.add(new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield2")));
-                materials.add(new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield3")));
+                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield0")));
+                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield1")));
+                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield2")));
+                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield3")));
             }
-            materials.add(new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldtransparent")));
-            materials.add(new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldfull")));
+            materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldtransparent")));
+            materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldfull")));
             return materials;
         }
     }

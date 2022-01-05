@@ -6,19 +6,19 @@ import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.network.NetworkDirection;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +26,8 @@ import java.util.Map;
 
 public class BuilderTools {
 
-    public static void returnChamberInfo(PlayerEntity player) {
-        ItemStack cardItem = player.getItemInHand(Hand.MAIN_HAND);
+    public static void returnChamberInfo(Player player) {
+        ItemStack cardItem = player.getItemInHand(InteractionHand.MAIN_HAND);
         if (cardItem.isEmpty() || cardItem.getTag() == null) {
             return;
         }
@@ -43,7 +43,7 @@ public class BuilderTools {
             return;
         }
 
-        World world = LevelTools.getLevel(player.getCommandSenderWorld(), chamberChannel.getDimension());
+        Level world = LevelTools.getLevel(player.getCommandSenderWorld(), chamberChannel.getDimension());
         if (world == null) {
             return;
         }
@@ -62,12 +62,12 @@ public class BuilderTools {
         findEntities(world, minCorner, maxCorner, entitiesWithCount, entitiesWithCost, firstEntity);
 
         RFToolsBuilderMessages.INSTANCE.sendTo(new PacketChamberInfoReady(blocks, costs, stacks,
-                entitiesWithCount, entitiesWithCost, firstEntity), ((ServerPlayerEntity) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+                entitiesWithCount, entitiesWithCost, firstEntity), ((ServerPlayer) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
     }
 
-    private static void findEntities(World world, BlockPos minCorner, BlockPos maxCorner,
+    private static void findEntities(Level world, BlockPos minCorner, BlockPos maxCorner,
                                  Counter<String> entitiesWithCount, Counter<String> entitiesWithCost, Map<String, Entity> firstEntity) {
-        List<Entity> entities = world.getEntities(null, new AxisAlignedBB(
+        List<Entity> entities = world.getEntities(null, new AABB(
                 minCorner.getX(), minCorner.getY(), minCorner.getZ(), maxCorner.getX() + 1, maxCorner.getY() + 1, maxCorner.getZ() + 1));
         for (Entity entity : entities) {
             String canonicalName = entity.getClass().getCanonicalName();
@@ -85,7 +85,7 @@ public class BuilderTools {
                 firstEntity.put(canonicalName, entity);
             }
 
-            if (entity instanceof PlayerEntity) {
+            if (entity instanceof Player) {
                 entitiesWithCost.increment(canonicalName, BuilderConfiguration.builderRfPerPlayer.get());
             } else {
                 entitiesWithCost.increment(canonicalName, BuilderConfiguration.builderRfPerEntity.get());
@@ -93,7 +93,7 @@ public class BuilderTools {
         }
     }
 
-    private static void findBlocks(PlayerEntity harvester, World world, Counter<BlockState> blocks, Counter<BlockState> costs, Map<BlockState, ItemStack> stacks, BlockPos minCorner, BlockPos maxCorner) {
+    private static void findBlocks(Player harvester, Level world, Counter<BlockState> blocks, Counter<BlockState> costs, Map<BlockState, ItemStack> stacks, BlockPos minCorner, BlockPos maxCorner) {
         for (int x = minCorner.getX() ; x <= maxCorner.getX() ; x++) {
             for (int y = minCorner.getY() ; y <= maxCorner.getY() ; y++) {
                 for (int z = minCorner.getZ() ; z <= maxCorner.getZ() ; z++) {
@@ -110,7 +110,7 @@ public class BuilderTools {
                             }
                         }
 
-                        TileEntity te = world.getBlockEntity(p);
+                        BlockEntity te = world.getBlockEntity(p);
                         BlockInformation info = BuilderTileEntity.getBlockInformation(harvester, world, p, block, te);
                         if (info.getBlockLevel() == SupportBlock.SupportStatus.STATUS_ERROR) {
                             costs.put(state, -1);

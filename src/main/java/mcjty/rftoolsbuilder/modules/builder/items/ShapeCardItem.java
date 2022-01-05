@@ -13,30 +13,29 @@ import mcjty.rftoolsbuilder.shapes.IFormula;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeModifier;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.Tag;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
@@ -61,16 +60,16 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                     parameter("offset", this::getShapeOffset),
                     parameter("formulas", stack -> getShape(stack).isComposition(),
                             stack -> {
-                                CompoundNBT card = stack.getTag();
+                                CompoundTag card = stack.getTag();
                                 if (card != null) {
-                                    ListNBT children = card.getList("children", Constants.NBT.TAG_COMPOUND);
+                                    ListTag children = card.getList("children", net.minecraft.nbt.Tag.TAG_COMPOUND);
                                     return Integer.toString(children.size());
                                 }
                                 return "<none>";
                             }),
                     parameter("scan", stack -> getShape(stack).isScan(),
                             stack -> {
-                                CompoundNBT card = stack.getTag();
+                                CompoundTag card = stack.getTag();
                                 if (card != null) {
                                     int scanid = card.getInt("scanid");
                                     return Integer.toString(scanid);
@@ -125,11 +124,11 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
     @Nonnull
     @Override
-    public ActionResultType useOn(ItemUseContext context) {
-        World world = context.getLevel();
-        PlayerEntity player = context.getPlayer();
+    public InteractionResult useOn(UseOnContext context) {
+        Level world = context.getLevel();
+        Player player = context.getPlayer();
         if (!world.isClientSide && player != null) {
-            Hand hand = context.getHand();
+            InteractionHand hand = context.getHand();
             BlockPos pos = context.getClickedPos();
             ItemStack stack = context.getItemInHand();
             int mode = getMode(stack);
@@ -137,46 +136,46 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                 if (player.isShiftKeyDown()) {
                     if (world.getBlockEntity(pos) instanceof BuilderTileEntity) {
                         setCurrentBlock(stack, GlobalPos.of(world.dimension(), pos));
-                        Logging.message(player, TextFormatting.GREEN + "Now select the first corner");
+                        Logging.message(player, ChatFormatting.GREEN + "Now select the first corner");
                         setMode(stack, MODE_CORNER1);
                         setCorner1(stack, null);
                     } else {
-                        Logging.message(player, TextFormatting.RED + "You can only do this on a builder!");
+                        Logging.message(player, ChatFormatting.RED + "You can only do this on a builder!");
                     }
                 } else {
-                    return ActionResultType.SUCCESS;
+                    return InteractionResult.SUCCESS;
                 }
             } else if (mode == MODE_CORNER1) {
                 GlobalPos currentBlock = getCurrentBlock(stack);
                 if (currentBlock == null) {
-                    Logging.message(player, TextFormatting.RED + "There is no Builder selected!");
+                    Logging.message(player, ChatFormatting.RED + "There is no Builder selected!");
                 } else if (!currentBlock.dimension().equals(world.dimension())) {
-                    Logging.message(player, TextFormatting.RED + "The Builder is in another dimension!");
+                    Logging.message(player, ChatFormatting.RED + "The Builder is in another dimension!");
                 } else if (currentBlock.pos().equals(pos)) {
-                    Logging.message(player, TextFormatting.RED + "Cleared area selection mode!");
+                    Logging.message(player, ChatFormatting.RED + "Cleared area selection mode!");
                     setMode(stack, MODE_NONE);
                 } else {
-                    Logging.message(player, TextFormatting.GREEN + "Now select the second corner");
+                    Logging.message(player, ChatFormatting.GREEN + "Now select the second corner");
                     setMode(stack, MODE_CORNER2);
                     setCorner1(stack, pos);
                 }
             } else {
                 GlobalPos currentBlock = getCurrentBlock(stack);
                 if (currentBlock == null) {
-                    Logging.message(player, TextFormatting.RED + "There is no Builder selected!");
+                    Logging.message(player, ChatFormatting.RED + "There is no Builder selected!");
                 } else if (!currentBlock.dimension().equals(world.dimension())) {
-                    Logging.message(player, TextFormatting.RED + "The Builder is in another dimension!");
+                    Logging.message(player, ChatFormatting.RED + "The Builder is in another dimension!");
                 } else if (currentBlock.pos().equals(pos)) {
-                    Logging.message(player, TextFormatting.RED + "Cleared area selection mode!");
+                    Logging.message(player, ChatFormatting.RED + "Cleared area selection mode!");
                     setMode(stack, MODE_NONE);
                 } else {
-                    CompoundNBT tag = stack.getOrCreateTag();
+                    CompoundTag tag = stack.getOrCreateTag();
                     BlockPos c1 = getCorner1(stack);
                     if (c1 == null) {
-                        Logging.message(player, TextFormatting.RED + "Cleared area selection mode!");
+                        Logging.message(player, ChatFormatting.RED + "Cleared area selection mode!");
                         setMode(stack, MODE_NONE);
                     } else {
-                        Logging.message(player, TextFormatting.GREEN + "New settings copied to the shape card!");
+                        Logging.message(player, ChatFormatting.GREEN + "New settings copied to the shape card!");
                         BlockPos center = new BlockPos((int) Math.ceil((c1.getX() + pos.getX()) / 2.0f), (int) Math.ceil((c1.getY() + pos.getY()) / 2.0f), (int) Math.ceil((c1.getZ() + pos.getZ()) / 2.0f));
                         setDimension(stack, Math.abs(c1.getX() - pos.getX()) + 1, Math.abs(c1.getY() - pos.getY()) + 1, Math.abs(c1.getZ() - pos.getZ()) + 1);
                         setOffset(stack, center.getX() - currentBlock.pos().getX(), center.getY() - currentBlock.pos().getY(), center.getZ() - currentBlock.pos().getZ());
@@ -188,7 +187,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                 }
             }
         }
-        return ActionResultType.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -198,17 +197,17 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                 "corner1x", "corner1y", "corner1z");
     }
 
-    public static void setData(CompoundNBT tagCompound, int scanID) {
+    public static void setData(CompoundTag tagCompound, int scanID) {
         tagCompound.putInt("scanid", scanID);
     }
 
-    public static void setModifier(CompoundNBT tag, ShapeModifier modifier) {
+    public static void setModifier(CompoundTag tag, ShapeModifier modifier) {
         tag.putString("mod_op", modifier.getOperation().getCode());
         tag.putBoolean("mod_flipy", modifier.isFlipY());
         tag.putString("mod_rot", modifier.getRotation().getCode());
     }
 
-    public static void setGhostMaterial(CompoundNBT tag, ItemStack materialGhost) {
+    public static void setGhostMaterial(CompoundTag tag, ItemStack materialGhost) {
         if (materialGhost.isEmpty()) {
             tag.remove("ghost_block");
 //            tag.remove("ghost_meta");         // @todo 1.14 not more meta
@@ -219,13 +218,13 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         }
     }
 
-    public static void setChildren(ItemStack itemStack, ListNBT list) {
-        CompoundNBT tagCompound = itemStack.getOrCreateTag();
+    public static void setChildren(ItemStack itemStack, ListTag list) {
+        CompoundTag tagCompound = itemStack.getOrCreateTag();
         tagCompound.put("children", list);
     }
 
     public static void setDimension(ItemStack itemStack, int x, int y, int z) {
-        CompoundNBT tagCompound = itemStack.getOrCreateTag();
+        CompoundTag tagCompound = itemStack.getOrCreateTag();
         if (tagCompound.getInt("dimX") == x && tagCompound.getInt("dimY") == y && tagCompound.getInt("dimZ") == z) {
             return;
         }
@@ -236,7 +235,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
 
     public static void setOffset(ItemStack itemStack, int x, int y, int z) {
-        CompoundNBT tagCompound = itemStack.getOrCreateTag();
+        CompoundTag tagCompound = itemStack.getOrCreateTag();
         if (tagCompound.getInt("offsetX") == x && tagCompound.getInt("offsetY") == y && tagCompound.getInt("offsetZ") == z) {
             return;
         }
@@ -246,7 +245,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static void setCorner1(ItemStack itemStack, BlockPos corner) {
-        CompoundNBT tagCompound = itemStack.getOrCreateTag();
+        CompoundTag tagCompound = itemStack.getOrCreateTag();
         if (corner == null) {
             tagCompound.remove("corner1x");
             tagCompound.remove("corner1y");
@@ -259,7 +258,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static BlockPos getCorner1(ItemStack stack1) {
-        CompoundNBT tagCompound = stack1.getTag();
+        CompoundTag tagCompound = stack1.getTag();
         if (tagCompound == null) {
             return null;
         }
@@ -270,7 +269,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static int getMode(ItemStack itemStack) {
-        CompoundNBT tagCompound = itemStack.getTag();
+        CompoundTag tagCompound = itemStack.getTag();
         if (tagCompound != null) {
             int mode = tagCompound.getInt("mode");
             GlobalPos block = getCurrentBlock(itemStack);
@@ -285,7 +284,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static void setMode(ItemStack itemStack, int mode) {
-        CompoundNBT tagCompound = itemStack.getOrCreateTag();
+        CompoundTag tagCompound = itemStack.getOrCreateTag();
         if (tagCompound.getInt("mode") == mode) {
             return;
         }
@@ -293,7 +292,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static void setCurrentBlock(ItemStack itemStack, GlobalPos c) {
-        CompoundNBT tagCompound = itemStack.getOrCreateTag();
+        CompoundTag tagCompound = itemStack.getOrCreateTag();
 
         if (c == null) {
             tagCompound.remove("selectedX");
@@ -310,7 +309,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
     @Nullable
     private static GlobalPos getCurrentBlock(ItemStack itemStack) {
-        CompoundNBT tagCompound = itemStack.getTag();
+        CompoundTag tagCompound = itemStack.getTag();
         if (tagCompound != null && tagCompound.contains("selectedX")) {
             int x = tagCompound.getInt("selectedX");
             int y = tagCompound.getInt("selectedY");
@@ -323,7 +322,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
 
     @Override
-    public void appendHoverText(@Nonnull ItemStack itemStack, World world, @Nonnull List<ITextComponent> list, @Nonnull ITooltipFlag flag) {
+    public void appendHoverText(@Nonnull ItemStack itemStack, Level world, @Nonnull List<Component> list, @Nonnull TooltipFlag flag) {
         super.appendHoverText(itemStack, world, list, flag);
         // Use custom RL so that we don't have to duplicate the translation for every shape card
         tooltipBuilder.get().makeTooltip(new ResourceLocation(RFToolsBuilder.MODID, "shape_card"), itemStack, list, flag);
@@ -349,7 +348,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         return ShapeCardType.CARD_UNKNOWN;
     }
 
-    private static void addBlocks(Set<Block> blocks, Block block, ITag<Block> tag, boolean tagMatching) {
+    private static void addBlocks(Set<Block> blocks, Block block, Tag<Block> tag, boolean tagMatching) {
         blocks.add(block);
         if (tagMatching && tag != null) {
             for (Block b : tag.getValues()) {
@@ -387,7 +386,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static boolean isTagMatching(ItemStack stack) {
-        CompoundNBT tagCompound = stack.getTag();
+        CompoundTag tagCompound = stack.getTag();
         if (tagCompound == null) {
             return false;
         }
@@ -395,7 +394,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static boolean isVoiding(ItemStack stack, String material) {
-        CompoundNBT tagCompound = stack.getTag();
+        CompoundTag tagCompound = stack.getTag();
         if (tagCompound == null) {
             return false;
         }
@@ -403,11 +402,11 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static Shape getShape(ItemStack stack) {
-        CompoundNBT tagCompound = stack.getTag();
+        CompoundTag tagCompound = stack.getTag();
         return getShape(tagCompound);
     }
 
-    public static Shape getShape(CompoundNBT tagCompound) {
+    public static Shape getShape(CompoundTag tagCompound) {
         if (tagCompound == null) {
             return Shape.SHAPE_BOX;
         }
@@ -426,11 +425,11 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         if (stack.isEmpty()) {
             return true;
         }
-        CompoundNBT tagCompound = stack.getTag();
+        CompoundTag tagCompound = stack.getTag();
         return isSolid(tagCompound);
     }
 
-    public static boolean isSolid(CompoundNBT tagCompound) {
+    public static boolean isSolid(CompoundTag tagCompound) {
         if (tagCompound == null) {
             return true;
         }
@@ -441,7 +440,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         }
     }
 
-    public static IFormula createCorrectFormula(CompoundNBT tagCompound) {
+    public static IFormula createCorrectFormula(CompoundTag tagCompound) {
         Shape shape = getShape(tagCompound);
         boolean solid = isSolid(tagCompound);
         IFormula formula = shape.getFormulaFactory().get();
@@ -452,7 +451,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         if (stack.isEmpty()) {
             return 0;
         }
-        CompoundNBT tagCompound = stack.getOrCreateTag();
+        CompoundTag tagCompound = stack.getOrCreateTag();
         Shape shape = getShape(tagCompound);
         if (shape != Shape.SHAPE_SCAN) {
             return 0;
@@ -468,16 +467,16 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         return getScanIdRecursive(stack.getOrCreateTag());
     }
 
-    private static int getScanIdRecursive(CompoundNBT tagCompound) {
+    private static int getScanIdRecursive(CompoundTag tagCompound) {
         Shape shape = getShape(tagCompound);
         if (tagCompound.contains("scanid") && shape == Shape.SHAPE_SCAN) {
             return tagCompound.getInt("scanid");
         }
         if (shape == Shape.SHAPE_COMPOSITION) {
             // See if there is a scan in the composition that has a scan id
-            ListNBT children = tagCompound.getList("children", Constants.NBT.TAG_COMPOUND);
+            ListTag children = tagCompound.getList("children", net.minecraft.nbt.Tag.TAG_COMPOUND);
             for (int i = 0 ; i < children.size() ; i++) {
-                CompoundNBT childTag = children.getCompound(i);
+                CompoundTag childTag = children.getCompound(i);
                 int id = getScanIdRecursive(childTag);
                 if (id != 0) {
                     return id;
@@ -499,7 +498,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         formula.getCheckSumClient(stack.getTag(), crc);
     }
 
-    public static void getLocalChecksum(CompoundNBT tagCompound, Check32 crc) {
+    public static void getLocalChecksum(CompoundTag tagCompound, Check32 crc) {
         if (tagCompound == null) {
             return;
         }
@@ -514,7 +513,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
 
     public static void setShape(ItemStack stack, Shape shape, boolean solid) {
-        CompoundNBT tagCompound = stack.getOrCreateTag();
+        CompoundTag tagCompound = stack.getOrCreateTag();
         if (isSolid(tagCompound) == solid && getShape(tagCompound).equals(shape)) {
             // Nothing happens
             return;
@@ -524,11 +523,11 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static BlockPos getDimension(ItemStack stack) {
-        CompoundNBT tagCompound = stack.getTag();
+        CompoundTag tagCompound = stack.getTag();
         return getDimension(tagCompound);
     }
 
-    public static BlockPos getDimension(CompoundNBT tagCompound) {
+    public static BlockPos getDimension(CompoundTag tagCompound) {
         if (tagCompound == null) {
             return new BlockPos(5, 5, 5);
         }
@@ -542,11 +541,11 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static BlockPos getClampedDimension(ItemStack stack, int maximum) {
-        CompoundNBT tagCompound = stack.getTag();
+        CompoundTag tagCompound = stack.getTag();
         return getClampedDimension(tagCompound, maximum);
     }
 
-    public static BlockPos getClampedDimension(CompoundNBT tagCompound, int maximum) {
+    public static BlockPos getClampedDimension(CompoundTag tagCompound, int maximum) {
         if (tagCompound == null) {
             return new BlockPos(5, 5, 5);
         }
@@ -566,7 +565,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static BlockPos getOffset(ItemStack stack) {
-        CompoundNBT tagCompound = stack.getTag();
+        CompoundTag tagCompound = stack.getTag();
         if (tagCompound == null) {
             return new BlockPos(0, 0, 0);
         }
@@ -577,11 +576,11 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static BlockPos getClampedOffset(ItemStack stack, int maximum) {
-        CompoundNBT tagCompound = stack.getTag();
+        CompoundTag tagCompound = stack.getTag();
         return getClampedOffset(tagCompound, maximum);
     }
 
-    public static BlockPos getClampedOffset(CompoundNBT tagCompound, int maximum) {
+    public static BlockPos getClampedOffset(CompoundTag tagCompound, int maximum) {
         if (tagCompound == null) {
             return new BlockPos(0, 0, 0);
         }
@@ -602,13 +601,13 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
     @Nonnull
     @Override
-    public ActionResult<ItemStack> use(World world, PlayerEntity player, @Nonnull Hand hand) {
+    public InteractionResultHolder<ItemStack> use(Level world, Player player, @Nonnull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (world.isClientSide) {
             GuiShapeCard.open(false);
-            return new ActionResult<>(ActionResultType.SUCCESS, stack);
+            return new InteractionResultHolder<>(InteractionResult.SUCCESS, stack);
         }
-        return new ActionResult<>(ActionResultType.SUCCESS, stack);
+        return new InteractionResultHolder<>(InteractionResult.SUCCESS, stack);
     }
 
     public static BlockPos getMinCorner(BlockPos thisCoord, BlockPos dimension, BlockPos offset) {
@@ -645,7 +644,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         }
     }
 
-    private static void placeBlockIfPossible(World worldObj, Map<BlockPos, BlockState> blocks, int maxSize, int x, int y, int z, BlockState state, boolean forquarry) {
+    private static void placeBlockIfPossible(Level worldObj, Map<BlockPos, BlockState> blocks, int maxSize, int x, int y, int z, BlockState state, boolean forquarry) {
         BlockPos c = new BlockPos(x, y, z);
         if (worldObj == null) {
             blocks.put(c, state);
@@ -699,7 +698,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
 
     // Used for saving
-    public static int getDataPositions(World world, ItemStack stack, Shape shape, boolean solid, RLE positions, StatePalette statePalette) {
+    public static int getDataPositions(Level world, ItemStack stack, Shape shape, boolean solid, RLE positions, StatePalette statePalette) {
         BlockPos dimension = ShapeCardItem.getDimension(stack);
         BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 256), Math.min(dimension.getZ(), 512));
 
@@ -737,7 +736,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
 
 
-    public static void composeFormula(ItemStack shapeCard, IFormula formula, World worldObj, BlockPos thisCoord, BlockPos dimension, BlockPos offset, Map<BlockPos, BlockState> blocks, int maxSize, boolean solid, boolean forquarry, ChunkPos chunk) {
+    public static void composeFormula(ItemStack shapeCard, IFormula formula, Level worldObj, BlockPos thisCoord, BlockPos dimension, BlockPos offset, Map<BlockPos, BlockState> blocks, int maxSize, boolean solid, boolean forquarry, ChunkPos chunk) {
         int xCoord = thisCoord.getX();
         int yCoord = thisCoord.getY();
         int zCoord = thisCoord.getZ();
@@ -790,16 +789,16 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 //        }
 //    }
 
-    private static boolean validFile(PlayerEntity player, String filename) {
+    private static boolean validFile(Player player, String filename) {
         if (filename.contains("\\") || filename.contains("/") || filename.contains(":")) {
-            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Invalid filename '" + filename + "'! Cannot be a path!"), false);
+            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Invalid filename '" + filename + "'! Cannot be a path!"), false);
             return false;
         }
         return true;
     }
 
 
-    public static void save(PlayerEntity player, ItemStack card, String filename) {
+    public static void save(Player player, ItemStack card, String filename) {
         if (!validFile(player, filename)) {
             return;
         }
@@ -832,13 +831,13 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             byte[] encoded = Base64.getEncoder().encode(data);
             writer.write(new String(encoded));
         } catch (FileNotFoundException e) {
-            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Cannot write to file '" + filename + "'!"), false);
+            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Cannot write to file '" + filename + "'!"), false);
             return;
         }
-        player.displayClientMessage(new StringTextComponent(TextFormatting.GREEN + "Saved shape to file '" + file.getPath() + "'"), false);
+        player.displayClientMessage(new TextComponent(ChatFormatting.GREEN + "Saved shape to file '" + file.getPath() + "'"), false);
     }
 
-    public static void load(PlayerEntity player, ItemStack card, String filename) {
+    public static void load(Player player, ItemStack card, String filename) {
         if (!validFile(player, filename)) {
             return;
         }
@@ -846,14 +845,14 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         Shape shape = ShapeCardItem.getShape(card);
 
         if (shape != Shape.SHAPE_SCAN) {
-            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "To load a file into this card you need a linked 'scan' type card!"), false);
+            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "To load a file into this card you need a linked 'scan' type card!"), false);
             return;
         }
 
-        CompoundNBT compound = card.getOrCreateTag();
+        CompoundTag compound = card.getOrCreateTag();
         int scanId = compound.getInt("scanid");
         if (scanId == 0) {
-            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "This card is not linked to scan data!"), false);
+            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "This card is not linked to scan data!"), false);
             return;
         }
 
@@ -864,18 +863,18 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
             String s = reader.readLine();
             if (!"SHAPE".equals(s)) {
-                player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.displayClientMessage(new TextComponent(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
                 return;
             }
             s = reader.readLine();
             if (!s.startsWith("DIM:")) {
-                player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.displayClientMessage(new TextComponent(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
                 return;
             }
             BlockPos dim = parse(s.substring(4));
             s = reader.readLine();
             if (!s.startsWith("OFF:")) {
-                player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.displayClientMessage(new TextComponent(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
                 return;
             }
             BlockPos off = parse(s.substring(4));
@@ -886,7 +885,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                 Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(split[0]));
                 int meta = Integer.parseInt(split[1]);
                 if (block == null) {
-                    player.displayClientMessage(new StringTextComponent(TextFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);
+                    player.displayClientMessage(new TextComponent(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);
                     block = Blocks.STONE;
                     meta = 0;
                 }
@@ -899,19 +898,19 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
             setDataFromFile(scanId, card, dim, off, decoded, statePalette);
         } catch (FileNotFoundException e) {
-            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
+            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
             return;
         } catch (IOException e) {
-            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
+            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
             return;
         } catch (NullPointerException e) {
-            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "File '" + filename + "' is too short!"), false);
+            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "File '" + filename + "' is too short!"), false);
             return;
         } catch (ArrayIndexOutOfBoundsException e) {
-            player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "File '" + filename + "' contains invalid entries!"), false);
+            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "File '" + filename + "' contains invalid entries!"), false);
             return;
         }
-        player.displayClientMessage(new StringTextComponent(TextFormatting.GREEN + "Loaded shape from file '" + file.getPath() + "'"), false);
+        player.displayClientMessage(new TextComponent(ChatFormatting.GREEN + "Loaded shape from file '" + file.getPath() + "'"), false);
     }
 
     private static void setDataFromFile(int scanId, ItemStack card, BlockPos dimension, BlockPos offset, byte[] data, StatePalette palette) {

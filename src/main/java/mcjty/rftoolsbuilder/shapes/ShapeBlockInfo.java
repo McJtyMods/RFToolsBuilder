@@ -1,17 +1,17 @@
 package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.SlabBlock;
-import net.minecraft.block.material.MaterialColor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.state.properties.SlabType;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
 import net.minecraftforge.common.Tags;
 
 import javax.annotation.Nonnull;

@@ -5,10 +5,10 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnShapeData;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.network.NetworkDirection;
 
 import java.util.*;
 
@@ -17,19 +17,19 @@ public class ShapeDataManagerServer {
 
 
     private static class WorkUnit {
-        private final List<ServerPlayerEntity> players = new ArrayList<>();
+        private final List<ServerPlayer> players = new ArrayList<>();
         private ItemStack stack;
         private int offsetY;
         private IFormula formula;
 
-        public WorkUnit(ItemStack stack, int offsetY, IFormula formula, ServerPlayerEntity player) {
+        public WorkUnit(ItemStack stack, int offsetY, IFormula formula, ServerPlayer player) {
             this.stack = stack;
             this.offsetY = offsetY;
             this.formula = formula;
             this.players.add(player);
         }
 
-        public void update(ItemStack stack, int offsetY, IFormula formula, ServerPlayerEntity player) {
+        public void update(ItemStack stack, int offsetY, IFormula formula, ServerPlayer player) {
             this.stack = stack;
             this.offsetY = offsetY;
             this.formula = formula;
@@ -38,7 +38,7 @@ public class ShapeDataManagerServer {
             }
         }
 
-        public List<ServerPlayerEntity> getPlayers() {
+        public List<ServerPlayer> getPlayers() {
             return players;
         }
 
@@ -63,7 +63,7 @@ public class ShapeDataManagerServer {
     // Server-side
     private static final Map<ShapeID, WorkQueue> workQueues = new HashMap<>();
 
-    public static void pushWork(ShapeID shapeID, ItemStack stack, int offsetY, IFormula formula, ServerPlayerEntity player) {
+    public static void pushWork(ShapeID shapeID, ItemStack stack, int offsetY, IFormula formula, ServerPlayer player) {
         WorkQueue queue = workQueues.get(shapeID);
         if (queue == null) {
             queue = new WorkQueue();
@@ -97,7 +97,7 @@ public class ShapeDataManagerServer {
                 StatePalette statePalette = new StatePalette();
                 int cnt = ShapeCardItem.getRenderPositions(card, solid, positions, statePalette, unit.getFormula(), unit.getOffsetY());
 
-                for (ServerPlayerEntity player : unit.getPlayers()) {
+                for (ServerPlayer player : unit.getPlayers()) {
                     RFToolsBuilderMessages.INSTANCE.sendTo(new PacketReturnShapeData(shapeID, positions, statePalette, dimension, cnt, unit.getOffsetY(), ""),
                             player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
                 }

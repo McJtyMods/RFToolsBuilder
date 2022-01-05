@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
@@ -17,9 +17,9 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenCardGui;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.items.CapabilityItemHandler;
 
 import javax.annotation.Nonnull;
@@ -32,7 +32,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private Button currentLevel;
     private ImageChoiceLabel anchor[] = new ImageChoiceLabel[4];
 
-    public GuiBuilder(BuilderTileEntity builderTileEntity, GenericContainer container, PlayerInventory inventory) {
+    public GuiBuilder(BuilderTileEntity builderTileEntity, GenericContainer container, Inventory inventory) {
         super(builderTileEntity, container, inventory, BuilderModule.BUILDER.get().getManualEntry());
     }
 
@@ -119,7 +119,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     }
 
     @Override
-    protected void renderBg(@Nonnull MatrixStack matrixStack, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(@Nonnull PoseStack matrixStack, float partialTicks, int mouseX, int mouseY) {
         updateFields();
         drawWindow(matrixStack);
     }

@@ -1,26 +1,22 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
+import com.mojang.math.Vector3f;
 import mcjty.lib.varia.Check32;
 import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.MouseHelper;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.MouseHandler;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
@@ -81,7 +77,7 @@ public class ShapeRenderer {
     public void initView(int dx, int dy) {
         Minecraft mc = Minecraft.getInstance();
 
-        MainWindow mainWindow = mc.getWindow();
+        Window mainWindow = mc.getWindow();
         int xScale = mainWindow.getGuiScaledWidth();
         int yScale = mainWindow.getGuiScaledHeight();
         int sx = (dx + 84) * mainWindow.getScreenWidth() / xScale;
@@ -96,7 +92,7 @@ public class ShapeRenderer {
     }
 
     public void handleShapeDragging(int x, int y, boolean[] buttons) {
-        MouseHelper mouse = Minecraft.getInstance().mouseHandler;
+        MouseHandler mouse = Minecraft.getInstance().mouseHandler;
         if (x >= 100 && y <= 120) {
             if (SafeClientTools.isSneaking()) {
                 if (prevX != -1 && buttons[0]) {
@@ -132,34 +128,35 @@ public class ShapeRenderer {
 
     // @todo 1.15: this needs rewriting
     public boolean renderShapeInWorld(ItemStack stack, double x, double y, double z, float offset, float scale, float angle,
-                                   boolean scan, ShapeID shape) {
-        GlStateManager._pushMatrix();
-        GlStateManager._translatef((float) x + 0.5F, (float) y + 1F + offset, (float) z + 0.5F);
-        GlStateManager._scalef(scale, scale, scale);
-        GlStateManager._rotatef(angle, 0, 1, 0);
-
-//        net.minecraft.client.renderer.RenderHelper.disableStandardItemLighting();
-        Minecraft.getInstance().gameRenderer.lightTexture().turnOffLightLayer();
-        GlStateManager._disableBlend();
-        GlStateManager._enableCull();
-        GlStateManager._disableLighting();
-        GlStateManager._disableTexture();
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuilder();
-        boolean doSound = renderFacesInWorld(buffer, stack, scan, shape.isGrayscale(), shape.getScanId());
-
-        GlStateManager._enableTexture();
-        GlStateManager._disableBlend();
-        GlStateManager._enableLighting();
-//        RenderHelper.enableStandardItemLighting();
-        Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
-
-        GlStateManager._popMatrix();
-        return doSound;
+                                      boolean scan, ShapeID shape) {
+//        GlStateManager._pushMatrix();
+//        GlStateManager._translatef((float) x + 0.5F, (float) y + 1F + offset, (float) z + 0.5F);
+//        GlStateManager._scalef(scale, scale, scale);
+//        GlStateManager._rotatef(angle, 0, 1, 0);
+//
+////        net.minecraft.client.renderer.RenderHelper.disableStandardItemLighting();
+//        Minecraft.getInstance().gameRenderer.lightTexture().turnOffLightLayer();
+//        GlStateManager._disableBlend();
+//        GlStateManager._enableCull();
+//        GlStateManager._disableLighting();
+//        GlStateManager._disableTexture();
+//
+//        Tesselator tessellator = Tesselator.getInstance();
+//        BufferBuilder buffer = tessellator.getBuilder();
+//        boolean doSound = renderFacesInWorld(buffer, stack, scan, shape.isGrayscale(), shape.getScanId());
+//
+//        GlStateManager._enableTexture();
+//        GlStateManager._disableBlend();
+//        GlStateManager._enableLighting();
+////        RenderHelper.enableStandardItemLighting();
+//        Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
+//
+//        GlStateManager._popMatrix();
+//        return doSound;
+        return false;
     }
 
-    public void renderShape(MatrixStack matrixStack, IShapeParentGui gui, ItemStack stack, int x, int y, boolean showAxis, boolean showOuter, boolean showScan, boolean showGuidelines) {
+    public void renderShape(PoseStack matrixStack, IShapeParentGui gui, ItemStack stack, int x, int y, boolean showAxis, boolean showOuter, boolean showScan, boolean showGuidelines) {
         setupScissor(gui);
 
         matrixStack.pushPose();
@@ -173,9 +170,9 @@ public class ShapeRenderer {
         RenderSystem.disableBlend();
         RenderSystem.disableCull();
         RenderSystem.disableTexture();
-        RenderSystem.disableLighting();
+//        RenderSystem.disableLighting();
 
-        Tessellator tessellator = Tessellator.getInstance();
+        Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.getBuilder();
 
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
@@ -190,7 +187,7 @@ public class ShapeRenderer {
 
         if (showGuidelines) {
             RenderSystem.lineWidth(3);
-            buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+            buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
             buffer.vertex(x - 62, y + 180, 0).color(1f, 0f, 0f, 1f).endVertex();
             buffer.vertex(x - 39, y + 180, 0).color(1f, 0f, 0f, 1f).endVertex();
             buffer.vertex(x - 62, y + 195, 0).color(0f, 0.8f, 0f, 1f).endVertex();
@@ -202,7 +199,7 @@ public class ShapeRenderer {
 
         RenderSystem.enableTexture();
         RenderSystem.disableBlend();
-        RenderHelper.turnBackOn();
+//        RenderHelper.turnBackOn();    // @todo 1.18
 
         RenderData data = ShapeDataManagerClient.getRenderData(shapeID);
         if (data != null && !data.previewMessage.isEmpty()) {
@@ -211,7 +208,7 @@ public class ShapeRenderer {
 
     }
 
-    private void renderHelpers(Tessellator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen, boolean showAxis, boolean showOuter) {
+    private void renderHelpers(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen, boolean showAxis, boolean showOuter) {
         // X, Y, Z axis
         if (showAxis) {
             ShapeRenderer.renderAxis(tessellator, buffer, xlen/2, ylen/2, zlen/2);
@@ -223,7 +220,7 @@ public class ShapeRenderer {
     }
 
 
-    private void renderHelpersInGui(Tessellator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen, boolean showAxis, boolean showOuter) {
+    private void renderHelpersInGui(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen, boolean showAxis, boolean showOuter) {
         // X, Y, Z axis
         if (showAxis) {
             ShapeRenderer.renderAxisInGui(tessellator, buffer, xlen/2, ylen/2, zlen/2);
@@ -234,15 +231,15 @@ public class ShapeRenderer {
         }
     }
 
-    private static Vector3d offset = new Vector3d(0, 0, 0);
+    private static Vec3 offset = new Vec3(0, 0, 0);
 
-    private static Vector3d setOffset(double x, double y, double z) {
-        Vector3d old = offset;
-        offset = new Vector3d(x, y, z);
+    private static Vec3 setOffset(double x, double y, double z) {
+        Vec3 old = offset;
+        offset = new Vec3(x, y, z);
         return old;
     }
 
-    private static void restoreOffset(Vector3d prev) {
+    private static void restoreOffset(Vec3 prev) {
         offset = prev;
     }
 
@@ -254,10 +251,10 @@ public class ShapeRenderer {
         buffer.vertex(x + offset.x, y + offset.y, z + offset.z).color(r, g, b, a).endVertex();
     }
 
-    static void renderOuterBox(Tessellator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
+    static void renderOuterBox(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(1.0f);
-        buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        Vector3d origOffset = setOffset(.5, .5, .5);
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        Vec3 origOffset = setOffset(.5, .5, .5);
         int xleft = -xlen / 2;
         int xright = xlen / 2 + (xlen & 1);
         int ybot = -ylen / 2;
@@ -294,10 +291,10 @@ public class ShapeRenderer {
         tessellator.end();
     }
 
-    static void renderOuterBoxInGui(Tessellator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
+    static void renderOuterBoxInGui(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(1.0f);
-        buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        Vector3d origOffset = setOffset(.5, .5, .5);
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        Vec3 origOffset = setOffset(.5, .5, .5);
         int xleft = -xlen / 2;
         int xright = xlen / 2 + (xlen & 1);
         int ybot = -ylen / 2;
@@ -334,10 +331,10 @@ public class ShapeRenderer {
         tessellator.end();
     }
 
-    static void renderAxisInGui(Tessellator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
+    static void renderAxisInGui(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(2.5f);
-        buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        Vector3d origOffset = setOffset(.5, .5, .5);
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        Vec3 origOffset = setOffset(.5, .5, .5);
         add(buffer, 0, 0, 0, 1f, 0f, 0f, 1f);
         add(buffer, xlen, 0, 0, 1f, 0f, 0f, 1f);
         add(buffer, 0, 0, 0, 0f, 1f, 0f, 1f);
@@ -348,10 +345,10 @@ public class ShapeRenderer {
         tessellator.end();
     }
 
-    static void renderAxis(Tessellator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
+    static void renderAxis(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(2.5f);
-        buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        Vector3d origOffset = setOffset(.5, .5, .5);
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        Vec3 origOffset = setOffset(.5, .5, .5);
         add(buffer, 0, 0, 0, 1f, 0f, 0f, 1f);
         add(buffer, xlen, 0, 0, 1f, 0f, 0f, 1f);
         add(buffer, 0, 0, 0, 0f, 1f, 0f, 1f);
@@ -436,18 +433,18 @@ public class ShapeRenderer {
                 int y = beacon.getPos().getY()+1;
                 int z = beacon.getPos().getZ();
                 BeaconType type = beacon.getType();
-                GlStateManager._translatef(x, y, z);
+//                GlStateManager._translatef(x, y, z); // @todo 1.18
                 RenderData.RenderElement element = getBeaconElement(buffer, type, beacon.isDoBeacon());
                 element.render();
-                GlStateManager._translatef(-x, -y, -z);
+//                GlStateManager._translatef(-x, -y, -z);
             }
         }
 
         return needScanSound;
     }
 
-    private boolean renderFacesForGui(Tessellator tessellator, final BufferBuilder buffer,
-                                ItemStack stack, boolean showScan, boolean grayscale, int scanId) {
+    private boolean renderFacesForGui(Tesselator tessellator, final BufferBuilder buffer,
+                                      ItemStack stack, boolean showScan, boolean grayscale, int scanId) {
 
         RenderData data = getRenderDataAndCreate(shapeID);
 
@@ -507,10 +504,10 @@ public class ShapeRenderer {
                 int y = beacon.getPos().getY()+1;
                 int z = beacon.getPos().getZ();
                 BeaconType type = beacon.getType();
-                RenderSystem.translatef(x, y, z);
+//                RenderSystem.translatef(x, y, z); // @todo 1.18
                 RenderData.RenderElement element = getBeaconElement(buffer, type, beacon.isDoBeacon());
                 element.render();
-                RenderSystem.translatef(-x, -y, -z);
+//                RenderSystem.translatef(-x, -y, -z);
             }
         }
 
@@ -526,7 +523,7 @@ public class ShapeRenderer {
         int offsety = plane.getOffsety();
 
         data.createRenderList(offsety);
-        RenderData.vboBuffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        RenderData.vboBuffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         for (RenderData.RenderStrip strip : plane.getStrips()) {
             int z = plane.getStartz();
@@ -537,7 +534,7 @@ public class ShapeRenderer {
                 int cnt = pair.getKey();
                 BlockState state = pair.getValue();
                 if (state != null) {
-                    Vector3d origOffset = setOffset(x, y, z);
+                    Vec3 origOffset = setOffset(x, y, z);
                     avgcnt += cnt;
                     total++;
                     ShapeBlockInfo info = ShapeBlockInfo.getBlockInfo(palette, state);
@@ -602,13 +599,13 @@ public class ShapeRenderer {
         if (elements[type.ordinal()] == null) {
             elements[type.ordinal()] = new RenderData.RenderElement();
             elements[type.ordinal()].createRenderList();
-            GlStateManager._lineWidth(3);
-            buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+            RenderSystem.lineWidth(3);
+            buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             float r = type.getR();
             float g = type.getG();
             float b = type.getB();
 
-            Vector3d origOffset = setOffset(0, -.7f, 0);
+            Vec3 origOffset = setOffset(0, -.7f, 0);
             addSideN(buffer, r, g, b, .3f);
             addSideS(buffer, r, g, b, .3f);
             addSideW(buffer, r, g, b, .3f);

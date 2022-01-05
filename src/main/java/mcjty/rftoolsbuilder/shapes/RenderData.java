@@ -1,13 +1,10 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.math.Matrix4f;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.tuple.Pair;
-import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -122,7 +119,7 @@ public class RenderData {
     }
 
     public static class RenderElement {
-        protected net.minecraft.client.renderer.vertex.VertexBuffer vbo;
+        protected com.mojang.blaze3d.vertex.VertexBuffer vbo;
 
         public void cleanup() {
             if (vbo != null) {
@@ -133,20 +130,22 @@ public class RenderData {
 
         public void render() {
             if (vbo != null) {
-                vbo.bind();
-                GlStateManager._enableClientState(GL11.GL_VERTEX_ARRAY);
-                GlStateManager._vertexPointer(3, GL11.GL_FLOAT, 16, 0);
-                GlStateManager._enableClientState(GL11.GL_COLOR_ARRAY);
-                GlStateManager._colorPointer(4, GL11.GL_UNSIGNED_BYTE, 16, 12);
-                vbo.draw(IDENTITY, GL11.GL_QUADS);
-                vbo.unbind();
-                GlStateManager._disableClientState(GL11.GL_COLOR_ARRAY);
-                GlStateManager._disableClientState(GL11.GL_VERTEX_ARRAY);
+                // @todo 1.18
+//                vbo.bind();
+//                GlStateManager._enableClientState(GL11.GL_VERTEX_ARRAY);
+//                GlStateManager._vertexPointer(3, GL11.GL_FLOAT, 16, 0);
+//                GlStateManager._enableClientState(GL11.GL_COLOR_ARRAY);
+//                GlStateManager._colorPointer(4, GL11.GL_UNSIGNED_BYTE, 16, 12);
+//                vbo.draw(IDENTITY, GL11.GL_QUADS);
+//                vbo.unbind();
+//                GlStateManager._disableClientState(GL11.GL_COLOR_ARRAY);
+//                GlStateManager._disableClientState(GL11.GL_VERTEX_ARRAY);
             }
         }
 
         public void createRenderList() {
-            vbo = new net.minecraft.client.renderer.vertex.VertexBuffer(DefaultVertexFormats.POSITION_COLOR);
+            // @todo 1.18
+//            vbo = new com.mojang.blaze3d.vertex.VertexBuffer(DefaultVertexFormat.POSITION_COLOR);
         }
 
         public void performRenderToList() {

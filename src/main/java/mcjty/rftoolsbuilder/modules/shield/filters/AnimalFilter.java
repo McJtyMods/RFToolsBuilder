@@ -1,7 +1,7 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public class AnimalFilter extends AbstractShieldFilter {
 

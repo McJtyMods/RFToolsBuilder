@@ -4,14 +4,14 @@ import mcjty.lib.network.NetworkTools;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiChamberDetails;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +30,7 @@ public class PacketChamberInfoReady {
     private static final byte ENTITY_NORMAL = 1;
     private static final byte ENTITY_PLAYER = 2;
 
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         buf.writeInt(blocks.size());
         for (Map.Entry<BlockState, Integer> entry : blocks.entrySet()) {
             BlockState bm = entry.getKey();
@@ -52,14 +52,14 @@ public class PacketChamberInfoReady {
             buf.writeInt(entityCosts.get(name));
             if (realEntities.containsKey(name)) {
                 Entity entity = realEntities.get(name);
-                if (entity instanceof PlayerEntity) {
+                if (entity instanceof Player) {
                     buf.writeByte(ENTITY_PLAYER);
                     int entityId = entity.getId();
                     buf.writeInt(entityId);
                     buf.writeUtf(entity.getDisplayName().getString());   // @todo getFormattedText
                 } else {
                     buf.writeByte(ENTITY_NORMAL);
-                    CompoundNBT nbt = entity.serializeNBT();
+                    CompoundTag nbt = entity.serializeNBT();
                     writeNBT(buf, nbt);
                 }
             } else {
@@ -68,12 +68,12 @@ public class PacketChamberInfoReady {
         }
     }
 
-    private static CompoundNBT readNBT(PacketBuffer buf) {
+    private static CompoundTag readNBT(FriendlyByteBuf buf) {
         return buf.readNbt();
     }
 
-    private static void writeNBT(PacketBuffer dataOut, CompoundNBT nbt) {
-        PacketBuffer buf = new PacketBuffer(dataOut);
+    private static void writeNBT(FriendlyByteBuf dataOut, CompoundTag nbt) {
+        FriendlyByteBuf buf = new FriendlyByteBuf(dataOut);
         try {
             buf.writeNbt(nbt);
         } catch (Exception e) {
@@ -85,7 +85,7 @@ public class PacketChamberInfoReady {
     public PacketChamberInfoReady() {
     }
 
-    public PacketChamberInfoReady(PacketBuffer buf) {
+    public PacketChamberInfoReady(FriendlyByteBuf buf) {
         int size = buf.readInt();
         blocks = new HashMap<>(size);
         costs = new HashMap<>(size);
@@ -116,7 +116,7 @@ public class PacketChamberInfoReady {
 
             byte how = buf.readByte();
             if (how == ENTITY_NORMAL) {
-                CompoundNBT nbt = readNBT(buf);
+                CompoundTag nbt = readNBT(buf);
                 // @todo 1.14
 //                EntityType<?> value = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(fixed));
 //

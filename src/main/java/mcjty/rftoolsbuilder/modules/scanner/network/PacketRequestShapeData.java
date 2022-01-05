@@ -5,10 +5,10 @@ import mcjty.rftoolsbuilder.shapes.IFormula;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeDataManagerServer;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
@@ -16,7 +16,7 @@ public class PacketRequestShapeData {
     private ItemStack card;
     private ShapeID id;
 
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         buf.writeItem(card);
         id.toBytes(buf);
     }
@@ -24,7 +24,7 @@ public class PacketRequestShapeData {
     public PacketRequestShapeData() {
     }
 
-    public PacketRequestShapeData(PacketBuffer buf) {
+    public PacketRequestShapeData(FriendlyByteBuf buf) {
         card = buf.readItem();
         id = new ShapeID(buf);
     }

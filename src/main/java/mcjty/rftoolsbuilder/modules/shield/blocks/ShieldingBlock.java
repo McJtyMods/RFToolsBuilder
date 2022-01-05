@@ -2,36 +2,38 @@ package mcjty.rftoolsbuilder.modules.shield.blocks;
 
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.PushReaction;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.EnumProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ShieldingBlock extends Block {
+public class ShieldingBlock extends Block implements EntityBlock {
 
     public static final BooleanProperty BLOCKED_ITEMS = BooleanProperty.create("bi");               // If set then blocked for items
     public static final BooleanProperty BLOCKED_PASSIVE = BooleanProperty.create("bp");             // If set the blocked for passive mobs
@@ -45,10 +47,10 @@ public class ShieldingBlock extends Block {
     public static final EnumProperty<ShieldRenderingMode> RENDER_MODE = EnumProperty.create("render", ShieldRenderingMode.class);
 
 
-    public static final VoxelShape COLLISION_SHAPE = VoxelShapes.box(0.002, 0.002, 0.002, 0.998, 0.998, 0.998);
+    public static final VoxelShape COLLISION_SHAPE = Shapes.box(0.002, 0.002, 0.002, 0.998, 0.998, 0.998);
 
     public ShieldingBlock() {
-        super(AbstractBlock.Properties.of(Material.GLASS)
+        super(BlockBehaviour.Properties.of(Material.GLASS)
                 .noOcclusion()
                 .isRedstoneConductor((state, world, pos) -> false)
                 .strength(-1.0F, 3600000.0F)
@@ -66,19 +68,14 @@ public class ShieldingBlock extends Block {
         );
     }
 
-    @Override
-    public boolean hasTileEntity(BlockState state) {
-        return true;
-    }
-
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return new ShieldingTileEntity();
+    public BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
+        return new ShieldingTileEntity(pPos, pState);
     }
 
     @Override
-    protected void createBlockStateDefinition(@Nonnull StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(@Nonnull StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(BLOCKED_ITEMS, BLOCKED_HOSTILE, BLOCKED_PASSIVE, BLOCKED_PLAYERS,
                 DAMAGE_ITEMS, DAMAGE_HOSTILE, DAMAGE_PASSIVE, DAMAGE_PLAYERS,
@@ -86,23 +83,23 @@ public class ShieldingBlock extends Block {
     }
 
     @Override
-    public int getLightBlock(BlockState state, @Nonnull IBlockReader world, @Nonnull BlockPos pos) {
+    public int getLightBlock(BlockState state, @Nonnull BlockGetter world, @Nonnull BlockPos pos) {
         return state.getValue(FLAG_OPAQUE) ? 0 : 255;
     }
 
     @Nonnull
     @Override
-    public BlockRenderType getRenderShape(BlockState state) {
-        return state.getValue(RENDER_MODE) == ShieldRenderingMode.INVISIBLE ? BlockRenderType.INVISIBLE : BlockRenderType.MODEL;
+    public RenderShape getRenderShape(BlockState state) {
+        return state.getValue(RENDER_MODE) == ShieldRenderingMode.INVISIBLE ? RenderShape.INVISIBLE : RenderShape.MODEL;
     }
 
     @Override
-    public float getShadeBrightness(@Nonnull BlockState state, @Nonnull IBlockReader worldIn, @Nonnull BlockPos pos) {
+    public float getShadeBrightness(@Nonnull BlockState state, @Nonnull BlockGetter worldIn, @Nonnull BlockPos pos) {
         return super.getShadeBrightness(state, worldIn, pos);
     }
 
     @Override
-    public boolean canEntityDestroy(BlockState state, IBlockReader world, BlockPos pos, Entity entity) {
+    public boolean canEntityDestroy(BlockState state, BlockGetter world, BlockPos pos, Entity entity) {
         return false;
     }
 
@@ -114,8 +111,8 @@ public class ShieldingBlock extends Block {
 
     @Nonnull
     @Override
-    public VoxelShape getShape(@Nonnull BlockState state, IBlockReader world, @Nonnull BlockPos pos, @Nonnull ISelectionContext context) {
-        TileEntity te = world.getBlockEntity(pos);
+    public VoxelShape getShape(@Nonnull BlockState state, BlockGetter world, @Nonnull BlockPos pos, @Nonnull CollisionContext context) {
+        BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof ShieldingTileEntity) {
             BlockState mimic = ((ShieldingTileEntity) te).getMimic();
             if (mimic != null) {
@@ -123,7 +120,7 @@ public class ShieldingBlock extends Block {
             }
         }
         if (state.getValue(RENDER_MODE) == ShieldRenderingMode.INVISIBLE) {
-            return VoxelShapes.empty();
+            return Shapes.empty();
         } else {
             return super.getShape(state, world, pos, context);
         }
@@ -132,16 +129,16 @@ public class ShieldingBlock extends Block {
 
     @Nonnull
     @Override
-    public VoxelShape getInteractionShape(@Nonnull BlockState state, IBlockReader world, @Nonnull BlockPos pos) {
-        TileEntity te = world.getBlockEntity(pos);
+    public VoxelShape getInteractionShape(@Nonnull BlockState state, BlockGetter world, @Nonnull BlockPos pos) {
+        BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof ShieldingTileEntity) {
             BlockState mimic = ((ShieldingTileEntity) te).getMimic();
             if (mimic != null) {
-                return mimic.getVisualShape(world, pos, ISelectionContext.empty());   // @todo 1.16 is dummy() ok?
+                return mimic.getVisualShape(world, pos, CollisionContext.empty());   // @todo 1.16 is dummy() ok?
             }
         }
         if (state.getValue(RENDER_MODE) == ShieldRenderingMode.INVISIBLE) {
-            return VoxelShapes.empty();
+            return Shapes.empty();
         } else {
             return super.getInteractionShape(state, world, pos);
         }
@@ -149,8 +146,8 @@ public class ShieldingBlock extends Block {
 
     @Nonnull
     @Override
-    public VoxelShape getOcclusionShape(@Nonnull BlockState state, IBlockReader world, @Nonnull BlockPos pos) {
-        TileEntity te = world.getBlockEntity(pos);
+    public VoxelShape getOcclusionShape(@Nonnull BlockState state, BlockGetter world, @Nonnull BlockPos pos) {
+        BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof ShieldingTileEntity) {
             BlockState mimic = ((ShieldingTileEntity) te).getMimic();
             if (mimic != null) {
@@ -161,17 +158,17 @@ public class ShieldingBlock extends Block {
     }
 
     public static boolean isHostile(Entity entity) {
-        return entity instanceof IMob;
+        return entity instanceof Enemy;
     }
 
     public static boolean isPassive(Entity entity) {
-        if (entity instanceof IMob) {
+        if (entity instanceof Enemy) {
             return false;
         }
-        if (entity instanceof PlayerEntity) {
+        if (entity instanceof Player) {
             return false;
         }
-        return entity instanceof MobEntity;
+        return entity instanceof Mob;
     }
 
     public static boolean isItem(Entity entity) {
@@ -181,44 +178,46 @@ public class ShieldingBlock extends Block {
 
     @Nonnull
     @Override
-    public VoxelShape getCollisionShape(BlockState state, @Nonnull IBlockReader world, @Nonnull BlockPos pos, ISelectionContext context) {
-        Entity entity = context.getEntity();
-        if (state.getValue(BLOCKED_HOSTILE)) {
-            if (isHostile(entity)) {
-                if (checkEntityCD(world, pos, HostileFilter.HOSTILE)) {
-                    return COLLISION_SHAPE;
+    public VoxelShape getCollisionShape(BlockState state, @Nonnull BlockGetter world, @Nonnull BlockPos pos, CollisionContext context) {
+        if (context instanceof EntityCollisionContext ctxt) {
+            Entity entity = ctxt.getEntity();
+            if (state.getValue(BLOCKED_HOSTILE)) {
+                if (isHostile(entity)) {
+                    if (checkEntityCD(world, pos, HostileFilter.HOSTILE)) {
+                        return COLLISION_SHAPE;
+                    }
+                    return Shapes.empty();
                 }
-                return VoxelShapes.empty();
+            }
+            if (state.getValue(BLOCKED_PASSIVE)) {
+                if (isPassive(entity)) {
+                    if (checkEntityCD(world, pos, AnimalFilter.ANIMAL)) {
+                        return COLLISION_SHAPE;
+                    }
+                    return Shapes.empty();
+                }
+            }
+            if (state.getValue(BLOCKED_PLAYERS)) {
+                if (entity instanceof Player) {
+                    if (checkPlayerCD(world, pos, (Player) entity)) {
+                        return COLLISION_SHAPE;
+                    }
+                    return Shapes.empty();
+                }
+            }
+            if (state.getValue(BLOCKED_ITEMS)) {
+                if (isItem(entity)) {
+                    if (checkEntityCD(world, pos, ItemFilter.ITEM)) {
+                        return COLLISION_SHAPE;
+                    }
+                    return Shapes.empty();
+                }
             }
         }
-        if (state.getValue(BLOCKED_PASSIVE)) {
-            if (isPassive(entity)) {
-                if (checkEntityCD(world, pos, AnimalFilter.ANIMAL)) {
-                    return COLLISION_SHAPE;
-                }
-                return VoxelShapes.empty();
-            }
-        }
-        if (state.getValue(BLOCKED_PLAYERS)) {
-            if (entity instanceof PlayerEntity) {
-                if (checkPlayerCD(world, pos, (PlayerEntity) entity)) {
-                    return COLLISION_SHAPE;
-                }
-                return VoxelShapes.empty();
-            }
-        }
-        if (state.getValue(BLOCKED_ITEMS)) {
-            if (isItem(entity)) {
-                if (checkEntityCD(world, pos, ItemFilter.ITEM)) {
-                    return COLLISION_SHAPE;
-                }
-                return VoxelShapes.empty();
-            }
-        }
-        return VoxelShapes.empty();
+        return Shapes.empty();
     }
 
-    private boolean checkEntityCD(IBlockReader world, BlockPos pos, String filterName) {
+    private boolean checkEntityCD(BlockGetter world, BlockPos pos, String filterName) {
         ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
         if (projector != null) {
             List<ShieldFilter> filters = projector.getFilters();
@@ -234,7 +233,7 @@ public class ShieldingBlock extends Block {
     }
 
 
-    private boolean checkPlayerCD(IBlockReader world, BlockPos pos, PlayerEntity entity) {
+    private boolean checkPlayerCD(BlockGetter world, BlockPos pos, Player entity) {
         ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
         if (projector != null) {
             List<ShieldFilter> filters = projector.getFilters();
@@ -261,7 +260,7 @@ public class ShieldingBlock extends Block {
     }
 
     @Override
-    public void entityInside(@Nonnull BlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull Entity entity) {
+    public void entityInside(@Nonnull BlockState state, @Nonnull Level world, @Nonnull BlockPos pos, @Nonnull Entity entity) {
         if (!(entity instanceof LivingEntity)) {
             if (!state.getValue(BLOCKED_ITEMS)) {
                 // Items should be able to pass through. We just move the entity to below this block.
@@ -272,12 +271,12 @@ public class ShieldingBlock extends Block {
     }
 
     @Nullable
-    private ShieldProjectorTileEntity getShieldProjector(IBlockReader world, BlockPos shieldingPos) {
-        TileEntity te = world.getBlockEntity(shieldingPos);
+    private ShieldProjectorTileEntity getShieldProjector(BlockGetter world, BlockPos shieldingPos) {
+        BlockEntity te = world.getBlockEntity(shieldingPos);
         if (te instanceof ShieldingTileEntity) {
             BlockPos projectorPos = ((ShieldingTileEntity) te).getShieldProjector();
             if (projectorPos != null) {
-                TileEntity tileEntity = world.getBlockEntity(projectorPos);
+                BlockEntity tileEntity = world.getBlockEntity(projectorPos);
                 if (tileEntity instanceof ShieldProjectorTileEntity) {
                     return (ShieldProjectorTileEntity) tileEntity;
                 }
@@ -286,7 +285,7 @@ public class ShieldingBlock extends Block {
         return null;
     }
 
-    public void handleDamage(BlockState state, World world, BlockPos pos, Entity entity) {
+    public void handleDamage(BlockState state, Level world, BlockPos pos, Entity entity) {
         Boolean dmgHostile = state.getValue(DAMAGE_HOSTILE);
         Boolean dmgPassive = state.getValue(DAMAGE_PASSIVE);
         Boolean dmgPlayer = state.getValue(DAMAGE_PLAYERS);
@@ -299,7 +298,7 @@ public class ShieldingBlock extends Block {
         int xCoord = pos.getX();
         int yCoord = pos.getY();
         int zCoord = pos.getZ();
-        AxisAlignedBB beamBox = new AxisAlignedBB(xCoord - .4, yCoord - .4, zCoord - .4, xCoord + 1.4, yCoord + 2.0, zCoord + 1.4);
+        AABB beamBox = new AABB(xCoord - .4, yCoord - .4, zCoord - .4, xCoord + 1.4, yCoord + 2.0, zCoord + 1.4);
 
         if (entity.getBoundingBox().intersects(beamBox)) {
             ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
@@ -316,8 +315,8 @@ public class ShieldingBlock extends Block {
                     if (checkEntityDamage(projector, AnimalFilter.ANIMAL)) {
                         projector.applyDamageToEntity(entity);
                     }
-                } else if (dmgPlayer && entity instanceof PlayerEntity) {
-                    if (checkPlayerDamage(projector, (PlayerEntity) entity)) {
+                } else if (dmgPlayer && entity instanceof Player) {
+                    if (checkPlayerDamage(projector, (Player) entity)) {
                         projector.applyDamageToEntity(entity);
                     }
                 }
@@ -337,7 +336,7 @@ public class ShieldingBlock extends Block {
         return false;
     }
 
-    private boolean checkPlayerDamage(@Nonnull ShieldProjectorTileEntity shieldTileEntity, PlayerEntity entity) {
+    private boolean checkPlayerDamage(@Nonnull ShieldProjectorTileEntity shieldTileEntity, Player entity) {
         List<ShieldFilter> filters = shieldTileEntity.getFilters();
         for (ShieldFilter filter : filters) {
             if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {

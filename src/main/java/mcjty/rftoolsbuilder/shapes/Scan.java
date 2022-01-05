@@ -1,11 +1,11 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,15 +61,15 @@ public class Scan {
         return dataOffset;
     }
 
-    public void writeToNBT(CompoundNBT tagCompound) {
+    public void writeToNBT(CompoundTag tagCompound) {
         tagCompound.putInt("dirty", dirtyCounter);
     }
 
-    public void writeToNBTExternal(CompoundNBT tagCompound) {
+    public void writeToNBTExternal(CompoundTag tagCompound) {
         tagCompound.putByteArray("data", rledata == null ? new byte[0] : rledata);
-        ListNBT pal = new ListNBT();
+        ListTag pal = new ListTag();
         for (BlockState state : materialPalette) {
-            CompoundNBT tc = NBTUtil.writeBlockState(state);
+            CompoundTag tc = NbtUtils.writeBlockState(state);
             pal.add(tc);
         }
         tagCompound.put("scanpal", pal);
@@ -85,15 +85,15 @@ public class Scan {
         }
     }
 
-    public void readFromNBT(CompoundNBT tagCompound) {
+    public void readFromNBT(CompoundTag tagCompound) {
         dirtyCounter = tagCompound.getInt("dirty");
     }
 
-    public void readFromNBTExternal(CompoundNBT tagCompound) {
-        ListNBT list = tagCompound.getList("scanpal", Constants.NBT.TAG_COMPOUND);
+    public void readFromNBTExternal(CompoundTag tagCompound) {
+        ListTag list = tagCompound.getList("scanpal", Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
-            CompoundNBT tc = list.getCompound(i);
-            BlockState state = NBTUtil.readBlockState(tc);
+            CompoundTag tc = list.getCompound(i);
+            BlockState state = NbtUtils.readBlockState(tc);
             materialPalette.add(state);
         }
         rledata = tagCompound.getByteArray("data");

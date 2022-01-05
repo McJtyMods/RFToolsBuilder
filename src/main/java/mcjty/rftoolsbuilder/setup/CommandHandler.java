@@ -6,7 +6,7 @@ import mcjty.lib.typed.Type;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderTools;
 import mcjty.rftoolsbuilder.shapes.ShaperTools;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 public class CommandHandler {
 

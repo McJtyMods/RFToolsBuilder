@@ -4,12 +4,12 @@ import mcjty.lib.network.TypedMapTools;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.Hand;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.InteractionHand;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
@@ -19,14 +19,14 @@ import java.util.function.Supplier;
 public class PacketUpdateNBTShapeCard {
     private TypedMap args;
 
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         TypedMapTools.writeArguments(buf, args);
     }
 
     public PacketUpdateNBTShapeCard() {
     }
 
-    public PacketUpdateNBTShapeCard(PacketBuffer buf) {
+    public PacketUpdateNBTShapeCard(FriendlyByteBuf buf) {
         args = TypedMapTools.readArguments(buf);
     }
 
@@ -37,14 +37,14 @@ public class PacketUpdateNBTShapeCard {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            ServerPlayerEntity playerEntity = ctx.getSender();
-            ItemStack heldItem = playerEntity.getItemInHand(Hand.MAIN_HAND);
+            ServerPlayer playerEntity = ctx.getSender();
+            ItemStack heldItem = playerEntity.getItemInHand(InteractionHand.MAIN_HAND);
             if (heldItem.isEmpty()) {
                 return;
             }
-            CompoundNBT tagCompound = heldItem.getTag();
+            CompoundTag tagCompound = heldItem.getTag();
             if (tagCompound == null) {
-                tagCompound = new CompoundNBT();
+                tagCompound = new CompoundTag();
                 heldItem.setTag(tagCompound);
             }
             for (Key<?> akey : args.getKeys()) {

@@ -2,7 +2,7 @@ package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.lib.gui.widgets.Panel;
 import mcjty.lib.gui.widgets.ToggleButton;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 
 public class ShapeGuiTools {
 

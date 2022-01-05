@@ -1,12 +1,12 @@
 package mcjty.rftoolsbuilder.modules.shield;
 
-import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.StringRepresentable;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum ShieldTexture implements IStringSerializable {
+public enum ShieldTexture implements StringRepresentable {
     SHIELD("Shield", "shield"),
     STRIPES("Rain", "shieldstripes")
     ;

@@ -5,19 +5,19 @@ import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Direction;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 
@@ -27,7 +27,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
 
     public SpaceChamberControllerBlock() {
         super(new BlockBuilder()
-                .properties(AbstractBlock.Properties.of(Material.METAL)
+                .properties(BlockBehaviour.Properties.of(Material.METAL)
                         .strength(2.0f)
                         .sound(SoundType.METAL)
                         .noOcclusion())
@@ -41,9 +41,9 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     }
 
     private static String getChannelDescription(ItemStack stack) {
-        CompoundNBT tag = stack.getTag();
+        CompoundTag tag = stack.getTag();
         int channel = -1;
-        CompoundNBT info = tag == null ? null : tag.getCompound("BlockEntityTag").getCompound("Info");
+        CompoundTag info = tag == null ? null : tag.getCompound("BlockEntityTag").getCompound("Info");
         if (info != null) {
             channel = info.getInt("channel");
         }
@@ -60,10 +60,10 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     }
 
     @Override
-    protected boolean wrenchUse(World level, BlockPos pos, Direction side, PlayerEntity player) {
+    protected boolean wrenchUse(Level level, BlockPos pos, Direction side, Player player) {
         if (level.isClientSide) {
             SoundEvent pling = SoundEvents.NOTE_BLOCK_BELL;
-            level.playSound(player, pos, pling, SoundCategory.BLOCKS, 1.0f, 1.0f);
+            level.playSound(player, pos, pling, SoundSource.BLOCKS, 1.0f, 1.0f);
         } else {
             SpaceChamberControllerTileEntity chamberControllerTileEntity = (SpaceChamberControllerTileEntity) level.getBlockEntity(pos);
             chamberControllerTileEntity.createChamber(player);
@@ -72,7 +72,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     }
 
     @Override
-    public void onPlace(@Nonnull BlockState state, @Nonnull World level, @Nonnull BlockPos pos, @Nonnull BlockState state2, boolean p_220082_5_) {
+    public void onPlace(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull BlockState state2, boolean p_220082_5_) {
         super.onPlace(state, level, pos, state2, p_220082_5_);
         if (!level.isClientSide) {
             SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(level);
@@ -88,7 +88,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     }
 
     @Override
-    public void onRemove(@Nonnull BlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
+    public void onRemove(@Nonnull BlockState state, @Nonnull Level world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
         if (!world.isClientSide) {
             SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(world);
             SpaceChamberControllerTileEntity te = (SpaceChamberControllerTileEntity) world.getBlockEntity(pos);

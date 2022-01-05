@@ -1,9 +1,9 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.client.renderer.vertex.VertexBuffer;
-import net.minecraft.client.renderer.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Matrix4f;
 
 import java.io.Closeable;
 import java.util.function.BiConsumer;
@@ -13,13 +13,14 @@ public class VBORenderer implements Closeable {
     private static final BufferBuilder BUILDER = new BufferBuilder(BUFFER_SIZE);
 
     public static VBORenderer of(int glMode, VertexFormat fmt, BiConsumer<BufferBuilder, VertexFormat> vertexProducer) {
-        VertexBuffer vbo = new VertexBuffer(fmt);
+        VertexBuffer vbo = new VertexBuffer();
 
-        BUILDER.begin(glMode, fmt);
-        vertexProducer.accept(BUILDER, fmt);
-        BUILDER.clear();
-        // 1.14: vbo.bufferData(BUILDER.getByteBuffer());
-        vbo.upload(BUILDER);
+        // @todo 1.18
+//        BUILDER.begin(glMode, fmt);
+//        vertexProducer.accept(BUILDER, fmt);
+//        BUILDER.clear();
+//        // 1.14: vbo.bufferData(BUILDER.getByteBuffer());
+//        vbo.upload(BUILDER);
         return new VBORenderer(vbo, glMode);
     }
 
@@ -33,7 +34,8 @@ public class VBORenderer implements Closeable {
 
     public void render(Matrix4f matrix) {
         // 1.14: vbo.drawArrays(glMode);
-        vbo.draw(matrix, glMode);
+        // @todo 1.18
+//        vbo.draw(matrix, glMode);
     }
 
     @Override

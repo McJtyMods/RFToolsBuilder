@@ -1,8 +1,8 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
 
 public class PlayerFilter extends AbstractShieldFilter {
     public static final String PLAYER = "player";
@@ -30,7 +30,7 @@ public class PlayerFilter extends AbstractShieldFilter {
 
     @Override
     public boolean match(Entity entity) {
-        if (!(entity instanceof PlayerEntity)) {
+        if (!(entity instanceof Player)) {
             return false;
         }
 
@@ -38,18 +38,18 @@ public class PlayerFilter extends AbstractShieldFilter {
             return true;
         }
 
-        PlayerEntity PlayerEntity = (PlayerEntity) entity;
+        Player PlayerEntity = (Player) entity;
         return name.equals(PlayerEntity.getName().getString());
     }
 
     @Override
-    public void readFromNBT(CompoundNBT tagCompound) {
+    public void readFromNBT(CompoundTag tagCompound) {
         super.readFromNBT(tagCompound);
         name = tagCompound.getString("name");
     }
 
     @Override
-    public void writeToNBT(CompoundNBT tagCompound) {
+    public void writeToNBT(CompoundTag tagCompound) {
         super.writeToNBT(tagCompound);
         tagCompound.putString("name", name);
     }

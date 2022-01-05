@@ -1,7 +1,7 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.*;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.GuiTools;
 import mcjty.lib.client.RenderHelper;
@@ -26,23 +26,20 @@ import mcjty.rftoolsbuilder.shapes.IShapeParentGui;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.util.IReorderingProcessor;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextProperties;
-import net.minecraft.util.text.LanguageMap;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.BlockPos;
+import net.minecraft.locale.Language;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.CapabilityItemHandler;
 import org.lwjgl.opengl.GL11;
 
@@ -101,7 +98,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
 
     public GuiShapeCard(boolean fromTE) {
-        super(new StringTextComponent("Shapecard"));
+        super(new TextComponent("Shapecard"));
         this.fromTE = fromTE;
     }
 
@@ -129,7 +126,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     private ShapeID getShapeID() {
         ItemStack stackToEdit = getStackToEdit();
-        return new ShapeID(World.OVERWORLD, null, ShapeCardItem.getScanId(stackToEdit), false, ShapeCardItem.isSolid(stackToEdit));
+        return new ShapeID(Level.OVERWORLD, null, ShapeCardItem.getScanId(stackToEdit), false, ShapeCardItem.isSolid(stackToEdit));
     }
 
     @Override
@@ -139,10 +136,10 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
     private ItemStack getStackToEdit() {
         if (fromTE) {
-            TileEntity te = minecraft.level.getBlockEntity(fromTEPos);
+            BlockEntity te = minecraft.level.getBlockEntity(fromTEPos);
             return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(fromTEStackSlot)).orElse(ItemStack.EMPTY);
         } else {
-            return minecraft.player.getItemInHand(Hand.MAIN_HAND);
+            return minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
         }
     }
 
@@ -336,9 +333,9 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         if (fromTE) {
             ItemStack stack = getStackToEdit();
             if (!stack.isEmpty()) {
-                CompoundNBT tag = stack.getTag();
+                CompoundTag tag = stack.getTag();
                 if (tag == null) {
-                    tag = new CompoundNBT();
+                    tag = new CompoundTag();
                 }
                 ShapeCardItem.setShape(stack, getCurrentShape(), isSolid());
                 ShapeCardItem.setDimension(stack, dx, dy, dz);
@@ -365,9 +362,9 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         if (fromTE) {
             ItemStack stack = getStackToEdit();
             if (!stack.isEmpty()) {
-                CompoundNBT tag = stack.getTag();
+                CompoundTag tag = stack.getTag();
                 if (tag == null) {
-                    tag = new CompoundNBT();
+                    tag = new CompoundTag();
                 }
                 tag.putBoolean("voidstone", stone.isPressed());
                 tag.putBoolean("voidcobble", cobble.isPressed());
@@ -512,7 +509,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     private static int updateCounter = 20;
 
     @Override
-    public void render(@Nonnull MatrixStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
+    public void render(@Nonnull PoseStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
         // If not initialized yet we do nothing
         if (window == null) {
             return;
@@ -561,13 +558,13 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
             int x = GuiTools.getRelativeX(this);
             int y = GuiTools.getRelativeY(this);
             // @todo check on 1.16
-            List<ITextProperties> properties = tooltips.stream().map(StringTextComponent::new).collect(Collectors.toList());
-            List<IReorderingProcessor> processors = LanguageMap.getInstance().getVisualOrder(properties);
+            List<FormattedText> properties = tooltips.stream().map(TextComponent::new).collect(Collectors.toList());
+            List<FormattedCharSequence> processors = Language.getInstance().getVisualOrder(properties);
             renderTooltip(matrixStack, processors, x - guiLeft, y - guiTop);
         }
     }
 
-    private void renderVoidBlock(MatrixStack matrixStack, int x, int y, ToggleButton button, Block block) {
+    private void renderVoidBlock(PoseStack matrixStack, int x, int y, ToggleButton button, Block block) {
         x += (int) button.getBounds().getX();
         RenderHelper.renderObject(matrixStack, x, y, new ItemStack(block), button.isPressed());
         if (button.isPressed()) {
@@ -581,16 +578,16 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         float f = (color >> 16 & 255) / 255.0F;
         float f1 = (color >> 8 & 255) / 255.0F;
         float f2 = (color & 255) / 255.0F;
-        Tessellator tessellator = Tessellator.getInstance();
+        Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.getBuilder();
 
-        buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION);
         GlStateManager._enableBlend();
         GlStateManager._disableTexture();
         GlStateManager._disableDepthTest();
         GL11.glLineWidth(2.0f);
         GlStateManager._blendFuncSeparate(770, 771, 1, 0);
-        GlStateManager._color4f(f, f1, f2, f3);
+//        GlStateManager._color4f(f, f1, f2, f3);// @todo 1.18
         buffer.vertex(x1, y1, 0.0D).endVertex();
         buffer.vertex(x2, y2, 0.0D).endVertex();
         tessellator.end();

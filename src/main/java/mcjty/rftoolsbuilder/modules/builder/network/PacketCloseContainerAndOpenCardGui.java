@@ -1,21 +1,21 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.function.Supplier;
 
 public class PacketCloseContainerAndOpenCardGui {
 
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
     }
 
     public PacketCloseContainerAndOpenCardGui() {
     }
 
-    public PacketCloseContainerAndOpenCardGui(PacketBuffer buf) {
+    public PacketCloseContainerAndOpenCardGui(FriendlyByteBuf buf) {
     }
 
     public void handle(Supplier<NetworkEvent.Context> supplier) {

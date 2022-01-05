@@ -1,26 +1,28 @@
 package mcjty.rftoolsbuilder.modules.builder.blocks;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.state.EnumProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
+
 public class SupportBlock extends Block {
 
-    public enum SupportStatus implements IStringSerializable {
+    public enum SupportStatus implements StringRepresentable {
         STATUS_OK("ok"),
         STATUS_WARN("warn"),
         STATUS_ERROR("error");
@@ -60,7 +62,7 @@ public class SupportBlock extends Block {
 
     @Nonnull
     @Override
-    public ActionResultType use(@Nonnull BlockState state, World world, @Nonnull BlockPos pos, @Nonnull PlayerEntity player, @Nonnull Hand handIn, @Nonnull BlockRayTraceResult hit) {
+    public InteractionResult use(@Nonnull BlockState state, Level world, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
         if (!world.isClientSide) {
             // Find all connected blocks and remove them.
             Deque<BlockPos> todo = new ArrayDeque<>();
@@ -70,7 +72,7 @@ public class SupportBlock extends Block {
         return super.use(state, world, pos, player, handIn, hit);
     }
 
-    private void removeBlock(World world, Deque<BlockPos> todo) {
+    private void removeBlock(Level world, Deque<BlockPos> todo) {
         while (!todo.isEmpty()) {
             BlockPos c = todo.pollFirst();
             world.setBlockAndUpdate(c, Blocks.AIR.defaultBlockState());
@@ -116,7 +118,7 @@ public class SupportBlock extends Block {
 
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(STATUS);
     }
 

@@ -3,14 +3,14 @@ package mcjty.rftoolsbuilder.shapes;
 import mcjty.lib.varia.Check32;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class Formulas {
         private BlockState lastState = null;
 
         @Override
-        public void getCheckSumClient(CompoundNBT tc, Check32 crc) {
+        public void getCheckSumClient(CompoundTag tc, Check32 crc) {
             ShapeCardItem.getLocalChecksum(tc, crc);
             int scanId = tc.getInt("scanid");
             crc.add(scanId);
@@ -74,7 +74,7 @@ public class Formulas {
         }
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             data = null;
 
             if (card == null) {
@@ -195,7 +195,7 @@ public class Formulas {
         private List<BlockState> blockStates = new ArrayList<>();
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             this.thisCoord = thisCoord;
 
             if (card == null) {
@@ -209,9 +209,9 @@ public class Formulas {
                 return;
             }
 
-            ListNBT children = card.getList("children", Constants.NBT.TAG_COMPOUND);
+            ListTag children = card.getList("children", Tag.TAG_COMPOUND);
             for (int i = 0 ; i < children.size() ; i++) {
-                CompoundNBT childTag = children.getCompound(i);
+                CompoundTag childTag = children.getCompound(i);
                 IFormula formula = ShapeCardItem.createCorrectFormula(childTag);
 
                 String op = childTag.getString("mod_op");
@@ -243,11 +243,11 @@ public class Formulas {
         }
 
         @Override
-        public void getCheckSumClient(CompoundNBT tc, Check32 crc) {
+        public void getCheckSumClient(CompoundTag tc, Check32 crc) {
             ShapeCardItem.getLocalChecksum(tc, crc);
-            ListNBT children = tc.getList("children", Constants.NBT.TAG_COMPOUND);
+            ListTag children = tc.getList("children", Tag.TAG_COMPOUND);
             for (int i = 0 ; i < children.size() ; i++) {
-                CompoundNBT childTag = children.getCompound(i);
+                CompoundTag childTag = children.getCompound(i);
                 IFormula formula = ShapeCardItem.createCorrectFormula(childTag);
                 formula.getCheckSumClient(childTag, crc);
                 crc.add(childTag.getBoolean("mod_flipy") ? 1 : 0);
@@ -367,7 +367,7 @@ public class Formulas {
         private float centerz;
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -399,7 +399,7 @@ public class Formulas {
         private int dz;
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             dx = dimension.getX();
             dy = dimension.getY();
             dz = dimension.getZ();
@@ -434,7 +434,7 @@ public class Formulas {
         private int davg;
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -469,7 +469,7 @@ public class Formulas {
         private int davg;
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -507,7 +507,7 @@ public class Formulas {
         private int davg;
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -544,7 +544,7 @@ public class Formulas {
         private int z2;
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -581,7 +581,7 @@ public class Formulas {
         private int y2;
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -618,7 +618,7 @@ public class Formulas {
         private int davg;
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -651,7 +651,7 @@ public class Formulas {
         private int davg;
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -684,7 +684,7 @@ public class Formulas {
         private int z2;
 
         @Override
-        public void setup(World world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundNBT card) {
+        public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();

@@ -1,19 +1,19 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.LevelTools;
+import mcjty.lib.varia.Logging;
 import mcjty.lib.worlddata.AbstractWorldData;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import java.io.*;
@@ -32,19 +32,31 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
     private final Map<Integer, ScanExtraData> scanData = new HashMap<>();
 
     public ScanDataManager() {
-        super(SCANDATA_NETWORK_NAME);
     }
 
-    public void save(World w, int scanId) {
-        World world = LevelTools.getOverworld(w);
+    public ScanDataManager(CompoundTag tag) {
+        scans.clear();
+        ListTag lst = tag.getList("scans", Tag.TAG_COMPOUND);
+        for (int i = 0; i < lst.size(); i++) {
+            CompoundTag tc = lst.getCompound(i);
+            int id = tc.getInt("scan");
+            Scan scan = new Scan();
+            scan.readFromNBT(tc);
+            scans.put(id, scan);
+        }
+        lastId = tag.getInt("lastId");
+    }
+
+    public void save(Level w, int scanId) {
+        Level world = LevelTools.getOverworld(w);
         File dataDir = null; // @todo 1.16 new File(((ServerWorld)world).getSaveHandler().getWorldDirectory(), "rftoolsscans");
         dataDir.mkdirs();
         File file = new File(dataDir, "scan" + scanId);
         Scan scan = getOrCreateScan(scanId);
-        CompoundNBT tc = new CompoundNBT();
+        CompoundTag tc = new CompoundTag();
         scan.writeToNBTExternal(tc);
         try(DataOutputStream dataoutputstream = new DataOutputStream(new FileOutputStream(file))) {
-            CompressedStreamTools.writeCompressed(tc, dataoutputstream);
+            NbtIo.writeCompressed(tc, dataoutputstream);
         } catch (IOException e) {
             throw new UncheckedIOException("Error writing to file 'scan" + scan + "'!", e);
         }
@@ -66,8 +78,8 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
         return data;
     }
 
-    public static ScanDataManager get(World world) {
-        return getData(world, ScanDataManager::new, SCANDATA_NETWORK_NAME);
+    public static ScanDataManager get(Level world) {
+        return getData(world, ScanDataManager::new, ScanDataManager::new, SCANDATA_NETWORK_NAME);
     }
 
     @Nonnull
@@ -81,8 +93,8 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
     }
 
     @Nonnull
-    public Scan loadScan(World w, int id) {
-        World world = LevelTools.getOverworld(w);
+    public Scan loadScan(Level w, int id) {
+        Level world = LevelTools.getOverworld(w);
         Scan scan = scans.get(id);
         if (scan == null || scan.getDataInt() == null) {
             if (scan == null) {
@@ -93,7 +105,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
             File file = new File(dataDir, "scan" + id);
             if (file.exists()) {
                 try(DataInputStream datainputstream = new DataInputStream(new FileInputStream(file))) {
-                    CompoundNBT tag = CompressedStreamTools.readCompressed(datainputstream);
+                    CompoundTag tag = NbtIo.readCompressed(datainputstream);
                     scan.readFromNBTExternal(tag);
                 } catch (IOException e) {
                     Logging.log("Error reading scan file for id: " + id);
@@ -103,7 +115,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
         return scan;
     }
 
-    public static void listScans(PlayerEntity sender) {
+    public static void listScans(Player sender) {
         ScanDataManager scans = get(sender.getCommandSenderWorld());
         for (Map.Entry<Integer, Scan> entry : scans.scans.entrySet()) {
             Integer scanid = entry.getKey();
@@ -111,45 +123,31 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
             Scan scan = entry.getValue();
             BlockPos dim = scan.getDataDim();
             if (dim == null) {
-                sender.sendMessage(new StringTextComponent(
-                        TextFormatting.YELLOW + "Scan: " + TextFormatting.WHITE + scanid +
-                                TextFormatting.RED + "   Invalid"), Util.NIL_UUID);
+                sender.sendMessage(new TextComponent(
+                        ChatFormatting.YELLOW + "Scan: " + ChatFormatting.WHITE + scanid +
+                                ChatFormatting.RED + "   Invalid"), Util.NIL_UUID);
             } else {
-                sender.sendMessage(new StringTextComponent(
-                        TextFormatting.YELLOW + "Scan: " + TextFormatting.WHITE + scanid +
-                                TextFormatting.YELLOW + "   Dim: " + TextFormatting.WHITE + dim.getX() + "," + dim.getY() + "," + dim.getZ() +
-                                TextFormatting.YELLOW + "   Size: " + TextFormatting.WHITE + scan.getRledata().length + " bytes"), Util.NIL_UUID);
+                sender.sendMessage(new TextComponent(
+                        ChatFormatting.YELLOW + "Scan: " + ChatFormatting.WHITE + scanid +
+                                ChatFormatting.YELLOW + "   Dim: " + ChatFormatting.WHITE + dim.getX() + "," + dim.getY() + "," + dim.getZ() +
+                                ChatFormatting.YELLOW + "   Size: " + ChatFormatting.WHITE + scan.getRledata().length + " bytes"), Util.NIL_UUID);
             }
         }
     }
 
 
-    public int newScan(World world) {
+    public int newScan(Level world) {
         lastId++;
         save();
         return lastId;
     }
 
-    @Override
-    public void load(CompoundNBT tagCompound) {
-        scans.clear();
-        ListNBT lst = tagCompound.getList("scans", Constants.NBT.TAG_COMPOUND);
-        for (int i = 0; i < lst.size(); i++) {
-            CompoundNBT tc = lst.getCompound(i);
-            int id = tc.getInt("scan");
-            Scan scan = new Scan();
-            scan.readFromNBT(tc);
-            scans.put(id, scan);
-        }
-        lastId = tagCompound.getInt("lastId");
-    }
-
     @SuppressWarnings("NullableProblems")
     @Override
-    public CompoundNBT save(CompoundNBT tagCompound) {
-        ListNBT lst = new ListNBT();
+    public CompoundTag save(CompoundTag tagCompound) {
+        ListTag lst = new ListTag();
         for (Map.Entry<Integer, Scan> entry : scans.entrySet()) {
-            CompoundNBT tc = new CompoundNBT();
+            CompoundTag tc = new CompoundTag();
             tc.putInt("scan", entry.getKey());
             entry.getValue().writeToNBT(tc);
             lst.add(tc);

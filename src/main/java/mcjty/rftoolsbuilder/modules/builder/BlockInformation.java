@@ -1,8 +1,8 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
-import net.minecraft.block.Block;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;

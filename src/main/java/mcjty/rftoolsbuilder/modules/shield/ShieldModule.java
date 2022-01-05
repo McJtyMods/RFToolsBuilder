@@ -9,11 +9,13 @@ import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldModelLoader;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -31,11 +33,11 @@ public class ShieldModule implements IModule {
     public static final RegistryObject<Item> SHIELD_BLOCK2_ITEM = ITEMS.register("shield_block2", () -> new BlockItem(SHIELD_BLOCK2.get(), Registration.createStandardProperties()));
     public static final RegistryObject<Item> SHIELD_BLOCK3_ITEM = ITEMS.register("shield_block3", () -> new BlockItem(SHIELD_BLOCK3.get(), Registration.createStandardProperties()));
     public static final RegistryObject<Item> SHIELD_BLOCK4_ITEM = ITEMS.register("shield_block4", () -> new BlockItem(SHIELD_BLOCK4.get(), Registration.createStandardProperties()));
-    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK1 = TILES.register("shield_block1", () -> TileEntityType.Builder.of(ShieldModule::createProjector1, SHIELD_BLOCK1.get()).build(null));
-    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK2 = TILES.register("shield_block2", () -> TileEntityType.Builder.of(ShieldModule::createProjector2, SHIELD_BLOCK2.get()).build(null));
-    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK3 = TILES.register("shield_block3", () -> TileEntityType.Builder.of(ShieldModule::createProjector3, SHIELD_BLOCK3.get()).build(null));
-    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELD_BLOCK4 = TILES.register("shield_block4", () -> TileEntityType.Builder.of(ShieldModule::createProjector4, SHIELD_BLOCK4.get()).build(null));
-    public static final RegistryObject<ContainerType<GenericContainer>> CONTAINER_SHIELD = CONTAINERS.register("shield", GenericContainer::createContainerType);
+    public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELD_BLOCK1 = TILES.register("shield_block1", () -> BlockEntityType.Builder.of(ShieldModule::createProjector1, SHIELD_BLOCK1.get()).build(null));
+    public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELD_BLOCK2 = TILES.register("shield_block2", () -> BlockEntityType.Builder.of(ShieldModule::createProjector2, SHIELD_BLOCK2.get()).build(null));
+    public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELD_BLOCK3 = TILES.register("shield_block3", () -> BlockEntityType.Builder.of(ShieldModule::createProjector3, SHIELD_BLOCK3.get()).build(null));
+    public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELD_BLOCK4 = TILES.register("shield_block4", () -> BlockEntityType.Builder.of(ShieldModule::createProjector4, SHIELD_BLOCK4.get()).build(null));
+    public static final RegistryObject<MenuType<GenericContainer>> CONTAINER_SHIELD = CONTAINERS.register("shield", GenericContainer::createContainerType);
 
     public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_BLUE = BLOCKS.register("blue_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.BLUE));
     public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_RED = BLOCKS.register("red_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.RED));
@@ -50,25 +52,25 @@ public class ShieldModule implements IModule {
     public static final RegistryObject<ShieldingBlock> SHIELDING_SOLID = BLOCKS.register("shielding_solid", ShieldingBlock::new);
     public static final RegistryObject<ShieldingBlock> SHIELDING_TRANSLUCENT = BLOCKS.register("shielding_translucent", ShieldingBlock::new);
     public static final RegistryObject<ShieldingBlock> SHIELDING_CUTOUT = BLOCKS.register("shielding_cutout", ShieldingBlock::new);
-    public static final RegistryObject<TileEntityType<?>> TYPE_SHIELDING = TILES.register("shielding", () -> TileEntityType.Builder.of(ShieldingTileEntity::new,
+    public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELDING = TILES.register("shielding", () -> BlockEntityType.Builder.of(ShieldingTileEntity::new,
             SHIELDING_SOLID.get(), SHIELDING_TRANSLUCENT.get(), SHIELDING_CUTOUT.get()).build(null));
 
-    public static ShieldProjectorTileEntity createProjector1() {
-        return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK1.get(), ShieldConfiguration.maxShieldSize.get(), ShieldConfiguration.MAXENERGY.get(), ShieldConfiguration.RECEIVEPERTICK.get());
+    public static ShieldProjectorTileEntity createProjector1(BlockPos pos, BlockState state) {
+        return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK1.get(), pos, state, ShieldConfiguration.maxShieldSize.get(), ShieldConfiguration.MAXENERGY.get(), ShieldConfiguration.RECEIVEPERTICK.get());
     }
 
-    public static ShieldProjectorTileEntity createProjector2() {
-        return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK2.get(), ShieldConfiguration.maxShieldSize.get() * 4, ShieldConfiguration.MAXENERGY.get(), ShieldConfiguration.RECEIVEPERTICK.get());
+    public static ShieldProjectorTileEntity createProjector2(BlockPos pos, BlockState state) {
+        return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK2.get(), pos, state, ShieldConfiguration.maxShieldSize.get() * 4, ShieldConfiguration.MAXENERGY.get(), ShieldConfiguration.RECEIVEPERTICK.get());
     }
 
-    public static ShieldProjectorTileEntity createProjector3() {
-        return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK3.get(), ShieldConfiguration.maxShieldSize.get() * 16, ShieldConfiguration.MAXENERGY.get() * 3, ShieldConfiguration.RECEIVEPERTICK.get() * 2)
+    public static ShieldProjectorTileEntity createProjector3(BlockPos pos, BlockState state) {
+        return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK3.get(), pos, state, ShieldConfiguration.maxShieldSize.get() * 16, ShieldConfiguration.MAXENERGY.get() * 3, ShieldConfiguration.RECEIVEPERTICK.get() * 2)
                 .setDamageFactor(4.0f)
                 .setCostFactor(2.0f);
     }
 
-    public static ShieldProjectorTileEntity createProjector4() {
-        return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK4.get(), ShieldConfiguration.maxShieldSize.get() * 128, ShieldConfiguration.MAXENERGY.get() * 6, ShieldConfiguration.RECEIVEPERTICK.get() * 6)
+    public static ShieldProjectorTileEntity createProjector4(BlockPos pos, BlockState state) {
+        return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK4.get(), pos, state, ShieldConfiguration.maxShieldSize.get() * 128, ShieldConfiguration.MAXENERGY.get() * 6, ShieldConfiguration.RECEIVEPERTICK.get() * 6)
                 .setDamageFactor(4.0f)
                 .setCostFactor(2.0f);
     }

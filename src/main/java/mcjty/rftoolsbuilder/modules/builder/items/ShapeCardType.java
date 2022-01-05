@@ -4,16 +4,16 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.shapes.Shape;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.model.ModelResourceLocation;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.Arrays;
@@ -122,7 +122,7 @@ public enum ShapeCardType {
     private final boolean quarry;
     private final boolean clearing;
     private final boolean fortune;
-    private final List<ITextComponent> information;
+    private final List<Component> information;
     private final String resourceSuffix;
 
 //    private static final Map<Integer, ShapeCardType> SHAPE_TYPE_MAP;
@@ -151,7 +151,7 @@ public enum ShapeCardType {
         this.rfNeeded = rfNeeded;
         this.singleBlockHandler = singleBlockHandler;
         this.hudLogEntry = hudLogEntry;
-        this.information = Arrays.stream(information).map(a -> new StringTextComponent(TextFormatting.WHITE.toString() + a)).collect(Collectors.toList());
+        this.information = Arrays.stream(information).map(a -> new TextComponent(ChatFormatting.WHITE.toString() + a)).collect(Collectors.toList());
     }
 
     public boolean isItem() {
@@ -191,11 +191,11 @@ public enum ShapeCardType {
         }
     }
 
-    public void addInformation(List<ITextComponent> list) {
+    public void addInformation(List<Component> list) {
         list.addAll(information);
-        list.add(new StringTextComponent(TextFormatting.GREEN + "Max area: " + BuilderConfiguration.maxBuilderDimension.get() + "x" + Math.min(256, BuilderConfiguration.maxBuilderDimension.get()) + "x" + BuilderConfiguration.maxBuilderDimension.get()));
-        list.add(new StringTextComponent(TextFormatting.GREEN + "Base cost: " + rfNeeded.get() + " RF/t per block"));
-        list.add(new StringTextComponent(TextFormatting.GREEN + (this == CARD_SHAPE ? "(final cost depends on infusion level)" : "(final cost depends on infusion level and block hardness)")));
+        list.add(new TextComponent(ChatFormatting.GREEN + "Max area: " + BuilderConfiguration.maxBuilderDimension.get() + "x" + Math.min(256, BuilderConfiguration.maxBuilderDimension.get()) + "x" + BuilderConfiguration.maxBuilderDimension.get()));
+        list.add(new TextComponent(ChatFormatting.GREEN + "Base cost: " + rfNeeded.get() + " RF/t per block"));
+        list.add(new TextComponent(ChatFormatting.GREEN + (this == CARD_SHAPE ? "(final cost depends on infusion level)" : "(final cost depends on infusion level and block hardness)")));
     }
 
     public boolean handleSingleBlock(BuilderTileEntity te, int rfNeeded, BlockPos srcPos, BlockState srcState, BlockState pickState) {

@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import net.minecraft.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.HashMap;

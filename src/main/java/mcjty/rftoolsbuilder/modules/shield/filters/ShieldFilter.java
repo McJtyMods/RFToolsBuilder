@@ -1,9 +1,9 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
 import mcjty.lib.blockcommands.ISerializer;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -15,12 +15,12 @@ public interface ShieldFilter {
 
     public static class Serializer implements ISerializer<ShieldFilter> {
         @Override
-        public Function<PacketBuffer, ShieldFilter> getDeserializer() {
+        public Function<FriendlyByteBuf, ShieldFilter> getDeserializer() {
             return AbstractShieldFilter::createFilter;
         }
 
         @Override
-        public BiConsumer<PacketBuffer, ShieldFilter> getSerializer() {
+        public BiConsumer<FriendlyByteBuf, ShieldFilter> getSerializer() {
             return (buf, info) -> info.toBytes(buf);
         }
     }
@@ -34,9 +34,9 @@ public interface ShieldFilter {
 
     String getFilterName();
 
-    void readFromNBT(CompoundNBT tagCompound);
+    void readFromNBT(CompoundTag tagCompound);
 
-    void writeToNBT(CompoundNBT tagCompound);
+    void writeToNBT(CompoundTag tagCompound);
 
-    void toBytes(PacketBuffer buf);
+    void toBytes(FriendlyByteBuf buf);
 }

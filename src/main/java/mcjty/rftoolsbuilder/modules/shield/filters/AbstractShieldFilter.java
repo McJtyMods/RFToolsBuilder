@@ -1,8 +1,8 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
 import mcjty.lib.varia.Logging;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 
 public abstract class AbstractShieldFilter implements ShieldFilter {
     private int action = ACTION_PASS;
@@ -18,29 +18,29 @@ public abstract class AbstractShieldFilter implements ShieldFilter {
     }
 
     @Override
-    public void toBytes(PacketBuffer buf) {
-        CompoundNBT tagCompound = new CompoundNBT();
+    public void toBytes(FriendlyByteBuf buf) {
+        CompoundTag tagCompound = new CompoundTag();
         writeToNBT(tagCompound);
         buf.writeNbt(tagCompound);
     }
 
     @Override
-    public void readFromNBT(CompoundNBT tagCompound) {
+    public void readFromNBT(CompoundTag tagCompound) {
         action = tagCompound.getInt("action");
     }
 
     @Override
-    public void writeToNBT(CompoundNBT tagCompound) {
+    public void writeToNBT(CompoundTag tagCompound) {
         tagCompound.putString("type", getFilterName());
         tagCompound.putInt("action", action);
     }
 
-    public static ShieldFilter createFilter(PacketBuffer buf) {
-        CompoundNBT compound = buf.readNbt();
+    public static ShieldFilter createFilter(FriendlyByteBuf buf) {
+        CompoundTag compound = buf.readNbt();
         return createFilter(compound);
     }
 
-    public static ShieldFilter createFilter(CompoundNBT compound) {
+    public static ShieldFilter createFilter(CompoundTag compound) {
         String type = compound.getString("type");
         ShieldFilter filter = createFilter(type);
         filter.readFromNBT(compound);

@@ -12,12 +12,12 @@ import mcjty.theoneprobe.api.CompoundText;
 import mcjty.theoneprobe.api.IProbeHitData;
 import mcjty.theoneprobe.api.IProbeInfo;
 import mcjty.theoneprobe.api.ProbeMode;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +29,7 @@ public class RFToolsBuilderTOPDriver implements TOPDriver {
     private final Map<ResourceLocation, TOPDriver> drivers = new HashMap<>();
 
     @Override
-    public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, PlayerEntity player, World world, BlockState blockState, IProbeHitData data) {
+    public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, Player player, Level world, BlockState blockState, IProbeHitData data) {
         ResourceLocation id = blockState.getBlock().getRegistryName();
         if (!drivers.containsKey(id)) {
             if (blockState.getBlock() == BuilderModule.BUILDER.get()) {
@@ -50,14 +50,14 @@ public class RFToolsBuilderTOPDriver implements TOPDriver {
 
     private static class DefaultDriver implements TOPDriver {
         @Override
-        public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, PlayerEntity player, World world, BlockState blockState, IProbeHitData data) {
+        public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, Player player, Level world, BlockState blockState, IProbeHitData data) {
             McJtyLibTOPDriver.DRIVER.addStandardProbeInfo(mode, probeInfo, player, world, blockState, data);
         }
     }
 
     private static class SpaceChamberControllerDriver implements TOPDriver {
         @Override
-        public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, PlayerEntity player, World world, BlockState blockState, IProbeHitData data) {
+        public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, Player player, Level world, BlockState blockState, IProbeHitData data) {
             McJtyLibTOPDriver.DRIVER.addStandardProbeInfo(mode, probeInfo, player, world, blockState, data);
             Tools.safeConsume(world.getBlockEntity(data.getPos()), (SpaceChamberControllerTileEntity te) -> {
                 int channel = te.getChannel();
@@ -65,9 +65,9 @@ public class RFToolsBuilderTOPDriver implements TOPDriver {
                 if (channel != -1) {
                     int size = te.getChamberSize();
                     if (size == -1) {
-                        probeInfo.text(TextFormatting.YELLOW + "Chamber not formed!");
+                        probeInfo.text(ChatFormatting.YELLOW + "Chamber not formed!");
                     } else {
-                        probeInfo.text(TextFormatting.GREEN + "Area: " + size + " blocks");
+                        probeInfo.text(ChatFormatting.GREEN + "Area: " + size + " blocks");
                     }
                 }
             }, "Bad tile entity!");
@@ -76,7 +76,7 @@ public class RFToolsBuilderTOPDriver implements TOPDriver {
 
     private static class BuilderDriver implements TOPDriver {
         @Override
-        public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, PlayerEntity player, World world, BlockState blockState, IProbeHitData data) {
+        public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, Player player, Level world, BlockState blockState, IProbeHitData data) {
             McJtyLibTOPDriver.DRIVER.addStandardProbeInfo(mode, probeInfo, player, world, blockState, data);
             Tools.safeConsume(world.getBlockEntity(data.getPos()), (BuilderTileEntity te) -> {
                 int scan = te.getCurrentLevel();
@@ -87,20 +87,20 @@ public class RFToolsBuilderTOPDriver implements TOPDriver {
 
     private static class ShieldProjectorDriver implements TOPDriver {
         @Override
-        public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, PlayerEntity player, World world, BlockState blockState, IProbeHitData data) {
+        public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, Player player, Level world, BlockState blockState, IProbeHitData data) {
             McJtyLibTOPDriver.DRIVER.addStandardProbeInfo(mode, probeInfo, player, world, blockState, data);
             Tools.safeConsume(world.getBlockEntity(data.getPos()), (ShieldProjectorTileEntity te) -> {
                 boolean composed = te.isShieldComposed();
                 if (composed) {
-                    probeInfo.text(CompoundText.create().label("Composed: ").info(new StringTextComponent("yes")));
+                    probeInfo.text(CompoundText.create().label("Composed: ").info(new TextComponent("yes")));
                 } else {
-                    probeInfo.text(CompoundText.create().label("Composed: ").info(new StringTextComponent("no")));
+                    probeInfo.text(CompoundText.create().label("Composed: ").info(new TextComponent("no")));
                 }
                 boolean active = te.isShieldActive();
                 if (active) {
-                    probeInfo.text(CompoundText.create().label("Active: ").info(new StringTextComponent("yes")));
+                    probeInfo.text(CompoundText.create().label("Active: ").info(new TextComponent("yes")));
                 } else {
-                    probeInfo.text(CompoundText.create().label("Active: ").info(new StringTextComponent("no")));
+                    probeInfo.text(CompoundText.create().label("Active: ").info(new TextComponent("no")));
                 }
             }, "Bad tile entity!");
         }

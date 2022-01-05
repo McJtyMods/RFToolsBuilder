@@ -3,12 +3,12 @@ package mcjty.rftoolsbuilder.modules.builder;
 import mcjty.lib.varia.BlockPosTools;
 import mcjty.lib.varia.LevelTools;
 import mcjty.lib.worlddata.AbstractWorldData;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -23,11 +23,25 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
     private final Map<Integer,SpaceChamberChannel> channels = new HashMap<>();
 
     public SpaceChamberRepository() {
-        super(SPACECHAMBER_CHANNELS_NAME);
     }
 
-    public static SpaceChamberRepository get(World world) {
-        return getData(world, SpaceChamberRepository::new, SPACECHAMBER_CHANNELS_NAME);
+    public SpaceChamberRepository(CompoundTag tag) {
+        ListTag lst = tag.getList("channels", Tag.TAG_COMPOUND);
+        for (int i = 0 ; i < lst.size() ; i++) {
+            CompoundTag tc = lst.getCompound(i);
+            int channel = tc.getInt("channel");
+
+            SpaceChamberChannel value = new SpaceChamberChannel();
+            value.setDimension(LevelTools.getId(tc.getString("dimension")));
+            value.setMinCorner(BlockPosTools.read(tc, "minCorner"));
+            value.setMaxCorner(BlockPosTools.read(tc, "maxCorner"));
+            channels.put(channel, value);
+        }
+        lastId = tag.getInt("lastId");
+    }
+
+    public static SpaceChamberRepository get(Level world) {
+        return getData(world, SpaceChamberRepository::new, SpaceChamberRepository::new, SPACECHAMBER_CHANNELS_NAME);
     }
 
     public SpaceChamberChannel getOrCreateChannel(int id) {
@@ -52,29 +66,12 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
         return lastId;
     }
 
-    @Override
-    public void load(CompoundNBT tagCompound) {
-        channels.clear();
-        ListNBT lst = tagCompound.getList("channels", Constants.NBT.TAG_COMPOUND);
-        for (int i = 0 ; i < lst.size() ; i++) {
-            CompoundNBT tc = lst.getCompound(i);
-            int channel = tc.getInt("channel");
-
-            SpaceChamberChannel value = new SpaceChamberChannel();
-            value.setDimension(LevelTools.getId(tc.getString("dimension")));
-            value.setMinCorner(BlockPosTools.read(tc, "minCorner"));
-            value.setMaxCorner(BlockPosTools.read(tc, "maxCorner"));
-            channels.put(channel, value);
-        }
-        lastId = tagCompound.getInt("lastId");
-    }
-
     @Nonnull
     @Override
-    public CompoundNBT save(@Nonnull CompoundNBT tagCompound) {
-        ListNBT lst = new ListNBT();
+    public CompoundTag save(@Nonnull CompoundTag tagCompound) {
+        ListTag lst = new ListTag();
         for (Map.Entry<Integer, SpaceChamberChannel> entry : channels.entrySet()) {
-            CompoundNBT tc = new CompoundNBT();
+            CompoundTag tc = new CompoundTag();
             tc.putInt("channel", entry.getKey());
             tc.putString("dimension", entry.getValue().getDimension().location().toString());
             BlockPosTools.write(tc, "minCorner", entry.getValue().getMinCorner());
@@ -87,15 +84,15 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
     }
 
     public static class SpaceChamberChannel {
-        private RegistryKey<World> dimension;
+        private ResourceKey<Level> dimension;
         private BlockPos minCorner = null;
         private BlockPos maxCorner = null;
 
-        public RegistryKey<World> getDimension() {
+        public ResourceKey<Level> getDimension() {
             return dimension;
         }
 
-        public void setDimension(RegistryKey<World> dimension) {
+        public void setDimension(ResourceKey<Level> dimension) {
             this.dimension = dimension;
         }
 

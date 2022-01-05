@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.modules.shield.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
@@ -18,8 +18,8 @@ import mcjty.rftoolsbuilder.modules.shield.*;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     private static final ResourceLocation iconLocation = new ResourceLocation(RFToolsBuilder.MODID, "textures/gui/shieldprojector.png");
     private static final ResourceLocation iconGuiElements = new ResourceLocation(RFToolsBase.MODID, "textures/gui/guielements.png");
 
-    public GuiShield(ShieldProjectorTileEntity shieldTileEntity, GenericContainer container, PlayerInventory inventory) {
+    public GuiShield(ShieldProjectorTileEntity shieldTileEntity, GenericContainer container, Inventory inventory) {
         super(shieldTileEntity, container, inventory, ShieldModule.SHIELD_BLOCK1.get().getManualEntry());
 
         imageWidth = SHIELD_WIDTH;
@@ -381,7 +381,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     @Override
-    protected void renderBg(@Nonnull MatrixStack matrixStack, float v, int i, int i2) {
+    protected void renderBg(@Nonnull PoseStack matrixStack, float v, int i, int i2) {
         requestListsIfNeeded();
         populateFilters();
         enableButtons();

@@ -7,9 +7,9 @@ import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.shapes.ScanDataManagerClient;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
 
 import java.util.List;
 
@@ -51,7 +51,7 @@ public class ClientCommandHandler {
         McJtyLib.registerClientCommand(RFToolsBuilder.MODID, CMD_POSITION_TO_CLIENT, (player, arguments) -> {
             BlockPos tePos = arguments.get(PARAM_POS);
             BlockPos scanPos = arguments.get(PARAM_SCAN);
-            TileEntity te = SafeClientTools.getClientWorld().getBlockEntity(tePos);
+            BlockEntity te = SafeClientTools.getClientWorld().getBlockEntity(tePos);
             if (te instanceof BuilderTileEntity) {
                 BuilderTileEntity.setScanLocationClient(tePos, scanPos);
             }

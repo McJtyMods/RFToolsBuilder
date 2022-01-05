@@ -16,7 +16,7 @@ import mcjty.lib.container.GenericItemHandler;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
-import mcjty.lib.tileentity.GenericTileEntity;
+import mcjty.lib.tileentity.TickingTileEntity;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.varia.FakePlayerGetter;
@@ -30,36 +30,40 @@ import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldRenderData;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import mcjty.rftoolsbuilder.shapes.Shape;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.*;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -75,7 +79,7 @@ import static mcjty.lib.container.SlotDefinition.generic;
 import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
 
-public class ShieldProjectorTileEntity extends GenericTileEntity implements ISmartWrenchSelector, ITickableTileEntity {
+public class ShieldProjectorTileEntity extends TickingTileEntity implements ISmartWrenchSelector {
 
     public static final String COMPONENT_NAME = "shield_projector";
 
@@ -169,7 +173,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(this::getEnergyStorage);
 
     @Cap(type = CapType.CONTAINER)
-    private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Shield")
+    private final LazyOptional<MenuProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Shield")
             .containerSupplier(container(ShieldModule.CONTAINER_SHIELD, CONTAINER_FACTORY, this))
             .energyHandler(this::getEnergyStorage)
             .itemHandler(() -> items)
@@ -184,8 +188,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     private final int maxEnergy;
     private final int rfPerTick;
 
-    public ShieldProjectorTileEntity(TileEntityType<?> type, int supportedBlocks, int maxEnergy, int rfPerTick) {
-        super(type);
+    public ShieldProjectorTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int supportedBlocks, int maxEnergy, int rfPerTick) {
+        super(type, pos, state);
         this.supportedBlocks = supportedBlocks;
         this.maxEnergy = maxEnergy;
         this.rfPerTick = rfPerTick;
@@ -231,7 +235,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket packet) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
         int oldColor = shieldColor;
         ShieldTexture oldTexture = shieldTexture;
         super.onDataPacket(net, packet);
@@ -239,7 +243,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             renderData = null;
             // @todo this doesn't help to automatically update the color
             BlockState state = level.getBlockState(worldPosition);
-            level.sendBlockUpdated(worldPosition, state, state, Constants.BlockFlags.BLOCK_UPDATE + Constants.BlockFlags.NOTIFY_NEIGHBORS);
+            level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_ALL);
         }
     }
 
@@ -474,10 +478,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         Item item = stack.getItem();
         if (item instanceof BlockItem) {
             BlockItem blockItem = (BlockItem) item;
-            PlayerEntity player = fakePlayer.get();
-            player.setItemInHand(Hand.MAIN_HAND, stack);
-            BlockRayTraceResult result = new BlockRayTraceResult(new Vector3d(.5, 0, .5), Direction.UP, worldPosition, false);
-            BlockItemUseContext context = new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, result));
+            Player player = fakePlayer.get();
+            player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+            BlockHitResult result = new BlockHitResult(new Vec3(.5, 0, .5), Direction.UP, worldPosition, false);
+            BlockPlaceContext context = new BlockPlaceContext(new UseOnContext(player, InteractionHand.MAIN_HAND, result));
             BlockState stateForPlacement = blockItem.getBlock().getStateForPlacement(context);
             return stateForPlacement == null ? blockItem.getBlock().defaultBlockState() : stateForPlacement;
         } else {
@@ -619,8 +623,8 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             source = DamageSource.GENERIC;
         } else {
             rf = ShieldConfiguration.rfDamagePlayer.get();
-            ServerPlayerEntity killer = fakePlayer.get();
-            killer.setLevel(level);
+            ServerPlayer killer = fakePlayer.get();
+            killer.setLevel((ServerLevel) level);
             killer.setPos(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
             new FakePlayerConnection(killer);
             ItemStack shards = items.getStackInSlot(SLOT_SHARD);
@@ -630,9 +634,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                     lootingSword = createEnchantedItem(Items.DIAMOND_SWORD, Enchantments.MOB_LOOTING, ShieldConfiguration.lootingKillBonus.get());
                 }
                 lootingSword.setDamageValue(0);
-                killer.setItemInHand(Hand.MAIN_HAND, lootingSword);
+                killer.setItemInHand(InteractionHand.MAIN_HAND, lootingSword);
             } else {
-                killer.setItemInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
+                killer.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             }
             source = DamageSource.playerAttack(killer);
         }
@@ -661,16 +665,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     @Override
-    public void tick() {
-        if (level == null)
+    protected void tickServer() {
+        if (level == null) {
             return;
-
-        if (!level.isClientSide) {
-            checkStateServer();
         }
-    }
-
-    private void checkStateServer() {
         if (!shieldComposed) {
             // do nothing if the shield is not composed
             return;
@@ -811,15 +809,15 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     @Override
-    public void selectBlock(PlayerEntity player, BlockPos pos) {
+    public void selectBlock(Player player, BlockPos pos) {
         if (!shieldComposed) {
-            Logging.message(player, TextFormatting.YELLOW + "Shield is not composed. Nothing happens!");
+            Logging.message(player, ChatFormatting.YELLOW + "Shield is not composed. Nothing happens!");
             return;
         }
 
         float squaredDistance = (float) getBlockPos().distSqr(pos);
         if (squaredDistance > ShieldConfiguration.maxDisjointShieldDistance.get() * ShieldConfiguration.maxDisjointShieldDistance.get()) {
-            Logging.message(player, TextFormatting.YELLOW + "This template is too far to connect to the shield!");
+            Logging.message(player, ChatFormatting.YELLOW + "This template is too far to connect to the shield!");
             return;
         }
 
@@ -830,7 +828,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         Block origBlock = getLevel().getBlockState(pos).getBlock();
         if (origBlock instanceof ShieldTemplateBlock) {
             if (isShapedShield()) {
-                Logging.message(player, TextFormatting.YELLOW + "You cannot add template blocks to a shaped shield (using a shape card)!");
+                Logging.message(player, ChatFormatting.YELLOW + "You cannot add template blocks to a shaped shield (using a shape card)!");
                 return;
             }
             Map<BlockPos, BlockState> templateBlocks = new HashMap<>();
@@ -858,7 +856,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             }
             getLevel().setBlock(pos, templateState, 2);
         } else {
-            Logging.message(player, TextFormatting.YELLOW + "The selected shield can't do anything with this block!");
+            Logging.message(player, ChatFormatting.YELLOW + "The selected shield can't do anything with this block!");
             return;
         }
         setChanged();
@@ -873,7 +871,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         int xCoord = getBlockPos().getX();
         int yCoord = getBlockPos().getY();
         int zCoord = getBlockPos().getZ();
-        BlockPos.Mutable pos = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (RelCoordinateShield c : shieldBlocks) {
             if (Blocks.AIR.equals(shielding.getBlock())) {
                 pos.set(xCoord + c.getDx(), yCoord + c.getDy(), zCoord + c.getDz());
@@ -902,9 +900,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
         // To force an update set it to air first
         level.setBlockAndUpdate(pp, Blocks.AIR.defaultBlockState());
-        level.setBlock(pp, shielding, Constants.BlockFlags.BLOCK_UPDATE);
+        level.setBlock(pp, shielding, Block.UPDATE_NEIGHBORS);
 
-        TileEntity te = getLevel().getBlockEntity(pp);
+        BlockEntity te = getLevel().getBlockEntity(pp);
         if (te instanceof ShieldingTileEntity) {
             ShieldingTileEntity shieldingTE = (ShieldingTileEntity) te;
             if (c.getState() != -1) {
@@ -921,7 +919,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         int xCoord = getBlockPos().getX();
         int yCoord = getBlockPos().getY();
         int zCoord = getBlockPos().getZ();
-        BlockPos.Mutable pp = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos pp = new BlockPos.MutableBlockPos();
         for (RelCoordinate c : shieldBlocks) {
             int cx = xCoord + c.getDx();
             int cy = yCoord + c.getDy();
@@ -933,7 +931,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             } else if (templateState.getMaterial() != Material.AIR) {
                 if (!isShapedShield()) {
                     // No room, just spawn the block
-                    InventoryHelper.dropItemStack(getLevel(), cx, cy, cz, templateState.getBlock().getCloneItemStack(getLevel(), new BlockPos(cx, cy, cz), templateState));
+                    Containers.dropItemStack(getLevel(), cx, cy, cz, templateState.getBlock().getCloneItemStack(getLevel(), new BlockPos(cx, cy, cz), templateState));
                 }
             }
         }
@@ -991,7 +989,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         int x = coordinate.getX();
         int y = coordinate.getY();
         int z = coordinate.getZ();
-        BlockPos.Mutable c = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos c = new BlockPos.MutableBlockPos();
         for (int xx = x - 1; xx <= x + 1; xx++) {
             for (int yy = y - 1; yy <= y + 1; yy++) {
                 for (int zz = z - 1; zz <= z + 1; zz++) {
@@ -1044,7 +1042,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 //
 
     @Override
-    public void loadClientDataFromNBT(CompoundNBT tagCompound) {
+    public void loadClientDataFromNBT(CompoundTag tagCompound) {
         powerLevel = tagCompound.getByte("powered");
         shieldComposed = tagCompound.getBoolean("composed");
         shieldActive = tagCompound.getBoolean("active");
@@ -1073,7 +1071,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         loadEnergyCap(tagCompound);
 
         if (tagCompound.contains("Info")) {
-            CompoundNBT info = tagCompound.getCompound("Info");
+            CompoundTag info = tagCompound.getCompound("Info");
             shieldRenderingMode = ShieldRenderingMode.values()[info.getInt("visMode")];
             shieldTexture = ShieldTexture.values()[info.getInt("shieldTexture")];
             rsMode = RedstoneMode.values()[(info.getByte("rsMode"))];
@@ -1092,7 +1090,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     @Override
-    public void saveClientDataToNBT(CompoundNBT tagCompound) {
+    public void saveClientDataToNBT(CompoundTag tagCompound) {
         tagCompound.putByte("powered", (byte) powerLevel);
         tagCompound.putBoolean("composed", shieldComposed);
         tagCompound.putBoolean("active", shieldActive);
@@ -1101,7 +1099,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
             tagCompound.putInt("templateColor", ((ShieldTemplateBlock) templateState.getBlock()).getColor().ordinal());
         }
 
-        CompoundNBT info = getOrCreateInfo(tagCompound);
+        CompoundTag info = getOrCreateInfo(tagCompound);
         info.putInt("visMode", shieldRenderingMode.ordinal());
         info.putInt("shieldTexture", shieldTexture.ordinal());
         info.putByte("rsMode", (byte) rsMode.ordinal());
@@ -1115,7 +1113,7 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     @Override
-    public void load(CompoundNBT tagCompound) {
+    public void load(CompoundTag tagCompound) {
         super.load(tagCompound);
         shieldComposed = tagCompound.getBoolean("composed");
         shieldActive = tagCompound.getBoolean("active");
@@ -1159,9 +1157,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
                 shieldBlocks.add(new RelCoordinateShield(dx, dy, dz, st));
             }
 
-            ListNBT list = tagCompound.getList("gstates", Constants.NBT.TAG_COMPOUND);
-            for (INBT inbt : list) {
-                CompoundNBT tc = (CompoundNBT) inbt;
+            ListTag list = tagCompound.getList("gstates", Tag.TAG_COMPOUND);
+            for (Tag inbt : list) {
+                CompoundTag tc = (CompoundTag) inbt;
                 String b = tc.getString("b");
                 int m = tc.getInt("m");
                 Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(b));
@@ -1186,10 +1184,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     @Override
-    protected void loadInfo(CompoundNBT tagCompound) {
+    protected void loadInfo(CompoundTag tagCompound) {
         super.loadInfo(tagCompound);
         if (tagCompound.contains("Info")) {
-            CompoundNBT info = tagCompound.getCompound("Info");
+            CompoundTag info = tagCompound.getCompound("Info");
             shieldRenderingMode = ShieldRenderingMode.values()[info.getInt("visMode")];
             shieldTexture = ShieldTexture.values()[info.getInt("shieldTexture")];
             damageMode = DamageTypeMode.values()[(info.getByte("damageMode"))];
@@ -1205,17 +1203,17 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         }
     }
 
-    private void readFiltersFromNBT(CompoundNBT tagCompound) {
+    private void readFiltersFromNBT(CompoundTag tagCompound) {
         filters.clear();
-        ListNBT filterList = tagCompound.getList("filters", Constants.NBT.TAG_COMPOUND);
+        ListTag filterList = tagCompound.getList("filters", Tag.TAG_COMPOUND);
         for (int i = 0; i < filterList.size(); i++) {
-            CompoundNBT compound = filterList.getCompound(i);
+            CompoundTag compound = filterList.getCompound(i);
             filters.add(AbstractShieldFilter.createFilter(compound));
         }
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundNBT tagCompound) {
+    public void saveAdditional(@Nonnull CompoundTag tagCompound) {
         super.saveAdditional(tagCompound);
         tagCompound.putBoolean("composed", shieldComposed);
         tagCompound.putBoolean("active", shieldActive);
@@ -1238,9 +1236,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         }
         tagCompound.putByteArray("relcoordsNew", blocks);
 
-        ListNBT list = new ListNBT();
+        ListTag list = new ListTag();
         for (BlockState state : blockStateTable) {
-            CompoundNBT tc = new CompoundNBT();
+            CompoundTag tc = new CompoundTag();
             tc.putString("b", state.getBlock().getRegistryName().toString());
             list.add(tc);
         }
@@ -1248,9 +1246,9 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
     }
 
     @Override
-    protected void saveInfo(CompoundNBT tagCompound) {
+    protected void saveInfo(CompoundTag tagCompound) {
         super.saveInfo(tagCompound);
-        CompoundNBT info = getOrCreateInfo(tagCompound);
+        CompoundTag info = getOrCreateInfo(tagCompound);
         info.putInt("visMode", shieldRenderingMode.ordinal());
         info.putInt("shieldTexture", shieldTexture.ordinal());
         info.putByte("damageMode", (byte) damageMode.ordinal());
@@ -1261,10 +1259,10 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
         writeFiltersToNBT(info);
     }
 
-    private void writeFiltersToNBT(CompoundNBT tagCompound) {
-        ListNBT filterList = new ListNBT();
+    private void writeFiltersToNBT(CompoundTag tagCompound) {
+        ListTag filterList = new ListTag();
         for (ShieldFilter filter : filters) {
-            CompoundNBT compound = new CompoundNBT();
+            CompoundTag compound = new CompoundTag();
             filter.writeToNBT(compound);
             filterList.add(compound);
         }

@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public class DefaultFilter extends AbstractShieldFilter {
 

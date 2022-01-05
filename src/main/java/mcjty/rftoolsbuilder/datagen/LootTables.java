@@ -15,12 +15,12 @@ public class LootTables extends BaseLootTableProvider {
 
     @Override
     protected void addTables() {
-        lootTables.put(BuilderModule.BUILDER.get(), createStandardTable("builder", BuilderModule.BUILDER.get()));
-        lootTables.put(BuilderModule.SPACE_CHAMBER_CONTROLLER.get(), createStandardTable("space_chamber_controller", BuilderModule.SPACE_CHAMBER_CONTROLLER.get()));
-        lootTables.put(ShieldModule.SHIELD_BLOCK1.get(), createStandardTable("shield_block1", ShieldModule.SHIELD_BLOCK1.get()));
-        lootTables.put(ShieldModule.SHIELD_BLOCK2.get(), createStandardTable("shield_block1", ShieldModule.SHIELD_BLOCK2.get()));
-        lootTables.put(ShieldModule.SHIELD_BLOCK3.get(), createStandardTable("shield_block1", ShieldModule.SHIELD_BLOCK3.get()));
-        lootTables.put(ShieldModule.SHIELD_BLOCK4.get(), createStandardTable("shield_block1", ShieldModule.SHIELD_BLOCK4.get()));
+        lootTables.put(BuilderModule.BUILDER.get(), createStandardTable("builder", BuilderModule.BUILDER.get(), BuilderModule.TYPE_BUILDER.get()));
+        lootTables.put(BuilderModule.SPACE_CHAMBER_CONTROLLER.get(), createStandardTable("space_chamber_controller", BuilderModule.SPACE_CHAMBER_CONTROLLER.get(), BuilderModule.TYPE_SPACE_CHAMBER_CONTROLLER.get()));
+        lootTables.put(ShieldModule.SHIELD_BLOCK1.get(), createStandardTable("shield_block1", ShieldModule.SHIELD_BLOCK1.get(), ShieldModule.TYPE_SHIELD_BLOCK1.get()));
+        lootTables.put(ShieldModule.SHIELD_BLOCK2.get(), createStandardTable("shield_block1", ShieldModule.SHIELD_BLOCK2.get(), ShieldModule.TYPE_SHIELD_BLOCK2.get()));
+        lootTables.put(ShieldModule.SHIELD_BLOCK3.get(), createStandardTable("shield_block1", ShieldModule.SHIELD_BLOCK3.get(), ShieldModule.TYPE_SHIELD_BLOCK3.get()));
+        lootTables.put(ShieldModule.SHIELD_BLOCK4.get(), createStandardTable("shield_block1", ShieldModule.SHIELD_BLOCK4.get(), ShieldModule.TYPE_SHIELD_BLOCK4.get()));
         lootTables.put(ShieldModule.TEMPLATE_YELLOW.get(), createSimpleTable("template_yellow", ShieldModule.TEMPLATE_YELLOW.get()));
         lootTables.put(ShieldModule.TEMPLATE_GREEN.get(), createSimpleTable("template_green", ShieldModule.TEMPLATE_GREEN.get()));
         lootTables.put(ShieldModule.TEMPLATE_RED.get(), createSimpleTable("template_red", ShieldModule.TEMPLATE_RED.get()));

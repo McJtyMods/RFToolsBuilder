@@ -18,18 +18,18 @@ Everything related to the builder
 [[dependencies.rftoolsbuilder]]
     modId="forge"
     mandatory=true
-    versionRange="[36.0.42,)"
+    versionRange="[39.0.0,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.rftoolsbuilder]]
     modId="mcjtylib"
     mandatory=true
-    versionRange="[1.16-5.1.2,)"
+    versionRange="[1.18-6.0.2,)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.rftoolsbuilder]]
     modId="rftoolsbase"
     mandatory=true
-    versionRange="[1.16-2.1.1,)"
+    versionRange="[1.18-3.0.0,)"
     ordering="AFTER"
     side="BOTH"

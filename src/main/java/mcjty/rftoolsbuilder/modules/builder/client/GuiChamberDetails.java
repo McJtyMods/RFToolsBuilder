@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.RenderHelper;
 import mcjty.lib.gui.GuiItemScreen;
@@ -10,13 +10,13 @@ import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.widgets.*;
 import mcjty.rftoolsbuilder.setup.CommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
@@ -150,7 +150,7 @@ public class GuiChamberDetails extends GuiItemScreen {
             } else {
                 try {
                     Class<?> aClass = Class.forName(className);
-                    entity = (Entity) aClass.getConstructor(World.class).newInstance(minecraft.level);
+                    entity = (Entity) aClass.getConstructor(Level.class).newInstance(minecraft.level);
                     entityName = aClass.getSimpleName();
                 } catch (ClassNotFoundException e) {
                 } catch (InstantiationException e) {
@@ -189,7 +189,7 @@ public class GuiChamberDetails extends GuiItemScreen {
     }
 
     @Override
-    public void render(@Nonnull MatrixStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
+    public void render(@Nonnull PoseStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
         super.render(matrixStack, xSize_lo, ySize_lo, par3);
 
         populateLists();

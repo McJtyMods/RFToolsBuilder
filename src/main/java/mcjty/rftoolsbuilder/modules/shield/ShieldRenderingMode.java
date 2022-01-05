@@ -1,12 +1,12 @@
 package mcjty.rftoolsbuilder.modules.shield;
 
-import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.StringRepresentable;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum ShieldRenderingMode implements IStringSerializable {
+public enum ShieldRenderingMode implements StringRepresentable {
     INVISIBLE("Invisible", true),
     SHIELD("Shield", true),
     MIMIC("Mimic", false),  // @todo translucent mimic?

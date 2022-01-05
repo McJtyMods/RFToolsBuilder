@@ -17,14 +17,14 @@ import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
@@ -35,7 +35,7 @@ public class BuilderModule implements IModule {
     public static final RegistryObject<SupportBlock> SUPPORT = BLOCKS.register("support_block", SupportBlock::new);
 
     public static final RegistryObject<BaseBlock> SPACE_CHAMBER = BLOCKS.register("space_chamber", () -> new BaseBlock(new BlockBuilder()
-        .properties(AbstractBlock.Properties.of(Material.METAL)
+        .properties(BlockBehaviour.Properties.of(Material.METAL)
                 .strength(2.0f)
                 .sound(SoundType.METAL)
                 .noOcclusion())));
@@ -43,14 +43,14 @@ public class BuilderModule implements IModule {
 
     public static final RegistryObject<SpaceChamberControllerBlock> SPACE_CHAMBER_CONTROLLER = BLOCKS.register("space_chamber_controller", SpaceChamberControllerBlock::new);
     public static final RegistryObject<Item> SPACE_CHAMBER_CONTROLLER_ITEM = ITEMS.register("space_chamber_controller", () -> new BlockItem(SPACE_CHAMBER_CONTROLLER.get(), Registration.createStandardProperties()));
-    public static final RegistryObject<TileEntityType<SpaceChamberControllerTileEntity>> TYPE_SPACE_CHAMBER_CONTROLLER = TILES.register("space_chamber_controller", () -> TileEntityType.Builder.of(SpaceChamberControllerTileEntity::new, SPACE_CHAMBER_CONTROLLER.get()).build(null));
+    public static final RegistryObject<BlockEntityType<SpaceChamberControllerTileEntity>> TYPE_SPACE_CHAMBER_CONTROLLER = TILES.register("space_chamber_controller", () -> BlockEntityType.Builder.of(SpaceChamberControllerTileEntity::new, SPACE_CHAMBER_CONTROLLER.get()).build(null));
 
     public static final RegistryObject<Item> SPACE_CHAMBER_CARD = ITEMS.register("space_chamber_card", SpaceChamberCardItem::new);
 
     public static final RegistryObject<BaseBlock> BUILDER = BLOCKS.register("builder", BuilderTileEntity::createBlock);
     public static final RegistryObject<Item> BUILDER_ITEM = ITEMS.register("builder", () -> new BlockItem(BUILDER.get(), Registration.createStandardProperties()));
-    public static final RegistryObject<TileEntityType<BuilderTileEntity>> TYPE_BUILDER = TILES.register("builder", () -> TileEntityType.Builder.of(BuilderTileEntity::new, BUILDER.get()).build(null));
-    public static final RegistryObject<ContainerType<GenericContainer>> CONTAINER_BUILDER = CONTAINERS.register("builder", GenericContainer::createContainerType);
+    public static final RegistryObject<BlockEntityType<BuilderTileEntity>> TYPE_BUILDER = TILES.register("builder", () -> BlockEntityType.Builder.of(BuilderTileEntity::new, BUILDER.get()).build(null));
+    public static final RegistryObject<MenuType<GenericContainer>> CONTAINER_BUILDER = CONTAINERS.register("builder", GenericContainer::createContainerType);
 
     public static final RegistryObject<Item> SUPER_HARVESTING_TOOL = ITEMS.register("superharvestingtool", SuperHarvestingTool::new);
 

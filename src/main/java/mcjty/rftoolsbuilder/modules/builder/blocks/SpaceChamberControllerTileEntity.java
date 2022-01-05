@@ -6,10 +6,11 @@ import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nonnull;
 
@@ -19,8 +20,8 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
     private BlockPos maxCorner;
     private int channel = -1;
 
-    public SpaceChamberControllerTileEntity() {
-        super(BuilderModule.TYPE_SPACE_CHAMBER_CONTROLLER.get());
+    public SpaceChamberControllerTileEntity(BlockPos pos, BlockState state) {
+        super(BuilderModule.TYPE_SPACE_CHAMBER_CONTROLLER.get(), pos, state);
     }
 
     public BlockPos getMinCorner() {
@@ -31,7 +32,7 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         return maxCorner;
     }
 
-    public void createChamber(PlayerEntity player) {
+    public void createChamber(Player player) {
         BlockPos pos = getBlockPos();
         int x1 = pos.getX();
         int y1 = pos.getY();
@@ -57,12 +58,12 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         }
 
         if (x1 == x2 || z2 == z1) {
-            Logging.message(player, TextFormatting.RED + "Not a valid chamber shape!");
+            Logging.message(player, ChatFormatting.RED + "Not a valid chamber shape!");
             return;
         }
 
         if (level.getBlockState(new BlockPos(x2, y1, z2)).getBlock() != BuilderModule.SPACE_CHAMBER.get()) {
-            Logging.message(player, TextFormatting.RED + "Not a valid chamber shape!");
+            Logging.message(player, ChatFormatting.RED + "Not a valid chamber shape!");
             return;
         }
 
@@ -78,22 +79,22 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         }
 
         if (y1 == y2) {
-            Logging.message(player, TextFormatting.RED + "Not a valid chamber shape!");
+            Logging.message(player, ChatFormatting.RED + "Not a valid chamber shape!");
             return;
         }
 
         if (level.getBlockState(new BlockPos(x2, y2, z2)).getBlock() != BuilderModule.SPACE_CHAMBER.get()) {
-            Logging.message(player, TextFormatting.RED + "Not a valid chamber shape!");
+            Logging.message(player, ChatFormatting.RED + "Not a valid chamber shape!");
             return;
         }
 
         if (level.getBlockState(new BlockPos(x1, y2, z2)).getBlock() != BuilderModule.SPACE_CHAMBER.get()) {
-            Logging.message(player, TextFormatting.RED + "Not a valid chamber shape!");
+            Logging.message(player, ChatFormatting.RED + "Not a valid chamber shape!");
             return;
         }
 
         if (level.getBlockState(new BlockPos(x2, y2, z1)).getBlock() != BuilderModule.SPACE_CHAMBER.get()) {
-            Logging.message(player, TextFormatting.RED + "Not a valid chamber shape!");
+            Logging.message(player, ChatFormatting.RED + "Not a valid chamber shape!");
             return;
         }
 
@@ -101,13 +102,13 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         minCorner = new BlockPos(Math.min(x1, x2)+1, Math.min(y1, y2)+1, Math.min(z1, z2)+1);
         maxCorner = new BlockPos(Math.max(x1, x2)-1, Math.max(y1, y2)-1, Math.max(z1, z2)-1);
         if (minCorner.getX() > maxCorner.getX() || minCorner.getY() > maxCorner.getY() || minCorner.getZ() > maxCorner.getZ()) {
-            Logging.message(player, TextFormatting.RED + "Chamber is too small!");
+            Logging.message(player, ChatFormatting.RED + "Chamber is too small!");
             minCorner = null;
             maxCorner = null;
             return;
         }
 
-        Logging.message(player, TextFormatting.WHITE + "Chamber succesfully created!");
+        Logging.message(player, ChatFormatting.WHITE + "Chamber succesfully created!");
 
         SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(level);
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = chamberRepository.getOrCreateChannel(channel);
@@ -139,14 +140,14 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
     }
 
     @Override
-    public void load(CompoundNBT tagCompound) {
+    public void load(CompoundTag tagCompound) {
         super.load(tagCompound);
         minCorner = BlockPosTools.read(tagCompound, "minCorner");
         maxCorner = BlockPosTools.read(tagCompound, "maxCorner");
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundNBT tagCompound) {
+    public void saveAdditional(@Nonnull CompoundTag tagCompound) {
         super.saveAdditional(tagCompound);
         BlockPosTools.write(tagCompound, "minCorner", minCorner);
         BlockPosTools.write(tagCompound, "maxCorner", maxCorner);

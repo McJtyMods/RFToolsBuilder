@@ -7,26 +7,28 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiChamberDetails;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
+
+import net.minecraft.world.item.Item.Properties;
 
 public class SpaceChamberCardItem extends Item implements ITooltipSettings {
 
@@ -35,7 +37,7 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
             .infoShift(header(), gold(),
                     parameter("cost", this::getCostDescription),
                     parameter("channel", this::getChannelDescription),
-                    general("extra", TextFormatting.GRAY)
+                    general("extra", ChatFormatting.GRAY)
                     );
 
     private String getCostDescription(ItemStack stack) {
@@ -43,7 +45,7 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
     }
 
     private String getChannelDescription(ItemStack stack) {
-        CompoundNBT tag = stack.getTag();
+        CompoundTag tag = stack.getTag();
         int channel = -1;
         if (tag != null) {
             channel = tag.getInt("channel");
@@ -60,14 +62,14 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
     }
 
     @Override
-    public void appendHoverText(@Nonnull ItemStack itemStack, World world, @Nonnull List<ITextComponent> list, @Nonnull ITooltipFlag flag) {
+    public void appendHoverText(@Nonnull ItemStack itemStack, Level world, @Nonnull List<Component> list, @Nonnull TooltipFlag flag) {
         super.appendHoverText(itemStack, world, list, flag);
         tooltipBuilder.get().makeTooltip(getRegistryName(), itemStack, list, flag);
     }
 
     @Nonnull
     @Override
-    public ActionResult<ItemStack> use(@Nonnull World world, PlayerEntity player, @Nonnull Hand hand) {
+    public InteractionResultHolder<ItemStack> use(@Nonnull Level world, Player player, @Nonnull InteractionHand hand) {
         if (!player.isCrouching()) {
             showDetails(world, player, player.getItemInHand(hand));
         }
@@ -76,14 +78,14 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
 
     @Nonnull
     @Override
-    public ActionResultType useOn(ItemUseContext context) {
-        PlayerEntity player = context.getPlayer();
-        Hand hand = context.getHand();
+    public InteractionResult useOn(UseOnContext context) {
+        Player player = context.getPlayer();
+        InteractionHand hand = context.getHand();
         ItemStack stack = player.getItemInHand(hand);
-        World level = context.getLevel();
+        Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
-        TileEntity te = level.getBlockEntity(pos);
-        CompoundNBT tagCompound = stack.getOrCreateTag();
+        BlockEntity te = level.getBlockEntity(pos);
+        CompoundTag tagCompound = stack.getOrCreateTag();
 
         int channel = -1;
         if (te instanceof SpaceChamberControllerTileEntity) {
@@ -98,21 +100,21 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
                 Logging.message(player, "Card is set to channel '" + channel + "'");
             }
         }
-        return ActionResultType.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
-    private void showDetails(World world, PlayerEntity player, ItemStack stack) {
+    private void showDetails(Level world, Player player, ItemStack stack) {
         if (stack.getTag() != null && stack.getTag().contains("channel")) {
             int channel = stack.getTag().getInt("channel");
             if (channel != -1) {
                 showDetailsGui(world, player);
             } else {
-                Logging.message(player, TextFormatting.YELLOW + "Card is not linked!");
+                Logging.message(player, ChatFormatting.YELLOW + "Card is not linked!");
             }
         }
     }
 
-    private void showDetailsGui(World world, PlayerEntity player) {
+    private void showDetailsGui(Level world, Player player) {
         if (world.isClientSide) {
             GuiChamberDetails.open();
         }

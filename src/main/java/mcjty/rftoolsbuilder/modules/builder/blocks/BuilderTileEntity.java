@@ -38,41 +38,40 @@ import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.setup.ClientCommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.shapes.Shape;
-import net.minecraft.block.*;
-import net.minecraft.block.material.Material;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.ExperienceOrbEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.loot.LootContext;
-import net.minecraft.loot.LootParameters;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.common.world.ForgeChunkManager;
@@ -80,10 +79,10 @@ import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.Pair;
@@ -176,7 +175,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get());
 
     @Cap(type = CapType.CONTAINER)
-    private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
+    private final LazyOptional<MenuProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
             .containerSupplier(container(BuilderModule.CONTAINER_BUILDER, CONTAINER_FACTORY,this))
             .itemHandler(() -> items)
             .energyHandler(() -> energyStorage)
@@ -194,8 +193,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
     });
 
-    public BuilderTileEntity() {
-        super(BuilderModule.TYPE_BUILDER.get());
+    public BuilderTileEntity(BlockPos pos, BlockState state) {
+        super(BuilderModule.TYPE_BUILDER.get(), pos, state);
         setRSMode(RedstoneMode.REDSTONE_ONREQUIRED);
     }
 
@@ -256,14 +255,14 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     public List<String> getHudLog() {
         List<String> list = new ArrayList<>();
-        list.add(TextFormatting.BLUE + "Mode:");
+        list.add(ChatFormatting.BLUE + "Mode:");
         if (isShapeCard()) {
             getCardType().addHudLog(list, items);
         } else {
             list.add("    Space card: " + mode.getName().toLowerCase());
         }
         if (scan != null) {
-            list.add(TextFormatting.BLUE + "Progress:");
+            list.add(ChatFormatting.BLUE + "Progress:");
             list.add("    Y level: " + scan.getY());
             int minChunkX = minBox.getX() >> 4;
             int minChunkZ = minBox.getZ() >> 4;
@@ -278,7 +277,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (lastError != null && !lastError.isEmpty()) {
             String[] errors = StringUtils.split(lastError, "\n");
             for (String error : errors) {
-                list.add(TextFormatting.RED + error);
+                list.add(ChatFormatting.RED + error);
             }
         }
         return list;
@@ -303,7 +302,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return items.getStackInSlot(SLOT_TAB).getItem() instanceof ShapeCardItem;
     }
 
-    private CompoundNBT hasCard() {
+    private CompoundTag hasCard() {
         return items.getStackInSlot(SLOT_TAB).getTag();
     }
 
@@ -331,15 +330,15 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = calculateBox();
         if (chamberChannel != null) {
-            RegistryKey<World> dimension = chamberChannel.getDimension();
-            World world = LevelTools.getLevel(this.level, dimension);
+            ResourceKey<Level> dimension = chamberChannel.getDimension();
+            Level world = LevelTools.getLevel(this.level, dimension);
             if (world == null) {
                 return;
             }
 
-            PlayerEntity player = harvester.get();
-            BlockPos.Mutable src = new BlockPos.Mutable();
-            BlockPos.Mutable dest = new BlockPos.Mutable();
+            Player player = harvester.get();
+            BlockPos.MutableBlockPos src = new BlockPos.MutableBlockPos();
+            BlockPos.MutableBlockPos dest = new BlockPos.MutableBlockPos();
             for (int x = minBox.getX(); x <= maxBox.getX(); x++) {
                 for (int y = minBox.getY(); y <= maxBox.getY(); y++) {
                     for (int z = minBox.getZ(); z <= maxBox.getZ(); z++) {
@@ -351,8 +350,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                         Block dstBlock = dstState.getBlock();
                         SupportBlock.SupportStatus error = SupportBlock.SupportStatus.STATUS_OK;
                         if (mode != MODE_COPY) {
-                            TileEntity srcTileEntity = world.getBlockEntity(src);
-                            TileEntity dstTileEntity = world.getBlockEntity(dest);
+                            BlockEntity srcTileEntity = world.getBlockEntity(src);
+                            BlockEntity dstTileEntity = world.getBlockEntity(dest);
 
                             SupportBlock.SupportStatus error1 = isMovable(player, world, src, srcBlock, srcTileEntity);
                             SupportBlock.SupportStatus error2 = isMovable(player, world, dest, dstBlock, dstTileEntity);
@@ -398,11 +397,11 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = calculateBox();
         if (chamberChannel != null) {
-            RegistryKey<World> dimension = chamberChannel.getDimension();
-            World world = LevelTools.getLevel(this.level, dimension);
+            ResourceKey<Level> dimension = chamberChannel.getDimension();
+            Level world = LevelTools.getLevel(this.level, dimension);
 
-            BlockPos.Mutable src = new BlockPos.Mutable();
-            BlockPos.Mutable dest = new BlockPos.Mutable();
+            BlockPos.MutableBlockPos src = new BlockPos.MutableBlockPos();
+            BlockPos.MutableBlockPos dest = new BlockPos.MutableBlockPos();
             for (int x = minBox.getX(); x <= maxBox.getX(); x++) {
                 for (int y = minBox.getY(); y <= maxBox.getY(); y++) {
                     for (int z = minBox.getZ(); z <= maxBox.getZ(); z++) {
@@ -663,7 +662,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         projDy = yCoord - minCorner.getY() - ((anchor == ANCHOR_NE || anchor == ANCHOR_NW) ? spanY : 0);
     }
 
-    private void calculateBox(CompoundNBT cardCompound) {
+    private void calculateBox(CompoundTag cardCompound) {
         int channel = cardCompound.getInt("channel");
 
         SpaceChamberRepository repository = SpaceChamberRepository.get(level);
@@ -735,8 +734,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return;
         }
 
-        RegistryKey<World> dimension = chamberChannel.getDimension();
-        World world = LevelTools.getLevel(this.level, dimension);
+        ResourceKey<Level> dimension = chamberChannel.getDimension();
+        Level world = LevelTools.getLevel(this.level, dimension);
         if (world == null) {
             // The other location must be loaded.
             return;
@@ -762,7 +761,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             int y = scan.getY();
             int z = scan.getZ();
             double sqradius = 30 * 30;
-            for (ServerPlayerEntity player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
+            for (ServerPlayer player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
                 if (Objects.equals(player.getCommandSenderWorld().dimension(), level.dimension())) {
                     double d0 = x - player.getX();
                     double d1 = y - player.getY();
@@ -776,7 +775,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
     }
 
-    private void collectItems(World world) {
+    private void collectItems(Level world) {
         // Collect item mode
         collectCounter--;
         if (collectCounter > 0) {
@@ -799,22 +798,22 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
         energyStorage.consumeEnergy(rfNeeded);
 
-        AxisAlignedBB bb = new AxisAlignedBB(minBox.getX() - .8, minBox.getY() - .8, minBox.getZ() - .8, maxBox.getX() + .8, maxBox.getY() + .8, maxBox.getZ() + .8);
+        AABB bb = new AABB(minBox.getX() - .8, minBox.getY() - .8, minBox.getZ() - .8, maxBox.getX() + .8, maxBox.getY() + .8, maxBox.getZ() + .8);
         List<Entity> items = world.getEntitiesOfClass(Entity.class, bb);
         for (Entity entity : items) {
             if (entity instanceof ItemEntity) {
                 if (collectItem(world, factor, (ItemEntity) entity)) {
                     return;
                 }
-            } else if (entity instanceof ExperienceOrbEntity) {
-                if (collectXP(world, factor, (ExperienceOrbEntity) entity)) {
+            } else if (entity instanceof ExperienceOrb) {
+                if (collectXP(world, factor, (ExperienceOrb) entity)) {
                     return;
                 }
             }
         }
     }
 
-    private boolean collectXP(World world, float infusedFactor, ExperienceOrbEntity orb) {
+    private boolean collectXP(Level world, float infusedFactor, ExperienceOrb orb) {
         int xp = orb.getValue();
         long rf = energyStorage.getEnergyStored();
         int rfNeeded = (int) (BuilderConfiguration.collectRFPerXP.get() * infusedFactor * xp);
@@ -829,7 +828,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (bottles > 0) {
             if (insertItem(new ItemStack(Items.EXPERIENCE_BOTTLE, bottles)).isEmpty()) {
                 collectXP = collectXP % 7;
-                ((ServerWorld) world).despawn(orb);
+                ((ServerLevel) world).removeEntity(orb);
                 energyStorage.consumeEnergy(rfNeeded);
             } else {
                 collectXP = 0;
@@ -839,7 +838,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return false;
     }
 
-    private boolean collectItem(World world, float infusedFactor, ItemEntity item) {
+    private boolean collectItem(Level world, float infusedFactor, ItemEntity item) {
         ItemStack stack = item.getItem();
 
         Predicate<ItemStack> predicate = filterCache.get();
@@ -855,7 +854,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
         energyStorage.consumeEnergy(rfNeeded);
 
-        ((ServerWorld) world).despawn(item);
+        ((ServerLevel) world).removeEntity(item);
         stack = insertItem(stack);
         if (!stack.isEmpty()) {
             BlockPos position = item.blockPosition();
@@ -905,7 +904,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private SpaceChamberRepository.SpaceChamberChannel calculateBox() {
-        CompoundNBT tc = hasCard();
+        CompoundTag tc = hasCard();
         if (tc == null) {
             return null;
         }
@@ -1029,7 +1028,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 return waitOrSkip("Cannot find block!\nor missing inventory\non top or below");    // We could not find a block. Wait
             }
 
-            PlayerEntity fakePlayer = harvester.get();
+            Player fakePlayer = harvester.get();
             BlockState newState = Tools.placeStackAt(fakePlayer, stack, level, srcPos, pickState);
             if (newState == null) {
                 return waitOrSkip("Cannot place block!");
@@ -1058,7 +1057,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return skip();
     }
 
-    private void playPlaceSoundSafe(SoundType sound, World world, BlockState state, int x, int y, int z) {
+    private void playPlaceSoundSafe(SoundType sound, Level world, BlockState state, int x, int y, int z) {
         try {
             SoundTools.playSound(world, sound.getPlaceSound(), x, y, z, 1.0f, 1.0f);
         } catch (Exception e) {
@@ -1066,7 +1065,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
     }
 
-    private void playBreakSoundSafe(SoundType sound, World world, BlockState state, int x, int y, int z) {
+    private void playBreakSoundSafe(SoundType sound, Level world, BlockState state, int x, int y, int z) {
         try {
             SoundTools.playSound(world, sound.getBreakSound(), x, y, z, 1.0f, 1.0f);
         } catch (Exception e) {
@@ -1108,7 +1107,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return FilterModuleItem.getCache(items.getStackInSlot(SLOT_FILTER));
     }
 
-    private boolean allowedToBreak(BlockState state, World world, BlockPos pos, PlayerEntity player) {
+    private boolean allowedToBreak(BlockState state, Level world, BlockPos pos, Player player) {
         if (!state.getBlock().canEntityDestroy(state, world, pos, player)) {
             return skip("Cannot destroy!\nAre fake players\nallowed?");
         }
@@ -1120,7 +1119,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return true;
     }
 
-    private static boolean allowedToBreakS(BlockState state, World world, BlockPos pos, PlayerEntity player) {
+    private static boolean allowedToBreakS(BlockState state, Level world, BlockPos pos, Player player) {
         if (!state.getBlock().canEntityDestroy(state, world, pos, player)) {
             return false;
         }
@@ -1181,7 +1180,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 return skip();
             }
 
-            PlayerEntity fakePlayer = harvester.get();
+            Player fakePlayer = harvester.get();
             if (allowedToBreak(srcState, level, srcPos, fakePlayer)) {
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
@@ -1207,11 +1206,11 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                     }
 
                     int fortune = getCardType().isFortune() ? 3 : 0;
-                    LootContext.Builder builder = new LootContext.Builder((ServerWorld) level)
+                    LootContext.Builder builder = new LootContext.Builder((ServerLevel) level)
                             .withRandom(level.random)
-                            .withParameter(LootParameters.ORIGIN, new Vector3d(srcPos.getX(), srcPos.getY(), srcPos.getZ()))
-                            .withParameter(LootParameters.TOOL, getHarvesterTool(silk, fortune))
-                            .withOptionalParameter(LootParameters.BLOCK_ENTITY, level.getBlockEntity(srcPos));
+                            .withParameter(LootContextParams.ORIGIN, new Vec3(srcPos.getX(), srcPos.getY(), srcPos.getZ()))
+                            .withParameter(LootContextParams.TOOL, getHarvesterTool(silk, fortune))
+                            .withOptionalParameter(LootContextParams.BLOCK_ENTITY, level.getBlockEntity(srcPos));
                     if (fortune > 0) {
                         builder.withLuck(fortune);
                     }
@@ -1230,12 +1229,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private static boolean isFluidBlock(Block block) {
-        return block instanceof FlowingFluidBlock;
+        return block instanceof LiquidBlock;
     }
 
     private static int getFluidLevel(BlockState srcState) {
-        if (srcState.getBlock() instanceof FlowingFluidBlock) {
-            return srcState.getValue(FlowingFluidBlock.LEVEL);
+        if (srcState.getBlock() instanceof LiquidBlock) {
+            return srcState.getValue(LiquidBlock.LEVEL);
         }
         return -1;
     }
@@ -1254,7 +1253,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             } else {
                 // We assume here the liquid is placable.
                 Block block = fluid.defaultFluidState().createLegacyBlock().getBlock();   // @todo 1.14 check blockstate
-                PlayerEntity fakePlayer = harvester.get();
+                Player fakePlayer = harvester.get();
                 level.setBlock(srcPos, block.defaultBlockState(), 11);
 
                 if (!silent) {
@@ -1298,7 +1297,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 //        }
 
         if (srcState.getDestroySpeed(level, srcPos) >= 0) {
-            PlayerEntity fakePlayer = harvester.get();
+            Player fakePlayer = harvester.get();
             if (allowedToBreak(srcState, level, srcPos, fakePlayer)) {
                 if (checkAndInsertFluids(fluidStack)) {
                     energyStorage.consumeEnergy(rfNeeded);
@@ -1336,7 +1335,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             // Skip a 3x3x3 block around the builder.
             return skip();
         }
-        PlayerEntity fakePlayer = harvester.get();
+        Player fakePlayer = harvester.get();
         if (allowedToBreak(srcState, level, srcPos, fakePlayer)) {
             assert level != null;
             if (srcState.getDestroySpeed(level, srcPos) >= 0) {
@@ -1364,7 +1363,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return skip();
     }
 
-    private void handleBlock(World world) {
+    private void handleBlock(Level world) {
         BlockPos srcPos = scan;
         BlockPos destPos = sourceToDest(scan);
         int x = scan.getX();
@@ -1404,7 +1403,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private static Random random = new Random();
 
     // Also works if block is null and just picks the first available block.
-    private TakeableItem findBlockTakeableItem(IItemHandler inventory, World srcWorld, BlockPos srcPos, BlockState state) {
+    private TakeableItem findBlockTakeableItem(IItemHandler inventory, Level srcWorld, BlockPos srcPos, BlockState state) {
         if (state == null) {
             // We are not looking for a specific block. Pick a random one out of the chest.
             List<Integer> slots = new ArrayList<>();
@@ -1464,7 +1463,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private boolean checkFluidTank(FluidStack fluidStack, BlockPos up, Direction side) {
-        TileEntity te = level.getBlockEntity(up);
+        BlockEntity te = level.getBlockEntity(up);
         if (te != null) {
             return te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side).map(h -> {
                 int amount = h.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
@@ -1484,7 +1483,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     // Tries to insert the items in the given item handler (if the te represents an item handler)
     // All items that could not be inserted are put on the couldntHandle list (for example, because
     // there is no item handler or the item handler is full)
-    private void handleItemInsertion(@Nullable TileEntity te, Direction direction, List<ItemStack> items, LazyList<ItemStack> couldntHandle) {
+    private void handleItemInsertion(@Nullable BlockEntity te, Direction direction, List<ItemStack> items, LazyList<ItemStack> couldntHandle) {
         if (te == null) {
             couldntHandle.copyList(items);
             return;
@@ -1577,8 +1576,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
      * If the given blockstate parameter is null then a random block will be
      * returned. Otherwise the returned block has to match.
      */
-    private TakeableItem createTakeableItem(Direction direction, World srcWorld, BlockPos srcPos, BlockState state) {
-        TileEntity te = level.getBlockEntity(getBlockPos().relative(direction));
+    private TakeableItem createTakeableItem(Direction direction, Level srcWorld, BlockPos srcPos, BlockState state) {
+        BlockEntity te = level.getBlockEntity(getBlockPos().relative(direction));
         if (te != null) {
             return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).map(h -> {
                 return findBlockTakeableItem(h, srcWorld, srcPos, state);
@@ -1588,7 +1587,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     @Nonnull
-    private FluidStack consumeLiquid(World srcWorld, BlockPos srcPos) {
+    private FluidStack consumeLiquid(Level srcWorld, BlockPos srcPos) {
         FluidStack b = consumeLiquid(Direction.UP, srcWorld, srcPos);
         if (b.isEmpty()) {
             b = consumeLiquid(Direction.DOWN, srcWorld, srcPos);
@@ -1597,8 +1596,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     @Nonnull
-    private FluidStack consumeLiquid(Direction direction, World srcWorld, BlockPos srcPos) {
-        TileEntity te = level.getBlockEntity(getBlockPos().relative(direction));
+    private FluidStack consumeLiquid(Direction direction, Level srcWorld, BlockPos srcPos) {
+        BlockEntity te = level.getBlockEntity(getBlockPos().relative(direction));
         if (te != null) {
             LazyOptional<IFluidHandler> fluid = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite());
             if (!fluid.isPresent()) {
@@ -1612,7 +1611,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     @Nonnull
-    private FluidStack findAndConsumeLiquid(IFluidHandler tank, World srcWorld, BlockPos srcPos) {
+    private FluidStack findAndConsumeLiquid(IFluidHandler tank, Level srcWorld, BlockPos srcPos) {
         for (int i = 0; i < tank.getTanks(); i++) {
             FluidStack contents = tank.getFluidInTank(i);
             if (!contents.isEmpty()) {
@@ -1626,7 +1625,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return FluidStack.EMPTY;
     }
 
-    private TakeableItem createTakeableItem(World srcWorld, BlockPos srcPos, BlockState state) {
+    private TakeableItem createTakeableItem(Level srcWorld, BlockPos srcPos, BlockState state) {
         TakeableItem b = createTakeableItem(Direction.UP, srcWorld, srcPos, state);
         if (b.peek().isEmpty()) {
             b = createTakeableItem(Direction.DOWN, srcWorld, srcPos, state);
@@ -1634,7 +1633,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return b;
     }
 
-    public static BlockInformation getBlockInformation(PlayerEntity fakePlayer, World world, BlockPos pos, Block block, TileEntity tileEntity) {
+    public static BlockInformation getBlockInformation(Player fakePlayer, Level world, BlockPos pos, Block block, BlockEntity tileEntity) {
         BlockState state = world.getBlockState(pos);
         if (isEmpty(state, block)) {
             return BlockInformation.FREE;
@@ -1669,11 +1668,11 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return BlockInformation.OK;
     }
 
-    private SupportBlock.SupportStatus isMovable(PlayerEntity harvester, World world, BlockPos pos, Block block, TileEntity tileEntity) {
+    private SupportBlock.SupportStatus isMovable(Player harvester, Level world, BlockPos pos, Block block, BlockEntity tileEntity) {
         return getBlockInformation(harvester, world, pos, block, tileEntity).getBlockLevel();
     }
 
-    public static boolean isEmptyOrReplacable(World world, BlockPos pos) {
+    public static boolean isEmptyOrReplacable(Level world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
         if (state.getMaterial().isReplaceable()) {
@@ -1696,7 +1695,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return false;
     }
 
-    private void clearBlock(World world, BlockPos pos) {
+    private void clearBlock(Level world, BlockPos pos) {
         if (supportMode) {
             world.setBlock(pos, BuilderModule.SUPPORT.get().defaultBlockState(), 3);
         } else {
@@ -1714,7 +1713,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return rotate;
     }
 
-    private void copyBlock(World srcWorld, BlockPos srcPos, World destWorld, BlockPos destPos) {
+    private void copyBlock(Level srcWorld, BlockPos srcPos, Level destWorld, BlockPos destPos) {
         long rf = energyStorage.getEnergy();
         float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
         int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * (4.0f - factor) / 4.0f);
@@ -1734,7 +1733,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 return;
             }
 
-            PlayerEntity fakePlayer = harvester.get();
+            Player fakePlayer = harvester.get();
             BlockState newState = Tools.placeStackAt(fakePlayer, consumedStack, destWorld, destPos, srcState);
             if (newState == null) {
                 // This block can't be placed
@@ -1765,14 +1764,14 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
     }
 
-    private double getDimensionCostFactor(World world, World destWorld) {
+    private double getDimensionCostFactor(Level world, Level destWorld) {
         return (Objects.equals(destWorld.dimension(), world.dimension())) ? 1.0 : BuilderConfiguration.dimensionCostFactor.get();
     }
 
     private boolean consumeEntityEnergy(int rfNeeded, int rfNeededPlayer, Entity entity) {
         long rf = energyStorage.getEnergy();
         int rfn;
-        if (entity instanceof PlayerEntity) {
+        if (entity instanceof Player) {
             rfn = rfNeededPlayer;
         } else {
             rfn = rfNeeded;
@@ -1786,13 +1785,13 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return false;
     }
 
-    private void moveEntities(World world, int x, int y, int z, World destWorld, int destX, int destY, int destZ) {
+    private void moveEntities(Level world, int x, int y, int z, Level destWorld, int destX, int destY, int destZ) {
         float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
         int rfNeeded = (int) (BuilderConfiguration.builderRfPerEntity.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
         int rfNeededPlayer = (int) (BuilderConfiguration.builderRfPerPlayer.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
 
         // Check for entities.
-        List<Entity> entities = world.getEntities(null, new AxisAlignedBB(x - .1, y - .1, z - .1, x + 1.1, y + 1.1, z + 1.1));
+        List<Entity> entities = world.getEntities(null, new AABB(x - .1, y - .1, z - .1, x + 1.1, y + 1.1, z + 1.1));
         for (Entity entity : entities) {
 
             if (consumeEntityEnergy(rfNeeded, rfNeededPlayer, entity)) {
@@ -1807,14 +1806,14 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
     }
 
-    private void swapEntities(World world, int x, int y, int z, World destWorld, int destX, int destY, int destZ) {
+    private void swapEntities(Level world, int x, int y, int z, Level destWorld, int destX, int destY, int destZ) {
         float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
         int rfNeeded = (int) (BuilderConfiguration.builderRfPerEntity.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
         int rfNeededPlayer = (int) (BuilderConfiguration.builderRfPerPlayer.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
 
         // Check for entities.
-        List<Entity> entitiesSrc = world.getEntities(null, new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1));
-        List<Entity> entitiesDst = destWorld.getEntities(null, new AxisAlignedBB(destX, destY, destZ, destX + 1, destY + 1, destZ + 1));
+        List<Entity> entitiesSrc = world.getEntities(null, new AABB(x, y, z, x + 1, y + 1, z + 1));
+        List<Entity> entitiesDst = destWorld.getEntities(null, new AABB(destX, destY, destZ, destX + 1, destY + 1, destZ + 1));
         for (Entity entity : entitiesSrc) {
             if (isEntityInBlock(x, y, z, entity)) {
                 if (consumeEntityEnergy(rfNeeded, rfNeededPlayer, entity)) {
@@ -1841,7 +1840,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
     }
 
-    private void teleportEntity(World world, World destWorld, Entity entity, double newX, double newY, double newZ) {
+    private void teleportEntity(Level world, Level destWorld, Entity entity, double newX, double newY, double newZ) {
         // @todo 1.14 use api to check for allow teleportation
 //        if (!TeleportationTools.allowTeleport(entity, world.getDimension().getType().getId(), entity.getPosition(), destWorld.getDimension().getType().getId(), new BlockPos(newX, newY, newZ))) {
 //            return;
@@ -1857,7 +1856,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return false;
     }
 
-    private void moveBlock(World srcWorld, BlockPos srcPos, World destWorld, BlockPos destPos, RotateMode rotMode) {
+    private void moveBlock(Level srcWorld, BlockPos srcPos, Level destWorld, BlockPos destPos, RotateMode rotMode) {
         BlockState oldDestState = destWorld.getBlockState(destPos);
         Block oldDestBlock = oldDestState.getBlock();
         if (isEmpty(oldDestState, oldDestBlock)) {
@@ -1866,7 +1865,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             if (isEmpty(srcState, srcBlock)) {
                 return;
             }
-            TileEntity srcTileEntity = srcWorld.getBlockEntity(srcPos);
+            BlockEntity srcTileEntity = srcWorld.getBlockEntity(srcPos);
             BlockInformation srcInformation = getBlockInformation(harvester.get(), srcWorld, srcPos, srcBlock, srcTileEntity);
             if (srcInformation.getBlockLevel() == SupportBlock.SupportStatus.STATUS_ERROR) {
                 return;
@@ -1882,9 +1881,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 energyStorage.consumeEnergy(rfNeeded);
             }
 
-            CompoundNBT tc = null;
+            CompoundTag tc = null;
             if (srcTileEntity != null) {
-                tc = new CompoundNBT();
+                tc = new CompoundTag();
                 srcTileEntity.save(tc);
                 srcWorld.removeBlockEntity(srcPos);
             }
@@ -1903,26 +1902,26 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
     }
 
-    private void setTileEntityNBT(World destWorld, CompoundNBT tc, BlockPos destpos, BlockState newDestState) {
+    private void setTileEntityNBT(Level destWorld, CompoundTag tc, BlockPos destpos, BlockState newDestState) {
         tc.putInt("x", destpos.getX());
         tc.putInt("y", destpos.getY());
         tc.putInt("z", destpos.getZ());
-        TileEntity tileEntity = TileEntity.loadStatic(newDestState, tc);
+        BlockEntity tileEntity = BlockEntity.loadStatic(destpos, newDestState, tc);
         if (tileEntity != null) {
-            destWorld.getChunk(destpos).setBlockEntity(destpos, tileEntity);
+            destWorld.getChunk(destpos).setBlockEntity(tileEntity);
             tileEntity.setChanged();
-            destWorld.sendBlockUpdated(destpos, newDestState, newDestState, 3);
+            destWorld.sendBlockUpdated(destpos, newDestState, newDestState, Block.UPDATE_ALL);
         }
     }
 
-    private void swapBlock(World srcWorld, BlockPos srcPos, World destWorld, BlockPos dstPos) {
+    private void swapBlock(Level srcWorld, BlockPos srcPos, Level destWorld, BlockPos dstPos) {
         BlockState oldSrcState = srcWorld.getBlockState(srcPos);
         Block srcBlock = oldSrcState.getBlock();
-        TileEntity srcTileEntity = srcWorld.getBlockEntity(srcPos);
+        BlockEntity srcTileEntity = srcWorld.getBlockEntity(srcPos);
 
         BlockState oldDstState = destWorld.getBlockState(dstPos);
         Block dstBlock = oldDstState.getBlock();
-        TileEntity dstTileEntity = destWorld.getBlockEntity(dstPos);
+        BlockEntity dstTileEntity = destWorld.getBlockEntity(dstPos);
 
         if (isEmpty(oldSrcState, srcBlock) && isEmpty(oldDstState, dstBlock)) {
             return;
@@ -1948,6 +1947,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         } else {
             energyStorage.consumeEnergy(rfNeeded);
         }
+        // @todo 1.18 IMPORTANT: HOW TO MOVE BLOCK ENTITY!
 
         srcWorld.removeBlockEntity(srcPos);
         srcWorld.setBlockAndUpdate(srcPos, Blocks.AIR.defaultBlockState());
@@ -1959,7 +1959,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 //        destWorld.setBlockMetadataWithNotify(destX, destY, destZ, srcMeta, 3);
         if (srcTileEntity != null) {
             srcTileEntity.clearRemoved();
-            destWorld.setBlockEntity(dstPos, srcTileEntity);
+            destWorld.setBlockEntity(srcTileEntity);
             srcTileEntity.setChanged();
             destWorld.sendBlockUpdated(dstPos, newDstState, newDstState, 3);
         }
@@ -1969,7 +1969,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 //        world.setBlockMetadataWithNotify(x, y, z, dstMeta, 3);
         if (dstTileEntity != null) {
             dstTileEntity.clearRemoved();
-            srcWorld.setBlockEntity(srcPos, dstTileEntity);
+            srcWorld.setBlockEntity(dstTileEntity);
             dstTileEntity.setChanged();
             srcWorld.sendBlockUpdated(srcPos, newSrcState, newSrcState, 3);
         }
@@ -2008,13 +2008,13 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return c;
     }
 
-    private void sourceToDest(BlockPos source, BlockPos.Mutable dest) {
+    private void sourceToDest(BlockPos source, BlockPos.MutableBlockPos dest) {
         rotate(source, dest);
         dest.set(dest.getX() + projDx, dest.getY() + projDy, dest.getZ() + projDz);
     }
 
 
-    private void rotate(BlockPos c, BlockPos.Mutable dest) {
+    private void rotate(BlockPos c, BlockPos.MutableBlockPos dest) {
         switch (rotate) {
             case ROTATE_0:
                 dest.set(c);
@@ -2060,7 +2060,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private void chunkUnload() {
         if (forcedChunk != null) {
             if (getOwnerUUID() != null) {
-                ForgeChunkManager.forceChunk((ServerWorld) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
+                ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
             }
             forcedChunk = null;
         }
@@ -2081,12 +2081,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
             if (forcedChunk != null) {
                 if (getOwnerUUID() != null) {
-                    ForgeChunkManager.forceChunk((ServerWorld) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
+                    ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
                 }
             }
             forcedChunk = pair;
             if (getOwnerUUID() != null) {
-                ForgeChunkManager.forceChunk((ServerWorld) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, true, false);
+                ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, true, false);
             }
             return true;
         }
@@ -2188,21 +2188,21 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     @Override
-    public void load(CompoundNBT tagCompound) {
+    public void load(CompoundTag tagCompound) {
         super.load(tagCompound);
         if (tagCompound.contains("overflowItems")) {
-            ListNBT overflowItemsNbt = tagCompound.getList("overflowItems", Constants.NBT.TAG_COMPOUND);
+            ListTag overflowItemsNbt = tagCompound.getList("overflowItems", Tag.TAG_COMPOUND);
             overflowItems.clear();
-            for (INBT overflowNbt : overflowItemsNbt) {
-                overflowItems.add(ItemStack.of((CompoundNBT) overflowNbt));
+            for (Tag overflowNbt : overflowItemsNbt) {
+                overflowItems.add(ItemStack.of((CompoundTag) overflowNbt));
             }
         }
     }
 
     @Override
-    protected void loadInfo(CompoundNBT tagCompound) {
+    protected void loadInfo(CompoundTag tagCompound) {
         super.loadInfo(tagCompound);
-        CompoundNBT info = tagCompound.getCompound("Info");
+        CompoundTag info = tagCompound.getCompound("Info");
 
         // Workaround to get the redstone mode for old builders to default to 'on'
         if (!info.contains("rsMode")) {
@@ -2239,12 +2239,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundNBT tagCompound) {
+    public void saveAdditional(@Nonnull CompoundTag tagCompound) {
         super.saveAdditional(tagCompound);
         if (!overflowItems.isEmpty()) {
-            ListNBT overflowItemsNbt = new ListNBT();
+            ListTag overflowItemsNbt = new ListTag();
             for (ItemStack overflow : overflowItems.getList()) {
-                overflowItemsNbt.add(overflow.save(new CompoundNBT()));
+                overflowItemsNbt.add(overflow.save(new CompoundTag()));
             }
             tagCompound.put("overflowItems", overflowItemsNbt);
         }
@@ -2266,9 +2266,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     @Override
-    protected void saveInfo(CompoundNBT tagCompound) {
+    protected void saveInfo(CompoundTag tagCompound) {
         super.saveInfo(tagCompound);
-        CompoundNBT infoTag = getOrCreateInfo(tagCompound);
+        CompoundTag infoTag = getOrCreateInfo(tagCompound);
         if (lastError != null) {
             infoTag.putString("lastError", lastError);
         }
@@ -2303,7 +2303,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             (te, player, params, list) -> te.clientHudLog = list);
 
     @Override
-    public void onReplaced(World world, BlockPos pos, BlockState state, BlockState newstate) {
+    public void onReplaced(Level world, BlockPos pos, BlockState state, BlockState newstate) {
         if (state.getBlock() == newstate.getBlock()) {
             return;
         }
@@ -2314,8 +2314,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(worldPosition, worldPosition.offset(1, 2, 1));
+    public AABB getRenderBoundingBox() {
+        return new AABB(worldPosition, worldPosition.offset(1, 2, 1));
     }
 
     @Override

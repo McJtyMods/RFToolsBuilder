@@ -6,13 +6,13 @@ import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
 import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingTileEntity;
-import net.minecraft.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.data.IModelData;
 
 import javax.annotation.Nonnull;
@@ -149,7 +149,7 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
 //        if (layer != null && !camo.getBlock().canRenderInLayer(camo, layer)) { // always render in the null layer or the block-breaking textures don't show up
 //            return Collections.emptyList();
 //        }
-        IBakedModel model = getModel(camo);
+        BakedModel model = getModel(camo);
         try {
             return model.getQuads(state, side, rand, null);
         } catch (Exception e) {
@@ -157,7 +157,7 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
         }
     }
 
-    private IBakedModel getModel(@Nonnull BlockState facadeState) {
+    private BakedModel getModel(@Nonnull BlockState facadeState) {
         initTextures();
         return Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(facadeState);
     }
