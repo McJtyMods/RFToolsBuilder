@@ -11,7 +11,9 @@
       "conditions": {
         "items": [
           {
-            "item": "rftoolsbuilder:shape_card_def"
+            "items": [
+              "rftoolsbuilder:shape_card_def"
+            ]
           }
         ]
       }

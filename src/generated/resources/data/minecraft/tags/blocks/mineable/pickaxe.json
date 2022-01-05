@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "rftoolsbuilder:builder",
+    "rftoolsbuilder:space_chamber",
+    "rftoolsbuilder:space_chamber_controller",
+    "rftoolsbuilder:support_block",
+    "rftoolsbuilder:shield_block1",
+    "rftoolsbuilder:shield_block2",
+    "rftoolsbuilder:shield_block3",
+    "rftoolsbuilder:shield_block4",
+    "rftoolsbuilder:shielding_cutout",
+    "rftoolsbuilder:shielding_solid",
+    "rftoolsbuilder:shielding_translucent"
+  ]
+}

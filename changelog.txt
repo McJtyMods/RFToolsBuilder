@@ -1,3 +1,6 @@
+1.18-4.0.0:
+- First release on 1.18
+
 1.16-3.1.4:
 - Updated to latest version of McJtyLib
 
