@@ -73,11 +73,11 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
             if (renderData == null) {
                 return quads;
             }
-            float r = renderData.getRed();
-            float g = renderData.getGreen();
-            float b = renderData.getBlue();
-            float a = renderData.getAlpha();
-            TextureAtlasSprite[] shield = shields.get(renderData.getShieldTexture());
+            float r = renderData.red();
+            float g = renderData.green();
+            float b = renderData.blue();
+            float a = renderData.alpha();
+            TextureAtlasSprite[] shield = shields.get(renderData.shieldTexture());
             switch (side) {
                 case DOWN:
                     quads.add(createQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), shield[iconTopdown], r, g, b, a));
@@ -109,10 +109,10 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
             if (renderData == null) {
                 return quads;
             }
-            float r = renderData.getRed();
-            float g = renderData.getGreen();
-            float b = renderData.getBlue();
-            float a = renderData.getAlpha();
+            float r = renderData.red();
+            float g = renderData.green();
+            float b = renderData.blue();
+            float a = renderData.alpha();
             switch (side) {
                 case DOWN:
                     quads.add(createQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), texture, r, g, b, a));

@@ -1051,18 +1051,10 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             int templateColor = tagCompound.getInt("templateColor");
             ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
             switch (color) {
-                case BLUE:
-                    templateState = ShieldModule.TEMPLATE_BLUE.get().defaultBlockState();
-                    break;
-                case RED:
-                    templateState = ShieldModule.TEMPLATE_RED.get().defaultBlockState();
-                    break;
-                case GREEN:
-                    templateState = ShieldModule.TEMPLATE_GREEN.get().defaultBlockState();
-                    break;
-                case YELLOW:
-                    templateState = ShieldModule.TEMPLATE_YELLOW.get().defaultBlockState();
-                    break;
+                case BLUE -> templateState = ShieldModule.TEMPLATE_BLUE.get().defaultBlockState();
+                case RED -> templateState = ShieldModule.TEMPLATE_RED.get().defaultBlockState();
+                case GREEN -> templateState = ShieldModule.TEMPLATE_GREEN.get().defaultBlockState();
+                case YELLOW -> templateState = ShieldModule.TEMPLATE_YELLOW.get().defaultBlockState();
             }
         } else {
             templateState = Blocks.AIR.defaultBlockState();
@@ -1123,18 +1115,10 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 int templateColor = tagCompound.getInt("templateColor");
                 ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
                 switch (color) {
-                    case BLUE:
-                        templateState = ShieldModule.TEMPLATE_BLUE.get().defaultBlockState();
-                        break;
-                    case RED:
-                        templateState = ShieldModule.TEMPLATE_RED.get().defaultBlockState();
-                        break;
-                    case GREEN:
-                        templateState = ShieldModule.TEMPLATE_GREEN.get().defaultBlockState();
-                        break;
-                    case YELLOW:
-                        templateState = ShieldModule.TEMPLATE_YELLOW.get().defaultBlockState();
-                        break;
+                    case BLUE -> templateState = ShieldModule.TEMPLATE_BLUE.get().defaultBlockState();
+                    case RED -> templateState = ShieldModule.TEMPLATE_RED.get().defaultBlockState();
+                    case GREEN -> templateState = ShieldModule.TEMPLATE_GREEN.get().defaultBlockState();
+                    case YELLOW -> templateState = ShieldModule.TEMPLATE_YELLOW.get().defaultBlockState();
                 }
             } else {
                 templateState = Blocks.AIR.defaultBlockState();

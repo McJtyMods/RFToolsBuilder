@@ -1873,8 +1873,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
             CompoundTag tc = null;
             if (srcTileEntity != null) {
-                tc = new CompoundTag();
-                srcTileEntity.save(tc);
+                tc = srcTileEntity.saveWithoutMetadata();
                 srcWorld.removeBlockEntity(srcPos);
             }
             clearBlock(srcWorld, srcPos);

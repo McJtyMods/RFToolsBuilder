@@ -44,7 +44,9 @@ public class ShieldingTileEntity extends BlockEntity {
     @Nonnull
     @Override
     public CompoundTag getUpdateTag() {
-        return this.save(new CompoundTag());
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag);
+        return tag;
     }
 
     @Override
@@ -87,8 +89,8 @@ public class ShieldingTileEntity extends BlockEntity {
         ShieldRenderData renderData = DEFAULT_RENDER_DATA;
         if (shieldProjector != null) {
             BlockEntity te = level.getBlockEntity(shieldProjector);
-            if (te instanceof ShieldProjectorTileEntity) {
-                renderData = ((ShieldProjectorTileEntity) te).getRenderData();
+            if (te instanceof ShieldProjectorTileEntity shield) {
+                renderData = shield.getRenderData();
             }
         }
         return new ModelDataMap.Builder()

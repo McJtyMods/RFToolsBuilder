@@ -1,5 +1,6 @@
 Upcoming:
 - Updates for McJtyLib and fixes
+- Some fixes to the shield rendering
 
 1.18-4.0.0:
 - First release on 1.18
