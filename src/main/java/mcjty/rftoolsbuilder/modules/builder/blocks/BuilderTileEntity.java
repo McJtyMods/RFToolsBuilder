@@ -870,15 +870,18 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
         BlockPos minCorner = ShapeCardItem.getMinCorner(getBlockPos(), dimension, offset);
         BlockPos maxCorner = ShapeCardItem.getMaxCorner(getBlockPos(), dimension, offset);
-        if (minCorner.getY() < 0) {
-            minCorner = new BlockPos(minCorner.getX(), 0, minCorner.getZ());
-        } else if (minCorner.getY() > 255) {
-            minCorner = new BlockPos(minCorner.getX(), 255, minCorner.getZ());
+
+        int minHeight = level.getMinBuildHeight();
+        int maxHeight = level.getMaxBuildHeight();
+        if (minCorner.getY() < minHeight) {
+            minCorner = new BlockPos(minCorner.getX(), minHeight, minCorner.getZ());
+        } else if (minCorner.getY() > maxHeight) {
+            minCorner = new BlockPos(minCorner.getX(), maxHeight, minCorner.getZ());
         }
-        if (maxCorner.getY() < 0) {
-            maxCorner = new BlockPos(maxCorner.getX(), 0, maxCorner.getZ());
-        } else if (maxCorner.getY() > 255) {
-            maxCorner = new BlockPos(maxCorner.getX(), 255, maxCorner.getZ());
+        if (maxCorner.getY() < minHeight) {
+            maxCorner = new BlockPos(maxCorner.getX(), minHeight, maxCorner.getZ());
+        } else if (maxCorner.getY() > maxHeight) {
+            maxCorner = new BlockPos(maxCorner.getX(), maxHeight, maxCorner.getZ());
         }
 
         if (boxValid) {

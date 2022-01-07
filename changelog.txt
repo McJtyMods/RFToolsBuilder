@@ -1,6 +1,7 @@
 Upcoming:
 - Updates for McJtyLib and fixes
 - Some fixes to the shield rendering
+- The Builder can now quarry below 0 and above 255
 
 1.18-4.0.0:
 - First release on 1.18
