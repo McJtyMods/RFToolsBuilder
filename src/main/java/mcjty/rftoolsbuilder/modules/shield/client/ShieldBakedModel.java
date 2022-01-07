@@ -49,19 +49,13 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
         initTextures();
         ShieldRenderingMode mode = state.getValue(ShieldingBlock.RENDER_MODE);
-        switch (mode) {
-            case INVISIBLE:
-                return Collections.emptyList();
-            case SHIELD:
-                return getQuadsShield(side, extraData);
-            case MIMIC:
-                return getQuadsMimic(state, side, rand, extraData);
-            case TRANSP:
-                return getQuadsTextured(side, shieldtransparent, extraData);
-            case SOLID:
-                return getQuadsTextured(side, shieldfull, extraData);
-        }
-        return Collections.emptyList();
+        return switch (mode) {
+            case INVISIBLE -> Collections.emptyList();
+            case SHIELD -> getQuadsShield(side, extraData);
+            case MIMIC -> getQuadsMimic(state, side, rand, extraData);
+            case TRANSP -> getQuadsTextured(side, shieldtransparent, extraData);
+            case SOLID -> getQuadsTextured(side, shieldfull, extraData);
+        };
     }
 
     private List<BakedQuad> getQuadsShield(@Nullable Direction side, IModelData extraData) {
@@ -79,24 +73,12 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
             float a = renderData.alpha();
             TextureAtlasSprite[] shield = shields.get(renderData.shieldTexture());
             switch (side) {
-                case DOWN:
-                    quads.add(createQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), shield[iconTopdown], r, g, b, a));
-                    break;
-                case UP:
-                    quads.add(createQuad(v(0, 1, 0), v(0, 1, 1), v(1, 1, 1), v(1, 1, 0), shield[iconTopdown], r, g, b, a));
-                    break;
-                case NORTH:
-                    quads.add(createQuad(v(1, 1, 0), v(1, 0, 0), v(0, 0, 0), v(0, 1, 0), shield[iconSide], r, g, b, a));
-                    break;
-                case SOUTH:
-                    quads.add(createQuad(v(0, 1, 1), v(0, 0, 1), v(1, 0, 1), v(1, 1, 1), shield[iconSide], r, g, b, a));
-                    break;
-                case WEST:
-                    quads.add(createQuad(v(0, 1, 0), v(0, 0, 0), v(0, 0, 1), v(0, 1, 1), shield[iconSide], r, g, b, a));
-                    break;
-                case EAST:
-                    quads.add(createQuad(v(1, 1, 1), v(1, 0, 1), v(1, 0, 0), v(1, 1, 0), shield[iconSide], r, g, b, a));
-                    break;
+                case DOWN -> quads.add(createQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), shield[iconTopdown], r, g, b, a));
+                case UP -> quads.add(createQuad(v(0, 1, 0), v(0, 1, 1), v(1, 1, 1), v(1, 1, 0), shield[iconTopdown], r, g, b, a));
+                case NORTH -> quads.add(createQuad(v(1, 1, 0), v(1, 0, 0), v(0, 0, 0), v(0, 1, 0), shield[iconSide], r, g, b, a));
+                case SOUTH -> quads.add(createQuad(v(0, 1, 1), v(0, 0, 1), v(1, 0, 1), v(1, 1, 1), shield[iconSide], r, g, b, a));
+                case WEST -> quads.add(createQuad(v(0, 1, 0), v(0, 0, 0), v(0, 0, 1), v(0, 1, 1), shield[iconSide], r, g, b, a));
+                case EAST -> quads.add(createQuad(v(1, 1, 1), v(1, 0, 1), v(1, 0, 0), v(1, 1, 0), shield[iconSide], r, g, b, a));
             }
         }
         return quads;
@@ -114,24 +96,12 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
             float b = renderData.blue();
             float a = renderData.alpha();
             switch (side) {
-                case DOWN:
-                    quads.add(createQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), texture, r, g, b, a));
-                    break;
-                case UP:
-                    quads.add(createQuad(v(0, 1, 0), v(0, 1, 1), v(1, 1, 1), v(1, 1, 0), texture, r, g, b, a));
-                    break;
-                case NORTH:
-                    quads.add(createQuad(v(1, 1, 0), v(1, 0, 0), v(0, 0, 0), v(0, 1, 0), texture, r, g, b, a));
-                    break;
-                case SOUTH:
-                    quads.add(createQuad(v(0, 1, 1), v(0, 0, 1), v(1, 0, 1), v(1, 1, 1), texture, r, g, b, a));
-                    break;
-                case WEST:
-                    quads.add(createQuad(v(0, 1, 0), v(0, 0, 0), v(0, 0, 1), v(0, 1, 1), texture, r, g, b, a));
-                    break;
-                case EAST:
-                    quads.add(createQuad(v(1, 1, 1), v(1, 0, 1), v(1, 0, 0), v(1, 1, 0), texture, r, g, b, a));
-                    break;
+                case DOWN -> quads.add(createQuad(v(0, 0, 0), v(1, 0, 0), v(1, 0, 1), v(0, 0, 1), texture, r, g, b, a));
+                case UP -> quads.add(createQuad(v(0, 1, 0), v(0, 1, 1), v(1, 1, 1), v(1, 1, 0), texture, r, g, b, a));
+                case NORTH -> quads.add(createQuad(v(1, 1, 0), v(1, 0, 0), v(0, 0, 0), v(0, 1, 0), texture, r, g, b, a));
+                case SOUTH -> quads.add(createQuad(v(0, 1, 1), v(0, 0, 1), v(1, 0, 1), v(1, 1, 1), texture, r, g, b, a));
+                case WEST -> quads.add(createQuad(v(0, 1, 0), v(0, 0, 0), v(0, 0, 1), v(0, 1, 1), texture, r, g, b, a));
+                case EAST -> quads.add(createQuad(v(1, 1, 1), v(1, 0, 1), v(1, 0, 0), v(1, 1, 0), texture, r, g, b, a));
             }
         }
         return quads;

@@ -247,120 +247,6 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         }
     }
 
-    //    @Override
-//    @Optional.Method(modid = "opencomputers")
-//    public String getComponentName() {
-//        return COMPONENT_NAME;
-//    }
-//
-//    @Callback(doc = "Get or set the current damage mode for the shield. 'Generic' means normal damage while 'Player' means damage like a player would do", getter = true, setter = true)
-//    @Optional.Method(modid = "opencomputers")
-//    public Object[] damageMode(Context context, Arguments args) {
-//        if(args.count() == 0) {
-//            return new Object[] { getDamageMode().getDescription() };
-//        } else {
-//            String mode = args.checkString(0);
-//            return setDamageMode(mode);
-//        }
-//    }
-
-//    private Object[] setDamageMode(String mode) {
-//        DamageTypeMode damageMode = DamageTypeMode.getMode(mode);
-//        if (damageMode == null) {
-//            throw new IllegalArgumentException("Not a valid mode");
-//        }
-//        setDamageMode(damageMode);
-//        return null;
-//    }
-
-//    @Callback(doc = "Get or set the current redstone mode. Values are 'Ignored', 'Off', or 'On'", getter = true, setter = true)
-//    @Optional.Method(modid = "opencomputers")
-//    public Object[] redstoneMode(Context context, Arguments args) {
-//        if(args.count() == 0) {
-//            return new Object[] { getRSMode().getDescription() };
-//        } else {
-//            String mode = args.checkString(0);
-//            return setRedstoneMode(mode);
-//        }
-//    }
-
-//    private Object[] setRedstoneMode(String mode) {
-//        RedstoneMode redstoneMode = RedstoneMode.getMode(mode);
-//        if (redstoneMode == null) {
-//            throw new IllegalArgumentException("Not a valid mode");
-//        }
-//        setRSMode(redstoneMode);
-//        return null;
-//    }
-
-//    @Callback(doc = "Get or set the current shield rendering mode. Values are 'Invisible', 'Shield', or 'Solid'", getter = true, setter = true)
-//    @Optional.Method(modid = "opencomputers")
-//    public Object[] shieldRenderingMode(Context context, Arguments args) {
-//        if(args.count() == 0) {
-//            return new Object[] { getShieldRenderingMode().getDescription() };
-//        } else {
-//            String mode = args.checkString(0);
-//            return setShieldRenderingMode(mode);
-//        }
-//    }
-
-//    private Object[] setShieldRenderingMode(String mode) {
-//        ShieldRenderingMode renderingMode = ShieldRenderingMode.getMode(mode);
-//        if (renderingMode == null) {
-//            throw new IllegalArgumentException("Not a valid mode");
-//        }
-//        setShieldRenderingMode(renderingMode);
-//        return null;
-//    }
-
-//    @Callback(doc = "Return true if the shield is active", getter = true)
-//    @Optional.Method(modid = "opencomputers")
-//    public Object[] isShieldActive(Context context, Arguments args) {
-//        return new Object[] { isShieldActive() };
-//    }
-//
-//    @Callback(doc = "Return true if the shield is composed (i.e. formed)", getter = true)
-//    @Optional.Method(modid = "opencomputers")
-//    public Object[] isShieldComposed(Context context, Arguments args) {
-//        return new Object[] { isShieldComposed() };
-//    }
-//
-//    @Callback(doc = "Form the shield (compose it)")
-//    @Optional.Method(modid = "opencomputers")
-//    public Object[] composeShield(Context context, Arguments args) {
-//        return composeShieldComp(false);
-//    }
-//
-//    @Callback(doc = "Form the shield (compose it). This version works in disconnected mode (template blocks will connect on corners too)")
-//    @Optional.Method(modid = "opencomputers")
-//    public Object[] composeShieldDsc(Context context, Arguments args) {
-//        return composeShieldComp(true);
-//    }
-
-    private Object[] composeShieldComp(boolean ctrl) {
-        boolean done = false;
-        if (!isShieldComposed()) {
-            composeShield(ctrl);
-            done = true;
-        }
-        return new Object[]{done};
-    }
-
-//    @Callback(doc = "Break down the shield (decompose it)")
-//    @Optional.Method(modid = "opencomputers")
-//    public Object[] decomposeShield(Context context, Arguments args) {
-//        return decomposeShieldComp();
-//    }
-
-    private Object[] decomposeShieldComp() {
-        boolean done = false;
-        if (isShieldComposed()) {
-            decomposeShield();
-            done = true;
-        }
-        return new Object[]{done};
-    }
-
     public boolean isPowered() {
         return powerLevel > 0;
     }
@@ -455,29 +341,10 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         setChanged();
     }
 
-//    @Override
-//    public int[] getSlotsForFace(Direction side) {
-//        return new int[] { ShieldContainer.SLOT_SHARD };
-//    }
-//
-//    @Override
-//    public boolean isItemValidForSlot(int index, ItemStack stack) {
-//        if (index == ShieldContainer.SLOT_SHAPE && stack.getItem() != BuilderSetup.shapeCardItem) {
-//            return false;
-//        }
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean canInsertItem(int index, ItemStack itemStackIn, Direction direction) {
-//        return index == ShieldContainer.SLOT_SHARD && itemStackIn.getItem() == ModItems.dimensionalShardItem;
-//    }
-
     @Nonnull
     private BlockState getStateFromItem(ItemStack stack) {
         Item item = stack.getItem();
-        if (item instanceof BlockItem) {
-            BlockItem blockItem = (BlockItem) item;
+        if (item instanceof BlockItem blockItem) {
             Player player = fakePlayer.get();
             player.setItemInHand(InteractionHand.MAIN_HAND, stack);
             BlockHitResult result = new BlockHitResult(new Vec3(.5, 0, .5), Direction.UP, worldPosition, false);
@@ -797,7 +664,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     private boolean findTemplateState() {
         for (Direction dir : OrientationTools.DIRECTION_VALUES) {
             BlockPos p = getBlockPos().relative(dir);
-            if (p.getY() >= 0 && p.getY() < getLevel().getMaxBuildHeight()) {
+            if (p.getY() >= level.getMinBuildHeight() && p.getY() < level.getMaxBuildHeight()) {
                 BlockState state = getLevel().getBlockState(p);
                 if (state.getBlock() instanceof ShieldTemplateBlock) {
                     templateState = state;
@@ -903,8 +770,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         level.setBlock(pp, shielding, Block.UPDATE_NEIGHBORS);
 
         BlockEntity te = getLevel().getBlockEntity(pp);
-        if (te instanceof ShieldingTileEntity) {
-            ShieldingTileEntity shieldingTE = (ShieldingTileEntity) te;
+        if (te instanceof ShieldingTileEntity shieldingTE) {
             if (c.getState() != -1) {
                 BlockState state = blockStateTable.get(c.getState());
                 shieldingTE.setMimic(state);
@@ -972,7 +838,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     private void addToTodoStraight(Map<BlockPos, BlockState> coordinateSet, Deque<BlockPos> todo, BlockPos coordinate, BlockState templateState) {
         for (Direction dir : OrientationTools.DIRECTION_VALUES) {
             BlockPos pp = coordinate.relative(dir);
-            if (pp.getY() >= 0 && pp.getY() < getLevel().getMaxBuildHeight()) {
+            if (pp.getY() >= level.getMinBuildHeight() && pp.getY() < level.getMaxBuildHeight()) {
                 if (!coordinateSet.containsKey(pp)) {
                     BlockState state = getLevel().getBlockState(pp);
                     if (state == templateState) {
@@ -1284,7 +1150,6 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 return shieldActive ? getRfPerTick() : 0;
             }
 
-            @Nullable
             @Override
             public String getEnergyUnitName() {
                 return "RF";
@@ -1300,7 +1165,6 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 return shieldActive;
             }
 
-            @Nullable
             @Override
             public String getMachineStatus() {
                 return shieldActive ? "active" : "idle";

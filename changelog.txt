@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed shield being able to go below 0
+
 1.18-4.0.1:
 - Updates for McJtyLib and fixes
 - Some fixes to the shield rendering

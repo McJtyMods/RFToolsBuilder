@@ -136,11 +136,10 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
 
     private void removeShield(LevelAccessor world, BlockPos pos) {
         BlockEntity te = world.getBlockEntity(pos);
-        if (te instanceof ShieldProjectorTileEntity) {
+        if (te instanceof ShieldProjectorTileEntity shield) {
             if (!world.isClientSide()) {
-                ShieldProjectorTileEntity shieldTileEntity = (ShieldProjectorTileEntity) te;
-                if (shieldTileEntity.isShieldComposed()) {
-                    shieldTileEntity.decomposeShield();
+                if (shield.isShieldComposed()) {
+                    shield.decomposeShield();
                 }
             }
         }
