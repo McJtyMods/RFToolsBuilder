@@ -741,7 +741,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (RelCoordinateShield c : shieldBlocks) {
             if (Blocks.AIR.equals(shielding.getBlock())) {
-                pos.set(xCoord + c.getDx(), yCoord + c.getDy(), zCoord + c.getDz());
+                pos.set(xCoord + c.dx(), yCoord + c.dy(), zCoord + c.dz());
                 BlockState oldState = getLevel().getBlockState(pos);
                 if (oldState.getBlock() instanceof ShieldingBlock) {
                     getLevel().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
@@ -757,7 +757,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         int xCoord = getBlockPos().getX();
         int yCoord = getBlockPos().getY();
         int zCoord = getBlockPos().getZ();
-        BlockPos pp = new BlockPos(xCoord + c.getDx(), yCoord + c.getDy(), zCoord + c.getDz());
+        BlockPos pp = new BlockPos(xCoord + c.dx(), yCoord + c.dy(), zCoord + c.dz());
         BlockState oldState = getLevel().getBlockState(pp);
         if (!(oldState.getBlock() instanceof ShieldingBlock)) {
             if ((!oldState.getMaterial().isReplaceable()) && !(oldState.getBlock() instanceof ShieldTemplateBlock)) {
@@ -771,8 +771,8 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 
         BlockEntity te = getLevel().getBlockEntity(pp);
         if (te instanceof ShieldingTileEntity shieldingTE) {
-            if (c.getState() != -1) {
-                BlockState state = blockStateTable.get(c.getState());
+            if (c.state() != -1) {
+                BlockState state = blockStateTable.get(c.state());
                 shieldingTE.setMimic(state);
             } else {
                 shieldingTE.setMimic(mimic);
@@ -786,10 +786,10 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         int yCoord = getBlockPos().getY();
         int zCoord = getBlockPos().getZ();
         BlockPos.MutableBlockPos pp = new BlockPos.MutableBlockPos();
-        for (RelCoordinate c : shieldBlocks) {
-            int cx = xCoord + c.getDx();
-            int cy = yCoord + c.getDy();
-            int cz = zCoord + c.getDz();
+        for (RelCoordinateShield c : shieldBlocks) {
+            int cx = xCoord + c.dx();
+            int cy = yCoord + c.dy();
+            int cz = zCoord + c.dz();
             pp.set(cx, cy, cz);
             Block block = getLevel().getBlockState(pp).getBlock();
             if (getLevel().isEmptyBlock(pp) || block instanceof ShieldingBlock) {
@@ -1074,14 +1074,14 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         byte[] blocks = new byte[shieldBlocks.size() * 8];
         int j = 0;
         for (RelCoordinateShield c : shieldBlocks) {
-            blocks[j + 0] = shortToByte1((short) c.getDx());
-            blocks[j + 1] = shortToByte2((short) c.getDx());
-            blocks[j + 2] = shortToByte1((short) c.getDy());
-            blocks[j + 3] = shortToByte2((short) c.getDy());
-            blocks[j + 4] = shortToByte1((short) c.getDz());
-            blocks[j + 5] = shortToByte2((short) c.getDz());
-            blocks[j + 6] = shortToByte1((short) c.getState());
-            blocks[j + 7] = shortToByte2((short) c.getState());
+            blocks[j + 0] = shortToByte1((short) c.dx());
+            blocks[j + 1] = shortToByte2((short) c.dx());
+            blocks[j + 2] = shortToByte1((short) c.dy());
+            blocks[j + 3] = shortToByte2((short) c.dy());
+            blocks[j + 4] = shortToByte1((short) c.dz());
+            blocks[j + 5] = shortToByte2((short) c.dz());
+            blocks[j + 6] = shortToByte1((short) c.state());
+            blocks[j + 7] = shortToByte2((short) c.state());
             j += 8;
         }
         tagCompound.putByteArray("relcoordsNew", blocks);

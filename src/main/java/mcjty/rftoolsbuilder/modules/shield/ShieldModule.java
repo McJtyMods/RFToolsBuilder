@@ -20,6 +20,8 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
+import javax.annotation.Nonnull;
+
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
 
@@ -55,20 +57,24 @@ public class ShieldModule implements IModule {
     public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELDING = TILES.register("shielding", () -> BlockEntityType.Builder.of(ShieldingTileEntity::new,
             SHIELDING_SOLID.get(), SHIELDING_TRANSLUCENT.get(), SHIELDING_CUTOUT.get()).build(null));
 
+    @Nonnull
     public static ShieldProjectorTileEntity createProjector1(BlockPos pos, BlockState state) {
         return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK1.get(), pos, state, ShieldConfiguration.maxShieldSize.get(), ShieldConfiguration.MAXENERGY.get(), ShieldConfiguration.RECEIVEPERTICK.get());
     }
 
+    @Nonnull
     public static ShieldProjectorTileEntity createProjector2(BlockPos pos, BlockState state) {
         return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK2.get(), pos, state, ShieldConfiguration.maxShieldSize.get() * 4, ShieldConfiguration.MAXENERGY.get(), ShieldConfiguration.RECEIVEPERTICK.get());
     }
 
+    @Nonnull
     public static ShieldProjectorTileEntity createProjector3(BlockPos pos, BlockState state) {
         return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK3.get(), pos, state, ShieldConfiguration.maxShieldSize.get() * 16, ShieldConfiguration.MAXENERGY.get() * 3, ShieldConfiguration.RECEIVEPERTICK.get() * 2)
                 .setDamageFactor(4.0f)
                 .setCostFactor(2.0f);
     }
 
+    @Nonnull
     public static ShieldProjectorTileEntity createProjector4(BlockPos pos, BlockState state) {
         return new ShieldProjectorTileEntity(TYPE_SHIELD_BLOCK4.get(), pos, state, ShieldConfiguration.maxShieldSize.get() * 128, ShieldConfiguration.MAXENERGY.get() * 6, ShieldConfiguration.RECEIVEPERTICK.get() * 6)
                 .setDamageFactor(4.0f)

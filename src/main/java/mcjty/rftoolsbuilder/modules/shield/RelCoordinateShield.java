@@ -1,14 +1,8 @@
 package mcjty.rftoolsbuilder.modules.shield;
 
-public class RelCoordinateShield extends RelCoordinate {
-    private final int state;
+public record RelCoordinateShield(int dx, int dy, int dz, int state) {
 
-    public RelCoordinateShield(int dx, int dy, int dz, int state) {
-        super(dx, dy, dz);
-        this.state = state;
-    }
-
-    public int getState() {
-        return state;
+    public boolean matches(int dx, int dy, int dz) {
+        return dx == this.dx && dy == this.dy && dz == this.dz;
     }
 }

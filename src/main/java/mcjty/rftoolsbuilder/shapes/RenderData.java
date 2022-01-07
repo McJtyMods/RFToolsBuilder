@@ -15,7 +15,7 @@ public class RenderData {
 
     public static BufferBuilder vboBuffer = new BufferBuilder(2097152);
 
-    private RenderPlane planes[] = null;
+    private RenderPlane[] planes = null;
     public String previewMessage = "";
     private long touchTime = 0;
     private long checksum = -1;

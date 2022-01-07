@@ -294,24 +294,23 @@ public class Formulas {
                     int tz = z;
                     BlockPos o = bounds.getOffset();
                     switch (modifier.getRotation()) {
-                        case X:
+                        case X -> {
                             tx = x;
-                            ty = (z-o.getZ()) + o.getY();
-                            tz = (y-o.getY()) + o.getZ();
-                            break;
-                        case Y:
-                            tx = (z-o.getZ()) + o.getX();
+                            ty = (z - o.getZ()) + o.getY();
+                            tz = (y - o.getY()) + o.getZ();
+                        }
+                        case Y -> {
+                            tx = (z - o.getZ()) + o.getX();
                             ty = y;
-                            tz = (x-o.getX()) + o.getZ();
-                            break;
-                        case Z:
-                            tx = (y-o.getY()) + o.getX();
-                            ty = (x-o.getX()) + o.getY();
+                            tz = (x - o.getX()) + o.getZ();
+                        }
+                        case Z -> {
+                            tx = (y - o.getY()) + o.getX();
+                            ty = (x - o.getX()) + o.getY();
                             tz = z;
-                            break;
-                        case NONE:
-                        default:
-                            break;
+                        }
+                        case NONE -> {
+                        }
                     }
 
                     if (modifier.isFlipY()) {
