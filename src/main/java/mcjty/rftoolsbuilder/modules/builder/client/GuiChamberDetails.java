@@ -140,8 +140,7 @@ public class GuiChamberDetails extends GuiItemScreen {
             if (realEntities.containsKey(className)) {
                 entity = realEntities.get(className);
                 entityName = entity.getDisplayName().getString();
-                if (entity instanceof ItemEntity) {
-                    ItemEntity entityItem = (ItemEntity) entity;
+                if (entity instanceof ItemEntity entityItem) {
                     if (!entityItem.getItem().isEmpty()) {
                         String displayName = entityItem.getItem().getDisplayName().getString();
                         entityName += " (" + displayName + ")";
@@ -152,11 +151,7 @@ public class GuiChamberDetails extends GuiItemScreen {
                     Class<?> aClass = Class.forName(className);
                     entity = (Entity) aClass.getConstructor(Level.class).newInstance(minecraft.level);
                     entityName = aClass.getSimpleName();
-                } catch (ClassNotFoundException e) {
-                } catch (InstantiationException e) {
-                } catch (IllegalAccessException e) {
-                } catch (InvocationTargetException e) {
-                } catch (NoSuchMethodException e) {
+                } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
                 }
             }
 

@@ -134,12 +134,12 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
 
         window = new Window(this, toplevel);
 
-        window.bind(RFToolsBuilderMessages.INSTANCE, "redstone", tileEntity, GenericTileEntity.VALUE_RSMODE.getName());
-        window.bind(RFToolsBuilderMessages.INSTANCE, "visibility", tileEntity, ShieldProjectorTileEntity.VALUE_SHIELDVISMODE.getKey().getName());
-        window.bind(RFToolsBuilderMessages.INSTANCE, "shieldtextures", tileEntity, ShieldProjectorTileEntity.VALUE_SHIELDTEXTURE.getKey().getName());
-        window.bind(RFToolsBuilderMessages.INSTANCE, "damage", tileEntity, ShieldProjectorTileEntity.VALUE_DAMAGEMODE.getKey().getName());
-        window.bind(RFToolsBuilderMessages.INSTANCE, "color", tileEntity, ShieldProjectorTileEntity.VALUE_COLOR.getKey().getName());
-        window.bind(RFToolsBuilderMessages.INSTANCE, "light", tileEntity, ShieldProjectorTileEntity.VALUE_LIGHT.getKey().getName());
+        window.bind(RFToolsBuilderMessages.INSTANCE, "redstone", tileEntity, GenericTileEntity.VALUE_RSMODE.name());
+        window.bind(RFToolsBuilderMessages.INSTANCE, "visibility", tileEntity, ShieldProjectorTileEntity.VALUE_SHIELDVISMODE.key().name());
+        window.bind(RFToolsBuilderMessages.INSTANCE, "shieldtextures", tileEntity, ShieldProjectorTileEntity.VALUE_SHIELDTEXTURE.key().name());
+        window.bind(RFToolsBuilderMessages.INSTANCE, "damage", tileEntity, ShieldProjectorTileEntity.VALUE_DAMAGEMODE.key().name());
+        window.bind(RFToolsBuilderMessages.INSTANCE, "color", tileEntity, ShieldProjectorTileEntity.VALUE_COLOR.key().name());
+        window.bind(RFToolsBuilderMessages.INSTANCE, "light", tileEntity, ShieldProjectorTileEntity.VALUE_LIGHT.key().name());
         window.event("addfilter", (source, params) -> addNewFilter());
         window.event("delfilter", (source, params) -> removeSelectedFilter());
         window.event("upfilter", (source, params) -> moveFilterUp());
@@ -185,7 +185,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     private void requestFilters() {
-        RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetListFromServer(tileEntity.getBlockPos(), CMD_GETFILTERS.getName()));
+        RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetListFromServer(tileEntity.getBlockPos(), CMD_GETFILTERS.name()));
     }
 
     private void requestListsIfNeeded() {

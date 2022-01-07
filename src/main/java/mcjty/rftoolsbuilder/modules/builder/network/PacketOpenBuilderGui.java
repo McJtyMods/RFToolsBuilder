@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 
 public class PacketOpenBuilderGui {
 
-    private BlockPos pos;
+    private final BlockPos pos;
 
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);

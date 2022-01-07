@@ -330,8 +330,6 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
     /**
      * Return true if the card is a normal card (not a quarry or void card)
-     * @param stack
-     * @return
      */
     public static boolean isNormalShapeCard(ItemStack stack) {
         ShapeCardType type = getType(stack);
@@ -351,9 +349,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     private static void addBlocks(Set<Block> blocks, Block block, Tag<Block> tag, boolean tagMatching) {
         blocks.add(block);
         if (tagMatching && tag != null) {
-            for (Block b : tag.getValues()) {
-                blocks.add(b);
-            }
+            blocks.addAll(tag.getValues());
         }
     }
 
@@ -897,9 +893,6 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             byte[] decoded = Base64.getDecoder().decode(s.getBytes());
 
             setDataFromFile(scanId, card, dim, off, decoded, statePalette);
-        } catch (FileNotFoundException e) {
-            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
-            return;
         } catch (IOException e) {
             player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
             return;

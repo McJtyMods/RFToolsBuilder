@@ -163,7 +163,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private final Cached<Set<Block>> cachedVoidableBlocks = Cached.of(this::getCachedVoidableBlocks);
 
     // Drops from a block that we broke but couldn't fit in an inventory
-    private LazyList<ItemStack> overflowItems = new LazyList<>();
+    private final LazyList<ItemStack> overflowItems = new LazyList<>();
 
     private final FakePlayerGetter harvester = new FakePlayerGetter(this, "rftools_builder");
 
@@ -570,26 +570,24 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         int z = 0;
         y = -((anchor == ANCHOR_NE || anchor == ANCHOR_NW) ? spanY - 1 : 0);
         switch (direction) {
-            case SOUTH:
+            case SOUTH -> {
                 x = -((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanX - 1 : 0);
                 z = -spanZ;
-                break;
-            case NORTH:
+            }
+            case NORTH -> {
                 x = 1 - spanX + ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanX - 1 : 0);
                 z = 1;
-                break;
-            case WEST:
+            }
+            case WEST -> {
                 x = 1;
                 z = -((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanZ - 1 : 0);
-                break;
-            case EAST:
+            }
+            case EAST -> {
                 x = -spanX;
                 z = -((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? 0 : spanZ - 1);
-                break;
-            case DOWN:
-            case UP:
-            default:
-                break;
+            }
+            case DOWN, UP -> {
+            }
         }
         return new BlockPos(x, y, z);
     }
@@ -638,26 +636,24 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         int spanY = maxCorner.getY() - minCorner.getY();
         int spanZ = maxCorner.getZ() - minCorner.getZ();
         switch (direction) {
-            case SOUTH:
+            case SOUTH -> {
                 projDx = xCoord + Direction.NORTH.getNormal().getX() - minCorner.getX() - ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanX : 0);
                 projDz = zCoord + Direction.NORTH.getNormal().getZ() - minCorner.getZ() - spanZ;
-                break;
-            case NORTH:
+            }
+            case NORTH -> {
                 projDx = xCoord + Direction.SOUTH.getNormal().getX() - minCorner.getX() - spanX + ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanX : 0);
                 projDz = zCoord + Direction.SOUTH.getNormal().getZ() - minCorner.getZ();
-                break;
-            case WEST:
+            }
+            case WEST -> {
                 projDx = xCoord + Direction.EAST.getNormal().getX() - minCorner.getX();
                 projDz = zCoord + Direction.EAST.getNormal().getZ() - minCorner.getZ() - ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanZ : 0);
-                break;
-            case EAST:
+            }
+            case EAST -> {
                 projDx = xCoord + Direction.WEST.getNormal().getX() - minCorner.getX() - spanX;
                 projDz = zCoord + Direction.WEST.getNormal().getZ() - minCorner.getZ() - spanZ + ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanZ : 0);
-                break;
-            case DOWN:
-            case UP:
-            default:
-                break;
+            }
+            case DOWN, UP -> {
+            }
         }
         projDy = yCoord - minCorner.getY() - ((anchor == ANCHOR_NE || anchor == ANCHOR_NW) ? spanY : 0);
     }
@@ -1374,33 +1370,31 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         int destZ = destPos.getZ();
 
         switch (mode) {
-            case MODE_COPY:
-                copyBlock(world, srcPos, world, destPos);
-                break;
-            case MODE_MOVE:
+            case MODE_COPY -> copyBlock(world, srcPos, world, destPos);
+            case MODE_MOVE -> {
                 if (entityMode) {
                     moveEntities(world, x, y, z, world, destX, destY, destZ);
                 }
                 moveBlock(world, srcPos, world, destPos, rotate);
-                break;
-            case MODE_BACK:
+            }
+            case MODE_BACK -> {
                 if (entityMode) {
                     moveEntities(world, destX, destY, destZ, world, x, y, z);
                 }
                 moveBlock(world, destPos, world, srcPos, oppositeRotate());
-                break;
-            case MODE_SWAP:
+            }
+            case MODE_SWAP -> {
                 if (entityMode) {
                     swapEntities(world, x, y, z, world, destX, destY, destZ);
                 }
                 swapBlock(world, srcPos, world, destPos);
-                break;
+            }
         }
 
         nextLocation();
     }
 
-    private static Random random = new Random();
+    private static final Random random = new Random();
 
     // Also works if block is null and just picks the first available block.
     private TakeableItem findBlockTakeableItem(IItemHandler inventory, Level srcWorld, BlockPos srcPos, BlockState state) {
@@ -1477,8 +1471,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return false;
     }
 
-    private LazyList<ItemStack> couldntHandle1 = new LazyList<>();
-    private LazyList<ItemStack> couldntHandle2 = new LazyList<>();
+    private final LazyList<ItemStack> couldntHandle1 = new LazyList<>();
+    private final LazyList<ItemStack> couldntHandle2 = new LazyList<>();
 
     // Tries to insert the items in the given item handler (if the te represents an item handler)
     // All items that could not be inserted are put on the couldntHandle list (for example, because
@@ -1579,9 +1573,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private TakeableItem createTakeableItem(Direction direction, Level srcWorld, BlockPos srcPos, BlockState state) {
         BlockEntity te = level.getBlockEntity(getBlockPos().relative(direction));
         if (te != null) {
-            return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).map(h -> {
-                return findBlockTakeableItem(h, srcWorld, srcPos, state);
-            }).orElse(TakeableItem.EMPTY);
+            return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).map(h -> findBlockTakeableItem(h, srcWorld, srcPos, state)).orElse(TakeableItem.EMPTY);
         }
         return TakeableItem.EMPTY;
     }
@@ -1704,13 +1696,11 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private RotateMode oppositeRotate() {
-        switch (rotate) {
-            case ROTATE_90:
-                return RotateMode.ROTATE_270;
-            case ROTATE_270:
-                return RotateMode.ROTATE_90;
-        }
-        return rotate;
+        return switch (rotate) {
+            case ROTATE_90 -> RotateMode.ROTATE_270;
+            case ROTATE_270 -> RotateMode.ROTATE_90;
+            default -> rotate;
+        };
     }
 
     private void copyBlock(Level srcWorld, BlockPos srcPos, Level destWorld, BlockPos destPos) {
@@ -2016,18 +2006,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     private void rotate(BlockPos c, BlockPos.MutableBlockPos dest) {
         switch (rotate) {
-            case ROTATE_0:
-                dest.set(c);
-                break;
-            case ROTATE_90:
-                dest.set(-c.getZ(), c.getY(), c.getX());
-                break;
-            case ROTATE_180:
-                dest.set(-c.getX(), c.getY(), -c.getZ());
-                break;
-            case ROTATE_270:
-                dest.set(c.getZ(), c.getY(), -c.getX());
-                break;
+            case ROTATE_0 -> dest.set(c);
+            case ROTATE_90 -> dest.set(-c.getZ(), c.getY(), c.getX());
+            case ROTATE_180 -> dest.set(-c.getX(), c.getY(), -c.getZ());
+            case ROTATE_270 -> dest.set(c.getZ(), c.getY(), -c.getX());
         }
     }
 

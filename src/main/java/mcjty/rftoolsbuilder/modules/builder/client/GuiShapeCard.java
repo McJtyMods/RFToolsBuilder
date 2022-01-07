@@ -392,7 +392,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
         }
     }
 
-    private boolean buttons[] = new boolean[10];    // @todo ugly hack to get mouse buttons?
+    private final boolean[] buttons = new boolean[10];    // @todo ugly hack to get mouse buttons?
 
     @Override
     public void mouseMoved(double xx, double yy) {

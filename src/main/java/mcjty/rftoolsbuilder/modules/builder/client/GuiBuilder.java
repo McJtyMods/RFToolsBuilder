@@ -30,7 +30,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
 
     private EnergyBar energyBar;
     private Button currentLevel;
-    private ImageChoiceLabel anchor[] = new ImageChoiceLabel[4];
+    private final ImageChoiceLabel[] anchor = new ImageChoiceLabel[4];
 
     public GuiBuilder(BuilderTileEntity builderTileEntity, GenericContainer container, Inventory inventory) {
         super(builderTileEntity, container, inventory, BuilderModule.BUILDER.get().getManualEntry());
@@ -97,9 +97,9 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private void selectAnchor(String name) {
         int index = name.charAt(name.length()-1)-48;
         updateAnchorSettings(AnchorMode.values()[index]);
-        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, Minecraft.getInstance().level.dimension(), GenericTileEntity.COMMAND_SYNC_BINDING.getName(),
+        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, Minecraft.getInstance().level.dimension(), GenericTileEntity.COMMAND_SYNC_BINDING.name(),
                 TypedMap.builder()
-                        .put(VALUE_ANCHOR.getKey(), AnchorMode.values()[index].getName())
+                        .put(VALUE_ANCHOR.key(), AnchorMode.values()[index].getName())
                         .build());
     }
 

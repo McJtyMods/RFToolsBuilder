@@ -13,15 +13,12 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public class PacketRequestShapeData {
-    private ItemStack card;
-    private ShapeID id;
+    private final ItemStack card;
+    private final ShapeID id;
 
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeItem(card);
         id.toBytes(buf);
-    }
-
-    public PacketRequestShapeData() {
     }
 
     public PacketRequestShapeData(FriendlyByteBuf buf) {
@@ -43,14 +40,14 @@ public class PacketRequestShapeData {
 
             BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 256), Math.min(dimension.getZ(), 512));
             int dy = clamped.getY();
-            card = card.copy();
+            ItemStack copy = card.copy();
 
             IFormula formula = shape.getFormulaFactory().get();
             formula = formula.correctFormula(solid);
-            formula.setup(ctx.getSender().getLevel(), new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), card.getTag());
+            formula.setup(ctx.getSender().getLevel(), new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), copy.getTag());
 
             for (int y = 0 ; y < dy ; y++) {
-                ShapeDataManagerServer.pushWork(id, card, y, formula, ctx.getSender());
+                ShapeDataManagerServer.pushWork(id, copy, y, formula, ctx.getSender());
             }
         });
         ctx.setPacketHandled(true);

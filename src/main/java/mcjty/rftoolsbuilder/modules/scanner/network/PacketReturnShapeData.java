@@ -19,13 +19,13 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.function.Supplier;
 
 public class PacketReturnShapeData {
-    private ShapeID id;
-    private RLE positions;
-    private StatePalette statePalette;
-    private int count;
-    private int offsetY;
-    private String msg;
-    private BlockPos dimension;
+    private final ShapeID id;
+    private final RLE positions;
+    private final StatePalette statePalette;
+    private final int count;
+    private final int offsetY;
+    private final String msg;
+    private final BlockPos dimension;
 
     public void toBytes(FriendlyByteBuf buf) {
         id.toBytes(buf);
@@ -54,9 +54,6 @@ public class PacketReturnShapeData {
             buf.writeInt(positions.getData().length);
             buf.writeBytes(positions.getData());
         }
-    }
-
-    public PacketReturnShapeData() {
     }
 
     public PacketReturnShapeData(FriendlyByteBuf buf) {
@@ -120,7 +117,7 @@ public class PacketReturnShapeData {
                 int oy = offsetY;
                 int y = oy - dy / 2;
 
-                RenderData.RenderStrip strips[] = new RenderData.RenderStrip[dx];
+                RenderData.RenderStrip[] strips = new RenderData.RenderStrip[dx];
                 for (int ox = 0; ox < dx; ox++) {
                     int x = ox - dx / 2;
 

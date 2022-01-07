@@ -71,8 +71,7 @@ public class BuilderTools {
                 minCorner.getX(), minCorner.getY(), minCorner.getZ(), maxCorner.getX() + 1, maxCorner.getY() + 1, maxCorner.getZ() + 1));
         for (Entity entity : entities) {
             String canonicalName = entity.getClass().getCanonicalName();
-            if (entity instanceof ItemEntity) {
-                ItemEntity entityItem = (ItemEntity) entity;
+            if (entity instanceof ItemEntity entityItem) {
                 if (!entityItem.getItem().isEmpty()) {
                     String displayName = entityItem.getItem().getHoverName().getString() /* was getFormattedText() */;
                     canonicalName += " (" + displayName + ")";

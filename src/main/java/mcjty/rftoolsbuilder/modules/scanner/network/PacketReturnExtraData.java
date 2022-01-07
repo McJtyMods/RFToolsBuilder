@@ -12,8 +12,8 @@ import java.util.function.Supplier;
 
 public class PacketReturnExtraData {
 
-    private int scanId;
-    private ScanExtraData data;
+    private final int scanId;
+    private final ScanExtraData data;
 
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeInt(scanId);
@@ -28,9 +28,6 @@ public class PacketReturnExtraData {
                 buf.writeBoolean(beacon.isDoBeacon());
             }
         }
-    }
-
-    public PacketReturnExtraData() {
     }
 
     public PacketReturnExtraData(FriendlyByteBuf buf) {
