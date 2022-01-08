@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed another spot where the shield was not working below 0
+
 1.18-4.0.2:
 - Fixed shield being able to go below 0
 

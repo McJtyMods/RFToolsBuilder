@@ -860,7 +860,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             for (int yy = y - 1; yy <= y + 1; yy++) {
                 for (int zz = z - 1; zz <= z + 1; zz++) {
                     if (xx != x || yy != y || zz != z) {
-                        if (yy >= 0 && yy < getLevel().getMaxBuildHeight()) {
+                        if (yy >= getLevel().getMinBuildHeight() && yy < getLevel().getMaxBuildHeight()) {
                             c.set(xx, yy, zz);
                             if (!coordinateSet.containsKey(c)) {
                                 BlockState state = getLevel().getBlockState(c);
