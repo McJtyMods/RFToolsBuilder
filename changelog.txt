@@ -1,4 +1,4 @@
-Upcoming:
+1.18-4.0.3:
 - Fixed another spot where the shield was not working below 0
 
 1.18-4.0.2:
