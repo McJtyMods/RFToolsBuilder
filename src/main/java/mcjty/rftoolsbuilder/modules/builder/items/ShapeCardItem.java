@@ -21,6 +21,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -363,7 +364,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             addBlocks(blocks, Blocks.COBBLESTONE, Tags.Blocks.COBBLESTONE, tagMatching);
         }
         if (isVoiding(stack, "dirt")) {
-            addBlocks(blocks, Blocks.DIRT, Tags.Blocks.DIRT, tagMatching);
+            addBlocks(blocks, Blocks.DIRT, BlockTags.DIRT, tagMatching);
             addBlocks(blocks, Blocks.GRASS, null, tagMatching);
         }
         if (isVoiding(stack, "sand")) {
