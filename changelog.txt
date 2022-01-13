@@ -1,4 +1,4 @@
-Upcoming:
+1.18-4.0.5:
 - Fixed the DIRT tag to be compatible with latest Forge
 
 1.18-4.0.4:
