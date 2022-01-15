@@ -9,6 +9,7 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiShapeCard;
+import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity;
 import mcjty.rftoolsbuilder.shapes.IFormula;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeModifier;
@@ -135,13 +136,13 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             int mode = getMode(stack);
             if (mode == MODE_NONE) {
                 if (player.isShiftKeyDown()) {
-                    if (world.getBlockEntity(pos) instanceof BuilderTileEntity) {
+                    if (world.getBlockEntity(pos) instanceof BuilderTileEntity || world.getBlockEntity(pos) instanceof ShieldProjectorTileEntity) {
                         setCurrentBlock(stack, GlobalPos.of(world.dimension(), pos));
                         Logging.message(player, TextFormatting.GREEN + "Now select the first corner");
                         setMode(stack, MODE_CORNER1);
                         setCorner1(stack, null);
                     } else {
-                        Logging.message(player, TextFormatting.RED + "You can only do this on a builder!");
+                        Logging.message(player, TextFormatting.RED + "You can only do this on a builder or shield Projector!");
                     }
                 } else {
                     return ActionResultType.SUCCESS;
