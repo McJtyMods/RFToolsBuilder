@@ -492,10 +492,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     public void setSupportMode(boolean supportMode) {
         this.supportMode = supportMode;
-        if (supportMode) {
-            makeSupportBlocks();
-        } else {
-            clearSupportBlocks();
+        if (!level.isClientSide) {
+            if (supportMode) {
+                makeSupportBlocks();
+            } else {
+                clearSupportBlocks();
+            }
         }
         setChanged();
     }
