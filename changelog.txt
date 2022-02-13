@@ -1,3 +1,6 @@
+Upcoming:
+- Fix where preview of the support blocks would break due to wrong side
+
 1.16-3.1.5:
 - Updated to latest version of McJtyLib
 
