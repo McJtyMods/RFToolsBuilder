@@ -1,4 +1,4 @@
-Upcoming:
+1.18-4.0.6:
 - Fix where preview of the support blocks would break due to wrong side
 
 1.18-4.0.5:
