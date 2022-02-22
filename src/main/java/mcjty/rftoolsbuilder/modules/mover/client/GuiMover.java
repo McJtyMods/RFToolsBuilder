@@ -37,7 +37,6 @@ public class GuiMover extends GenericGuiContainer<MoverTileEntity, GenericContai
     }
 
     private void setupEvents() {
-//        window.event("cardgui", (source, params) -> openCardGui());
     }
 
     private void initializeFields() {

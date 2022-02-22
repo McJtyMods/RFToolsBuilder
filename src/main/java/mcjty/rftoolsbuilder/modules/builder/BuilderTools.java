@@ -19,6 +19,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkDirection;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,21 +28,8 @@ import java.util.Map;
 public class BuilderTools {
 
     public static void returnChamberInfo(Player player) {
-        ItemStack cardItem = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (cardItem.isEmpty() || cardItem.getTag() == null) {
-            return;
-        }
-
-        int channel = cardItem.getTag().getInt("channel");
-        if (channel == -1) {
-            return;
-        }
-
-        SpaceChamberRepository repository = SpaceChamberRepository.get(player.getCommandSenderWorld());
-        SpaceChamberRepository.SpaceChamberChannel chamberChannel = repository.getChannel(channel);
-        if (chamberChannel == null) {
-            return;
-        }
+        SpaceChamberRepository.SpaceChamberChannel chamberChannel = getSpaceChamberChannel(player);
+        if (chamberChannel == null) return;
 
         Level world = LevelTools.getLevel(player.getCommandSenderWorld(), chamberChannel.getDimension());
         if (world == null) {
@@ -63,6 +51,36 @@ public class BuilderTools {
 
         RFToolsBuilderMessages.INSTANCE.sendTo(new PacketChamberInfoReady(blocks, costs, stacks,
                 entitiesWithCount, entitiesWithCost, firstEntity), ((ServerPlayer) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+    }
+
+    @Nullable
+    public static SpaceChamberRepository.SpaceChamberChannel getSpaceChamberChannel(Player player) {
+        ItemStack cardItem = player.getItemInHand(InteractionHand.MAIN_HAND);
+        return getSpaceChamberChannel(player.getCommandSenderWorld(), cardItem);
+    }
+
+    @Nullable
+    public static SpaceChamberRepository.SpaceChamberChannel getSpaceChamberChannel(Level level, ItemStack cardItem) {
+        Integer channel = getChannel(cardItem);
+        if (channel == null) {
+            return null;
+        }
+
+        SpaceChamberRepository repository = SpaceChamberRepository.get(level);
+        return repository.getChannel(channel);
+    }
+
+    @Nullable
+    public static Integer getChannel(ItemStack cardItem) {
+        if (cardItem.isEmpty() || cardItem.getTag() == null) {
+            return null;
+        }
+
+        int channel = cardItem.getTag().getInt("channel");
+        if (channel == -1) {
+            return null;
+        }
+        return channel;
     }
 
     private static void findEntities(Level world, BlockPos minCorner, BlockPos maxCorner,

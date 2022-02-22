@@ -1,6 +1,8 @@
 package mcjty.rftoolsbuilder.modules.mover.blocks;
 
 import mcjty.lib.api.container.DefaultContainerProvider;
+import mcjty.lib.blockcommands.Command;
+import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.ContainerFactory;
@@ -12,15 +14,15 @@ import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
+import mcjty.rftoolsbuilder.modules.builder.BuilderTools;
+import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
-
-import javax.annotation.Nonnull;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.header;
@@ -61,25 +63,42 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
         super(MoverModule.TYPE_VEHICLE_BUILDER.get(), pos, state);
     }
 
-    @Override
-    public void load(CompoundTag tagCompound) {
-        super.load(tagCompound);
+    public GenericItemHandler getItems() {
+        return items;
     }
 
-    @Override
-    public void loadInfo(CompoundTag tagCompound) {
-        super.loadInfo(tagCompound);
-        CompoundTag info = tagCompound.getCompound("Info");
+    private void doAction() {
+        ItemStack spaceCard = items.getStackInSlot(SLOT_SPACE_CARD);
+        if (isUsableSpaceCard(spaceCard)) {
+            SpaceChamberRepository.SpaceChamberChannel chamberChannel = BuilderTools.getSpaceChamberChannel(level, spaceCard);
+            //@todo
+        }
+
     }
 
-    @Override
-    public void saveAdditional(@Nonnull CompoundTag tagCompound) {
-        super.saveAdditional(tagCompound);
+    public static boolean isUsableSpaceCard(ItemStack stack) {
+        if (stack.getItem() == BuilderModule.SPACE_CHAMBER_CARD.get()) {
+            return false;
+        }
+        return BuilderTools.getChannel(stack) != null;
     }
 
-    @Override
-    public void saveInfo(CompoundTag tagCompound) {
-        super.saveInfo(tagCompound);
-        CompoundTag info = getOrCreateInfo(tagCompound);
+    public static boolean isEmptyVehicleCard(ItemStack stack) {
+        if (stack.getItem() == MoverModule.VEHICLE_CARD.get()) {
+            return false;
+        }
+        // @todo
+        return true;
     }
+
+    public static boolean isFullVehicleCard(ItemStack stack) {
+        if (stack.getItem() == MoverModule.VEHICLE_CARD.get()) {
+            return false;
+        }
+        // @todo
+        return true;
+    }
+
+    @ServerCommand
+    public static final Command<?> CMD_ACTION = Command.<VehicleBuilderTileEntity>create("action", (te, player, params) -> te.doAction());
 }
