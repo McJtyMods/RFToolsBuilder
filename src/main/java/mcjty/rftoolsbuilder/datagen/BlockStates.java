@@ -4,6 +4,7 @@ import mcjty.lib.datagen.BaseBlockStateProvider;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
+import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
@@ -28,6 +29,8 @@ public class BlockStates extends BaseBlockStateProvider {
         horizontalOrientedBlock(BuilderModule.BUILDER.get(), frontBasedModel("builder", modLoc("block/machinebuilder")));
         singleTextureBlock(BuilderModule.SPACE_CHAMBER.get(), "space_chamber", "block/machinespacechamber");
         singleTextureBlock(BuilderModule.SPACE_CHAMBER_CONTROLLER.get(), "space_chamber_controller", "block/machinespacechambercontroller");
+
+        orientedBlock(MoverModule.MOVER.get(), frontBasedModel("mover", modLoc("block/machinemover")));
 
         BlockModelBuilder support0 = models().cubeAll("supportblock_status0", modLoc("block/supportblock"));
         BlockModelBuilder support1 = models().cubeAll("supportblock_status1", modLoc("block/supportyellowblock"));

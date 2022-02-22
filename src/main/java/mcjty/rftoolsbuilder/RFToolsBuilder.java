@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder;
 
 import mcjty.lib.modules.Modules;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
+import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import mcjty.rftoolsbuilder.setup.ClientSetup;
@@ -46,5 +47,6 @@ public class RFToolsBuilder {
         modules.register(new BuilderModule());
         modules.register(new ShieldModule());
         modules.register(new ScannerModule());
+        modules.register(new MoverModule());
     }
 }

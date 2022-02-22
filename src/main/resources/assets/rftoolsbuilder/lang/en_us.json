@@ -13,6 +13,7 @@
   "block.rftoolsbuilder.shielding_solid": "Shield",
   "block.rftoolsbuilder.shielding_translucent": "Shield",
   "block.rftoolsbuilder.yellow_shield_template_block": "Yellow Shield Template",
+  "block.rftoolsbuilder.mover": "Mover",
 
   "item.rftoolsbuilder.shape_card_def": "Shape Card",
   "item.rftoolsbuilder.shape_card_liquid": "Shape Card (Placing Liquids)",

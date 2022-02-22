@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.datagen;
 
 import mcjty.lib.datagen.BaseLootTableProvider;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
+import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import net.minecraft.data.DataGenerator;
 
@@ -26,6 +27,7 @@ public class LootTables extends BaseLootTableProvider {
         lootTables.put(ShieldModule.TEMPLATE_RED.get(), createSimpleTable("template_red", ShieldModule.TEMPLATE_RED.get()));
         lootTables.put(ShieldModule.TEMPLATE_BLUE.get(), createSimpleTable("template_blue", ShieldModule.TEMPLATE_BLUE.get()));
         lootTables.put(BuilderModule.SPACE_CHAMBER.get(), createSimpleTable("space_chamber", BuilderModule.SPACE_CHAMBER.get()));
+        lootTables.put(MoverModule.MOVER.get(), createStandardTable("mover", MoverModule.MOVER.get(), MoverModule.TYPE_MOVER.get()));
     }
 
     @Nonnull

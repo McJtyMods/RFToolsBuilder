@@ -3,6 +3,7 @@ package mcjty.rftoolsbuilder.datagen;
 import mcjty.lib.datagen.BaseItemModelProvider;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
+import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -30,6 +31,8 @@ public class Items extends BaseItemModelProvider {
         parentedBlock(BuilderModule.BUILDER.get(),"block/builder");
         parentedBlock(BuilderModule.SPACE_CHAMBER.get(),"block/space_chamber");
         parentedBlock(BuilderModule.SPACE_CHAMBER_CONTROLLER.get(),"block/space_chamber_controller");
+
+        parentedBlock(MoverModule.MOVER.get(), "block/mover");
 
         itemGenerated(BuilderModule.SPACE_CHAMBER_CARD.get(), "item/spacechambercarditem");
 
