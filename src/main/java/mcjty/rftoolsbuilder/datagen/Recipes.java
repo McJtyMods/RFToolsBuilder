@@ -33,6 +33,14 @@ public class Recipes extends BaseRecipeProvider {
                         .define('C', Blocks.RAIL)
                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
                 "iTi", "CFC", "iTi");
+        build(consumer, ShapedRecipeBuilder.shaped(MoverModule.VEHICLE_BUILDER.get())
+                        .define('C', Items.MINECART)
+                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                "iCi", "rFr", "iTi");
+        build(consumer, ShapedRecipeBuilder.shaped(MoverModule.VEHICLE_CARD.get())
+                        .define('C', Items.MINECART)
+                        .unlockedBy("paper", has(Items.PAPER)),
+                " C ", "rpr", " r ");
 
         build(consumer, ShapedRecipeBuilder.shaped(BuilderModule.BUILDER.get())
                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),

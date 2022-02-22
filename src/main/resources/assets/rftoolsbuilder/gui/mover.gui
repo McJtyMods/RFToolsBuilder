@@ -3,38 +3,15 @@ window {
 
     action('scan','scan')
     event('redstone','mcjtylib.setRsMode')
-    bind('xsize', 'xsize')
-    bind('ysize', 'ysize')
-    bind('zsize', 'zsize')
     bind('name', 'name')
     bind('other', 'other')
 
     panel('','positional') {
-        bg1('rftoolsutility:textures/gui/mover.png')
+        bg1('rftoolsbuilder:textures/gui/mover.png')
         energybar('energybar') {
             hint(105,55,45,10)
             showtext(false)
             horizontal(true)
-        }
-
-        label('', 'Size') {
-            hint(10,10,35,14)
-            horizalign('ALIGN_LEFT')
-        }
-        integerfield('xsize') {
-            channel('xsize')
-            hint(50,10,35,14)
-            tooltips('Set the X size')
-        }
-        integerfield('ysize') {
-            channel('ysize')
-            hint(90,10,35,14)
-            tooltips('Set the Y size')
-        }
-        integerfield('zsize') {
-            channel('zsize')
-            hint(130,10,35,14)
-            tooltips('Set the Z size')
         }
 
         label('', 'Name') {
@@ -58,7 +35,7 @@ window {
 
         button('scan','Scan') {
             channel('scan')
-            hint(130,30,40,14)
+            hint(10,10,60,14)
             tooltips('Scan for other mover blocks')
         }
 

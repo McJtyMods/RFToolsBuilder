@@ -14,6 +14,7 @@
   "block.rftoolsbuilder.shielding_translucent": "Shield",
   "block.rftoolsbuilder.yellow_shield_template_block": "Yellow Shield Template",
   "block.rftoolsbuilder.mover": "Mover",
+  "block.rftoolsbuilder.vehicle_builder": "Vehicle Builder",
 
   "item.rftoolsbuilder.shape_card_def": "Shape Card",
   "item.rftoolsbuilder.shape_card_liquid": "Shape Card (Placing Liquids)",
@@ -27,6 +28,7 @@
   "item.rftoolsbuilder.shape_card_quarry_silk": "Shape Card (Silk Quarry)",
   "item.rftoolsbuilder.shape_card_void": "Shape Card (Void)",
   "item.rftoolsbuilder.space_chamber_card": "Space Card",
+  "item.rftoolsbuilder.vehicle_card": "Vehicle Card",
   "itemGroup.rftoolsbuilder": "RFTools Builder",
 
   "message.rftoolsbuilder.shiftmessage": "<Press Shift>",
@@ -54,6 +56,13 @@
 
   "message.rftoolsbuilder.space_chamber_controller.header": "This block is one of the eight corners of an area of space you want to copy/move elsewhere. The other corners should be normal space chamber blocks",
   "message.rftoolsbuilder.space_chamber_controller.channel": "Channel: ",
+
+  "message.rftoolsbuilder.mover.header": "This block can move vehicles to other movers",
+  "message.rftoolsbuilder.mover.gold": "Infusing bonus: reduced power consumption while moving",
+
+  "message.rftoolsbuilder.vehicle_builder.header": "Using a space card linked to a space chamber, this block can make a vehicle in the vehicle card",
+  "message.rftoolsbuilder.vehicle_card.header": "A vehicle card. Use the Vehicle Builder to put a vehicle in this card",
+  "message.rftoolsbuilder.vehicle_card.contents": "Contents: ",
 
   "message.rftoolsbuilder.space_chamber_card.header": "Use this card to link with a space chamber",
   "message.rftoolsbuilder.space_chamber_card.gold": "Sneak right-click on a space chamber controller to set the channel for this card. Right-click in the air to show an overview of the area contents. Insert it in a builder to copy/move the linked area",

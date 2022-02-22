@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "rftoolsbuilder:mover",
+    "rftoolsbuilder:vehicle_builder",
     "rftoolsbuilder:builder",
     "rftoolsbuilder:space_chamber",
     "rftoolsbuilder:space_chamber_controller",

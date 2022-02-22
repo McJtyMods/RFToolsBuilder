@@ -20,7 +20,7 @@ public class BlockTags extends BaseBlockTagsProvider {
     @Override
     protected void addTags() {
         ironPickaxe(
-                MoverModule.MOVER,
+                MoverModule.MOVER, MoverModule.VEHICLE_BUILDER,
                 BuilderModule.BUILDER, BuilderModule.SPACE_CHAMBER, BuilderModule.SPACE_CHAMBER_CONTROLLER, BuilderModule.SUPPORT,
                 ShieldModule.SHIELD_BLOCK1, ShieldModule.SHIELD_BLOCK2, ShieldModule.SHIELD_BLOCK3, ShieldModule.SHIELD_BLOCK4,
                 ShieldModule.SHIELDING_CUTOUT, ShieldModule.SHIELDING_SOLID, ShieldModule.SHIELDING_TRANSLUCENT

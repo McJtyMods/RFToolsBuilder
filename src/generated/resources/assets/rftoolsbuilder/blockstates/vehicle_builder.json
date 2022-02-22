@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "rftoolsbuilder:block/vehicle_builder",
+      "x": 90
+    },
+    "facing=up": {
+      "model": "rftoolsbuilder:block/vehicle_builder",
+      "x": -90
+    },
+    "facing=north": {
+      "model": "rftoolsbuilder:block/vehicle_builder"
+    },
+    "facing=south": {
+      "model": "rftoolsbuilder:block/vehicle_builder",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "rftoolsbuilder:block/vehicle_builder",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "rftoolsbuilder:block/vehicle_builder",
+      "y": 90
+    }
+  }
+}

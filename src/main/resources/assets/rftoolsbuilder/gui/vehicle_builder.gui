@@ -1,0 +1,15 @@
+window {
+    size(180,152)
+
+    action('action','action')
+
+    panel('','positional') {
+        bg1('rftoolsbuilder:textures/gui/vehicle_builder.png')
+
+        button('action','Create') {
+            channel('action')
+            hint(10,25,45,14)
+            tooltips('Create a vehicle')
+        }
+    }
+}
