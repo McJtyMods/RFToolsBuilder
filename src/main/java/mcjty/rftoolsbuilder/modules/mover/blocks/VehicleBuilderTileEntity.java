@@ -11,18 +11,32 @@ import mcjty.lib.container.GenericItemHandler;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericTileEntity;
+import mcjty.lib.varia.LevelTools;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.BuilderTools;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
+import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.header;
@@ -67,38 +81,76 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
         return items;
     }
 
-    private void doAction() {
-        ItemStack spaceCard = items.getStackInSlot(SLOT_SPACE_CARD);
-        if (isUsableSpaceCard(spaceCard)) {
-            SpaceChamberRepository.SpaceChamberChannel chamberChannel = BuilderTools.getSpaceChamberChannel(level, spaceCard);
-            //@todo
-        }
+    private final static int MAXDIM = 16;
 
+    private void copyVehicle(Player player) {
+        ItemStack spaceCard = items.getStackInSlot(SLOT_SPACE_CARD);
+        ItemStack vehicleCard = items.getStackInSlot(SLOT_VEHICLE_CARD);
+        if (isUsableSpaceCard(spaceCard) && isVehicleCard(vehicleCard)) {
+            SpaceChamberRepository.SpaceChamberChannel chamberChannel = BuilderTools.getSpaceChamberChannel(level, spaceCard);
+            if (chamberChannel != null) {
+                BlockPos minCorner = chamberChannel.getMinCorner();
+                BlockPos maxCorner = chamberChannel.getMaxCorner();
+                if (checkValid(player, minCorner, maxCorner)) {
+                    ResourceKey<Level> dimension = chamberChannel.getDimension();
+                    ServerLevel world = LevelTools.getLevel(this.level, dimension);
+                    var blocks = getBlocks(minCorner, maxCorner, world);
+                    VehicleCard.storeVehicleInCard(vehicleCard, blocks);
+                }
+            }
+        }
+    }
+
+    @NotNull
+    private Map<BlockState, List<Integer>> getBlocks(BlockPos minCorner, BlockPos maxCorner, ServerLevel world) {
+        Map<BlockState, List<Integer>> blocks = new HashMap<>();
+        var mpos = new BlockPos.MutableBlockPos(0, 0, 0);
+        for (int x = minCorner.getX(); x <= maxCorner.getX(); x++) {
+            mpos.setX(x);
+            for (int y = minCorner.getY(); y <= maxCorner.getY(); y++) {
+                mpos.setY(y);
+                for (int z = minCorner.getZ(); z <= maxCorner.getZ(); z++) {
+                    mpos.setZ(z);
+                    BlockState state = world.getBlockState(mpos);
+                    if (!state.isAir()) {
+                        blocks.computeIfAbsent(state, s -> new ArrayList<>()).add(VehicleCard.convertPosToInt(minCorner, mpos));
+                    }
+                }
+            }
+        }
+        return blocks;
+    }
+
+    private boolean checkValid(Player player, BlockPos minCorner, BlockPos maxCorner) {
+        if (maxCorner.getX() - minCorner.getX() >= MAXDIM) {
+            player.sendMessage(new TextComponent("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
+            return false;
+        }
+        if (maxCorner.getY() - minCorner.getY() >= MAXDIM) {
+            player.sendMessage(new TextComponent("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
+            return false;
+        }
+        if (maxCorner.getZ() - minCorner.getZ() >= MAXDIM) {
+            player.sendMessage(new TextComponent("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
+            return false;
+        }
+        return true;
     }
 
     public static boolean isUsableSpaceCard(ItemStack stack) {
-        if (stack.getItem() == BuilderModule.SPACE_CHAMBER_CARD.get()) {
+        if (stack.getItem() != BuilderModule.SPACE_CHAMBER_CARD.get()) {
             return false;
         }
         return BuilderTools.getChannel(stack) != null;
     }
 
-    public static boolean isEmptyVehicleCard(ItemStack stack) {
-        if (stack.getItem() == MoverModule.VEHICLE_CARD.get()) {
+    public static boolean isVehicleCard(ItemStack stack) {
+        if (stack.getItem() != MoverModule.VEHICLE_CARD.get()) {
             return false;
         }
-        // @todo
-        return true;
-    }
-
-    public static boolean isFullVehicleCard(ItemStack stack) {
-        if (stack.getItem() == MoverModule.VEHICLE_CARD.get()) {
-            return false;
-        }
-        // @todo
         return true;
     }
 
     @ServerCommand
-    public static final Command<?> CMD_ACTION = Command.<VehicleBuilderTileEntity>create("action", (te, player, params) -> te.doAction());
+    public static final Command<?> CMD_CREATE = Command.<VehicleBuilderTileEntity>create("create", (te, player, params) -> te.copyVehicle(player));
 }

@@ -8,6 +8,7 @@ import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.blocks.VehicleBuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiMover;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiVehicleBuilder;
+import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.setup.Config;
 import net.minecraft.world.inventory.MenuType;
@@ -24,7 +25,7 @@ public class MoverModule implements IModule {
 
     public static final RegistryObject<BaseBlock> MOVER = BLOCKS.register("mover", MoverTileEntity::createBlock);
     public static final RegistryObject<Item> MOVER_ITEM = ITEMS.register("mover", () -> new BlockItem(MOVER.get(), createStandardProperties()));
-    public static final RegistryObject<BlockEntityType<?>> TYPE_MOVER = TILES.register("mover", () -> BlockEntityType.Builder.of(MoverTileEntity::new, MOVER.get()).build(null));
+    public static final RegistryObject<BlockEntityType<MoverTileEntity>> TYPE_MOVER = TILES.register("mover", () -> BlockEntityType.Builder.of(MoverTileEntity::new, MOVER.get()).build(null));
     public static final RegistryObject<MenuType<GenericContainer>> CONTAINER_MOVER = CONTAINERS.register("mover", GenericContainer::createContainerType);
 
     public static final RegistryObject<BaseBlock> VEHICLE_BUILDER = BLOCKS.register("vehicle_builder", VehicleBuilderTileEntity::createBlock);
@@ -45,6 +46,7 @@ public class MoverModule implements IModule {
             GuiMover.register();
             GuiVehicleBuilder.register();
         });
+        MoverRenderer.register();
     }
 
     @Override

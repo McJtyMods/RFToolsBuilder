@@ -22,6 +22,7 @@ import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
@@ -41,7 +42,11 @@ public class MoverTileEntity extends TickingTileEntity {
             .playerSlots(10, 70));
 
     @Cap(type = CapType.ITEMS_AUTOMATION)
-    private final GenericItemHandler items = new GenericItemHandler(this, CONTAINER_FACTORY.get());
+    private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
+            .onUpdate((integer, itemStack) -> {
+                markDirtyClient();
+            })
+            .build();
 
     @Cap(type = CapType.ENERGY)
     private final GenericEnergyStorage energyStorage = new GenericEnergyStorage(this, true, MoverConfiguration.MAXENERGY.get(), MoverConfiguration.RECEIVEPERTICK.get());
@@ -87,6 +92,10 @@ public class MoverTileEntity extends TickingTileEntity {
     protected void tickServer() {
     }
 
+    public ItemStack getCard() {
+        return items.getStackInSlot(SLOT_VEHICLE_CARD);
+    }
+
     @Override
     public void load(CompoundTag tagCompound) {
         super.load(tagCompound);
@@ -115,6 +124,20 @@ public class MoverTileEntity extends TickingTileEntity {
         if (other != null) {
             info.putString("other", other);
         }
+    }
+
+    @Override
+    public void saveClientDataToNBT(CompoundTag tagCompound) {
+        ItemStack card = items.getStackInSlot(SLOT_VEHICLE_CARD);
+        CompoundTag tag = new CompoundTag();
+        card.save(tag);
+        tagCompound.put("card", tag);
+    }
+
+    @Override
+    public void loadClientDataFromNBT(CompoundTag tagCompound) {
+        CompoundTag tag = tagCompound.getCompound("card");
+        items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.of(tag));
     }
 
     private void doScan() {

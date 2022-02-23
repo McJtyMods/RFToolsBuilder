@@ -5,7 +5,6 @@ import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.widgets.Button;
-import mcjty.lib.gui.widgets.Label;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.VehicleBuilderTileEntity;
@@ -18,7 +17,7 @@ import javax.annotation.Nonnull;
 
 public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEntity, GenericContainer> {
 
-    private Button actionButton;
+    private Button createButton;
 
     public GuiVehicleBuilder(VehicleBuilderTileEntity te, GenericContainer container, Inventory inventory) {
         super(te, container, inventory, MoverModule.VEHICLE_BUILDER.get().getManualEntry());
@@ -36,7 +35,7 @@ public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEnt
     }
 
     private void initializeFields() {
-        actionButton = window.findChild("action");
+        createButton = window.findChild("create");
     }
 
     private void updateFields() {
@@ -45,14 +44,7 @@ public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEnt
         }
         ItemStack spaceCard = tileEntity.getItems().getStackInSlot(VehicleBuilderTileEntity.SLOT_SPACE_CARD);
         ItemStack vehicleCard = tileEntity.getItems().getStackInSlot(VehicleBuilderTileEntity.SLOT_VEHICLE_CARD);
-        actionButton.enabled(false);
-        if (VehicleBuilderTileEntity.isUsableSpaceCard(spaceCard)) {
-            if (VehicleBuilderTileEntity.isEmptyVehicleCard(vehicleCard)) {
-                actionButton.text("Create").enabled(true);
-            } else if (VehicleBuilderTileEntity.isFullVehicleCard(vehicleCard)) {
-                actionButton.text("Undo").enabled(true);
-            }
-        }
+        createButton.enabled(VehicleBuilderTileEntity.isUsableSpaceCard(spaceCard) && VehicleBuilderTileEntity.isVehicleCard(vehicleCard));
     }
 
     @Override
