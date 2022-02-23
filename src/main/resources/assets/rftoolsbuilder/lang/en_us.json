@@ -15,6 +15,7 @@
   "block.rftoolsbuilder.yellow_shield_template_block": "Yellow Shield Template",
   "block.rftoolsbuilder.mover": "Mover",
   "block.rftoolsbuilder.vehicle_builder": "Vehicle Builder",
+  "block.rftoolsbuilder.invisible_mover_block": "Vehicle",
 
   "item.rftoolsbuilder.shape_card_def": "Shape Card",
   "item.rftoolsbuilder.shape_card_liquid": "Shape Card (Placing Liquids)",

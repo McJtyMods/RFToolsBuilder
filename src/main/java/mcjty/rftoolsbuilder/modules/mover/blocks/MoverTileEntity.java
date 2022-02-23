@@ -4,10 +4,12 @@ import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.bindings.GuiValue;
+import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.builder.BlockBuilder;
+import mcjty.lib.client.DelayedRenderer;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
@@ -15,19 +17,25 @@ import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.TickingTileEntity;
+import mcjty.lib.typed.Type;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
+import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
+import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
+import java.util.*;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.*;
@@ -43,8 +51,8 @@ public class MoverTileEntity extends TickingTileEntity {
 
     @Cap(type = CapType.ITEMS_AUTOMATION)
     private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
-            .onUpdate((integer, itemStack) -> {
-                markDirtyClient();
+            .onUpdate((slot, stack) -> {
+                updateVehicle();
             })
             .build();
 
@@ -67,6 +75,16 @@ public class MoverTileEntity extends TickingTileEntity {
     @GuiValue
     private String other;
 
+    @GuiValue
+    public static final Value<?, Integer> VALUE_CONNECTION_COUNT = Value.create("connectionCount", Type.INTEGER, MoverTileEntity::getConnectionCount, MoverTileEntity::setConnectionCount);
+    private int connectionCount = -1;
+
+    // A cache for invisible mover blocks
+    private Set<BlockPos> invisibleMoverBlocks = null;
+
+    // The network of other movers
+    private final Map<String, BlockPos> network = new HashMap<>();
+
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
                 .tileEntitySupplier(MoverTileEntity::new)
@@ -87,9 +105,72 @@ public class MoverTileEntity extends TickingTileEntity {
         return true;
     }
 
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (invisibleMoverBlocks != null) {
+            removeInvisibleBlocks();
+        }
+    }
 
     @Override
     protected void tickServer() {
+        if (invisibleMoverBlocks == null) {
+            updateVehicle();
+        }
+        BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
+        invisibleMoverBlocks.forEach(p -> {
+            if (level.getBlockState(p) != invisibleState && level.getBlockState(p).getMaterial().isReplaceable()) {
+                level.setBlock(p, invisibleState, Block.UPDATE_ALL);
+            }
+        });
+    }
+
+    @Override
+    protected void tickClient() {
+        //@todo optimize to only render when in front and distance
+        ItemStack card = getCard();
+        if (VehicleBuilderTileEntity.isVehicleCard(card)) {
+            DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec) -> {
+                MoverRenderer.actualRender(this, poseStack, cameraVec, card);
+            }, (level, pos) -> level.getBlockState(pos).getBlock() == MoverModule.MOVER.get());
+        }
+    }
+
+    private void updateVehicle() {
+        ItemStack vehicle = items.getStackInSlot(SLOT_VEHICLE_CARD);
+        if (invisibleMoverBlocks == null) {
+            invisibleMoverBlocks = new HashSet<>();
+        }
+        removeInvisibleBlocks();
+        if (!vehicle.isEmpty()) {
+            Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(vehicle, worldPosition.offset(1, 1, 1));
+            blocks.values().forEach(invisibleMoverBlocks::addAll);
+        }
+        markDirtyClient();
+    }
+
+    private void removeInvisibleBlocks() {
+        BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
+        invisibleMoverBlocks.forEach(p -> {
+            if (level.getBlockState(p) == invisibleState) {
+                level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+        });
+        invisibleMoverBlocks.clear();
+    }
+
+
+    public int getConnectionCount() {
+        if (level.isClientSide) {
+            return connectionCount;
+        } else {
+            return network.size();
+        }
+    }
+
+    public void setConnectionCount(int v) {
+        connectionCount = v;
     }
 
     public ItemStack getCard() {
@@ -124,6 +205,12 @@ public class MoverTileEntity extends TickingTileEntity {
         if (other != null) {
             info.putString("other", other);
         }
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        super.handleUpdateTag(tag);
+        loadClientDataFromNBT(tag);
     }
 
     @Override
