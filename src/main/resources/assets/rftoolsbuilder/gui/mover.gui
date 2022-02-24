@@ -5,6 +5,7 @@ window {
     event('redstone','mcjtylib.setRsMode')
     bind('name', 'name')
     bind('other', 'other')
+    bind('count', 'connectionCount')
 
     panel('','positional') {
         bg1('rftoolsbuilder:textures/gui/mover.png')
@@ -31,6 +32,12 @@ window {
             channel('other')
             hint(40,50,60,14)
             tooltips('Set the name of the destination mover')
+        }
+
+        label('count', '#') {
+            channel('count')
+            hint(40,10,35,14)
+            horizalign('ALIGN_LEFT')
         }
 
         button('scan','Scan') {
