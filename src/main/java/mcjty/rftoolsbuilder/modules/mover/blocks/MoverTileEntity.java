@@ -18,6 +18,7 @@ import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.TickingTileEntity;
 import mcjty.lib.typed.Type;
+import mcjty.lib.varia.OrientationTools;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
@@ -25,7 +26,9 @@ import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -35,6 +38,7 @@ import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
@@ -44,9 +48,10 @@ import static mcjty.lib.container.SlotDefinition.specific;
 public class MoverTileEntity extends TickingTileEntity {
 
     public static final int SLOT_VEHICLE_CARD = 0;
+    public static final int MAXSCAN = 256;  //@todo configurable
 
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(1)
-            .slot(specific(MoverModule.VEHICLE_CARD.get()).in().out(), SLOT_VEHICLE_CARD, 152, 10)
+            .slot(specific(MoverModule.VEHICLE_CARD.get()).in().out(), SLOT_VEHICLE_CARD, 154, 11)
             .playerSlots(10, 70));
 
     @Cap(type = CapType.ITEMS_AUTOMATION)
@@ -76,14 +81,17 @@ public class MoverTileEntity extends TickingTileEntity {
     private String other;
 
     @GuiValue
-    public static final Value<?, Integer> VALUE_CONNECTION_COUNT = Value.create("connectionCount", Type.INTEGER, MoverTileEntity::getConnectionCount, MoverTileEntity::setConnectionCount);
-    private int connectionCount = -1;
+    public static final Value<?, String> VALUE_CONNECTIONS = Value.create("connections", Type.STRING, MoverTileEntity::getConnectionCount, MoverTileEntity::setConnectionCount);
+    private String connections = "";
+
+    // Counter to make setting invisible blocks more efficient
+    private int cnt;
 
     // A cache for invisible mover blocks
     private Set<BlockPos> invisibleMoverBlocks = null;
 
-    // The network of other movers
-    private final Map<String, BlockPos> network = new HashMap<>();
+    // Neighbouring movers
+    private final Map<Direction, BlockPos> network = new EnumMap<>(Direction.class);
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
@@ -115,15 +123,32 @@ public class MoverTileEntity extends TickingTileEntity {
 
     @Override
     protected void tickServer() {
+        updateVehicleStatus();
+        tryMoveVehicle();
+    }
+
+    private void tryMoveVehicle() {
+        ItemStack vehicle = items.getStackInSlot(SLOT_VEHICLE_CARD);
+        if (isMachineEnabled() && !vehicle.isEmpty()) {
+            // We are enabled and a vehicle is present. Try to move it
+        }
+    }
+
+    private void updateVehicleStatus() {
         if (invisibleMoverBlocks == null) {
             updateVehicle();
+            cnt = 0;
         }
-        BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
-        invisibleMoverBlocks.forEach(p -> {
-            if (level.getBlockState(p) != invisibleState && level.getBlockState(p).getMaterial().isReplaceable()) {
-                level.setBlock(p, invisibleState, Block.UPDATE_ALL);
-            }
-        });
+        cnt--;
+        if (cnt <= 0) {
+            cnt = 10;
+            BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
+            invisibleMoverBlocks.forEach(p -> {
+                if (level.getBlockState(p) != invisibleState && level.getBlockState(p).getMaterial().isReplaceable()) {
+                    level.setBlock(p, invisibleState, Block.UPDATE_ALL);
+                }
+            });
+        }
     }
 
     @Override
@@ -161,25 +186,31 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
 
-    public int getConnectionCount() {
-        if (level.isClientSide) {
-            return connectionCount;
-        } else {
-            return network.size();
-        }
+    public String getConnectionCount() {
+        return connections;
     }
 
-    public void setConnectionCount(int v) {
-        connectionCount = v;
+    public void setConnectionCount(String v) {
+        connections = v;
     }
 
     public ItemStack getCard() {
         return items.getStackInSlot(SLOT_VEHICLE_CARD);
     }
 
+    private void addConnection(Direction direction, BlockPos pos) {
+        network.put(direction, pos);
+        connections = connections + direction.name().toUpperCase().charAt(0);
+    }
+
     @Override
     public void load(CompoundTag tagCompound) {
         super.load(tagCompound);
+        for (Direction direction : OrientationTools.DIRECTION_VALUES) {
+            if (tagCompound.contains(direction.name())) {
+                addConnection(direction, NbtUtils.readBlockPos(tagCompound.getCompound(direction.name())));
+            }
+        }
     }
 
     @Override
@@ -193,6 +224,11 @@ public class MoverTileEntity extends TickingTileEntity {
     @Override
     public void saveAdditional(@Nonnull CompoundTag tagCompound) {
         super.saveAdditional(tagCompound);
+        for (Direction direction : OrientationTools.DIRECTION_VALUES) {
+            if (network.containsKey(direction)) {
+                tagCompound.put(direction.name(), NbtUtils.writeBlockPos(network.get(direction)));
+            }
+        }
     }
 
     @Override
@@ -228,7 +264,39 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
     private void doScan() {
-        // @todo
+        network.clear();
+        connections = "";
+        Set<BlockPos> done = new HashSet<>();
+        done.add(worldPosition);
+        doScan(done, null);
+        setChanged();
+    }
+
+    private void doScanFromOther(Set<BlockPos> done, @Nonnull Direction comingFrom, BlockPos other) {
+        network.clear();
+        connections = "";
+        network.put(comingFrom.getOpposite(), other);
+        doScan(done, comingFrom);
+        setChanged();
+    }
+
+    private void doScan(Set<BlockPos> done, @Nullable Direction comingFrom) {
+        for (Direction direction : OrientationTools.DIRECTION_VALUES) {
+            if (!Objects.equals(direction.getOpposite(), comingFrom)) {
+                for (int i = 1; i < MAXSCAN; i++) {
+                    BlockPos relative = worldPosition.relative(direction, i);
+                    if (done.contains(relative)) {
+                        break;
+                    }
+                    if (level.getBlockEntity(relative) instanceof MoverTileEntity mover) {
+                        done.add(relative);
+                        addConnection(direction, relative);
+                        mover.doScanFromOther(done, direction, worldPosition);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     @ServerCommand
