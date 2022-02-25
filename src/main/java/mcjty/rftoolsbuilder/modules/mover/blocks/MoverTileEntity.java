@@ -30,12 +30,16 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -77,8 +81,6 @@ public class MoverTileEntity extends TickingTileEntity {
 
     @GuiValue
     private String name;
-    @GuiValue
-    private String other;
 
     @GuiValue
     public static final Value<?, String> VALUE_CONNECTIONS = Value.create("connections", Type.STRING, MoverTileEntity::getConnectionCount, MoverTileEntity::setConnectionCount);
@@ -86,6 +88,18 @@ public class MoverTileEntity extends TickingTileEntity {
 
     // Counter to make setting invisible blocks more efficient
     private int cnt;
+
+    // If this is the source of a movement then this refers to the destination. Otherwise null. Synced to client
+    private BlockPos destination = null;
+    // For the source of the movement, this refers to the game tick when the movement started. Synced to client
+    private long starttick;
+    // For the source of the movement, the last tick when we moved entities. Starts at -1
+    private long lastEntityMovementTick;
+    // For the source of the movement, the total distance to travel. Synced to client
+    private float totalDist;
+
+    // If this is the destination of a movement then this refers to the source. Otherwise null
+    private BlockPos source = null;
 
     // A cache for invisible mover blocks
     private Set<BlockPos> invisibleMoverBlocks = null;
@@ -124,13 +138,140 @@ public class MoverTileEntity extends TickingTileEntity {
     @Override
     protected void tickServer() {
         updateVehicleStatus();
-        tryMoveVehicle();
+        tryMoveVehicleServer();
     }
 
-    private void tryMoveVehicle() {
+    @Override
+    protected void tickClient() {
+        //@todo optimize to only render when in front and distance
+        handleRender();
+        tryMoveVehicleClient();
+    }
+
+    private void handleRender() {
+        ItemStack vehicle = getCard();
+        if (VehicleBuilderTileEntity.isVehicleCard(vehicle)) {
+            DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec) -> {
+                MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle);
+            }, (level, pos) -> {
+                if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
+                    return !mover.getCard().isEmpty();
+                }
+                return false;
+            });
+        }
+    }
+
+    private void tryMoveVehicleClient() {
+        if (destination != null) {
+//            ItemStack vehicle = items.getStackInSlot(SLOT_VEHICLE_CARD);
+//            getTotalTicks(totalDist);
+//            long currentTick = level.getGameTime() - starttick;
+        }
+    }
+
+    public long getStarttick() {
+        return starttick;
+    }
+
+    public float getTotalDist() {
+        return totalDist;
+    }
+
+    public long getTotalTicks() {
+        // How long the entire movement should last
+        return (long) (totalDist * 150);
+    }
+
+    public BlockPos getDestination() {
+        return destination;
+    }
+
+    @NotNull
+    public Vec3 getMovingPosition(float partialTicks, long gameTick) {
+        BlockPos blockPos = worldPosition;
+        BlockPos destination = getDestination();
+        Vec3 current = new Vec3(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+        if (destination != null) {
+            long totalTicks = getTotalTicks();
+            long currentTick = gameTick - starttick;
+            Vec3 dest = new Vec3(destination.getX(), destination.getY(), destination.getZ());
+            current = current.lerp(dest, (currentTick + partialTicks) / (double) totalTicks);
+        }
+        return current;
+    }
+
+    private final Random random = new Random();
+
+    private void tryMoveVehicleServer() {
         ItemStack vehicle = items.getStackInSlot(SLOT_VEHICLE_CARD);
         if (isMachineEnabled() && !vehicle.isEmpty()) {
             // We are enabled and a vehicle is present. Try to move it
+            if (destination != null) {
+                // We are moving
+                actualMoveServer(vehicle);
+            } else if (!network.isEmpty()) {
+                actualStartMovementServer();
+            }
+        }
+    }
+
+    private void actualStartMovementServer() {
+        // @todo here we should routing
+        // For now we pick the first destination
+        Iterator<BlockPos> iterator = network.values().iterator();
+        BlockPos dest = iterator.next();
+        if (iterator.hasNext()) {
+            float r = random.nextFloat();
+            if (r < .5f) {
+                dest = iterator.next();
+            }
+        }
+        if (level.getBlockEntity(dest) instanceof MoverTileEntity destMover) {
+            if (destMover.isAvailable()) {
+                destMover.setSource(worldPosition);
+                destination = dest;
+                totalDist = (float) Math.sqrt(worldPosition.distSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), true));
+                starttick = level.getGameTime();
+                lastEntityMovementTick = -1;
+                markDirtyClient();
+            }
+        }
+    }
+
+    private void actualMoveServer(ItemStack vehicle) {
+        long totalTicks = getTotalTicks();
+        long currentTick = level.getGameTime() - starttick;
+
+        // First move entities
+        Vec3 movingPosition = getMovingPosition(0, level.getGameTime());
+        AABB aabb = new AABB(movingPosition, movingPosition.add(5, 5, 5));
+        if (lastEntityMovementTick != -1) {
+            Vec3 start = getMovingPosition(0, lastEntityMovementTick);
+            Vec3 end = getMovingPosition(0, level.getGameTime());
+            double dx = end.x - start.x;
+            double dy = end.y - start.y;
+            double dz = end.z - start.z;
+            level.getEntitiesOfClass(Entity.class, aabb).forEach(entity -> {
+                entity.setPos(entity.getX() + dx, entity.getY() + dy, entity.getZ() + dz);
+            });
+            lastEntityMovementTick = level.getGameTime();
+        }
+        lastEntityMovementTick = level.getGameTime();
+        setChanged();
+
+        if (currentTick >= totalTicks) {
+            // We are at the destination
+            if (level.getBlockEntity(destination) instanceof MoverTileEntity destMover) {
+                destMover.items.setStackInSlot(SLOT_VEHICLE_CARD, vehicle);
+                items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.EMPTY);
+                destMover.setSource(null);
+            } else {
+                // Something is wrong. The destination is gone. Stop the movement
+                // @todo handle this more gracefully. Move back
+            }
+            destination = null;
+            markDirtyClient();
         }
     }
 
@@ -151,22 +292,12 @@ public class MoverTileEntity extends TickingTileEntity {
         }
     }
 
-    @Override
-    protected void tickClient() {
-        //@todo optimize to only render when in front and distance
-        ItemStack card = getCard();
-        if (VehicleBuilderTileEntity.isVehicleCard(card)) {
-            DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec) -> {
-                MoverRenderer.actualRender(this, poseStack, cameraVec, card);
-            }, (level, pos) -> level.getBlockState(pos).getBlock() == MoverModule.MOVER.get());
-        }
-    }
-
     private void updateVehicle() {
         ItemStack vehicle = items.getStackInSlot(SLOT_VEHICLE_CARD);
         if (invisibleMoverBlocks == null) {
             invisibleMoverBlocks = new HashSet<>();
         }
+        destination = null;
         removeInvisibleBlocks();
         if (!vehicle.isEmpty()) {
             Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(vehicle, worldPosition.offset(1, 1, 1));
@@ -185,6 +316,27 @@ public class MoverTileEntity extends TickingTileEntity {
         invisibleMoverBlocks.clear();
     }
 
+    public void setSource(BlockPos pos) {
+        source = pos;
+        setChanged();
+    }
+
+    public boolean isAvailable() {
+        ItemStack vehicle = items.getStackInSlot(SLOT_VEHICLE_CARD);
+        if (!vehicle.isEmpty()) {
+            // If there is a vehicle here then this is not available
+            return false;
+        }
+        if (destination != null) {
+            // If something is moving from here then this is not available
+            return false;
+        }
+        if (source != null) {
+            // If something is moving to here then this is not available
+            return false;
+        }
+        return true;
+    }
 
     public String getConnectionCount() {
         return connections;
@@ -211,6 +363,19 @@ public class MoverTileEntity extends TickingTileEntity {
                 addConnection(direction, NbtUtils.readBlockPos(tagCompound.getCompound(direction.name())));
             }
         }
+        if (tagCompound.contains("source")) {
+            source = NbtUtils.readBlockPos(tagCompound.getCompound("source"));
+        } else {
+            source = null;
+        }
+        if (tagCompound.contains("destination")) {
+            destination = NbtUtils.readBlockPos(tagCompound.getCompound("destination"));
+        } else {
+            destination = null;
+        }
+        starttick = tagCompound.getLong("starttick");
+        totalDist = tagCompound.getFloat("totalDist");
+        lastEntityMovementTick = tagCompound.getLong("lastemt");
     }
 
     @Override
@@ -218,7 +383,6 @@ public class MoverTileEntity extends TickingTileEntity {
         super.loadInfo(tagCompound);
         CompoundTag info = tagCompound.getCompound("Info");
         name = info.getString("name");
-        other = info.getString("other");
     }
 
     @Override
@@ -229,6 +393,15 @@ public class MoverTileEntity extends TickingTileEntity {
                 tagCompound.put(direction.name(), NbtUtils.writeBlockPos(network.get(direction)));
             }
         }
+        if (source != null) {
+            tagCompound.put("source", NbtUtils.writeBlockPos(source));
+        }
+        if (destination != null) {
+            tagCompound.put("destination", NbtUtils.writeBlockPos(destination));
+        }
+        tagCompound.putLong("starttick", starttick);
+        tagCompound.putFloat("totalDist", totalDist);
+        tagCompound.putLong("lastemt", lastEntityMovementTick);
     }
 
     @Override
@@ -237,9 +410,6 @@ public class MoverTileEntity extends TickingTileEntity {
         CompoundTag info = getOrCreateInfo(tagCompound);
         if (name != null) {
             info.putString("name", name);
-        }
-        if (other != null) {
-            info.putString("other", other);
         }
     }
 
@@ -255,12 +425,26 @@ public class MoverTileEntity extends TickingTileEntity {
         CompoundTag tag = new CompoundTag();
         card.save(tag);
         tagCompound.put("card", tag);
+        tagCompound.putLong("starttick", starttick);
+        tagCompound.putFloat("totalDist", totalDist);
+        tagCompound.putLong("lastemt", lastEntityMovementTick);
+        if (destination != null) {
+            tagCompound.put("destination", NbtUtils.writeBlockPos(destination));
+        }
     }
 
     @Override
     public void loadClientDataFromNBT(CompoundTag tagCompound) {
         CompoundTag tag = tagCompound.getCompound("card");
         items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.of(tag));
+        if (tagCompound.contains("destination")) {
+            destination = NbtUtils.readBlockPos(tagCompound.getCompound("destination"));
+        } else {
+            destination = null;
+        }
+        starttick = tagCompound.getLong("starttick");
+        totalDist = tagCompound.getFloat("totalDist");
+        lastEntityMovementTick = tagCompound.getLong("lastemt");
     }
 
     private void doScan() {
@@ -275,7 +459,7 @@ public class MoverTileEntity extends TickingTileEntity {
     private void doScanFromOther(Set<BlockPos> done, @Nonnull Direction comingFrom, BlockPos other) {
         network.clear();
         connections = "";
-        network.put(comingFrom.getOpposite(), other);
+        addConnection(comingFrom.getOpposite(), other);
         doScan(done, comingFrom);
         setChanged();
     }

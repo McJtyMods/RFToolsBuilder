@@ -23,17 +23,19 @@ public class MoverRenderer {
 
     public static void actualRender(MoverTileEntity tileEntity, @NotNull PoseStack matrixStack, Vec3 cameraPos, ItemStack card) {
         matrixStack.pushPose();
-        BlockPos blockPos = tileEntity.getBlockPos();
-        matrixStack.translate(blockPos.getX() - cameraPos.x, blockPos.getY() - cameraPos.y, blockPos.getZ() - cameraPos.z);
+        Vec3 current = tileEntity.getMovingPosition(Minecraft.getInstance().getFrameTime(), tileEntity.getLevel().getGameTime());
+        matrixStack.translate(current.x - cameraPos.x, current.y - cameraPos.y, current.z - cameraPos.z);
+
         MultiBufferSource.BufferSource buffer = Minecraft.getInstance().renderBuffers().bufferSource();
         BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
         Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(card, new BlockPos(1, 1, 1));
         Level level = tileEntity.getLevel();
+        Vec3 finalCurrent = current;
         blocks.forEach((state, positions) -> {
             positions.forEach(pos -> {
                 matrixStack.pushPose();
                 matrixStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                BlockPos realPos = blockPos.offset(pos.getX(), pos.getY(), pos.getZ());
+                BlockPos realPos = new BlockPos(finalCurrent.x, finalCurrent.y, finalCurrent.z).offset(pos.getX(), pos.getY(), pos.getZ());
                 int lightColor = LevelRenderer.getLightColor(level, realPos);
 
                 blockRenderer.renderSingleBlock(state, matrixStack, buffer, lightColor, OverlayTexture.NO_OVERLAY, EmptyModelData.INSTANCE);
