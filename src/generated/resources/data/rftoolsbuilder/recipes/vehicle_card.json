@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " C ",
+    "rpr",
+    " r "
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:minecart"
+    },
+    "p": {
+      "item": "minecraft:paper"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "rftoolsbuilder:vehicle_card"
+  }
+}
