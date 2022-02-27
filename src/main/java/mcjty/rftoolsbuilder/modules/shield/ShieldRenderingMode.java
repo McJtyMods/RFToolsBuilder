@@ -4,6 +4,7 @@ import net.minecraft.util.StringRepresentable;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public enum ShieldRenderingMode implements StringRepresentable {
@@ -45,6 +46,6 @@ public enum ShieldRenderingMode implements StringRepresentable {
     @Nonnull
     @Override
     public String getSerializedName() {
-        return name().toLowerCase();
+        return name().toLowerCase(Locale.ENGLISH);
     }
 }
