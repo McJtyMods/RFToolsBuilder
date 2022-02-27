@@ -30,7 +30,9 @@ public class InvisibleMoverBlock extends Block {
     }
 
     @Override
-    public void tick(BlockState state, ServerLevel level, BlockPos pos, Random pandom) {
-        level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, Random random) {
+        if (random.nextFloat() < .1f) {
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        }
     }
 }
