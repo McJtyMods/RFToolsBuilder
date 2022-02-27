@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a bug with the shield on some locales (Turkish)
+
 1.16-3.1.6:
 - Fix where preview of the support blocks would break due to wrong side
 
