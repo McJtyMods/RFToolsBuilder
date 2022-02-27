@@ -181,7 +181,7 @@ public class MoverTileEntity extends TickingTileEntity {
 
     public long getTotalTicks() {
         // How long the entire movement should last
-        return (long) (totalDist * 50);
+        return (long) (totalDist * 70);
     }
 
     public BlockPos getDestination() {
@@ -233,6 +233,7 @@ public class MoverTileEntity extends TickingTileEntity {
                 destination = dest;
                 totalDist = (float) Math.sqrt(worldPosition.distSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), true));
                 starttick = level.getGameTime();
+                grabbedEntities.clear();
                 markDirtyClient();
             }
         }
@@ -246,7 +247,7 @@ public class MoverTileEntity extends TickingTileEntity {
         Vec3 movingPosition = getMovingPosition(0, level.getGameTime());
         AABB aabb = new AABB(movingPosition, movingPosition.add(5, 5, 5));
         Vec3 startPos = getMovingPosition(0, starttick);
-        Vec3 currentPos = getMovingPosition(0, level.getGameTime());
+        Vec3 currentPos = getMovingPosition(0, level.getGameTime()+3);
         double dx = currentPos.x - startPos.x;
         double dy = currentPos.y - startPos.y;
         double dz = currentPos.z - startPos.z;
@@ -254,6 +255,7 @@ public class MoverTileEntity extends TickingTileEntity {
             if (grabbedEntities.containsKey(entity.getId())) {
                 Vec3 basePos = grabbedEntities.get(entity.getId());
                 entity.setPos(basePos.x + dx, basePos.y + dy, basePos.z + dz);
+                entity.setOldPosAndRot();
                 entity.fallDistance = 0;
                 entity.moveDist = 0;
                 entity.flyDist = 0;
@@ -271,17 +273,19 @@ public class MoverTileEntity extends TickingTileEntity {
         }
         for (Map.Entry<Integer, Vec3> entry : grabbedEntities.entrySet()) {
             Entity entity = level.getEntity(entry.getKey());
-            Vec3 basePos = entry.getValue();
-            entity.setPos(basePos.x + dx, basePos.y + dy, basePos.z + dz);
-            entity.fallDistance = 0;
-            entity.moveDist = 0;
-            entity.flyDist = 0;
-            entity.walkDist = 0;
-            entity.hasImpulse = false;
-            entity.noPhysics = true;
-            entity.setDeltaMovement(Vec3.ZERO);
-            entity.setOnGround(true);
-
+            if (entity != null) {
+                Vec3 basePos = entry.getValue();
+                entity.setPos(basePos.x + dx, basePos.y + dy, basePos.z + dz);
+                entity.setOldPosAndRot();
+                entity.fallDistance = 0;
+                entity.moveDist = 0;
+                entity.flyDist = 0;
+                entity.walkDist = 0;
+                entity.hasImpulse = false;
+                entity.noPhysics = true;
+                entity.setDeltaMovement(Vec3.ZERO);
+                entity.setOnGround(true);
+            }
         }
 
         if (currentTick >= totalTicks) {
