@@ -25,6 +25,8 @@ import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
+import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -32,6 +34,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -39,6 +42,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -103,7 +107,7 @@ public class MoverTileEntity extends TickingTileEntity {
     private Set<BlockPos> invisibleMoverBlocks = null;
 
     // All 'grabbed' entities during movement
-    private final Map<Integer, Vec3> grabbedEntities = new HashMap<>();
+    private Map<Integer, Vec3> grabbedEntities = new HashMap<>();
 
     // Neighbouring movers
     private final Map<Direction, BlockPos> network = new EnumMap<>(Direction.class);
@@ -146,7 +150,6 @@ public class MoverTileEntity extends TickingTileEntity {
     protected void tickClient() {
         //@todo optimize to only render when in front and distance
         handleRender();
-        tryMoveVehicleClient();
     }
 
     private void handleRender() {
@@ -154,6 +157,7 @@ public class MoverTileEntity extends TickingTileEntity {
         if (VehicleBuilderTileEntity.isVehicleCard(vehicle)) {
             DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec) -> {
                 MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle);
+                tryMoveVehicleClient();
             }, (level, pos) -> {
                 if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
                     return !mover.getCard().isEmpty();
@@ -165,9 +169,35 @@ public class MoverTileEntity extends TickingTileEntity {
 
     private void tryMoveVehicleClient() {
         if (destination != null) {
-//            ItemStack vehicle = items.getStackInSlot(SLOT_VEHICLE_CARD);
-//            getTotalTicks(totalDist);
-//            long currentTick = level.getGameTime() - starttick;
+            Vec3 startPos = getMovingPosition(0, starttick);
+            Vec3 currentPos = getMovingPosition(0, level.getGameTime());
+            double dx = currentPos.x - startPos.x;
+            double dy = currentPos.y - startPos.y;
+            double dz = currentPos.z - startPos.z;
+            for (Map.Entry<Integer, Vec3> pair : grabbedEntities.entrySet()) {
+                Entity entity = level.getEntity(pair.getKey());
+                if (entity != null) {
+                    Vec3 basePos = pair.getValue();
+                    double desiredX = basePos.x + dx;
+                    double desiredY = basePos.y + dy;
+                    double desiredZ = basePos.z + dz;
+                    desiredX = (desiredX + entity.getX()) / 2.0;
+                    desiredY = (desiredY + entity.getY()) / 2.0;
+                    desiredZ = (desiredZ + entity.getZ()) / 2.0;
+                    entity.setPos(desiredX, desiredY, desiredZ);
+                    entity.setOldPosAndRot();
+                    entity.fallDistance = 0;
+//                entity.moveDist = 0;
+//                entity.flyDist = 0;
+//                entity.walkDist = 0;
+//                entity.hasImpulse = false;
+//                entity.noPhysics = true;
+                    entity.setDeltaMovement(Vec3.ZERO);
+                    entity.setOnGround(true);
+                }
+            }
+        } else {
+            grabbedEntities.clear();
         }
     }
 
@@ -239,6 +269,16 @@ public class MoverTileEntity extends TickingTileEntity {
         }
     }
 
+    public void setGrabbedEntitiesClient(Set<Integer> grabbedEntities) {
+        this.grabbedEntities = new HashMap<>();
+        for (Integer id : grabbedEntities) {
+            Entity entity = level.getEntity(id);
+            if (entity != null) {
+                this.grabbedEntities.put(id, entity.position());
+            }
+        }
+    }
+
     private void actualMoveServer(ItemStack vehicle) {
         long totalTicks = getTotalTicks();
         long currentTick = level.getGameTime() - starttick;
@@ -247,46 +287,56 @@ public class MoverTileEntity extends TickingTileEntity {
         Vec3 movingPosition = getMovingPosition(0, level.getGameTime());
         AABB aabb = new AABB(movingPosition, movingPosition.add(5, 5, 5));
         Vec3 startPos = getMovingPosition(0, starttick);
-        Vec3 currentPos = getMovingPosition(0, level.getGameTime()+3);
+        Vec3 currentPos = getMovingPosition(0, level.getGameTime()+1);
         double dx = currentPos.x - startPos.x;
         double dy = currentPos.y - startPos.y;
         double dz = currentPos.z - startPos.z;
+        boolean grabbedDirty = false;
+        Map<Integer, Vec3> copyGrabbed = this.grabbedEntities;
+        grabbedEntities = new HashMap<>();
         for (Entity entity : level.getEntitiesOfClass(Entity.class, aabb)) {
-            if (grabbedEntities.containsKey(entity.getId())) {
-                Vec3 basePos = grabbedEntities.get(entity.getId());
+            if (copyGrabbed.containsKey(entity.getId())) {
+                Vec3 basePos = copyGrabbed.get(entity.getId());
+                grabbedEntities.put(entity.getId(), basePos);
                 entity.setPos(basePos.x + dx, basePos.y + dy, basePos.z + dz);
                 entity.setOldPosAndRot();
                 entity.fallDistance = 0;
-                entity.moveDist = 0;
-                entity.flyDist = 0;
-                entity.walkDist = 0;
-                entity.hasImpulse = false;
-                entity.noPhysics = true;
+//                entity.moveDist = 0;
+//                entity.flyDist = 0;
+//                entity.walkDist = 0;
+//                entity.hasImpulse = false;
+//                entity.noPhysics = true;
                 entity.setDeltaMovement(Vec3.ZERO);
                 entity.setOnGround(true);
+                copyGrabbed.remove(entity.getId());
             } else {
                 grabbedEntities.put(entity.getId(), entity.position());
-                entity.noPhysics = true;
+//                entity.noPhysics = true;
                 entity.setDeltaMovement(Vec3.ZERO);
                 entity.setOnGround(true);
+                grabbedDirty = true;
             }
         }
-        for (Map.Entry<Integer, Vec3> entry : grabbedEntities.entrySet()) {
-            Entity entity = level.getEntity(entry.getKey());
-            if (entity != null) {
-                Vec3 basePos = entry.getValue();
-                entity.setPos(basePos.x + dx, basePos.y + dy, basePos.z + dz);
-                entity.setOldPosAndRot();
-                entity.fallDistance = 0;
-                entity.moveDist = 0;
-                entity.flyDist = 0;
-                entity.walkDist = 0;
-                entity.hasImpulse = false;
-                entity.noPhysics = true;
-                entity.setDeltaMovement(Vec3.ZERO);
-                entity.setOnGround(true);
-            }
+        if (!copyGrabbed.isEmpty()) {
+            grabbedDirty = true;
         }
+
+        if (grabbedDirty) {
+            PacketGrabbedEntitiesToClient packet = new PacketGrabbedEntitiesToClient(worldPosition, grabbedEntities.keySet());
+            ChunkPos cp = new ChunkPos(worldPosition);
+            RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunk(cp.x, cp.z)), packet);
+        }
+//        for (Map.Entry<Integer, Vec3> entry : grabbedEntities.entrySet()) {
+//            Entity entity = level.getEntity(entry.getKey());
+//            if (entity != null) {
+//                Vec3 basePos = entry.getValue();
+//                entity.setPos(basePos.x + dx, basePos.y + dy, basePos.z + dz);
+//                entity.setOldPosAndRot();
+//                entity.fallDistance = 0;
+//                entity.setDeltaMovement(Vec3.ZERO);
+//                entity.setOnGround(true);
+//            }
+//        }
 
         if (currentTick >= totalTicks) {
             // We are at the destination
