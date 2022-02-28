@@ -181,9 +181,9 @@ public class MoverTileEntity extends TickingTileEntity {
                     double desiredX = basePos.x + dx;
                     double desiredY = basePos.y + dy;
                     double desiredZ = basePos.z + dz;
-                    desiredX = (desiredX + entity.getX()) / 2.0;
-                    desiredY = (desiredY + entity.getY()) / 2.0;
-                    desiredZ = (desiredZ + entity.getZ()) / 2.0;
+                    desiredX = (desiredX + entity.getX()*3) / 4.0;
+                    desiredY = (desiredY + entity.getY()*3) / 4.0;
+                    desiredZ = (desiredZ + entity.getZ()*3) / 4.0;
                     entity.setPos(desiredX, desiredY, desiredZ);
                     entity.setOldPosAndRot();
                     entity.fallDistance = 0;
