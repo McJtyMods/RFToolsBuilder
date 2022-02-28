@@ -156,8 +156,8 @@ public class MoverTileEntity extends TickingTileEntity {
         ItemStack vehicle = getCard();
         if (VehicleBuilderTileEntity.isVehicleCard(vehicle)) {
             DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec) -> {
-                MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle);
-                tryMoveVehicleClient();
+                float partialTicks = MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle);
+                tryMoveVehicleClient(partialTicks);
             }, (level, pos) -> {
                 if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
                     return !mover.getCard().isEmpty();
@@ -167,10 +167,10 @@ public class MoverTileEntity extends TickingTileEntity {
         }
     }
 
-    private void tryMoveVehicleClient() {
+    private void tryMoveVehicleClient(float partialTicks) {
         if (destination != null) {
             Vec3 startPos = getMovingPosition(0, starttick);
-            Vec3 currentPos = getMovingPosition(0, level.getGameTime());
+            Vec3 currentPos = getMovingPosition(partialTicks, level.getGameTime());
             double dx = currentPos.x - startPos.x;
             double dy = currentPos.y - startPos.y;
             double dz = currentPos.z - startPos.z;
@@ -187,11 +187,6 @@ public class MoverTileEntity extends TickingTileEntity {
                     entity.setPos(desiredX, desiredY, desiredZ);
                     entity.setOldPosAndRot();
                     entity.fallDistance = 0;
-//                entity.moveDist = 0;
-//                entity.flyDist = 0;
-//                entity.walkDist = 0;
-//                entity.hasImpulse = false;
-//                entity.noPhysics = true;
                     entity.setDeltaMovement(Vec3.ZERO);
                     entity.setOnGround(true);
                 }
@@ -301,17 +296,11 @@ public class MoverTileEntity extends TickingTileEntity {
                 entity.setPos(basePos.x + dx, basePos.y + dy, basePos.z + dz);
                 entity.setOldPosAndRot();
                 entity.fallDistance = 0;
-//                entity.moveDist = 0;
-//                entity.flyDist = 0;
-//                entity.walkDist = 0;
-//                entity.hasImpulse = false;
-//                entity.noPhysics = true;
                 entity.setDeltaMovement(Vec3.ZERO);
                 entity.setOnGround(true);
                 copyGrabbed.remove(entity.getId());
             } else {
                 grabbedEntities.put(entity.getId(), entity.position());
-//                entity.noPhysics = true;
                 entity.setDeltaMovement(Vec3.ZERO);
                 entity.setOnGround(true);
                 grabbedDirty = true;
@@ -326,17 +315,6 @@ public class MoverTileEntity extends TickingTileEntity {
             ChunkPos cp = new ChunkPos(worldPosition);
             RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunk(cp.x, cp.z)), packet);
         }
-//        for (Map.Entry<Integer, Vec3> entry : grabbedEntities.entrySet()) {
-//            Entity entity = level.getEntity(entry.getKey());
-//            if (entity != null) {
-//                Vec3 basePos = entry.getValue();
-//                entity.setPos(basePos.x + dx, basePos.y + dy, basePos.z + dz);
-//                entity.setOldPosAndRot();
-//                entity.fallDistance = 0;
-//                entity.setDeltaMovement(Vec3.ZERO);
-//                entity.setOnGround(true);
-//            }
-//        }
 
         if (currentTick >= totalTicks) {
             // We are at the destination
@@ -349,6 +327,9 @@ public class MoverTileEntity extends TickingTileEntity {
                 // @todo handle this more gracefully. Move back
             }
             destination = null;
+            // Make sure the invisible blocks are back
+            cnt = 0;
+            updateVehicleStatus();
             markDirtyClient();
         }
     }
