@@ -25,25 +25,18 @@ import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
-import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
-import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
+import mcjty.rftoolsbuilder.modules.mover.logic.EntityMovementLogic;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.network.PacketDistributor;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -93,21 +86,10 @@ public class MoverTileEntity extends TickingTileEntity {
     // Counter to make setting invisible blocks more efficient
     private int cnt;
 
-    // If this is the source of a movement then this refers to the destination. Otherwise null. Synced to client
-    private BlockPos destination = null;
-    // For the source of the movement, this refers to the game tick when the movement started. Synced to client
-    private long starttick;
-    // For the source of the movement, the total distance to travel. Synced to client
-    private float totalDist;
-
-    // If this is the destination of a movement then this refers to the source. Otherwise null
-    private BlockPos source = null;
-
     // A cache for invisible mover blocks
     private Set<BlockPos> invisibleMoverBlocks = null;
 
-    // All 'grabbed' entities during movement
-    private Map<Integer, Vec3> grabbedEntities = new HashMap<>();
+    private final EntityMovementLogic logic = new EntityMovementLogic(this);
 
     // Neighbouring movers
     private final Map<Direction, BlockPos> network = new EnumMap<>(Direction.class);
@@ -132,6 +114,14 @@ public class MoverTileEntity extends TickingTileEntity {
         return true;
     }
 
+    public Map<Direction, BlockPos> getNetwork() {
+        return network;
+    }
+
+    public EntityMovementLogic getLogic() {
+        return logic;
+    }
+
     @Override
     public void setRemoved() {
         super.setRemoved();
@@ -143,7 +133,7 @@ public class MoverTileEntity extends TickingTileEntity {
     @Override
     protected void tickServer() {
         updateVehicleStatus();
-        tryMoveVehicleServer();
+        logic.tryMoveVehicleServer();
     }
 
     @Override
@@ -157,180 +147,13 @@ public class MoverTileEntity extends TickingTileEntity {
         if (VehicleBuilderTileEntity.isVehicleCard(vehicle)) {
             DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec) -> {
                 float partialTicks = MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle);
-                tryMoveVehicleClient(partialTicks);
+                logic.tryMoveVehicleClient(partialTicks);
             }, (level, pos) -> {
                 if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
                     return !mover.getCard().isEmpty();
                 }
                 return false;
             });
-        }
-    }
-
-    private void tryMoveVehicleClient(float partialTicks) {
-        if (destination != null) {
-            Vec3 startPos = getMovingPosition(0, starttick);
-            Vec3 currentPos = getMovingPosition(partialTicks, level.getGameTime());
-            double dx = currentPos.x - startPos.x;
-            double dy = currentPos.y - startPos.y;
-            double dz = currentPos.z - startPos.z;
-            for (Map.Entry<Integer, Vec3> pair : grabbedEntities.entrySet()) {
-                Entity entity = level.getEntity(pair.getKey());
-                if (entity != null) {
-                    Vec3 basePos = pair.getValue();
-                    double desiredX = basePos.x + dx;
-                    double desiredY = basePos.y + dy;
-                    double desiredZ = basePos.z + dz;
-                    desiredX = (desiredX + entity.getX()*3) / 4.0;
-                    desiredY = (desiredY + entity.getY()*3) / 4.0;
-                    desiredZ = (desiredZ + entity.getZ()*3) / 4.0;
-                    entity.setPos(desiredX, desiredY, desiredZ);
-                    entity.setOldPosAndRot();
-                    entity.fallDistance = 0;
-                    entity.setDeltaMovement(Vec3.ZERO);
-                    entity.setOnGround(true);
-                }
-            }
-        } else {
-            grabbedEntities.clear();
-        }
-    }
-
-    public long getStarttick() {
-        return starttick;
-    }
-
-    public float getTotalDist() {
-        return totalDist;
-    }
-
-    public long getTotalTicks() {
-        // How long the entire movement should last
-        return (long) (totalDist * 70);
-    }
-
-    public BlockPos getDestination() {
-        return destination;
-    }
-
-    @NotNull
-    public Vec3 getMovingPosition(float partialTicks, long gameTick) {
-        BlockPos blockPos = worldPosition;
-        BlockPos destination = getDestination();
-        Vec3 current = new Vec3(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-        if (destination != null) {
-            long totalTicks = getTotalTicks();
-            long currentTick = gameTick - starttick;
-            Vec3 dest = new Vec3(destination.getX(), destination.getY(), destination.getZ());
-            current = current.lerp(dest, (currentTick + partialTicks) / (double) totalTicks);
-        }
-        return current;
-    }
-
-    private final Random random = new Random();
-
-    private void tryMoveVehicleServer() {
-        ItemStack vehicle = items.getStackInSlot(SLOT_VEHICLE_CARD);
-        if (destination != null) {
-            // We are moving
-            actualMoveServer(vehicle);
-        } else if (!network.isEmpty()) {
-            if (isMachineEnabled() && !vehicle.isEmpty()) {
-                actualStartMovementServer();
-            }
-        }
-    }
-
-    private void actualStartMovementServer() {
-        // @todo here we should routing
-        // For now we pick the first destination
-        Iterator<BlockPos> iterator = network.values().iterator();
-        BlockPos dest = iterator.next();
-        if (iterator.hasNext()) {
-            float r = random.nextFloat();
-            if (r < .5f) {
-                dest = iterator.next();
-            }
-        }
-        if (level.getBlockEntity(dest) instanceof MoverTileEntity destMover) {
-            if (destMover.isAvailable()) {
-                destMover.setSource(worldPosition);
-                destination = dest;
-                totalDist = (float) Math.sqrt(worldPosition.distSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), true));
-                starttick = level.getGameTime();
-                grabbedEntities.clear();
-                markDirtyClient();
-            }
-        }
-    }
-
-    public void setGrabbedEntitiesClient(Set<Integer> grabbedEntities) {
-        this.grabbedEntities = new HashMap<>();
-        for (Integer id : grabbedEntities) {
-            Entity entity = level.getEntity(id);
-            if (entity != null) {
-                this.grabbedEntities.put(id, entity.position());
-            }
-        }
-    }
-
-    private void actualMoveServer(ItemStack vehicle) {
-        long totalTicks = getTotalTicks();
-        long currentTick = level.getGameTime() - starttick;
-
-        // First move entities
-        Vec3 movingPosition = getMovingPosition(0, level.getGameTime());
-        AABB aabb = new AABB(movingPosition, movingPosition.add(5, 5, 5));
-        Vec3 startPos = getMovingPosition(0, starttick);
-        Vec3 currentPos = getMovingPosition(0, level.getGameTime()+1);
-        double dx = currentPos.x - startPos.x;
-        double dy = currentPos.y - startPos.y;
-        double dz = currentPos.z - startPos.z;
-        boolean grabbedDirty = false;
-        Map<Integer, Vec3> copyGrabbed = this.grabbedEntities;
-        grabbedEntities = new HashMap<>();
-        for (Entity entity : level.getEntitiesOfClass(Entity.class, aabb)) {
-            if (copyGrabbed.containsKey(entity.getId())) {
-                Vec3 basePos = copyGrabbed.get(entity.getId());
-                grabbedEntities.put(entity.getId(), basePos);
-                entity.setPos(basePos.x + dx, basePos.y + dy, basePos.z + dz);
-                entity.setOldPosAndRot();
-                entity.fallDistance = 0;
-                entity.setDeltaMovement(Vec3.ZERO);
-                entity.setOnGround(true);
-                copyGrabbed.remove(entity.getId());
-            } else {
-                grabbedEntities.put(entity.getId(), entity.position());
-                entity.setDeltaMovement(Vec3.ZERO);
-                entity.setOnGround(true);
-                grabbedDirty = true;
-            }
-        }
-        if (!copyGrabbed.isEmpty()) {
-            grabbedDirty = true;
-        }
-
-        if (grabbedDirty) {
-            PacketGrabbedEntitiesToClient packet = new PacketGrabbedEntitiesToClient(worldPosition, grabbedEntities.keySet());
-            ChunkPos cp = new ChunkPos(worldPosition);
-            RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunk(cp.x, cp.z)), packet);
-        }
-
-        if (currentTick >= totalTicks) {
-            // We are at the destination
-            if (level.getBlockEntity(destination) instanceof MoverTileEntity destMover) {
-                destMover.items.setStackInSlot(SLOT_VEHICLE_CARD, vehicle);
-                items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.EMPTY);
-                destMover.setSource(null);
-            } else {
-                // Something is wrong. The destination is gone. Stop the movement
-                // @todo handle this more gracefully. Move back
-            }
-            destination = null;
-            // Make sure the invisible blocks are back
-            cnt = 0;
-            updateVehicleStatus();
-            markDirtyClient();
         }
     }
 
@@ -356,12 +179,13 @@ public class MoverTileEntity extends TickingTileEntity {
         if (invisibleMoverBlocks == null) {
             invisibleMoverBlocks = new HashSet<>();
         }
+        cnt = 0;
         removeInvisibleBlocks();
         if (!vehicle.isEmpty()) {
             Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(vehicle, worldPosition.offset(1, 1, 1));
             blocks.values().forEach(invisibleMoverBlocks::addAll);
         } else {
-            destination = null;
+            logic.setDestination(null);
         }
         markDirtyClient();
     }
@@ -376,8 +200,28 @@ public class MoverTileEntity extends TickingTileEntity {
         invisibleMoverBlocks.clear();
     }
 
+    public void arriveAtDestination() {
+        if (level.getBlockEntity(logic.getDestination()) instanceof MoverTileEntity destMover) {
+            destMover.items.setStackInSlot(SLOT_VEHICLE_CARD, getCard());
+            items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.EMPTY);
+            destMover.setSource(null);
+            destMover.updateVehicle();
+            destMover.updateVehicleStatus();
+        } else {
+            // Something is wrong. The destination is gone. Stop the movement
+            // @todo handle this more gracefully. Move back
+        }
+        logic.setDestination(null);
+        // Make sure the invisible blocks are back
+        cnt = 0;
+        updateVehicle();
+        updateVehicleStatus();
+        markDirtyClient();
+
+    }
+
     public void setSource(BlockPos pos) {
-        source = pos;
+        logic.setSource(pos);
         setChanged();
     }
 
@@ -387,11 +231,11 @@ public class MoverTileEntity extends TickingTileEntity {
             // If there is a vehicle here then this is not available
             return false;
         }
-        if (destination != null) {
+        if (logic.getDestination() != null) {
             // If something is moving from here then this is not available
             return false;
         }
-        if (source != null) {
+        if (logic.getSource() != null) {
             // If something is moving to here then this is not available
             return false;
         }
@@ -423,18 +267,7 @@ public class MoverTileEntity extends TickingTileEntity {
                 addConnection(direction, NbtUtils.readBlockPos(tagCompound.getCompound(direction.name())));
             }
         }
-        if (tagCompound.contains("source")) {
-            source = NbtUtils.readBlockPos(tagCompound.getCompound("source"));
-        } else {
-            source = null;
-        }
-        if (tagCompound.contains("destination")) {
-            destination = NbtUtils.readBlockPos(tagCompound.getCompound("destination"));
-        } else {
-            destination = null;
-        }
-        starttick = tagCompound.getLong("starttick");
-        totalDist = tagCompound.getFloat("totalDist");
+        logic.load(tagCompound);
     }
 
     @Override
@@ -452,14 +285,7 @@ public class MoverTileEntity extends TickingTileEntity {
                 tagCompound.put(direction.name(), NbtUtils.writeBlockPos(network.get(direction)));
             }
         }
-        if (source != null) {
-            tagCompound.put("source", NbtUtils.writeBlockPos(source));
-        }
-        if (destination != null) {
-            tagCompound.put("destination", NbtUtils.writeBlockPos(destination));
-        }
-        tagCompound.putLong("starttick", starttick);
-        tagCompound.putFloat("totalDist", totalDist);
+        logic.save(tagCompound);
     }
 
     @Override
@@ -483,24 +309,14 @@ public class MoverTileEntity extends TickingTileEntity {
         CompoundTag tag = new CompoundTag();
         card.save(tag);
         tagCompound.put("card", tag);
-        tagCompound.putLong("starttick", starttick);
-        tagCompound.putFloat("totalDist", totalDist);
-        if (destination != null) {
-            tagCompound.put("destination", NbtUtils.writeBlockPos(destination));
-        }
+        logic.saveClientDataToNBT(tagCompound);
     }
 
     @Override
     public void loadClientDataFromNBT(CompoundTag tagCompound) {
         CompoundTag tag = tagCompound.getCompound("card");
         items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.of(tag));
-        if (tagCompound.contains("destination")) {
-            destination = NbtUtils.readBlockPos(tagCompound.getCompound("destination"));
-        } else {
-            destination = null;
-        }
-        starttick = tagCompound.getLong("starttick");
-        totalDist = tagCompound.getFloat("totalDist");
+        logic.loadClientDataFromNBT(tagCompound);
     }
 
     private void doScan() {

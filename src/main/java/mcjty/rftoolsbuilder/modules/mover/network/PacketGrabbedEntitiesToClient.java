@@ -41,7 +41,7 @@ public class PacketGrabbedEntitiesToClient {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
             if (SafeClientTools.getClientWorld().getBlockEntity(pos) instanceof MoverTileEntity mover) {
-                mover.setGrabbedEntitiesClient(grabbedEntities);
+                mover.getLogic().setGrabbedEntitiesClient(grabbedEntities);
             }
         });
         ctx.setPacketHandled(true);

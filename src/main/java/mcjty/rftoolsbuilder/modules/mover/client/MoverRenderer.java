@@ -24,7 +24,7 @@ public class MoverRenderer {
     public static float actualRender(MoverTileEntity tileEntity, @NotNull PoseStack matrixStack, Vec3 cameraPos, ItemStack card) {
         matrixStack.pushPose();
         float partialTicks = Minecraft.getInstance().getFrameTime();
-        Vec3 current = tileEntity.getMovingPosition(partialTicks, tileEntity.getLevel().getGameTime());
+        Vec3 current = tileEntity.getLogic().getMovingPosition(partialTicks, tileEntity.getLevel().getGameTime());
         matrixStack.translate(current.x - cameraPos.x, current.y - cameraPos.y, current.z - cameraPos.z);
 
         MultiBufferSource.BufferSource buffer = Minecraft.getInstance().renderBuffers().bufferSource();
