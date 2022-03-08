@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
@@ -18,6 +19,7 @@ import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ShapeBlockInfo {
 
@@ -119,11 +121,11 @@ public class ShapeBlockInfo {
         }
         IBlockRender render = null;
         Block block = state.getBlock();
-        Set<ResourceLocation> tags = block.getTags();
+        Set<TagKey<Block>> tags = block.builtInRegistryHolder().tags().collect(Collectors.toSet());
 
         if (block == Blocks.TORCH || block == Blocks.REDSTONE_TORCH) {
             render = BD_TORCH;
-        } else if (tags.contains(BlockTags.SLABS.getName())) {
+        } else if (tags.contains(BlockTags.SLABS)) {
             if (state.hasProperty(SlabBlock.TYPE) && state.getValue(SlabBlock.TYPE) == SlabType.BOTTOM) {
                 render = BD_SLAB;
             } else {
@@ -131,20 +133,20 @@ public class ShapeBlockInfo {
             }
         } else if (block == Blocks.SNOW) {
             render = BD_SNOWLAYER;
-        } else if (tags.contains(BlockTags.WALLS.getName())) {
+        } else if (tags.contains(BlockTags.WALLS)) {
             render = BD_WALL;
         } else if (block == Blocks.IRON_BARS || block == Blocks.LADDER) {
             render = BD_BARS;
         } else if (block == Blocks.VINE) {
             render = BD_VINE;
-        } else if (tags.contains(BlockTags.SMALL_FLOWERS.getName()) ||
-                tags.contains(BlockTags.CORAL_PLANTS.getName()) ||
+        } else if (tags.contains(BlockTags.SMALL_FLOWERS) ||
+                tags.contains(BlockTags.CORAL_PLANTS) ||
                 block == Blocks.WHEAT || block == Blocks.CARROTS ||
                 block == Blocks.POTATOES || block == Blocks.BEETROOTS) {
             render = BD_FLOWER;
         } else if (block == Blocks.GRASS) { // Tall grass
             render = BD_GRASS;
-        } else if (tags.contains(BlockTags.RAILS.getName())) {
+        } else if (tags.contains(BlockTags.RAILS)) {
             render = BD_RAIL;
         } else if (block == Blocks.RED_MUSHROOM || block == Blocks.BROWN_MUSHROOM) {
             render = BD_MUSHROOM;
@@ -152,19 +154,19 @@ public class ShapeBlockInfo {
             render = BD_FIRE;
         } else if (block == Blocks.REDSTONE_WIRE) {
             render = BD_REDSTONE;
-        } else if (tags.contains(Tags.Blocks.CHESTS.getName())) {
+        } else if (tags.contains(Tags.Blocks.CHESTS)) {
             render = BD_CHEST;
-        } else if (tags.contains(BlockTags.TRAPDOORS.getName()) ||
-                tags.contains(BlockTags.WOODEN_PRESSURE_PLATES.getName()) ||
+        } else if (tags.contains(BlockTags.TRAPDOORS) ||
+                tags.contains(BlockTags.WOODEN_PRESSURE_PLATES) ||
                 block == Blocks.OAK_PRESSURE_PLATE || block == Blocks.STONE_PRESSURE_PLATE) {
             render = BD_TRAPDOOR;
         } else if (block == Blocks.LEVER ||
-                tags.contains(BlockTags.BUTTONS.getName()) ||
-                tags.contains(BlockTags.WOODEN_BUTTONS.getName())) {
+                tags.contains(BlockTags.BUTTONS) ||
+                tags.contains(BlockTags.WOODEN_BUTTONS)) {
             render = BD_BUTTON;
         } else if (
-                tags.contains(BlockTags.FENCES.getName()) ||
-                tags.contains(BlockTags.WOODEN_FENCES.getName())) {
+                tags.contains(BlockTags.FENCES) ||
+                tags.contains(BlockTags.WOODEN_FENCES)) {
             render = BD_FENCE;
         }
         return render;

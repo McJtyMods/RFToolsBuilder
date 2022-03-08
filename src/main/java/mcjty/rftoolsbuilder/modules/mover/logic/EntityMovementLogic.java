@@ -112,7 +112,7 @@ public class EntityMovementLogic {
                 BlockPos worldPosition = mover.getBlockPos();
                 destMover.setSource(worldPosition);
                 destination = dest;
-                totalDist = (float) Math.sqrt(worldPosition.distSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), true));
+                totalDist = (float) Math.sqrt(worldPosition.distToCenterSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()));
                 starttick = level.getGameTime();
                 grabbedEntities.clear();
                 mover.markDirtyClient();

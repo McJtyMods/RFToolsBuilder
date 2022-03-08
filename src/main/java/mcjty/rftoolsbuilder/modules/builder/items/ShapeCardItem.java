@@ -16,13 +16,14 @@ import mcjty.rftoolsbuilder.shapes.StatePalette;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -347,10 +348,10 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         return ShapeCardType.CARD_UNKNOWN;
     }
 
-    private static void addBlocks(Set<Block> blocks, Block block, Tag<Block> tag, boolean tagMatching) {
+    private static void addBlocks(Set<Block> blocks, Block block, TagKey<Block> tag, boolean tagMatching) {
         blocks.add(block);
         if (tagMatching && tag != null) {
-            blocks.addAll(tag.getValues());
+            Registry.BLOCK.getTagOrEmpty(tag).forEach(b -> blocks.add(b.value()));
         }
     }
 
