@@ -351,7 +351,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     private static void addBlocks(Set<Block> blocks, Block block, TagKey<Block> tag, boolean tagMatching) {
         blocks.add(block);
         if (tagMatching && tag != null) {
-            Registry.BLOCK.getTagOrEmpty(tag).forEach(b -> blocks.add(b.value()));
+            TagTools.getBlocksForTag(tag).forEach(b -> blocks.add(b.value()));
         }
     }
 

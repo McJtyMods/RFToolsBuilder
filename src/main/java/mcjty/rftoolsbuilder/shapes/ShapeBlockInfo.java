@@ -1,25 +1,25 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import mcjty.lib.varia.TagTools;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SlabBlock;
-import net.minecraft.world.level.material.MaterialColor;
-import net.minecraft.client.Minecraft;
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.common.Tags;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ShapeBlockInfo {
 
@@ -121,7 +121,7 @@ public class ShapeBlockInfo {
         }
         IBlockRender render = null;
         Block block = state.getBlock();
-        Set<TagKey<Block>> tags = block.builtInRegistryHolder().tags().collect(Collectors.toSet());
+        Collection<TagKey<Block>> tags = TagTools.getTags(block);
 
         if (block == Blocks.TORCH || block == Blocks.REDSTONE_TORCH) {
             render = BD_TORCH;
