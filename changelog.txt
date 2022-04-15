@@ -1,3 +1,6 @@
+Upcoming:
+- When manually clearing builder support blocks they will now also check diagonally
+
 1.18-4.0.8:
 - Port to 1.18.2
 

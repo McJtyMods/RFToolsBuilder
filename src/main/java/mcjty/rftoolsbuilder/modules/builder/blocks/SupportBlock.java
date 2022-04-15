@@ -76,23 +76,17 @@ public class SupportBlock extends Block {
         while (!todo.isEmpty()) {
             BlockPos c = todo.pollFirst();
             world.setBlockAndUpdate(c, Blocks.AIR.defaultBlockState());
-            if (world.getBlockState(c.west()).getBlock() == this) {
-                todo.push(c.west());
-            }
-            if (world.getBlockState(c.east()).getBlock() == this) {
-                todo.push(c.east());
-            }
-            if (world.getBlockState(c.below()).getBlock() == this) {
-                todo.push(c.below());
-            }
-            if (world.getBlockState(c.above()).getBlock() == this) {
-                todo.push(c.above());
-            }
-            if (world.getBlockState(c.south()).getBlock() == this) {
-                todo.push(c.south());
-            }
-            if (world.getBlockState(c.north()).getBlock() == this) {
-                todo.push(c.north());
+            for (int dx = -1 ; dx <= 1 ; dx++) {
+                for (int dy = -1 ; dy <= 1 ; dy++) {
+                    for (int dz = -1 ; dz <= 1 ; dz++) {
+                        if (dx != 0 || dy != 0 || dz != 0) {
+                            BlockPos offset = c.offset(dx, dy, dz);
+                            if (world.getBlockState(offset).getBlock() == this) {
+                                todo.push(offset);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
