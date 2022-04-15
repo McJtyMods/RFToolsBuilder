@@ -1,3 +1,6 @@
+Upcoming:
+- When manually clearing builder support blocks they will now also check diagonally
+
 1.16-3.1.7:
 - Fixed a bug with the shield on some locales (Turkish)
 
