@@ -1,5 +1,6 @@
 Upcoming:
 - When manually clearing builder support blocks they will now also check diagonally
+- To prevent support blocks from not being cleared support mode is now automatically disabled when changing the settings on the shape card
 
 1.16-3.1.7:
 - Fixed a bug with the shield on some locales (Turkish)

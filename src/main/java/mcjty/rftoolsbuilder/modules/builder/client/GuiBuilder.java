@@ -90,7 +90,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         if (!cardStack.isEmpty()) {
             GuiShapeCard.fromTEPos = tileEntity.getBlockPos();
             GuiShapeCard.fromTEStackSlot = SLOT_TAB;
-            RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketCloseContainerAndOpenCardGui());
+            RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketCloseContainerAndOpenCardGui(tileEntity.getBlockPos()));
         }
     }
 
