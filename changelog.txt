@@ -1,5 +1,6 @@
 Upcoming:
 - When manually clearing builder support blocks they will now also check diagonally
+- To prevent support blocks from not being cleared support mode is now automatically disabled when changing the settings on the shape card
 
 1.18-4.0.8:
 - Port to 1.18.2
