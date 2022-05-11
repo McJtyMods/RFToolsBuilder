@@ -1,3 +1,7 @@
+Upcoming:
+- Fixed the support block causing blocks to be placed wrong in copy mode. Support blocks now have material STRUCTURAL_AIR
+- Fixed the translated name for the support block
+
 1.18-4.0.9:
 - When manually clearing builder support blocks they will now also check diagonally
 - To prevent support blocks from not being cleared support mode is now automatically disabled when changing the settings on the shape card
