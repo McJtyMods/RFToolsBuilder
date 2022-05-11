@@ -55,7 +55,7 @@ public class SupportBlock extends Block {
     public static final EnumProperty<SupportStatus> STATUS = EnumProperty.create("status", SupportStatus.class);
 
     public SupportBlock() {
-        super(Properties.of(Material.GLASS).noOcclusion().isRedstoneConductor((state, world, pos) -> false));
+        super(Properties.of(Material.STRUCTURAL_AIR).noOcclusion().isRedstoneConductor((state, world, pos) -> false));
     }
 
     @Nonnull
