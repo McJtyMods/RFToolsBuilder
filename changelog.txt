@@ -1,4 +1,4 @@
-Upcoming:
+1.18-4.0.10:
 - Fixed the support block causing blocks to be placed wrong in copy mode. Support blocks now have material STRUCTURAL_AIR
 - Fixed the translated name for the support block
 
