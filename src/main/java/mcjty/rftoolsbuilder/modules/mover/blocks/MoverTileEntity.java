@@ -26,6 +26,7 @@ import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.logic.EntityMovementLogic;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -35,6 +36,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
 
@@ -149,8 +151,9 @@ public class MoverTileEntity extends TickingTileEntity {
         ItemStack vehicle = getCard();
         if (VehicleBuilderTileEntity.isVehicleCard(vehicle)) {
             DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec) -> {
-                float partialTicks = MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle);
-                logic.tryMoveVehicleClient(partialTicks);
+                float partialTicks = MoverRenderer.getPartialTicks();
+                Vec3 offset = logic.tryMoveVehicleClient(partialTicks);
+                MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle, partialTicks, offset);
             }, (level, pos) -> {
                 if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
                     return !mover.getCard().isEmpty();

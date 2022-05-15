@@ -21,22 +21,24 @@ import java.util.Map;
 
 public class MoverRenderer {
 
-    public static float actualRender(MoverTileEntity tileEntity, @NotNull PoseStack matrixStack, Vec3 cameraPos, ItemStack card) {
+    public static float getPartialTicks() {
+        return Minecraft.getInstance().getFrameTime();
+    }
+
+    public static void actualRender(MoverTileEntity mover, @NotNull PoseStack matrixStack, Vec3 cameraPos, ItemStack card, float partialTicks, Vec3 offset) {
         matrixStack.pushPose();
-        float partialTicks = Minecraft.getInstance().getFrameTime();
-        Vec3 current = tileEntity.getLogic().getMovingPosition(partialTicks, tileEntity.getLevel().getGameTime());
-        matrixStack.translate(current.x - cameraPos.x, current.y - cameraPos.y, current.z - cameraPos.z);
+        Level level = mover.getLevel();
+        Vec3 current = mover.getLogic().getMovingPosition(partialTicks, level.getGameTime());
+        matrixStack.translate(current.x - cameraPos.x - offset.x, current.y - cameraPos.y - offset.y, current.z - cameraPos.z - offset.z);
 
         MultiBufferSource.BufferSource buffer = Minecraft.getInstance().renderBuffers().bufferSource();
         BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
         Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(card, new BlockPos(1, 1, 1));
-        Level level = tileEntity.getLevel();
-        Vec3 finalCurrent = current;
         blocks.forEach((state, positions) -> {
             positions.forEach(pos -> {
                 matrixStack.pushPose();
                 matrixStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                BlockPos realPos = new BlockPos(finalCurrent.x, finalCurrent.y, finalCurrent.z).offset(pos.getX(), pos.getY(), pos.getZ());
+                BlockPos realPos = new BlockPos(current.x, current.y, current.z).offset(pos.getX(), pos.getY(), pos.getZ());
                 int lightColor = LevelRenderer.getLightColor(level, realPos);
 
                 blockRenderer.renderSingleBlock(state, matrixStack, buffer, lightColor, OverlayTexture.NO_OVERLAY, EmptyModelData.INSTANCE);
@@ -44,6 +46,5 @@ public class MoverRenderer {
             });
         });
         matrixStack.popPose();
-        return partialTicks;
     }
 }

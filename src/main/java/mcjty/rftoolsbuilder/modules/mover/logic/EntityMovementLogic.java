@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.mover.logic;
 
+import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
@@ -8,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -56,8 +58,11 @@ public class EntityMovementLogic {
     }
 
 
-    public void tryMoveVehicleClient(float partialTicks) {
+    // Return the actual offset moved for the current player. Only if the player is actually on the platform
+    public Vec3 tryMoveVehicleClient(float partialTicks) {
+        Vec3 result = Vec3.ZERO;
         if (destination != null) {
+            Player clientPlayer = SafeClientTools.getClientPlayer();
             Level level = mover.getLevel();
             Vec3 startPos = getMovingPosition(0, starttick);
             Vec3 currentPos = getMovingPosition(partialTicks, level.getGameTime());
@@ -67,7 +72,6 @@ public class EntityMovementLogic {
             for (var pair : grabbedEntities.entrySet()) {
                 Entity entity = level.getEntity(pair.getKey());
                 if (entity != null) {
-                    System.out.println("entity = " + entity + ", " + entity.getName().getString());
                     Vec3 basePos = pair.getValue();
                     double desiredX = basePos.x + dx;
                     double desiredY = basePos.y + dy;
@@ -75,6 +79,9 @@ public class EntityMovementLogic {
 //                    desiredX = (desiredX + entity.getX()*3) / 4.0;
 //                    desiredY = (desiredY + entity.getY()*3) / 4.0;
 //                    desiredZ = (desiredZ + entity.getZ()*3) / 4.0;
+                    if (entity == clientPlayer) {
+                        result = new Vec3(desiredX-entity.getX(), desiredY-entity.getY(), desiredZ-entity.getZ());
+                    }
                     entity.setPos(desiredX, desiredY, desiredZ);
                     entity.setOldPosAndRot();
                     entity.fallDistance = 0;
@@ -83,6 +90,7 @@ public class EntityMovementLogic {
                 }
             }
         }
+        return result;
     }
 
     public void tryMoveVehicleServer() {
