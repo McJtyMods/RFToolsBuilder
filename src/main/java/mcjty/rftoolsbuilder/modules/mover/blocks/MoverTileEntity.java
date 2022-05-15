@@ -83,6 +83,9 @@ public class MoverTileEntity extends TickingTileEntity {
     public static final Value<?, String> VALUE_CONNECTIONS = Value.create("connections", Type.STRING, MoverTileEntity::getConnectionCount, MoverTileEntity::setConnectionCount);
     private String connections = "";
 
+    // @todo a bit clumsy but it works. Better would be a cap in the player
+    public static final Set<Integer> wantUnmount = new HashSet<>();
+
     // Counter to make setting invisible blocks more efficient
     private int cnt;
 
@@ -158,19 +161,33 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
     private void updateVehicleStatus() {
-        if (invisibleMoverBlocks == null) {
-            updateVehicle();
-            cnt = 0;
-        }
-        cnt--;
-        if (cnt <= 0) {
-            cnt = 4;
-            BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
-            invisibleMoverBlocks.forEach(p -> {
-                if (level.getBlockState(p) != invisibleState && level.getBlockState(p).getMaterial().isReplaceable()) {
-                    level.setBlock(p, invisibleState, Block.UPDATE_ALL);
-                }
-            });
+        if (logic.getDestination() != null) {
+            // We are moving. Remove the mover blocks if there are any
+            if (invisibleMoverBlocks != null) {
+                BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
+                invisibleMoverBlocks.forEach(p -> {
+                    if (level.getBlockState(p) == invisibleState) {
+                        level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                    }
+                });
+                invisibleMoverBlocks = null;
+            }
+        } else {
+            // We are not moving
+            if (invisibleMoverBlocks == null) {
+                updateVehicle();
+                cnt = 0;
+            }
+            cnt--;
+            if (cnt <= 0) {
+                cnt = 4;
+                BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
+                invisibleMoverBlocks.forEach(p -> {
+                    if (level.getBlockState(p) != invisibleState && level.getBlockState(p).getMaterial().isReplaceable()) {
+                        level.setBlock(p, invisibleState, Block.UPDATE_ALL);
+                    }
+                });
+            }
         }
     }
 

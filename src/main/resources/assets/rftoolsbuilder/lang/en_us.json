@@ -33,6 +33,8 @@
   "item.rftoolsbuilder.vehicle_card": "Vehicle Card",
   "itemGroup.rftoolsbuilder": "RFTools Builder",
 
+  "key.unmountVehicle": "Unmount Vehicle",
+
   "message.rftoolsbuilder.shiftmessage": "<Press Shift>",
 
   "message.rftoolsbuilder.builder.header": "This block can quarry areas, pump liquids, move/copy/swap structures, collect items and XP, move entities, build structures, ...",

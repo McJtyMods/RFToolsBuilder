@@ -5,6 +5,7 @@ import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderTools;
+import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.shapes.ShaperTools;
 import net.minecraft.core.BlockPos;
 
@@ -15,6 +16,8 @@ public class CommandHandler {
     public static final String CMD_REQUEST_LOCATOR_ENERGY = "requestLocatorEnergy";
     public static final String CMD_GET_CHAMBER_INFO = "getChamberInfo";
     public static final Key<BlockPos> PARAM_POS = new Key<>("pos", Type.BLOCKPOS);
+
+    public static final String CMD_UNMOUNT = "unmount";
 
     public static final String CMD_GET_SECURITY_INFO = "getSecurityInfo";
     public static final Key<Integer> PARAM_ID = new Key<>("id", Type.INTEGER);
@@ -34,6 +37,10 @@ public class CommandHandler {
         });
         McJtyLib.registerCommand(RFToolsBuilder.MODID, CMD_GET_CHAMBER_INFO, (player, arguments) -> {
             BuilderTools.returnChamberInfo(player);
+            return true;
+        });
+        McJtyLib.registerCommand(RFToolsBuilder.MODID, CMD_UNMOUNT, (player, arguments) -> {
+            MoverTileEntity.wantUnmount.add(player.getId());
             return true;
         });
     }

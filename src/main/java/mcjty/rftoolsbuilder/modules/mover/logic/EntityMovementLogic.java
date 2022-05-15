@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.modules.mover.logic;
 
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
+import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
@@ -10,6 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
@@ -44,6 +46,7 @@ public class EntityMovementLogic {
     public void setGrabbedEntitiesClient(Set<Integer> grabbedEntities) {
         Level level = mover.getLevel();
         this.grabbedEntities = new HashMap<>();
+        System.out.println("grabbedEntities.size() from server = " + grabbedEntities.size());
         for (Integer id : grabbedEntities) {
             Entity entity = level.getEntity(id);
             if (entity != null) {
@@ -64,13 +67,14 @@ public class EntityMovementLogic {
             for (var pair : grabbedEntities.entrySet()) {
                 Entity entity = level.getEntity(pair.getKey());
                 if (entity != null) {
+                    System.out.println("entity = " + entity + ", " + entity.getName().getString());
                     Vec3 basePos = pair.getValue();
                     double desiredX = basePos.x + dx;
                     double desiredY = basePos.y + dy;
                     double desiredZ = basePos.z + dz;
-                    desiredX = (desiredX + entity.getX()*3) / 4.0;
-                    desiredY = (desiredY + entity.getY()*3) / 4.0;
-                    desiredZ = (desiredZ + entity.getZ()*3) / 4.0;
+//                    desiredX = (desiredX + entity.getX()*3) / 4.0;
+//                    desiredY = (desiredY + entity.getY()*3) / 4.0;
+//                    desiredZ = (desiredZ + entity.getZ()*3) / 4.0;
                     entity.setPos(desiredX, desiredY, desiredZ);
                     entity.setOldPosAndRot();
                     entity.fallDistance = 0;
@@ -78,8 +82,6 @@ public class EntityMovementLogic {
                     entity.setOnGround(true);
                 }
             }
-        } else {
-            grabbedEntities.clear();
         }
     }
 
@@ -87,10 +89,27 @@ public class EntityMovementLogic {
         ItemStack vehicle = mover.getCard();
         if (destination != null) {
             // We are moving
+            checkUnmounts();
             actualMoveServer(vehicle);
         } else if (!mover.getNetwork().isEmpty()) {
             if (mover.isMachineEnabled() && !vehicle.isEmpty()) {
                 actualStartMovementServer();
+            }
+        }
+    }
+
+    private void checkUnmounts() {
+        if (!MoverTileEntity.wantUnmount.isEmpty()) {
+            Set<Integer> toRemove = new HashSet<>();
+            for (Integer id : MoverTileEntity.wantUnmount) {
+                if (grabbedEntities.containsKey(id)) {
+                    toRemove.add(id);
+                    grabbedEntities.remove(id);
+                }
+            }
+            if (!toRemove.isEmpty()) {
+                MoverTileEntity.wantUnmount.removeAll(toRemove);
+                syncGrabbedToClient();
             }
         }
     }
@@ -114,10 +133,54 @@ public class EntityMovementLogic {
                 destination = dest;
                 totalDist = (float) Math.sqrt(worldPosition.distToCenterSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()));
                 starttick = level.getGameTime();
-                grabbedEntities.clear();
+                grabEntities();
                 mover.markDirtyClient();
             }
         }
+    }
+
+    private void grabEntities() {
+        grabbedEntities.clear();
+        AABB aabb = getVehicleAABB();
+        Level level = mover.getLevel();
+        for (Entity entity : level.getEntitiesOfClass(Entity.class, aabb)) {
+            grabbedEntities.put(entity.getId(), entity.position());
+            MoverTileEntity.wantUnmount.remove(entity.getId());
+        }
+
+        // @todo Note resend grabbed entities for new players that come into range?
+        System.out.println("grabbedEntities.size() in grabEntities = " + grabbedEntities.size());
+        syncGrabbedToClient();
+    }
+
+    public void syncGrabbedToClient() {
+        Level level = mover.getLevel();
+        BlockPos worldPosition = mover.getBlockPos();
+        PacketGrabbedEntitiesToClient packet = new PacketGrabbedEntitiesToClient(worldPosition, grabbedEntities.keySet());
+        ChunkPos cp = new ChunkPos(worldPosition);
+        RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunk(cp.x, cp.z)), packet);
+    }
+
+    private AABB getVehicleAABB() {
+        BlockPos blockPos = mover.getBlockPos();
+        Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(mover.getCard(), blockPos);
+        int minx = Integer.MAX_VALUE;
+        int miny = Integer.MAX_VALUE;
+        int minz = Integer.MAX_VALUE;
+        int maxx = Integer.MIN_VALUE;
+        int maxy = Integer.MIN_VALUE;
+        int maxz = Integer.MIN_VALUE;
+        for (List<BlockPos> value : blocks.values()) {
+            for (BlockPos pos : value) {
+                minx = Math.min(minx, pos.getX());
+                miny = Math.min(miny, pos.getY());
+                minz = Math.min(minz, pos.getZ());
+                maxx = Math.max(maxx, pos.getX()+1);
+                maxy = Math.max(maxy, pos.getY()+1);
+                maxz = Math.max(maxz, pos.getZ()+1);
+            }
+        }
+        return new AABB(minx, miny, minz, maxx, maxy, maxz);
     }
 
     private void actualMoveServer(ItemStack vehicle) {
@@ -126,43 +189,21 @@ public class EntityMovementLogic {
         long currentTick = level.getGameTime() - starttick;
 
         // First move entities
-        Vec3 movingPosition = getMovingPosition(0, level.getGameTime());
-        AABB aabb = new AABB(movingPosition, movingPosition.add(5, 5, 5));
         Vec3 startPos = getMovingPosition(0, starttick);
         Vec3 currentPos = getMovingPosition(0, level.getGameTime()+1);
         double dx = currentPos.x - startPos.x;
         double dy = currentPos.y - startPos.y;
         double dz = currentPos.z - startPos.z;
-        boolean grabbedDirty = false;
-        Map<Integer, Vec3> copyGrabbed = this.grabbedEntities;
-        grabbedEntities = new HashMap<>();
-        for (Entity entity : level.getEntitiesOfClass(Entity.class, aabb)) {
-            if (copyGrabbed.containsKey(entity.getId())) {
-                Vec3 basePos = copyGrabbed.get(entity.getId());
-                grabbedEntities.put(entity.getId(), basePos);
+        grabbedEntities.forEach((id, basePos) -> {
+            Entity entity = level.getEntity(id);
+            if (entity.isAlive()) {
                 entity.setPos(basePos.x + dx, basePos.y + dy, basePos.z + dz);
                 entity.setOldPosAndRot();
                 entity.fallDistance = 0;
                 entity.setDeltaMovement(Vec3.ZERO);
                 entity.setOnGround(true);
-                copyGrabbed.remove(entity.getId());
-            } else {
-                grabbedEntities.put(entity.getId(), entity.position());
-                entity.setDeltaMovement(Vec3.ZERO);
-                entity.setOnGround(true);
-                grabbedDirty = true;
             }
-        }
-        if (!copyGrabbed.isEmpty()) {
-            grabbedDirty = true;
-        }
-
-        if (grabbedDirty) {
-            BlockPos worldPosition = mover.getBlockPos();
-            PacketGrabbedEntitiesToClient packet = new PacketGrabbedEntitiesToClient(worldPosition, grabbedEntities.keySet());
-            ChunkPos cp = new ChunkPos(worldPosition);
-            RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunk(cp.x, cp.z)), packet);
-        }
+        });
 
         if (currentTick >= totalTicks) {
             // We are at the destination
