@@ -80,6 +80,7 @@ public class EntityMovementLogic {
 //                    desiredY = (desiredY + entity.getY()*3) / 4.0;
 //                    desiredZ = (desiredZ + entity.getZ()*3) / 4.0;
                     if (entity == clientPlayer) {
+                        // If the current player is on the platform we correct for smoother rendering
                         result = new Vec3(desiredX-entity.getX(), desiredY-entity.getY(), desiredZ-entity.getZ());
                     }
                     entity.setPos(desiredX, desiredY, desiredZ);
@@ -204,7 +205,7 @@ public class EntityMovementLogic {
         double dz = currentPos.z - startPos.z;
         grabbedEntities.forEach((id, basePos) -> {
             Entity entity = level.getEntity(id);
-            if (entity.isAlive()) {
+            if (entity != null && entity.isAlive()) {
                 entity.setPos(basePos.x + dx, basePos.y + dy, basePos.z + dz);
                 entity.setOldPosAndRot();
                 entity.fallDistance = 0;
