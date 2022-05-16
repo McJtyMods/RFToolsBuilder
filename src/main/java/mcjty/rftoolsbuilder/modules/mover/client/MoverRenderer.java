@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,4 +48,14 @@ public class MoverRenderer {
         });
         matrixStack.popPose();
     }
+
+//    /**
+//     * Hook to allow us to move the entities very early in rendering (before entities are rendered)
+//     */
+//    public static void onCameraSetup(EntityViewRenderEvent.CameraSetup event) {
+//
+//        float partialTicks = MoverRenderer.getPartialTicks();
+//        Vec3 offset = logic.tryMoveVehicleClient(partialTicks);
+//
+//    }
 }

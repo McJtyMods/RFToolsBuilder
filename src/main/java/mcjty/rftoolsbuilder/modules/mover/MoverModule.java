@@ -40,7 +40,7 @@ public class MoverModule implements IModule {
 
     @Override
     public void init(FMLCommonSetupEvent event) {
-
+//        MinecraftForge.EVENT_BUS.addListener(MoverRenderer::onCameraSetup);
     }
 
     @Override

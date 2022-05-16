@@ -147,12 +147,20 @@ public class MoverTileEntity extends TickingTileEntity {
         handleRender();
     }
 
+    private float prevPartialTicks = Float.NaN;
+    private float dpartial = 0;
+
     private void handleRender() {
         ItemStack vehicle = getCard();
         if (VehicleBuilderTileEntity.isVehicleCard(vehicle)) {
             DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec) -> {
                 float partialTicks = MoverRenderer.getPartialTicks();
-                Vec3 offset = logic.tryMoveVehicleClient(partialTicks);
+                Vec3 offset = logic.tryMoveVehicleThisPlayer(partialTicks);
+                logic.tryMoveVehicleClient(partialTicks + dpartial);
+                if (!Float.isNaN(prevPartialTicks)) {
+                    dpartial = partialTicks-prevPartialTicks;
+                }
+                prevPartialTicks = partialTicks;
                 MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle, partialTicks, offset);
             }, (level, pos) -> {
                 if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
