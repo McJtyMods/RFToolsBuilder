@@ -32,12 +32,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -152,22 +154,31 @@ public class MoverTileEntity extends TickingTileEntity {
     private void handleRender() {
         ItemStack vehicle = getCard();
         if (VehicleBuilderTileEntity.isVehicleCard(vehicle)) {
+            MoverRenderer.addPreRender(worldPosition, () -> {
+                float partialTicks = MoverRenderer.getPartialTicks();
+//                Vec3 offset = logic.tryMoveVehicleThisPlayer(partialTicks);
+                logic.tryMoveVehicleClientEntities(partialTicks);
+
+            }, this::isMoverThere);
             DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec) -> {
                 float partialTicks = MoverRenderer.getPartialTicks();
                 Vec3 offset = logic.tryMoveVehicleThisPlayer(partialTicks);
-                logic.tryMoveVehicleClientEntities(partialTicks + dpartial);
-                if (!Float.isNaN(prevPartialTicks)) {
-                    dpartial = partialTicks-prevPartialTicks;
-                }
-                prevPartialTicks = partialTicks;
+//                logic.tryMoveVehicleClientEntities(partialTicks + dpartial);
+//                if (!Float.isNaN(prevPartialTicks)) {
+//                    dpartial = partialTicks-prevPartialTicks;
+//                }
+//                prevPartialTicks = partialTicks;
                 MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle, partialTicks, offset);
-            }, (level, pos) -> {
-                if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
-                    return !mover.getCard().isEmpty();
-                }
-                return false;
-            });
+            }, this::isMoverThere);
         }
+    }
+
+    @NotNull
+    private Boolean isMoverThere(Level level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
+            return !mover.getCard().isEmpty();
+        }
+        return false;
     }
 
     private void updateVehicleStatus() {
