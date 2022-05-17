@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.modules.mover.blocks;
 
 import mcjty.lib.api.container.DefaultContainerProvider;
+import mcjty.lib.bindings.GuiValue;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
@@ -48,13 +49,24 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
     public static final int SLOT_SPACE_CARD = 0;
     public static final int SLOT_VEHICLE_CARD = 1;
 
+    @GuiValue
+    private String vehicleName = "";
+
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(2)
             .slot(specific(BuilderModule.SPACE_CHAMBER_CARD.get()).in(), SLOT_SPACE_CARD, 64, 24)
             .slot(specific(MoverModule.VEHICLE_CARD.get()).in().out(), SLOT_VEHICLE_CARD, 118, 24)
             .playerSlots(10, 70));
 
     @Cap(type = CapType.ITEMS_AUTOMATION)
-    private final GenericItemHandler items = new GenericItemHandler(this, CONTAINER_FACTORY.get());
+    private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
+            .onUpdate((slot, stack) -> {
+                if (stack.getItem() == MoverModule.VEHICLE_CARD.get()) {
+                    vehicleName = VehicleCard.getVehicleName(stack);
+                } else {
+                    vehicleName = "";
+                }
+            })
+            .build();
 
     @Cap(type = CapType.CONTAINER)
     private final LazyOptional<MenuProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Vehicle Builder")
@@ -81,7 +93,7 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
         return items;
     }
 
-    private final static int MAXDIM = 16;
+    private static final int MAXDIM = 16;
 
     private void copyVehicle(Player player) {
         ItemStack spaceCard = items.getStackInSlot(SLOT_SPACE_CARD);
@@ -95,7 +107,7 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
                     ResourceKey<Level> dimension = chamberChannel.getDimension();
                     ServerLevel world = LevelTools.getLevel(this.level, dimension);
                     var blocks = getBlocks(minCorner, maxCorner, world);
-                    VehicleCard.storeVehicleInCard(vehicleCard, blocks);
+                    VehicleCard.storeVehicleInCard(vehicleCard, blocks, vehicleName);
                 }
             }
         }

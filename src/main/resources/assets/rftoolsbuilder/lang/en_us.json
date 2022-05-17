@@ -66,6 +66,7 @@
 
   "message.rftoolsbuilder.vehicle_builder.header": "Using a space card linked to a space chamber, this block can make a vehicle in the vehicle card (WIP)",
   "message.rftoolsbuilder.vehicle_card.header": "A vehicle card. Use the Vehicle Builder to put a vehicle in this card",
+  "message.rftoolsbuilder.vehicle_card.name": "Name: ",
   "message.rftoolsbuilder.vehicle_card.contents": "Contents: ",
 
   "message.rftoolsbuilder.space_chamber_card.header": "Use this card to link with a space chamber",

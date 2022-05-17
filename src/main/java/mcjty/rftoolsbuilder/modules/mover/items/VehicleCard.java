@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.modules.mover.items;
 
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.tooltips.ITooltipSettings;
+import mcjty.lib.varia.NBTTools;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
@@ -40,10 +41,15 @@ public class VehicleCard extends Item implements ITooltipSettings {
     private final Lazy<TooltipBuilder> tooltipBuilder = () -> new TooltipBuilder()
             .info(key("message.rftoolsbuilder.shiftmessage"))
             .infoShift(header(),
+                    parameter("name", VehicleCard::getVehicleName),
                     parameter("contents", VehicleCard::getContentsDescription));
 
     public VehicleCard() {
         super(Registration.createStandardProperties().stacksTo(1));
+    }
+
+    public static String getVehicleName(ItemStack stack) {
+        return NBTTools.getString(stack, "vehicleName", "<unknown>");
     }
 
     private static String getContentsDescription(ItemStack stack) {
@@ -61,7 +67,7 @@ public class VehicleCard extends Item implements ITooltipSettings {
         tooltipBuilder.get().makeTooltip(getRegistryName(), itemStack, list, flag);
     }
 
-    public static void storeVehicleInCard(ItemStack vehicleCard, Map<BlockState, List<Integer>> blocks) {
+    public static void storeVehicleInCard(ItemStack vehicleCard, Map<BlockState, List<Integer>> blocks, String vehicleName) {
         ListTag list = new ListTag();
         blocks.forEach((state, positions) -> {
             CompoundTag tag = new CompoundTag();
@@ -70,6 +76,7 @@ public class VehicleCard extends Item implements ITooltipSettings {
             list.add(tag);
         });
         vehicleCard.getOrCreateTag().put("blocks", list);
+        vehicleCard.getOrCreateTag().putString("vehicleName", vehicleName);
     }
 
     public static Map<BlockState, List<BlockPos>> getBlocks(ItemStack vehicleCard, BlockPos minPos) {

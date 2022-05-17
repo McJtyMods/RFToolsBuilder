@@ -2,6 +2,7 @@ window {
     size(180,152)
 
     action('create','create')
+    bind('vehicleName', 'vehicleName')
 
     panel('','positional') {
         bg1('rftoolsbuilder:textures/gui/vehicle_builder.png')
@@ -10,6 +11,11 @@ window {
             channel('create')
             hint(10,25,45,14)
             tooltips('Create a vehicle')
+        }
+        textfield('vehicleName') {
+            channel('vehicleName')
+            hint(10,45,120,14)
+            tooltips('Set the name of this vehicle')
         }
     }
 }
