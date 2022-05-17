@@ -9,6 +9,7 @@ import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.blocks.VehicleBuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiMover;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiVehicleBuilder;
+import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.setup.Config;
 import net.minecraft.world.inventory.MenuType;
@@ -16,6 +17,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.RegistryObject;
@@ -40,7 +42,7 @@ public class MoverModule implements IModule {
 
     @Override
     public void init(FMLCommonSetupEvent event) {
-//        MinecraftForge.EVENT_BUS.addListener(MoverRenderer::onCameraSetup);
+        MinecraftForge.EVENT_BUS.addListener(MoverRenderer::onCameraSetup);
     }
 
     @Override

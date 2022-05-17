@@ -36,7 +36,7 @@ public class EntityMovementLogic {
     // If this is the destination of a movement then this refers to the source. Otherwise null
     private BlockPos source = null;
 
-    // All 'grabbed' entities during movement
+    // All 'grabbed' entities during movement (key is entity id)
     private Map<Integer, Vec3> grabbedEntities = new HashMap<>();
 
     public EntityMovementLogic(MoverTileEntity mover) {
@@ -69,32 +69,27 @@ public class EntityMovementLogic {
             double dx = currentPos.x - startPos.x;
             double dy = currentPos.y - startPos.y;
             double dz = currentPos.z - startPos.z;
-            for (var pair : grabbedEntities.entrySet()) {
-                Entity entity = level.getEntity(pair.getKey());
-                if (entity == clientPlayer) {
-                    Vec3 basePos = pair.getValue();
-                    double desiredX = basePos.x + dx;
-                    double desiredY = basePos.y + dy;
-                    double desiredZ = basePos.z + dz;
+            if (grabbedEntities.containsKey(clientPlayer.getId())) {
+                Vec3 basePos = grabbedEntities.get(clientPlayer.getId());
+                double desiredX = basePos.x + dx;
+                double desiredY = basePos.y + dy;
+                double desiredZ = basePos.z + dz;
 //                    desiredX = (desiredX + entity.getX()*3) / 4.0;
 //                    desiredY = (desiredY + entity.getY()*3) / 4.0;
 //                    desiredZ = (desiredZ + entity.getZ()*3) / 4.0;
-                    // If the current player is on the platform we correct for smoother rendering
-                    result = new Vec3(desiredX-entity.getX(), desiredY-entity.getY(), desiredZ-entity.getZ());
-                    entity.setPos(desiredX, desiredY, desiredZ);
-                    entity.setOldPosAndRot();
-                    entity.fallDistance = 0;
-                    entity.setDeltaMovement(Vec3.ZERO);
-                    entity.setOnGround(true);
-                }
+                result = new Vec3(desiredX - clientPlayer.getX(), desiredY - clientPlayer.getY(), desiredZ - clientPlayer.getZ());
+                clientPlayer.setPos(desiredX, desiredY, desiredZ);
+                clientPlayer.setOldPosAndRot();
+                clientPlayer.fallDistance = 0;
+                clientPlayer.setDeltaMovement(Vec3.ZERO);
+                clientPlayer.setOnGround(true);
             }
         }
         return result;
     }
 
-    // Return the actual offset moved for the current player. Only if the player is actually on the platform
-    public Vec3 tryMoveVehicleClient(float partialTicks) {
-        Vec3 result = Vec3.ZERO;
+    // Move all entities except for the current player
+    public void tryMoveVehicleClientEntities(float partialTicks) {
         if (destination != null) {
             Player clientPlayer = SafeClientTools.getClientPlayer();
             Level level = mover.getLevel();
@@ -113,10 +108,6 @@ public class EntityMovementLogic {
 //                    desiredX = (desiredX + entity.getX()*3) / 4.0;
 //                    desiredY = (desiredY + entity.getY()*3) / 4.0;
 //                    desiredZ = (desiredZ + entity.getZ()*3) / 4.0;
-//                    if (entity == clientPlayer) {
-//                        // If the current player is on the platform we correct for smoother rendering
-//                        result = new Vec3(desiredX-entity.getX(), desiredY-entity.getY(), desiredZ-entity.getZ());
-//                    }
                     entity.setPos(desiredX, desiredY, desiredZ);
                     entity.setOldPosAndRot();
                     entity.fallDistance = 0;
@@ -125,7 +116,6 @@ public class EntityMovementLogic {
                 }
             }
         }
-        return result;
     }
 
     public void tryMoveVehicleServer() {

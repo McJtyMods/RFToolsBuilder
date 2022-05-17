@@ -17,10 +17,14 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiFunction;
 
 public class MoverRenderer {
+
+    // Global pre renderers
+    private static final Map<BlockPos, Runnable> delayedPreRenders = new HashMap<>();
+    private static final Map<BlockPos, BiFunction<Level, BlockPos, Boolean>> prerenderValidations = new HashMap<>();
 
     public static float getPartialTicks() {
         return Minecraft.getInstance().getFrameTime();
@@ -49,13 +53,34 @@ public class MoverRenderer {
         matrixStack.popPose();
     }
 
-//    /**
-//     * Hook to allow us to move the entities very early in rendering (before entities are rendered)
-//     */
-//    public static void onCameraSetup(EntityViewRenderEvent.CameraSetup event) {
-//
-//        float partialTicks = MoverRenderer.getPartialTicks();
-//        Vec3 offset = logic.tryMoveVehicleClient(partialTicks);
-//
-//    }
+    /**
+     * Add code that is called very early in rendering
+     */
+
+    public static void addPreRender(BlockPos pos, Runnable renderer, BiFunction<Level, BlockPos, Boolean> validator) {
+        delayedPreRenders.put(pos, renderer);
+        prerenderValidations.put(pos, validator);
+    }
+
+    public static void preRender() {
+        Set<BlockPos> todelete = new HashSet<>();
+        delayedPreRenders.forEach((pos, consumer) -> {
+            if (prerenderValidations.getOrDefault(pos, (level, blockPos) -> false).apply(Minecraft.getInstance().level, pos)) {
+                consumer.run();
+            } else {
+                todelete.add(pos);
+            }
+        });
+        for (BlockPos pos : todelete) {
+            delayedPreRenders.remove(pos);
+            prerenderValidations.remove(pos);
+        }
+    }
+
+    /**
+     * Hook to allow us to move the entities very early in rendering (before entities are rendered)
+     */
+    public static void onCameraSetup(EntityViewRenderEvent.CameraSetup event) {
+        preRender();
+    }
 }
