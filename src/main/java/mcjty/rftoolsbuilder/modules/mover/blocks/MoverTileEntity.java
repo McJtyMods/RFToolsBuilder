@@ -26,7 +26,6 @@ import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.logic.EntityMovementLogic;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -156,7 +155,7 @@ public class MoverTileEntity extends TickingTileEntity {
             DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec) -> {
                 float partialTicks = MoverRenderer.getPartialTicks();
                 Vec3 offset = logic.tryMoveVehicleThisPlayer(partialTicks);
-                logic.tryMoveVehicleClient(partialTicks + dpartial);
+                logic.tryMoveVehicleClientEntities(partialTicks + dpartial);
                 if (!Float.isNaN(prevPartialTicks)) {
                     dpartial = partialTicks-prevPartialTicks;
                 }

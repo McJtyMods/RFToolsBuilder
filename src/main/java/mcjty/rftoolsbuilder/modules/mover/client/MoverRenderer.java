@@ -19,6 +19,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 public class MoverRenderer {
 
@@ -50,12 +52,22 @@ public class MoverRenderer {
     }
 
 //    /**
-//     * Hook to allow us to move the entities very early in rendering (before entities are rendered)
+//     * Add code that is called very early in rendering
 //     */
-//    public static void onCameraSetup(EntityViewRenderEvent.CameraSetup event) {
 //
+//    public static void addPreRender(BlockPos pos, BiConsumer<PoseStack, Vec3> renderer, BiFunction<Level, BlockPos, Boolean> validator) {
+//        delayedRenders.put(pos, renderer);
+//        renderValidations.put(pos, validator);
+//    }
+
+
+    /**
+     * Hook to allow us to move the entities very early in rendering (before entities are rendered)
+     */
+    public static void onCameraSetup(EntityViewRenderEvent.CameraSetup event) {
+
 //        float partialTicks = MoverRenderer.getPartialTicks();
 //        Vec3 offset = logic.tryMoveVehicleClient(partialTicks);
-//
-//    }
+
+    }
 }
