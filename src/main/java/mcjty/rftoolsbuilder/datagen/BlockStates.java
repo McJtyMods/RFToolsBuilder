@@ -31,6 +31,7 @@ public class BlockStates extends BaseBlockStateProvider {
         singleTextureBlock(BuilderModule.SPACE_CHAMBER_CONTROLLER.get(), "space_chamber_controller", "block/machinespacechambercontroller");
 
         orientedBlock(MoverModule.MOVER.get(), frontBasedModel("mover", modLoc("block/machinemover")));
+        orientedBlock(MoverModule.MOVER_CONTROLLER.get(), frontBasedModel("mover_controller", modLoc("block/machinemovercontroller")));
         orientedBlock(MoverModule.VEHICLE_BUILDER.get(), frontBasedModel("vehicle_builder", modLoc("block/machinevehiclebuilder")));
 
         BlockModelBuilder support0 = models().cubeAll("supportblock_status0", modLoc("block/supportblock"));

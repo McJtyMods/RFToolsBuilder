@@ -5,9 +5,11 @@ import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.InvisibleMoverBlock;
+import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.blocks.VehicleBuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiMover;
+import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiVehicleBuilder;
 import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
@@ -31,6 +33,11 @@ public class MoverModule implements IModule {
     public static final RegistryObject<BlockEntityType<MoverTileEntity>> TYPE_MOVER = TILES.register("mover", () -> BlockEntityType.Builder.of(MoverTileEntity::new, MOVER.get()).build(null));
     public static final RegistryObject<MenuType<GenericContainer>> CONTAINER_MOVER = CONTAINERS.register("mover", GenericContainer::createContainerType);
 
+    public static final RegistryObject<BaseBlock> MOVER_CONTROLLER = BLOCKS.register("mover_controller", MoverControllerTileEntity::createBlock);
+    public static final RegistryObject<Item> MOVER_CONTROLLER_ITEM = ITEMS.register("mover_controller", () -> new BlockItem(MOVER_CONTROLLER.get(), createStandardProperties()));
+    public static final RegistryObject<BlockEntityType<MoverControllerTileEntity>> TYPE_MOVER_CONTROLLER = TILES.register("mover_controller", () -> BlockEntityType.Builder.of(MoverControllerTileEntity::new, MOVER_CONTROLLER.get()).build(null));
+    public static final RegistryObject<MenuType<GenericContainer>> CONTAINER_MOVER_CONTROLLER = CONTAINERS.register("mover_controller", GenericContainer::createContainerType);
+
     public static final RegistryObject<BaseBlock> VEHICLE_BUILDER = BLOCKS.register("vehicle_builder", VehicleBuilderTileEntity::createBlock);
     public static final RegistryObject<Item> VEHICLE_BUILDER_ITEM = ITEMS.register("vehicle_builder", () -> new BlockItem(VEHICLE_BUILDER.get(), createStandardProperties()));
     public static final RegistryObject<BlockEntityType<?>> TYPE_VEHICLE_BUILDER = TILES.register("vehicle_builder", () -> BlockEntityType.Builder.of(VehicleBuilderTileEntity::new, VEHICLE_BUILDER.get()).build(null));
@@ -49,6 +56,7 @@ public class MoverModule implements IModule {
     public void initClient(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             GuiMover.register();
+            GuiMoverController.register();
             GuiVehicleBuilder.register();
         });
     }

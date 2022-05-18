@@ -5,8 +5,6 @@ import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.bindings.GuiValue;
 import mcjty.lib.bindings.Value;
-import mcjty.lib.blockcommands.Command;
-import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.client.DelayedRenderer;
@@ -15,13 +13,11 @@ import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
-import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.TickingTileEntity;
 import mcjty.lib.typed.Type;
 import mcjty.lib.varia.OrientationTools;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
-import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
@@ -42,7 +38,6 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.*;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
@@ -52,7 +47,6 @@ import static mcjty.lib.container.SlotDefinition.specific;
 public class MoverTileEntity extends TickingTileEntity {
 
     public static final int SLOT_VEHICLE_CARD = 0;
-    public static final int MAXSCAN = 256;  //@todo configurable
 
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(1)
             .slot(specific(MoverModule.VEHICLE_CARD.get()).in().out(), SLOT_VEHICLE_CARD, 154, 11)
@@ -65,14 +59,10 @@ public class MoverTileEntity extends TickingTileEntity {
             })
             .build();
 
-    @Cap(type = CapType.ENERGY)
-    private final GenericEnergyStorage energyStorage = new GenericEnergyStorage(this, true, MoverConfiguration.MAXENERGY.get(), MoverConfiguration.RECEIVEPERTICK.get());
-
     @Cap(type = CapType.CONTAINER)
     private final LazyOptional<MenuProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Mover")
             .containerSupplier(container(MoverModule.CONTAINER_MOVER, CONTAINER_FACTORY,this))
             .itemHandler(() -> items)
-            .energyHandler(() -> energyStorage)
             .setupSync(this));
 
 
@@ -82,6 +72,7 @@ public class MoverTileEntity extends TickingTileEntity {
     @GuiValue
     private String name;
 
+    // @todo REMOVE ME
     @GuiValue
     public static final Value<?, String> VALUE_CONNECTIONS = Value.create("connections", Type.STRING, MoverTileEntity::getConnectionCount, MoverTileEntity::setConnectionCount);
     private String connections = "";
@@ -113,11 +104,6 @@ public class MoverTileEntity extends TickingTileEntity {
 
     public MoverTileEntity(BlockPos pos, BlockState state) {
         super(MoverModule.TYPE_MOVER.get(), pos, state);
-    }
-
-    @Override
-    protected boolean needsRedstoneMode() {
-        return true;
     }
 
     public Map<Direction, BlockPos> getNetwork() {
@@ -356,43 +342,4 @@ public class MoverTileEntity extends TickingTileEntity {
         items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.of(tag));
         logic.loadClientDataFromNBT(tagCompound);
     }
-
-    private void doScan() {
-        network.clear();
-        connections = "";
-        Set<BlockPos> done = new HashSet<>();
-        done.add(worldPosition);
-        doScan(done, null);
-        setChanged();
-    }
-
-    private void doScanFromOther(Set<BlockPos> done, @Nonnull Direction comingFrom, BlockPos other) {
-        network.clear();
-        connections = "";
-        addConnection(comingFrom.getOpposite(), other);
-        doScan(done, comingFrom);
-        setChanged();
-    }
-
-    private void doScan(Set<BlockPos> done, @Nullable Direction comingFrom) {
-        for (Direction direction : OrientationTools.DIRECTION_VALUES) {
-            if (!Objects.equals(direction.getOpposite(), comingFrom)) {
-                for (int i = 1; i < MAXSCAN; i++) {
-                    BlockPos relative = worldPosition.relative(direction, i);
-                    if (done.contains(relative)) {
-                        break;
-                    }
-                    if (level.getBlockEntity(relative) instanceof MoverTileEntity mover) {
-                        done.add(relative);
-                        addConnection(direction, relative);
-                        mover.doScanFromOther(done, direction, worldPosition);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    @ServerCommand
-    public static final Command<?> CMD_SCAN = Command.<MoverTileEntity>create("scan", (te, player, params) -> te.doScan());
 }
