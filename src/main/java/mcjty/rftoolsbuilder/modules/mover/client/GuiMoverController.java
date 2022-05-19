@@ -5,6 +5,8 @@ import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.widgets.EnergyBar;
+import mcjty.lib.gui.widgets.Panel;
+import mcjty.lib.network.PacketGetListFromServer;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
@@ -14,9 +16,17 @@ import net.minecraft.world.entity.player.Inventory;
 
 import javax.annotation.Nonnull;
 
+import static mcjty.lib.gui.widgets.Widgets.horizontal;
+import static mcjty.lib.gui.widgets.Widgets.label;
+import static mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity.CMD_GETNODES;
+import static mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity.CMD_GETVEHICLES;
+
 public class GuiMoverController extends GenericGuiContainer<MoverControllerTileEntity, GenericContainer> {
 
     private EnergyBar energyBar;
+
+    private SyncedList<String> vehicleList;
+    private SyncedList<String> nodeList;
 
     public GuiMoverController(MoverControllerTileEntity builderTileEntity, GenericContainer container, Inventory inventory) {
         super(builderTileEntity, container, inventory, MoverModule.MOVER_CONTROLLER.get().getManualEntry());
@@ -33,6 +43,9 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
         initializeFields();
         setupEvents();
+
+        vehicleList.refresh();
+        nodeList.refresh();
     }
 
     private void setupEvents() {
@@ -40,17 +53,45 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
     private void initializeFields() {
         energyBar = window.findChild("energybar");
+        vehicleList = new SyncedList<>(window.findChild("vehicles"), this::requestVehicles, this::makeVehicleLine);
+        nodeList = new SyncedList<>(window.findChild("nodes"), this::requestNodes, this::makeNodeLine);
+
         updateFields();
     }
 
     private void updateFields() {
-//        ((ImageChoiceLabel) window.findChild("redstone")).setCurrentChoice(tileEntity.getRSMode().ordinal());
         updateEnergyBar(energyBar);
+        vehicleList.populateLists();
+        nodeList.populateLists();
     }
+
+    private void requestVehicles() {
+        RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetListFromServer(tileEntity.getBlockPos(), CMD_GETVEHICLES.name()));
+    }
+
+    private void requestNodes() {
+        RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetListFromServer(tileEntity.getBlockPos(), CMD_GETNODES.name()));
+    }
+
+    private Panel makeVehicleLine(String vehicle) {
+        Panel panel = horizontal(0, 0).hint(0, 0, 100, 13);
+        int labelColor = 0xff2244aa;
+        panel.children(label(vehicle));
+        return panel;
+    }
+
+    private Panel makeNodeLine(String node) {
+        Panel panel = horizontal(0, 0).hint(0, 0, 100, 13);
+        int labelColor = 0xff2244aa;
+        panel.children(label(node));
+        return panel;
+    }
+
 
     @Override
     protected void renderBg(@Nonnull PoseStack matrixStack, float partialTicks, int mouseX, int mouseY) {
         updateFields();
+
         drawWindow(matrixStack);
     }
 }

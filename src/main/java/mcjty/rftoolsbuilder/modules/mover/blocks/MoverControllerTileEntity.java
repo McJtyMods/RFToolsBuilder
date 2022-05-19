@@ -4,6 +4,7 @@ import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.blockcommands.Command;
+import mcjty.lib.blockcommands.ListCommand;
 import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.builder.BlockBuilder;
@@ -17,6 +18,7 @@ import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
+import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
 import mcjty.rftoolsbuilder.modules.mover.logic.MoverGraphNode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,11 +28,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
-
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.api.container.DefaultContainerProvider.empty;
 import static mcjty.lib.builder.TooltipBuilder.*;
 
@@ -124,6 +126,26 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         }
     }
 
+    private List<String> getVehicles() {
+        return new ArrayList<>();
+    }
+
+    private List<String> getNodes() {
+        return new ArrayList<>();
+    }
+
+
+
     @ServerCommand
     public static final Command<?> CMD_SCAN = Command.<MoverControllerTileEntity>create("scan", (te, player, params) -> te.doScan());
+
+    @ServerCommand
+    public static final ListCommand<?, ?> CMD_GETVEHICLES = ListCommand.<MoverControllerTileEntity, String>create("rftoolsbuilder.movercontroller.getVehicles",
+            (te, player, params) -> te.getVehicles(),
+            (te, player, params, list) -> GuiMoverController.fromServerVehicles = list);
+
+    @ServerCommand
+    public static final ListCommand<?, ?> CMD_GETNODES = ListCommand.<MoverControllerTileEntity, String>create("rftoolsbuilder.movercontroller.getNodes",
+            (te, player, params) -> te.getNodes(),
+            (te, player, params, list) -> GuiMoverController.fromServerNodes = list);
 }
