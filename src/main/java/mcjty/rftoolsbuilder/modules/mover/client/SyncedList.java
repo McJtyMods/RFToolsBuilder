@@ -23,6 +23,9 @@ public class SyncedList<T> {
         this.panelCreator = panelCreator;
     }
 
+    public void setFromServerList(List<T> fromServerList) {
+        this.fromServerList = fromServerList;
+    }
 
     private void requestListIfNeeded() {
         if (fromServerList != null) {

@@ -127,25 +127,30 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     }
 
     private List<String> getVehicles() {
-        return new ArrayList<>();
+        ArrayList<String> vehicles = new ArrayList<>();
+        vehicles.add("Vroem");
+        vehicles.add("Tuut");
+        return vehicles;
     }
 
     private List<String> getNodes() {
-        return new ArrayList<>();
+        ArrayList<String> nodes = new ArrayList<>();
+        nodes.add("Home");
+        nodes.add("Leuven");
+        nodes.add("London");
+        return nodes;
     }
-
-
 
     @ServerCommand
     public static final Command<?> CMD_SCAN = Command.<MoverControllerTileEntity>create("scan", (te, player, params) -> te.doScan());
 
-    @ServerCommand
+    @ServerCommand(type = String.class)
     public static final ListCommand<?, ?> CMD_GETVEHICLES = ListCommand.<MoverControllerTileEntity, String>create("rftoolsbuilder.movercontroller.getVehicles",
             (te, player, params) -> te.getVehicles(),
-            (te, player, params, list) -> GuiMoverController.fromServerVehicles = list);
+            (te, player, params, list) -> GuiMoverController.setVehiclesFromServer(list));
 
-    @ServerCommand
+    @ServerCommand(type = String.class)
     public static final ListCommand<?, ?> CMD_GETNODES = ListCommand.<MoverControllerTileEntity, String>create("rftoolsbuilder.movercontroller.getNodes",
             (te, player, params) -> te.getNodes(),
-            (te, player, params, list) -> GuiMoverController.fromServerNodes = list);
+            (te, player, params, list) -> GuiMoverController.setNodesFromServer(list));
 }

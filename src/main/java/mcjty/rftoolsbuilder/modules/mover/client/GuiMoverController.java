@@ -11,10 +11,14 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraftforge.common.MinecraftForge;
 
 import javax.annotation.Nonnull;
+
+import java.util.List;
 
 import static mcjty.lib.gui.widgets.Widgets.horizontal;
 import static mcjty.lib.gui.widgets.Widgets.label;
@@ -63,6 +67,22 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         updateEnergyBar(energyBar);
         vehicleList.populateLists();
         nodeList.populateLists();
+    }
+
+    public static void setVehiclesFromServer(List<String> vehicles) {
+        if (Minecraft.getInstance().screen instanceof GuiMoverController gui) {
+            gui.vehicleList.setFromServerList(vehicles);
+        } else {
+            RFToolsBuilder.setup.getLogger().warn("This is not a gui for the mover controller!");
+        }
+    }
+
+    public static void setNodesFromServer(List<String> nodes) {
+        if (Minecraft.getInstance().screen instanceof GuiMoverController gui) {
+            gui.nodeList.setFromServerList(nodes);
+        } else {
+            RFToolsBuilder.setup.getLogger().warn("This is not a gui for the mover controller!");
+        }
     }
 
     private void requestVehicles() {
