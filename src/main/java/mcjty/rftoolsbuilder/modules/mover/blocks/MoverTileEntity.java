@@ -114,6 +114,10 @@ public class MoverTileEntity extends TickingTileEntity {
         return logic;
     }
 
+    public String getName() {
+        return name;
+    }
+
     @Override
     public void setRemoved() {
         super.setRemoved();

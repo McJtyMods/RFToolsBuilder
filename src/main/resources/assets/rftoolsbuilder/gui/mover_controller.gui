@@ -19,12 +19,12 @@ window {
         }
 
         panel('','horizontal') {
-            hint(5, 28,100,208)
+            hint(5,28,100,208)
             widgetlist('nodes') {
                 channel('nodes')
                 bgthickness(-1)
                 bgfilled1(-7631989)
-                rowheight(40)
+                rowheight(16)
                 propagate(true)
             }
             slider {
@@ -41,7 +41,7 @@ window {
                 channel('vehicles')
                 bgthickness(-1)
                 bgfilled1(-7631989)
-                rowheight(40)
+                rowheight(16)
                 propagate(true)
             }
             slider {

@@ -23,15 +23,13 @@ import mcjty.rftoolsbuilder.modules.mover.logic.MoverGraphNode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.empty;
 import static mcjty.lib.builder.TooltipBuilder.*;
@@ -52,6 +50,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     private final IInfusable infusable = new DefaultInfusable(MoverControllerTileEntity.this);
 
     public static final int MAXSCAN = 512;  //@todo configurable
+    private final Map<BlockPos, MoverGraphNode> nodePositions = new HashMap<>();
     private final MoverGraphNode graph = new MoverGraphNode();
 
     public static BaseBlock createBlock() {
@@ -84,7 +83,19 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     @Override
     public void saveAdditional(@Nonnull CompoundTag tagCompound) {
         super.saveAdditional(tagCompound);
-        tagCompound.put("graph", graph.save());
+        ListTag graphTag = new ListTag();
+        nodePositions.forEach((pos, node) -> {
+            CompoundTag nodeTag = new CompoundTag();
+            nodeTag.putInt("x", pos.getX());
+            nodeTag.putInt("y", pos.getY());
+            nodeTag.putInt("z", pos.getZ());
+
+            CompoundTag childrenTag = new CompoundTag();
+            nodeTag.put("c", childrenTag);
+
+            graphTag.add(nodeTag);
+        });
+        tagCompound.put("graph", graphTag);
     }
 
     @Override
@@ -97,29 +108,29 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     private void doScan() {
         setChanged();
         graph.clear();
-        Set<BlockPos> alreadyDone = new HashSet<>();
+        nodePositions.clear();
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             BlockPos moverPos = worldPosition.relative(direction);
             if (level.getBlockEntity(moverPos) instanceof MoverTileEntity mover) {
                 // Find the first mover
-                doScan(moverPos, graph, alreadyDone);
+                doScan(moverPos, graph);
                 return;
             }
         }
     }
 
-    private void doScan(BlockPos moverPos, MoverGraphNode moverNode, Set<BlockPos> alreadyDone) {
+    private void doScan(BlockPos moverPos, MoverGraphNode moverNode) {
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             for (int distance = 1 ; distance <= MAXSCAN ; distance++) {
                 BlockPos newPos = moverPos.relative(direction, distance);
                 // If we have already handled this position we can stop for this direction
-                if (!alreadyDone.contains(newPos)) {
+                if (!nodePositions.containsKey(newPos)) {
                     if (level.getBlockEntity(newPos) instanceof MoverTileEntity mover) {
-                        alreadyDone.add(newPos);
                         MoverGraphNode child = new MoverGraphNode();
+                        nodePositions.put(newPos, child);
                         moverNode.add(direction, child);
                         child.add(direction.getOpposite(), moverNode);
-                        doScan(newPos, child, alreadyDone);
+                        doScan(newPos, child);
                     }
                 }
             }
@@ -127,14 +138,14 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     }
 
     private List<String> getVehicles() {
-        ArrayList<String> vehicles = new ArrayList<>();
+        List<String> vehicles = new ArrayList<>();
         vehicles.add("Vroem");
         vehicles.add("Tuut");
         return vehicles;
     }
 
     private List<String> getNodes() {
-        ArrayList<String> nodes = new ArrayList<>();
+        List<String> nodes = new ArrayList<>();
         nodes.add("Home");
         nodes.add("Leuven");
         nodes.add("London");

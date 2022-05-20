@@ -94,15 +94,13 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
     }
 
     private Panel makeVehicleLine(String vehicle) {
-        Panel panel = horizontal(0, 0).hint(0, 0, 100, 13);
-        int labelColor = 0xff2244aa;
+        Panel panel = horizontal(0, 0).hint(0, 0, 100, 14);
         panel.children(label(vehicle));
         return panel;
     }
 
     private Panel makeNodeLine(String node) {
-        Panel panel = horizontal(0, 0).hint(0, 0, 100, 13);
-        int labelColor = 0xff2244aa;
+        Panel panel = horizontal(0, 0).hint(0, 0, 100, 14);
         panel.children(label(node));
         return panel;
     }
