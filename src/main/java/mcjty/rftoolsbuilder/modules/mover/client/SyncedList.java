@@ -16,11 +16,13 @@ public class SyncedList<T> {
 
     private final Runnable listRequester;
     private final Function<T, Panel> panelCreator;
+    private final boolean autoRefresh;
 
-    public SyncedList(WidgetList list, Runnable listRequester, Function<T, Panel> panelCreator) {
+    public SyncedList(WidgetList list, Runnable listRequester, Function<T, Panel> panelCreator, boolean autoRefresh) {
         this.list = list;
         this.listRequester = listRequester;
         this.panelCreator = panelCreator;
+        this.autoRefresh = autoRefresh;
     }
 
     public void setFromServerList(List<T> fromServerList) {
@@ -28,13 +30,12 @@ public class SyncedList<T> {
     }
 
     private void requestListIfNeeded() {
-        if (fromServerList != null) {
-            return;
-        }
-        listDirty--;
-        if (listDirty <= 0) {
-            listRequester.run();
-            listDirty = 10;
+        if (autoRefresh || fromServerList == null) {
+            listDirty--;
+            if (listDirty <= 0) {
+                listRequester.run();
+                listDirty = 10;
+            }
         }
     }
 

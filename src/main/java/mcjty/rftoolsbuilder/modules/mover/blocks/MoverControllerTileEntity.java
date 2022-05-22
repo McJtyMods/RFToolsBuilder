@@ -19,17 +19,23 @@ import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
+import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.logic.MoverGraphNode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.empty;
 import static mcjty.lib.builder.TooltipBuilder.*;
@@ -50,8 +56,8 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     private final IInfusable infusable = new DefaultInfusable(MoverControllerTileEntity.this);
 
     public static final int MAXSCAN = 512;  //@todo configurable
-    private final Map<BlockPos, MoverGraphNode> nodePositions = new HashMap<>();
-    private final MoverGraphNode graph = new MoverGraphNode();
+    private final Map<BlockPos, MoverGraphNode> nodes = new HashMap<>();
+    private MoverGraphNode graph;
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
@@ -71,26 +77,46 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     @Override
     public void load(CompoundTag tagCompound) {
         super.load(tagCompound);
-        graph.load(tagCompound.getCompound("graph"));
-    }
+        if (graph == null) {
+            graph = new MoverGraphNode(worldPosition);
+        }
+        nodes.clear();
+        ListTag graphTag = tagCompound.getList("graph", Tag.TAG_COMPOUND);
+        for (Tag tag : graphTag) {
+            CompoundTag nodeTag = ((CompoundTag) tag);
+            BlockPos pos = new BlockPos(nodeTag.getInt("x"), nodeTag.getInt("y"), nodeTag.getInt("z"));
+            MoverGraphNode childNode = new MoverGraphNode(pos);
+            nodes.put(pos, childNode);
+            CompoundTag childrenTag = nodeTag.getCompound("c");
+            for (Direction direction : OrientationTools.DIRECTION_VALUES) {
+                if (childrenTag.contains(direction.name())) {
+                    CompoundTag childTag = childrenTag.getCompound(direction.name());
+                    BlockPos childpos = new BlockPos(childTag.getInt("x"), childTag.getInt("y"), childTag.getInt("z"));
+                    childNode.add(direction, childpos);
+                }
+            }
 
-    @Override
-    public void loadInfo(CompoundTag tagCompound) {
-        super.loadInfo(tagCompound);
-        CompoundTag info = tagCompound.getCompound("Info");
+        }
     }
 
     @Override
     public void saveAdditional(@Nonnull CompoundTag tagCompound) {
         super.saveAdditional(tagCompound);
         ListTag graphTag = new ListTag();
-        nodePositions.forEach((pos, node) -> {
+        nodes.forEach((pos, node) -> {
             CompoundTag nodeTag = new CompoundTag();
             nodeTag.putInt("x", pos.getX());
             nodeTag.putInt("y", pos.getY());
             nodeTag.putInt("z", pos.getZ());
 
             CompoundTag childrenTag = new CompoundTag();
+            node.getChildren().forEach((direction, childpos) -> {
+                CompoundTag childTag = new CompoundTag();
+                childTag.putInt("x", childpos.getX());
+                childTag.putInt("y", childpos.getY());
+                childTag.putInt("z", childpos.getZ());
+                childrenTag.put(direction.name(), childTag);
+            });
             nodeTag.put("c", childrenTag);
 
             graphTag.add(nodeTag);
@@ -98,20 +124,13 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         tagCompound.put("graph", graphTag);
     }
 
-    @Override
-    public void saveInfo(CompoundTag tagCompound) {
-        super.saveInfo(tagCompound);
-        CompoundTag info = getOrCreateInfo(tagCompound);
-    }
-
-
     private void doScan() {
         setChanged();
-        graph.clear();
-        nodePositions.clear();
+        graph = new MoverGraphNode(worldPosition);
+        nodes.clear();
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             BlockPos moverPos = worldPosition.relative(direction);
-            if (level.getBlockEntity(moverPos) instanceof MoverTileEntity mover) {
+            if (level.getBlockEntity(moverPos) instanceof MoverTileEntity) {
                 // Find the first mover
                 doScan(moverPos, graph);
                 return;
@@ -124,12 +143,12 @@ public class MoverControllerTileEntity extends GenericTileEntity {
             for (int distance = 1 ; distance <= MAXSCAN ; distance++) {
                 BlockPos newPos = moverPos.relative(direction, distance);
                 // If we have already handled this position we can stop for this direction
-                if (!nodePositions.containsKey(newPos)) {
-                    if (level.getBlockEntity(newPos) instanceof MoverTileEntity mover) {
-                        MoverGraphNode child = new MoverGraphNode();
-                        nodePositions.put(newPos, child);
-                        moverNode.add(direction, child);
-                        child.add(direction.getOpposite(), moverNode);
+                if (!nodes.containsKey(newPos)) {
+                    if (level.getBlockEntity(newPos) instanceof MoverTileEntity) {
+                        MoverGraphNode child = new MoverGraphNode(newPos);
+                        nodes.put(newPos, child);
+                        moverNode.add(direction, newPos);
+                        child.add(direction.getOpposite(), moverNode.getPos());
                         doScan(newPos, child);
                     }
                 }
@@ -139,17 +158,35 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     private List<String> getVehicles() {
         List<String> vehicles = new ArrayList<>();
-        vehicles.add("Vroem");
-        vehicles.add("Tuut");
+        nodes.forEach((pos, node) -> {
+            if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
+                ItemStack card = mover.getCard();
+                if (!card.isEmpty()) {
+                    String name = VehicleCard.getVehicleName(card);
+                    if (mover.isMoving()) {
+                        name += " (M)";
+                    }
+                    vehicles.add(name);
+                }
+            }
+        });
         return vehicles;
     }
 
     private List<String> getNodes() {
-        List<String> nodes = new ArrayList<>();
-        nodes.add("Home");
-        nodes.add("Leuven");
-        nodes.add("London");
-        return nodes;
+        List<String> nodeNames = new ArrayList<>();
+        nodes.forEach((pos, node) -> {
+            if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
+                String name = mover.getName();
+                if (name == null || name.trim().isEmpty()) {
+                    name = pos.getX() + "," + pos.getY() + "," + pos.getZ();
+                }
+                nodeNames.add(name);
+            } else {
+                nodeNames.add("<INVALID>");
+            }
+        });
+        return nodeNames;
     }
 
     @ServerCommand

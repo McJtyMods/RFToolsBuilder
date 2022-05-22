@@ -1,9 +1,6 @@
 window {
     size(256,236)
 
-    action('scan','scan')
-    bind('name', 'name')
-
     panel('','positional') {
         bg1('rftoolsbuilder:textures/gui/mover_controller.png')
         energybar('energybar') {

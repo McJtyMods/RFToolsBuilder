@@ -4,9 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
+import mcjty.lib.gui.widgets.Button;
 import mcjty.lib.gui.widgets.EnergyBar;
 import mcjty.lib.gui.widgets.Panel;
 import mcjty.lib.network.PacketGetListFromServer;
+import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
@@ -14,10 +16,8 @@ import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraftforge.common.MinecraftForge;
 
 import javax.annotation.Nonnull;
-
 import java.util.List;
 
 import static mcjty.lib.gui.widgets.Widgets.horizontal;
@@ -53,12 +53,18 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
     }
 
     private void setupEvents() {
+        Button scanButton = window.findChild("scan");
+        scanButton.event(() -> {
+            sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_SCAN, TypedMap.EMPTY);
+            vehicleList.refresh();
+            nodeList.refresh();
+        });
     }
 
     private void initializeFields() {
         energyBar = window.findChild("energybar");
-        vehicleList = new SyncedList<>(window.findChild("vehicles"), this::requestVehicles, this::makeVehicleLine);
-        nodeList = new SyncedList<>(window.findChild("nodes"), this::requestNodes, this::makeNodeLine);
+        vehicleList = new SyncedList<>(window.findChild("vehicles"), this::requestVehicles, this::makeVehicleLine, false);
+        nodeList = new SyncedList<>(window.findChild("nodes"), this::requestNodes, this::makeNodeLine, false);
 
         updateFields();
     }

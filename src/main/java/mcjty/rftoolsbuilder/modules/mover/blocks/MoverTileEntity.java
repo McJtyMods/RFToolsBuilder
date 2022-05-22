@@ -171,6 +171,13 @@ public class MoverTileEntity extends TickingTileEntity {
         return false;
     }
 
+    public boolean isMoving() {
+        if (getCard().isEmpty()) {
+            return false;
+        }
+        return logic.getDestination() != null;
+    }
+
     private void updateVehicleStatus() {
         if (logic.getDestination() != null) {
             // We are moving. Remove the mover blocks if there are any
