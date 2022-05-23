@@ -33,8 +33,8 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
     private EnergyBar energyBar;
 
-    private SyncedList<Pair<BlockPos, String>> vehicleList;
-    private SyncedList<String> nodeList;
+    private SyncedList<String> vehicleList;
+    private SyncedList<Pair<BlockPos, String>> nodeList;
 
     public GuiMoverController(MoverControllerTileEntity builderTileEntity, GenericContainer container, Inventory inventory) {
         super(builderTileEntity, container, inventory, MoverModule.MOVER_CONTROLLER.get().getManualEntry());
@@ -66,27 +66,18 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         nodeList.getList().event(new SelectionEvent() {
             @Override
             public void select(int index) {
-                selectVehicle();
+                selectNode();
             }
 
             @Override
-            public void doubleClick(int index) {
-
-            }
+            public void doubleClick(int index) { }
         });
     }
 
-    @Override
-    public void onValueUpdated(ValueHolder value) {
-        if (value.key().name().equals("selectedVehicle")) {
-            vehicleList.select(tileEntity.getSelectedVehicle());
-        }
-    }
-
-    private void selectVehicle() {
-        Pair<BlockPos, String> selected = vehicleList.getSelected();
+    private void selectNode() {
+        Pair<BlockPos, String> selected = nodeList.getSelected();
         if (selected != null) {
-            sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_SELECTVEHICLE, TypedMap.builder()
+            sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_SELECTNODE, TypedMap.builder()
                     .put(MoverControllerTileEntity.SELECTED_NODE, selected.getLeft())
                     .build());
         }
@@ -106,7 +97,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         nodeList.populateLists();
     }
 
-    public static void setVehiclesFromServer(List<Pair<BlockPos, String>> vehicles) {
+    public static void setVehiclesFromServer(List<String> vehicles) {
         if (Minecraft.getInstance().screen instanceof GuiMoverController gui) {
             gui.vehicleList.setFromServerList(vehicles);
         } else {
@@ -114,13 +105,22 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         }
     }
 
-    public static void setNodesFromServer(List<String> nodes) {
+    public static void setNodesFromServer(List<Pair<BlockPos, String>> nodes) {
         if (Minecraft.getInstance().screen instanceof GuiMoverController gui) {
             gui.nodeList.setFromServerList(nodes);
         } else {
             RFToolsBuilder.setup.getLogger().warn("This is not a gui for the mover controller!");
         }
     }
+
+    public static void setSelectedVehicle(String vehicle) {
+        if (Minecraft.getInstance().screen instanceof GuiMoverController gui) {
+            gui.vehicleList.select(vehicle);
+        } else {
+            RFToolsBuilder.setup.getLogger().warn("This is not a gui for the mover controller!");
+        }
+    }
+
 
     private void requestVehicles() {
         RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetListFromServer(tileEntity.getBlockPos(), CMD_GETVEHICLES.name()));
@@ -130,15 +130,15 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetListFromServer(tileEntity.getBlockPos(), CMD_GETNODES.name()));
     }
 
-    private Panel makeVehicleLine(Pair<BlockPos, String> vehicle) {
+    private Panel makeVehicleLine(String vehicle) {
         Panel panel = horizontal(0, 0).hint(0, 0, 100, 14);
-        panel.children(label(vehicle.getValue()));
+        panel.children(label(vehicle));
         return panel;
     }
 
-    private Panel makeNodeLine(String node) {
+    private Panel makeNodeLine(Pair<BlockPos, String> node) {
         Panel panel = horizontal(0, 0).hint(0, 0, 100, 14);
-        panel.children(label(node));
+        panel.children(label(node.getRight()));
         return panel;
     }
 

@@ -4,6 +4,7 @@ import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.bindings.GuiValue;
+import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.ISerializer;
 import mcjty.lib.blockcommands.ListCommand;
@@ -31,13 +32,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 import org.apache.commons.lang3.tuple.Pair;
-import org.checkerframework.checker.units.qual.K;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -71,6 +70,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     // For the gui: the selected vehicle
     @GuiValue
+    public static final Value<?, String> VALUE_SELECTED_VEHICLE = Value.create("selectedVehicle", Type.STRING, MoverControllerTileEntity::getSelectedVehicle, MoverControllerTileEntity::setSelectedVehicle);
     private String selectedVehicle;
 
     public static BaseBlock createBlock() {
@@ -138,7 +138,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         tagCompound.put("graph", graphTag);
     }
 
-    private void selectVehicle(BlockPos pos) {
+    private void selectNode(BlockPos pos) {
         if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
             ItemStack card = mover.getCard();
             if (card.isEmpty()) {
@@ -146,6 +146,8 @@ public class MoverControllerTileEntity extends GenericTileEntity {
             } else {
                 selectedVehicle = VehicleCard.getVehicleName(card);
             }
+        } else {
+            selectedVehicle = null;
         }
     }
 
@@ -153,14 +155,21 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         return selectedVehicle;
     }
 
+    public void setSelectedVehicle(String vehicle) {
+        if (level.isClientSide) {
+            GuiMoverController.setSelectedVehicle(vehicle);
+        }
+    }
+
     private void doScan() {
         setChanged();
-        graph = new MoverGraphNode(worldPosition);
         nodes.clear();
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             BlockPos moverPos = worldPosition.relative(direction);
             if (level.getBlockEntity(moverPos) instanceof MoverTileEntity) {
                 // Find the first mover
+                graph = new MoverGraphNode(moverPos);
+                nodes.put(moverPos, graph);
                 doScan(moverPos, graph);
                 return;
             }
@@ -185,8 +194,8 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         }
     }
 
-    private List<Pair<BlockPos, String>> getVehicles() {
-        List<Pair<BlockPos, String>> vehicles = new ArrayList<>();
+    private List<String> getVehicles() {
+        List<String> vehicles = new ArrayList<>();
         nodes.forEach((pos, node) -> {
             if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
                 ItemStack card = mover.getCard();
@@ -195,24 +204,24 @@ public class MoverControllerTileEntity extends GenericTileEntity {
                     if (mover.isMoving()) {
                         name += " (M)";
                     }
-                    vehicles.add(Pair.of(pos, name));
+                    vehicles.add(name);
                 }
             }
         });
         return vehicles;
     }
 
-    private List<String> getNodes() {
-        List<String> nodeNames = new ArrayList<>();
+    private List<Pair<BlockPos, String>> getNodes() {
+        List<Pair<BlockPos, String>> nodeNames = new ArrayList<>();
         nodes.forEach((pos, node) -> {
             if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
                 String name = mover.getName();
                 if (name == null || name.trim().isEmpty()) {
                     name = pos.getX() + "," + pos.getY() + "," + pos.getZ();
                 }
-                nodeNames.add(name);
+                nodeNames.add(Pair.of(pos, name));
             } else {
-                nodeNames.add("<INVALID>");
+                nodeNames.add(Pair.of(pos, "<INVALID>"));
             }
         });
         return nodeNames;
@@ -224,19 +233,19 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     public static final Key<BlockPos> SELECTED_NODE = new Key<>("node", Type.BLOCKPOS);
     @ServerCommand
-    public static final Command<?> CMD_SELECTVEHICLE = Command.<MoverControllerTileEntity>create("scan", (te, player, params) -> te.selectVehicle(params.get(SELECTED_NODE)));
+    public static final Command<?> CMD_SELECTNODE = Command.<MoverControllerTileEntity>create("selectNode", (te, player, params) -> te.selectNode(params.get(SELECTED_NODE)));
 
-    @ServerCommand(type = Pair.class, serializer = VehiclePairSerializer.class)
-    public static final ListCommand<?, ?> CMD_GETVEHICLES = ListCommand.<MoverControllerTileEntity, Pair<BlockPos, String>>create("rftoolsbuilder.movercontroller.getVehicles",
+    @ServerCommand(type = String.class)
+    public static final ListCommand<?, ?> CMD_GETVEHICLES = ListCommand.<MoverControllerTileEntity, String>create("rftoolsbuilder.movercontroller.getVehicles",
             (te, player, params) -> te.getVehicles(),
             (te, player, params, list) -> GuiMoverController.setVehiclesFromServer(list));
 
-    @ServerCommand(type = String.class)
-    public static final ListCommand<?, ?> CMD_GETNODES = ListCommand.<MoverControllerTileEntity, String>create("rftoolsbuilder.movercontroller.getNodes",
+    @ServerCommand(type = Pair.class, serializer = NodePairSerializer.class)
+    public static final ListCommand<?, ?> CMD_GETNODES = ListCommand.<MoverControllerTileEntity, Pair<BlockPos, String>>create("rftoolsbuilder.movercontroller.getNodes",
             (te, player, params) -> te.getNodes(),
             (te, player, params, list) -> GuiMoverController.setNodesFromServer(list));
 
-    public static class VehiclePairSerializer implements ISerializer<Pair<BlockPos, String>> {
+    public static class NodePairSerializer implements ISerializer<Pair<BlockPos, String>> {
         @Override
         public Function<FriendlyByteBuf, Pair<BlockPos, String>> getDeserializer() {
             return buf -> Pair.of(buf.readBlockPos(), buf.readUtf(32767));
