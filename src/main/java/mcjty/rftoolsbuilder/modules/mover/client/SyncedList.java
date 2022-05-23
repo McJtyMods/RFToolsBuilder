@@ -16,13 +16,16 @@ public class SyncedList<T> {
 
     private final Runnable listRequester;
     private final Function<T, Panel> panelCreator;
-    private final boolean autoRefresh;
+    private final int refreshRate;
 
-    public SyncedList(WidgetList list, Runnable listRequester, Function<T, Panel> panelCreator, boolean autoRefresh) {
+    /**
+     * Use refreshRate equal to -1 to disable autorefresh
+     */
+    public SyncedList(WidgetList list, Runnable listRequester, Function<T, Panel> panelCreator, int refreshRate) {
         this.list = list;
         this.listRequester = listRequester;
         this.panelCreator = panelCreator;
-        this.autoRefresh = autoRefresh;
+        this.refreshRate = refreshRate;
     }
 
     public void setFromServerList(List<T> fromServerList) {
@@ -30,11 +33,11 @@ public class SyncedList<T> {
     }
 
     private void requestListIfNeeded() {
-        if (autoRefresh || fromServerList == null) {
+        if (refreshRate > 0 || fromServerList == null) {
             listDirty--;
             if (listDirty <= 0) {
                 listRequester.run();
-                listDirty = 10;
+                listDirty = refreshRate;
             }
         }
     }
@@ -48,6 +51,27 @@ public class SyncedList<T> {
 
     private boolean listReady() {
         return fromServerList != null;
+    }
+
+    public WidgetList getList() {
+        return list;
+    }
+
+    public T getSelected() {
+        int idx = list.getSelected();
+        if (idx < 0 || idx >= list.getChildCount()) {
+            return null;
+        }
+        return (T) list.getChild(idx).getUserObject();
+    }
+
+    public void select(T value) {
+        for (int i = 0 ; i < list.getChildCount() ; i++) {
+            if (list.getChild(i).getUserObject().equals(value)) {
+                list.selected(i);
+                return;
+            }
+        }
     }
 
     public void populateLists() {
@@ -65,7 +89,9 @@ public class SyncedList<T> {
         int sel = list.getSelected();
 
         for (T vehicle : fromServerList) {
-            list.children(panelCreator.apply(vehicle));
+            Panel panel = panelCreator.apply(vehicle);
+            panel.userObject(vehicle);
+            list.children(panel);
         }
 
         list.selected(sel);

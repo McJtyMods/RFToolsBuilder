@@ -4,18 +4,22 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
+import mcjty.lib.gui.events.SelectionEvent;
 import mcjty.lib.gui.widgets.Button;
 import mcjty.lib.gui.widgets.EnergyBar;
 import mcjty.lib.gui.widgets.Panel;
 import mcjty.lib.network.PacketGetListFromServer;
+import mcjty.lib.tileentity.ValueHolder;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -29,7 +33,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
     private EnergyBar energyBar;
 
-    private SyncedList<String> vehicleList;
+    private SyncedList<Pair<BlockPos, String>> vehicleList;
     private SyncedList<String> nodeList;
 
     public GuiMoverController(MoverControllerTileEntity builderTileEntity, GenericContainer container, Inventory inventory) {
@@ -59,12 +63,39 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
             vehicleList.refresh();
             nodeList.refresh();
         });
+        nodeList.getList().event(new SelectionEvent() {
+            @Override
+            public void select(int index) {
+                selectVehicle();
+            }
+
+            @Override
+            public void doubleClick(int index) {
+
+            }
+        });
+    }
+
+    @Override
+    public void onValueUpdated(ValueHolder value) {
+        if (value.key().name().equals("selectedVehicle")) {
+            vehicleList.select(tileEntity.getSelectedVehicle());
+        }
+    }
+
+    private void selectVehicle() {
+        Pair<BlockPos, String> selected = vehicleList.getSelected();
+        if (selected != null) {
+            sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_SELECTVEHICLE, TypedMap.builder()
+                    .put(MoverControllerTileEntity.SELECTED_NODE, selected.getLeft())
+                    .build());
+        }
     }
 
     private void initializeFields() {
         energyBar = window.findChild("energybar");
-        vehicleList = new SyncedList<>(window.findChild("vehicles"), this::requestVehicles, this::makeVehicleLine, false);
-        nodeList = new SyncedList<>(window.findChild("nodes"), this::requestNodes, this::makeNodeLine, false);
+        vehicleList = new SyncedList<>(window.findChild("vehicles"), this::requestVehicles, this::makeVehicleLine, -1);
+        nodeList = new SyncedList<>(window.findChild("nodes"), this::requestNodes, this::makeNodeLine, 20);
 
         updateFields();
     }
@@ -75,7 +106,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         nodeList.populateLists();
     }
 
-    public static void setVehiclesFromServer(List<String> vehicles) {
+    public static void setVehiclesFromServer(List<Pair<BlockPos, String>> vehicles) {
         if (Minecraft.getInstance().screen instanceof GuiMoverController gui) {
             gui.vehicleList.setFromServerList(vehicles);
         } else {
@@ -99,9 +130,9 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetListFromServer(tileEntity.getBlockPos(), CMD_GETNODES.name()));
     }
 
-    private Panel makeVehicleLine(String vehicle) {
+    private Panel makeVehicleLine(Pair<BlockPos, String> vehicle) {
         Panel panel = horizontal(0, 0).hint(0, 0, 100, 14);
-        panel.children(label(vehicle));
+        panel.children(label(vehicle.getValue()));
         return panel;
     }
 

@@ -3,7 +3,9 @@ package mcjty.rftoolsbuilder.modules.mover.blocks;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
+import mcjty.lib.bindings.GuiValue;
 import mcjty.lib.blockcommands.Command;
+import mcjty.lib.blockcommands.ISerializer;
 import mcjty.lib.blockcommands.ListCommand;
 import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
@@ -13,6 +15,8 @@ import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.GenericTileEntity;
+import mcjty.lib.typed.Key;
+import mcjty.lib.typed.Type;
 import mcjty.lib.varia.OrientationTools;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
@@ -26,16 +30,22 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
+import org.apache.commons.lang3.tuple.Pair;
+import org.checkerframework.checker.units.qual.K;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.empty;
 import static mcjty.lib.builder.TooltipBuilder.*;
@@ -58,6 +68,10 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     public static final int MAXSCAN = 512;  //@todo configurable
     private final Map<BlockPos, MoverGraphNode> nodes = new HashMap<>();
     private MoverGraphNode graph;
+
+    // For the gui: the selected vehicle
+    @GuiValue
+    private String selectedVehicle;
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
@@ -124,6 +138,21 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         tagCompound.put("graph", graphTag);
     }
 
+    private void selectVehicle(BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
+            ItemStack card = mover.getCard();
+            if (card.isEmpty()) {
+                selectedVehicle = null;
+            } else {
+                selectedVehicle = VehicleCard.getVehicleName(card);
+            }
+        }
+    }
+
+    public String getSelectedVehicle() {
+        return selectedVehicle;
+    }
+
     private void doScan() {
         setChanged();
         graph = new MoverGraphNode(worldPosition);
@@ -156,8 +185,8 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         }
     }
 
-    private List<String> getVehicles() {
-        List<String> vehicles = new ArrayList<>();
+    private List<Pair<BlockPos, String>> getVehicles() {
+        List<Pair<BlockPos, String>> vehicles = new ArrayList<>();
         nodes.forEach((pos, node) -> {
             if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
                 ItemStack card = mover.getCard();
@@ -166,7 +195,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
                     if (mover.isMoving()) {
                         name += " (M)";
                     }
-                    vehicles.add(name);
+                    vehicles.add(Pair.of(pos, name));
                 }
             }
         });
@@ -192,8 +221,13 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     @ServerCommand
     public static final Command<?> CMD_SCAN = Command.<MoverControllerTileEntity>create("scan", (te, player, params) -> te.doScan());
 
-    @ServerCommand(type = String.class)
-    public static final ListCommand<?, ?> CMD_GETVEHICLES = ListCommand.<MoverControllerTileEntity, String>create("rftoolsbuilder.movercontroller.getVehicles",
+
+    public static final Key<BlockPos> SELECTED_NODE = new Key<>("node", Type.BLOCKPOS);
+    @ServerCommand
+    public static final Command<?> CMD_SELECTVEHICLE = Command.<MoverControllerTileEntity>create("scan", (te, player, params) -> te.selectVehicle(params.get(SELECTED_NODE)));
+
+    @ServerCommand(type = Pair.class, serializer = VehiclePairSerializer.class)
+    public static final ListCommand<?, ?> CMD_GETVEHICLES = ListCommand.<MoverControllerTileEntity, Pair<BlockPos, String>>create("rftoolsbuilder.movercontroller.getVehicles",
             (te, player, params) -> te.getVehicles(),
             (te, player, params, list) -> GuiMoverController.setVehiclesFromServer(list));
 
@@ -201,4 +235,19 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     public static final ListCommand<?, ?> CMD_GETNODES = ListCommand.<MoverControllerTileEntity, String>create("rftoolsbuilder.movercontroller.getNodes",
             (te, player, params) -> te.getNodes(),
             (te, player, params, list) -> GuiMoverController.setNodesFromServer(list));
+
+    public static class VehiclePairSerializer implements ISerializer<Pair<BlockPos, String>> {
+        @Override
+        public Function<FriendlyByteBuf, Pair<BlockPos, String>> getDeserializer() {
+            return buf -> Pair.of(buf.readBlockPos(), buf.readUtf(32767));
+        }
+
+        @Override
+        public BiConsumer<FriendlyByteBuf, Pair<BlockPos, String>> getSerializer() {
+            return (buf, pair) -> {
+                buf.writeBlockPos(pair.getLeft());
+                buf.writeUtf(pair.getRight());
+            };
+        }
+    }
 }
