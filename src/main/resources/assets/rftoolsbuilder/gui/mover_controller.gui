@@ -15,6 +15,12 @@ window {
             tooltips('Scan for mover blocks')
         }
 
+        button('move','Move') {
+            channel('move')
+            hint(130,10,60,14)
+            tooltips('Move selected vehicle to selected node')
+        }
+
         panel('','horizontal') {
             hint(5,28,100,208)
             widgetlist('nodes') {

@@ -72,6 +72,7 @@ public class SyncedList<T> {
                 return;
             }
         }
+        list.selected(-1);
     }
 
     public void populateLists() {

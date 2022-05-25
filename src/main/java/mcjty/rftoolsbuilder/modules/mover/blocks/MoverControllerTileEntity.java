@@ -156,9 +156,14 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     }
 
     public void setSelectedVehicle(String vehicle) {
+        this.selectedVehicle = selectedVehicle;
         if (level.isClientSide) {
             GuiMoverController.setSelectedVehicle(vehicle);
         }
+    }
+
+    private void doMove(BlockPos pos, String vehicle) {
+
     }
 
     private void doScan() {
@@ -227,11 +232,14 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         return nodeNames;
     }
 
+    public static final Key<BlockPos> SELECTED_NODE = new Key<>("node", Type.BLOCKPOS);
+    public static final Key<String> SELECTED_VEHICLE = new Key<>("vehicle", Type.STRING);
+
     @ServerCommand
     public static final Command<?> CMD_SCAN = Command.<MoverControllerTileEntity>create("scan", (te, player, params) -> te.doScan());
+    @ServerCommand
+    public static final Command<?> CMD_MOVE = Command.<MoverControllerTileEntity>create("move", (te, player, params) -> te.doMove(params.get(SELECTED_NODE), params.get(SELECTED_VEHICLE)));
 
-
-    public static final Key<BlockPos> SELECTED_NODE = new Key<>("node", Type.BLOCKPOS);
     @ServerCommand
     public static final Command<?> CMD_SELECTNODE = Command.<MoverControllerTileEntity>create("selectNode", (te, player, params) -> te.selectNode(params.get(SELECTED_NODE)));
 

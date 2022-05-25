@@ -3,13 +3,13 @@ package mcjty.rftoolsbuilder.modules.mover.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
+import mcjty.lib.gui.GuiPopupTools;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.events.SelectionEvent;
 import mcjty.lib.gui.widgets.Button;
 import mcjty.lib.gui.widgets.EnergyBar;
 import mcjty.lib.gui.widgets.Panel;
 import mcjty.lib.network.PacketGetListFromServer;
-import mcjty.lib.tileentity.ValueHolder;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
@@ -57,21 +57,41 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
     }
 
     private void setupEvents() {
-        Button scanButton = window.findChild("scan");
-        scanButton.event(() -> {
-            sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_SCAN, TypedMap.EMPTY);
-            vehicleList.refresh();
-            nodeList.refresh();
-        });
+        window.<Button>findChild("scan").event(this::doScan);
+        window.<Button>findChild("move").event(this::doMove);
         nodeList.getList().event(new SelectionEvent() {
             @Override
             public void select(int index) {
-                selectNode();
             }
 
             @Override
-            public void doubleClick(int index) { }
+            public void doubleClick(int index) {
+                selectNode();
+            }
         });
+    }
+
+    private void doMove() {
+        if (nodeList.getSelected() == null) {
+            GuiPopupTools.showMessage(minecraft, this, getWindowManager(), 100, 100, "Please select a node!");
+            return;
+        }
+        if (vehicleList.getSelected() == null) {
+            GuiPopupTools.showMessage(minecraft, this, getWindowManager(), 100, 100, "Please select a vehicle!");
+            return;
+        }
+        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_MOVE, TypedMap.builder()
+                .put(MoverControllerTileEntity.SELECTED_NODE, nodeList.getSelected().getLeft())
+                .put(MoverControllerTileEntity.SELECTED_VEHICLE, vehicleList.getSelected())
+                .build());
+        vehicleList.refresh();
+        nodeList.refresh();
+    }
+
+    private void doScan() {
+        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_SCAN, TypedMap.EMPTY);
+        vehicleList.refresh();
+        nodeList.refresh();
     }
 
     private void selectNode() {
