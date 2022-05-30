@@ -41,12 +41,15 @@ import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -103,6 +106,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     public static final int SLOT_TAB = 0;
     public static final int SLOT_FILTER = 1;
+
+    public static final ResourceLocation DONT_REMOVE_ME = new ResourceLocation(RFToolsBuilder.MODID, "dontremoveme");
+    public static final TagKey<Block> DONT_REMOVE_ME_TAG = TagKey.create(Registry.BLOCK_REGISTRY, DONT_REMOVE_ME);
 
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(2)
             .slot(specific(s -> (s.getItem() instanceof ShapeCardItem) || (s.getItem() instanceof SpaceChamberCardItem)).in().out(), SLOT_TAB, 100, 10)
@@ -1084,6 +1090,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void clearOrDirtBlock(int rfNeeded, BlockPos spos, BlockState srcState, boolean clear) {
+        if (srcState.is(DONT_REMOVE_ME_TAG)) {
+            return;
+        }
         if (clear) {
             level.setBlock(spos, Blocks.AIR.defaultBlockState(), 2);
         } else {
