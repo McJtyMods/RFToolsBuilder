@@ -62,6 +62,7 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -104,6 +105,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     public static final int SLOT_TAB = 0;
     public static final int SLOT_FILTER = 1;
+
+    public static final ResourceLocation DONT_REMOVE_ME = new ResourceLocation(RFToolsBuilder.MODID, "dontremoveme");
 
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(2)
             .slot(specific(s -> (s.getItem() instanceof ShapeCardItem) || (s.getItem() instanceof SpaceChamberCardItem)).in().out(), SLOT_TAB, 100, 10)
@@ -1086,6 +1089,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void clearOrDirtBlock(int rfNeeded, BlockPos spos, BlockState srcState, boolean clear) {
+        if (srcState.getBlock().getTags().contains(DONT_REMOVE_ME)) {
+            return;
+        }
         if (clear) {
             level.setBlock(spos, Blocks.AIR.defaultBlockState(), 2);
         } else {
