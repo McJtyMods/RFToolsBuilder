@@ -8,10 +8,7 @@ import mcjty.rftoolsbuilder.modules.mover.blocks.InvisibleMoverBlock;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.blocks.VehicleBuilderTileEntity;
-import mcjty.rftoolsbuilder.modules.mover.client.GuiMover;
-import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
-import mcjty.rftoolsbuilder.modules.mover.client.GuiVehicleBuilder;
-import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
+import mcjty.rftoolsbuilder.modules.mover.client.*;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.setup.Config;
 import net.minecraft.world.inventory.MenuType;
@@ -49,11 +46,11 @@ public class MoverModule implements IModule {
 
     @Override
     public void init(FMLCommonSetupEvent event) {
-        MinecraftForge.EVENT_BUS.addListener(MoverRenderer::onCameraSetup);
     }
 
     @Override
     public void initClient(FMLClientSetupEvent event) {
+        ClientSetup.initClient();
         event.enqueueWork(() -> {
             GuiMover.register();
             GuiMoverController.register();
