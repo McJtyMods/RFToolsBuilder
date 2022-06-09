@@ -1,19 +1,19 @@
 package mcjty.rftoolsbuilder.modules.builder.items;
 
+import mcjty.lib.varia.ComponentFactory;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.shapes.Shape;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.Arrays;
@@ -151,7 +151,7 @@ public enum ShapeCardType {
         this.rfNeeded = rfNeeded;
         this.singleBlockHandler = singleBlockHandler;
         this.hudLogEntry = hudLogEntry;
-        this.information = Arrays.stream(information).map(a -> new TextComponent(ChatFormatting.WHITE.toString() + a)).collect(Collectors.toList());
+        this.information = Arrays.stream(information).map(a -> ComponentFactory.literal(ChatFormatting.WHITE.toString() + a)).collect(Collectors.toList());
     }
 
     public boolean isItem() {
@@ -193,9 +193,9 @@ public enum ShapeCardType {
 
     public void addInformation(List<Component> list) {
         list.addAll(information);
-        list.add(new TextComponent(ChatFormatting.GREEN + "Max area: " + BuilderConfiguration.maxBuilderDimension.get() + "x" + Math.min(256, BuilderConfiguration.maxBuilderDimension.get()) + "x" + BuilderConfiguration.maxBuilderDimension.get()));
-        list.add(new TextComponent(ChatFormatting.GREEN + "Base cost: " + rfNeeded.get() + " RF/t per block"));
-        list.add(new TextComponent(ChatFormatting.GREEN + (this == CARD_SHAPE ? "(final cost depends on infusion level)" : "(final cost depends on infusion level and block hardness)")));
+        list.add(ComponentFactory.literal(ChatFormatting.GREEN + "Max area: " + BuilderConfiguration.maxBuilderDimension.get() + "x" + Math.min(256, BuilderConfiguration.maxBuilderDimension.get()) + "x" + BuilderConfiguration.maxBuilderDimension.get()));
+        list.add(ComponentFactory.literal(ChatFormatting.GREEN + "Base cost: " + rfNeeded.get() + " RF/t per block"));
+        list.add(ComponentFactory.literal(ChatFormatting.GREEN + (this == CARD_SHAPE ? "(final cost depends on infusion level)" : "(final cost depends on infusion level and block hardness)")));
     }
 
     public boolean handleSingleBlock(BuilderTileEntity te, int rfNeeded, BlockPos srcPos, BlockState srcState, BlockState pickState) {

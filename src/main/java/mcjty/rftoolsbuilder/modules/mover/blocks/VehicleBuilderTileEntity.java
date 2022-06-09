@@ -12,6 +12,7 @@ import mcjty.lib.container.GenericItemHandler;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericTileEntity;
+import mcjty.lib.varia.ComponentFactory;
 import mcjty.lib.varia.LevelTools;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
@@ -22,7 +23,6 @@ import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
@@ -135,15 +135,15 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
 
     private boolean checkValid(Player player, BlockPos minCorner, BlockPos maxCorner) {
         if (maxCorner.getX() - minCorner.getX() >= MAXDIM) {
-            player.sendMessage(new TextComponent("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
+            player.sendMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
             return false;
         }
         if (maxCorner.getY() - minCorner.getY() >= MAXDIM) {
-            player.sendMessage(new TextComponent("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
+            player.sendMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
             return false;
         }
         if (maxCorner.getZ() - minCorner.getZ() >= MAXDIM) {
-            player.sendMessage(new TextComponent("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
+            player.sendMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
             return false;
         }
         return true;

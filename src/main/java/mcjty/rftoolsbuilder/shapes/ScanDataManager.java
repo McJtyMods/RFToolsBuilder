@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import mcjty.lib.varia.ComponentFactory;
 import mcjty.lib.varia.LevelTools;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.worlddata.AbstractWorldData;
@@ -11,7 +12,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -123,11 +123,11 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
             Scan scan = entry.getValue();
             BlockPos dim = scan.getDataDim();
             if (dim == null) {
-                sender.sendMessage(new TextComponent(
+                sender.sendMessage(ComponentFactory.literal(
                         ChatFormatting.YELLOW + "Scan: " + ChatFormatting.WHITE + scanid +
                                 ChatFormatting.RED + "   Invalid"), Util.NIL_UUID);
             } else {
-                sender.sendMessage(new TextComponent(
+                sender.sendMessage(ComponentFactory.literal(
                         ChatFormatting.YELLOW + "Scan: " + ChatFormatting.WHITE + scanid +
                                 ChatFormatting.YELLOW + "   Dim: " + ChatFormatting.WHITE + dim.getX() + "," + dim.getY() + "," + dim.getZ() +
                                 ChatFormatting.YELLOW + "   Size: " + ChatFormatting.WHITE + scan.getRledata().length + " bytes"), Util.NIL_UUID);

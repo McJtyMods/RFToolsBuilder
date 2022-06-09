@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.compat;
 
 import mcjty.lib.compat.theoneprobe.McJtyLibTOPDriver;
 import mcjty.lib.compat.theoneprobe.TOPDriver;
+import mcjty.lib.varia.ComponentFactory;
 import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
@@ -12,12 +13,11 @@ import mcjty.theoneprobe.api.CompoundText;
 import mcjty.theoneprobe.api.IProbeHitData;
 import mcjty.theoneprobe.api.IProbeInfo;
 import mcjty.theoneprobe.api.ProbeMode;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -92,15 +92,15 @@ public class RFToolsBuilderTOPDriver implements TOPDriver {
             Tools.safeConsume(world.getBlockEntity(data.getPos()), (ShieldProjectorTileEntity te) -> {
                 boolean composed = te.isShieldComposed();
                 if (composed) {
-                    probeInfo.text(CompoundText.create().label("Composed: ").info(new TextComponent("yes")));
+                    probeInfo.text(CompoundText.create().label("Composed: ").info(ComponentFactory.literal("yes")));
                 } else {
-                    probeInfo.text(CompoundText.create().label("Composed: ").info(new TextComponent("no")));
+                    probeInfo.text(CompoundText.create().label("Composed: ").info(ComponentFactory.literal("no")));
                 }
                 boolean active = te.isShieldActive();
                 if (active) {
-                    probeInfo.text(CompoundText.create().label("Active: ").info(new TextComponent("yes")));
+                    probeInfo.text(CompoundText.create().label("Active: ").info(ComponentFactory.literal("yes")));
                 } else {
-                    probeInfo.text(CompoundText.create().label("Active: ").info(new TextComponent("no")));
+                    probeInfo.text(CompoundText.create().label("Active: ").info(ComponentFactory.literal("no")));
                 }
             }, "Bad tile entity!");
         }

@@ -14,6 +14,7 @@ import mcjty.lib.gui.widgets.*;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
+import mcjty.lib.varia.ComponentFactory;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
@@ -98,7 +99,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
 
 
     public GuiShapeCard(boolean fromTE) {
-        super(new TextComponent("Shapecard"));
+        super(ComponentFactory.literal("Shapecard"));
         this.fromTE = fromTE;
     }
 

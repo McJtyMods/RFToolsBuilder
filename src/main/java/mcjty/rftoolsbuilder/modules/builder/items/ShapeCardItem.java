@@ -789,7 +789,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
     private static boolean validFile(Player player, String filename) {
         if (filename.contains("\\") || filename.contains("/") || filename.contains(":")) {
-            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Invalid filename '" + filename + "'! Cannot be a path!"), false);
+            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "Invalid filename '" + filename + "'! Cannot be a path!"), false);
             return false;
         }
         return true;
@@ -829,10 +829,10 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             byte[] encoded = Base64.getEncoder().encode(data);
             writer.write(new String(encoded));
         } catch (FileNotFoundException e) {
-            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Cannot write to file '" + filename + "'!"), false);
+            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "Cannot write to file '" + filename + "'!"), false);
             return;
         }
-        player.displayClientMessage(new TextComponent(ChatFormatting.GREEN + "Saved shape to file '" + file.getPath() + "'"), false);
+        player.displayClientMessage(ComponentFactory.literal(ChatFormatting.GREEN + "Saved shape to file '" + file.getPath() + "'"), false);
     }
 
     public static void load(Player player, ItemStack card, String filename) {
@@ -843,14 +843,14 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         Shape shape = ShapeCardItem.getShape(card);
 
         if (shape != Shape.SHAPE_SCAN) {
-            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "To load a file into this card you need a linked 'scan' type card!"), false);
+            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "To load a file into this card you need a linked 'scan' type card!"), false);
             return;
         }
 
         CompoundTag compound = card.getOrCreateTag();
         int scanId = compound.getInt("scanid");
         if (scanId == 0) {
-            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "This card is not linked to scan data!"), false);
+            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "This card is not linked to scan data!"), false);
             return;
         }
 
@@ -861,18 +861,18 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
             String s = reader.readLine();
             if (!"SHAPE".equals(s)) {
-                player.displayClientMessage(new TextComponent(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
                 return;
             }
             s = reader.readLine();
             if (!s.startsWith("DIM:")) {
-                player.displayClientMessage(new TextComponent(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
                 return;
             }
             BlockPos dim = parse(s.substring(4));
             s = reader.readLine();
             if (!s.startsWith("OFF:")) {
-                player.displayClientMessage(new TextComponent(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
                 return;
             }
             BlockPos off = parse(s.substring(4));
@@ -883,7 +883,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                 Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(split[0]));
                 int meta = Integer.parseInt(split[1]);
                 if (block == null) {
-                    player.displayClientMessage(new TextComponent(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);
+                    player.displayClientMessage(ComponentFactory.literal(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);
                     block = Blocks.STONE;
                     meta = 0;
                 }
@@ -896,16 +896,16 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
             setDataFromFile(scanId, card, dim, off, decoded, statePalette);
         } catch (IOException e) {
-            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
+            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
             return;
         } catch (NullPointerException e) {
-            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "File '" + filename + "' is too short!"), false);
+            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "File '" + filename + "' is too short!"), false);
             return;
         } catch (ArrayIndexOutOfBoundsException e) {
-            player.displayClientMessage(new TextComponent(ChatFormatting.RED + "File '" + filename + "' contains invalid entries!"), false);
+            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "File '" + filename + "' contains invalid entries!"), false);
             return;
         }
-        player.displayClientMessage(new TextComponent(ChatFormatting.GREEN + "Loaded shape from file '" + file.getPath() + "'"), false);
+        player.displayClientMessage(ComponentFactory.literal(ChatFormatting.GREEN + "Loaded shape from file '" + file.getPath() + "'"), false);
     }
 
     private static void setDataFromFile(int scanId, ItemStack card, BlockPos dimension, BlockPos offset, byte[] data, StatePalette palette) {
