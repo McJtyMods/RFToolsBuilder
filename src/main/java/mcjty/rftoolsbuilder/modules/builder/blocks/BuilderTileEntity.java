@@ -1068,7 +1068,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         try {
             SoundTools.playSound(world, sound.getPlaceSound(), x, y, z, 1.0f, 1.0f);
         } catch (Exception e) {
-            Logging.getLogger().error("Error getting soundtype from " + state.getBlock().getRegistryName() + "! Please report to the mod owner!");
+            Logging.getLogger().error("Error getting soundtype from " + Tools.getId(state) + "! Please report to the mod owner!");
         }
     }
 
@@ -1076,7 +1076,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         try {
             SoundTools.playSound(world, sound.getBreakSound(), x, y, z, 1.0f, 1.0f);
         } catch (Exception e) {
-            Logging.getLogger().error("Error getting soundtype from " + state.getBlock().getRegistryName() + "! Please report to the mod owner!");
+            Logging.getLogger().error("Error getting soundtype from " + Tools.getId(state) + "! Please report to the mod owner!");
         }
     }
 
@@ -1450,9 +1450,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private boolean checkValidItems(Block block, List<ItemStack> items) {
         for (ItemStack stack : items) {
             if ((!stack.isEmpty()) && stack.getItem() == null) {
-                Logging.logError("Builder tried to quarry " + block.getRegistryName().toString() + " and it returned null item!");
+                Logging.logError("Builder tried to quarry " + Tools.getId(block).toString() + " and it returned null item!");
                 Broadcaster.broadcast(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), "Builder tried to quarry "
-                                + block.getRegistryName().toString() + " and it returned null item!\nPlease report to mod author!",
+                                + Tools.getId(block).toString() + " and it returned null item!\nPlease report to mod author!",
                         10);
                 return false; // We don't wait for this. Just skip the item
             }

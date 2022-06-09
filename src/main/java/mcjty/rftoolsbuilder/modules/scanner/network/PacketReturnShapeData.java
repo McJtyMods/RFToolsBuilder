@@ -40,10 +40,10 @@ public class PacketReturnShapeData {
             buf.writeInt(statePalette.getPalette().size());
             for (BlockState state : statePalette.getPalette()) {
                 BlockState blockState = state;
-                if (blockState.getBlock().getRegistryName() == null) {
+                if (Tools.getId(blockState) == null) {
                     blockState = Blocks.STONE.defaultBlockState();
                 }
-                buf.writeUtf(blockState.getBlock().getRegistryName().toString());
+                buf.writeUtf(Tools.getId(blockState).toString());
                 //                buf.writeInt(state.getBlock().getMetaFromState(state));   // @todo 1.14 persist blockstate here!
             }
         }

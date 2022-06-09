@@ -1,8 +1,9 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
+import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -83,7 +84,7 @@ public class BlockInformation {
     @Nullable
     public static BlockInformation getBlockInformation(Block block) {
         initMap();
-        return blockInformationMap.get(block.getRegistryName());
+        return blockInformationMap.get(Tools.getId(block));
     }
 
     public SupportBlock.SupportStatus getBlockLevel() {

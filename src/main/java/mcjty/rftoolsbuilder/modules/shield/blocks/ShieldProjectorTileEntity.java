@@ -1089,7 +1089,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         ListTag list = new ListTag();
         for (BlockState state : blockStateTable) {
             CompoundTag tc = new CompoundTag();
-            tc.putString("b", state.getBlock().getRegistryName().toString());
+            tc.putString("b", Tools.getId(state).toString());
             list.add(tc);
         }
         tagCompound.put("gstates", list);

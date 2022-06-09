@@ -16,11 +16,9 @@ import mcjty.rftoolsbuilder.shapes.StatePalette;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
@@ -215,7 +213,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 //            tag.remove("ghost_meta");         // @todo 1.14 not more meta
         } else {
             Block block = Block.byItem(materialGhost.getItem());
-            tag.putString("ghost_block", block.getRegistryName().toString());
+            tag.putString("ghost_block", Tools.getId(block).toString());
 //                tag.putInt("ghost_meta", materialGhost.getMetadata());        // @todo 1.14 no more meta
         }
     }
@@ -820,7 +818,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             writer.println("DIM:" + dimension.getX() + "," + dimension.getY() + "," + dimension.getZ());
             writer.println("OFF:" + offset.getX() + "," + offset.getY() + "," + offset.getZ());
             for (BlockState state : statePalette.getPalette()) {
-                String r = state.getBlock().getRegistryName().toString();
+                String r = Tools.getId(state).toString();
 //                writer.println(r + "@" + state.getBlock().getMetaFromState(state));   // @todo 1.14 no more meta!
                 writer.println(r);
             }

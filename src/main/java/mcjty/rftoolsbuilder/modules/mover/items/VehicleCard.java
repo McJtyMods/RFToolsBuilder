@@ -3,7 +3,7 @@ package mcjty.rftoolsbuilder.modules.mover.items;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.tooltips.ITooltipSettings;
 import mcjty.lib.varia.NBTTools;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -11,7 +11,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -27,7 +26,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
-import static mcjty.lib.builder.TooltipBuilder.parameter;
 
 /**
  * A vehicle is stored in the card as a list of compounds with each compound equal to:
@@ -64,7 +62,7 @@ public class VehicleCard extends Item implements ITooltipSettings {
     @Override
     public void appendHoverText(@Nonnull ItemStack itemStack, Level world, @Nonnull List<Component> list, @Nonnull TooltipFlag flag) {
         super.appendHoverText(itemStack, world, list, flag);
-        tooltipBuilder.get().makeTooltip(getRegistryName(), itemStack, list, flag);
+        tooltipBuilder.get().makeTooltip(Tools.getId(this), itemStack, list, flag);
     }
 
     public static void storeVehicleInCard(ItemStack vehicleCard, Map<BlockState, List<Integer>> blocks, String vehicleName) {
