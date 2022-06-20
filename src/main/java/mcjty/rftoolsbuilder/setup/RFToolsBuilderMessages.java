@@ -8,9 +8,10 @@ import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnExtraData;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnShapeData;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
+import mcjty.rftoolsbuilder.modules.shield.network.PackertNotifyServerClientReady;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
@@ -45,6 +46,7 @@ public class RFToolsBuilderMessages {
         net.registerMessage(id(), PacketOpenCardGuiFromBuilder.class, PacketOpenCardGuiFromBuilder::toBytes, PacketOpenCardGuiFromBuilder::new, PacketOpenCardGuiFromBuilder::handle);
         net.registerMessage(id(), PacketOpenBuilderGui.class, PacketOpenBuilderGui::toBytes, PacketOpenBuilderGui::new, PacketOpenBuilderGui::handle);
         net.registerMessage(id(), PacketGrabbedEntitiesToClient.class, PacketGrabbedEntitiesToClient::toBytes, PacketGrabbedEntitiesToClient::new, PacketGrabbedEntitiesToClient::handle);
+        net.registerMessage(id(), PackertNotifyServerClientReady.class, PackertNotifyServerClientReady::toBytes, PackertNotifyServerClientReady::new, PackertNotifyServerClientReady::handle);
 
         net.registerMessage(id(), PacketRequestDataFromServer.class, PacketRequestDataFromServer::toBytes, PacketRequestDataFromServer::new, new ChannelBoundHandler<>(net, PacketRequestDataFromServer::handle));
 

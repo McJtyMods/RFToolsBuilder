@@ -26,6 +26,8 @@ import mcjty.rftoolsbuilder.modules.shield.*;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldRenderData;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
+import mcjty.rftoolsbuilder.modules.shield.network.PackertNotifyServerClientReady;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -581,8 +583,12 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 
         if (needsUpdate) {
             updateShield();
-            setChanged();
+            markDirtyClient();
         }
+    }
+
+    public void clientIsReady() {
+        updateShield();
     }
 
     private int getRfPerTick() {
@@ -718,7 +724,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             if (idx != -1) {
                 shieldBlocks.remove(idx);
             }
-            getLevel().setBlock(pos, templateState, 2);
+            getLevel().setBlock(pos, templateState, Block.UPDATE_CLIENTS);
         } else {
             Logging.message(player, ChatFormatting.YELLOW + "The selected shield can't do anything with this block!");
             return;
@@ -790,7 +796,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             pp.set(cx, cy, cz);
             Block block = getLevel().getBlockState(pp).getBlock();
             if (getLevel().isEmptyBlock(pp) || block instanceof ShieldingBlock) {
-                getLevel().setBlock(new BlockPos(pp), templateState, 2);
+                getLevel().setBlock(new BlockPos(pp), templateState, Block.UPDATE_CLIENTS);
             } else if (templateState.getMaterial() != Material.AIR) {
                 if (!isShapedShield()) {
                     // No room, just spawn the block
@@ -942,6 +948,10 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         }
 
         renderData = null;
+
+        // We got our render data on the client. Notify the server so that the
+        // server can make sure the shield blocks know this
+        RFToolsBuilderMessages.INSTANCE.sendToServer(new PackertNotifyServerClientReady(worldPosition));
     }
 
     @Override
