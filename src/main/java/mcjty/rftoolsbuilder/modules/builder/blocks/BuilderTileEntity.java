@@ -1743,7 +1743,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 // This block can't be placed
                 return;
             }
-            destWorld.setBlock(destPos, newState, Block.UPDATE_ALL);  // placeBlockAt can reset the orientation. Restore it here
+            if (!destWorld.getBlockState(destPos).isAir()) {
+                destWorld.setBlock(destPos, newState, Block.UPDATE_ALL);  // placeBlockAt can reset the orientation. Restore it here
+            }
 
             if (!ItemStack.matches(consumedStack, takeableItem.peek())) { // Did we actually use up whatever we were holding?
                 if (!consumedStack.isEmpty()) { // Are we holding something else that we should put back?

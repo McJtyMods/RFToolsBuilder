@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem with the builder when copying a wither structure it would duplicate one wither skull
+
 1.18-4.0.12:
 - Fixed a problem on servers
 
