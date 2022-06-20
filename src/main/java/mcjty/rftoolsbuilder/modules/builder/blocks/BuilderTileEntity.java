@@ -323,7 +323,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
             BlockPos p = entry.getKey();
             if (level.isEmptyBlock(p)) {
-                level.setBlock(p, state, 2);
+                level.setBlock(p, state, Block.UPDATE_CLIENTS);
             }
         }
     }
@@ -364,10 +364,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                             error = SupportBlock.SupportStatus.max(error1, error2);
                         }
                         if (isEmpty(srcState, srcBlock) && !isEmpty(dstState, dstBlock)) {
-                            world.setBlock(src, BuilderModule.SUPPORT.get().defaultBlockState().setValue(SupportBlock.STATUS, error), 3);
+                            world.setBlock(src, BuilderModule.SUPPORT.get().defaultBlockState().setValue(SupportBlock.STATUS, error), Block.UPDATE_ALL);
                         }
                         if (isEmpty(dstState, dstBlock) && !isEmpty(srcState, srcBlock)) {
-                            world.setBlock(dest, BuilderModule.SUPPORT.get().defaultBlockState().setValue(SupportBlock.STATUS, error), 3);
+                            world.setBlock(dest, BuilderModule.SUPPORT.get().defaultBlockState().setValue(SupportBlock.STATUS, error), Block.UPDATE_ALL);
                         }
                     }
                 }
@@ -1094,9 +1094,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return;
         }
         if (clear) {
-            level.setBlock(spos, Blocks.AIR.defaultBlockState(), 2);
+            level.setBlock(spos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
         } else {
-            level.setBlock(spos, getReplacementBlock(), 2);       // No block update!
+            level.setBlock(spos, getReplacementBlock(), Block.UPDATE_CLIENTS);       // No block update!
         }
         energyStorage.consumeEnergy(rfNeeded);
         if (!silent) {
@@ -1264,7 +1264,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 // We assume here the liquid is placable.
                 Block block = fluid.defaultFluidState().createLegacyBlock().getBlock();   // @todo 1.14 check blockstate
                 Player fakePlayer = harvester.get();
-                level.setBlock(srcPos, block.defaultBlockState(), 11);
+                level.setBlock(srcPos, block.defaultBlockState(), Block.UPDATE_ALL_IMMEDIATE);
 
                 if (!silent) {
                     SoundType soundType = block.getSoundType(block.defaultBlockState(), level, srcPos, fakePlayer);
@@ -1314,9 +1314,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                     boolean clear = getCardType().isClearing();
                     FluidTools.pickupFluidBlock(level, srcPos, s -> true, () -> {
                         if (clear) {
-                            level.setBlock(srcPos, Blocks.AIR.defaultBlockState(), 2);
+                            level.setBlock(srcPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
                         } else {
-                            level.setBlock(srcPos, getReplacementBlock(), 2);       // No block update!
+                            level.setBlock(srcPos, getReplacementBlock(), Block.UPDATE_CLIENTS);       // No block update!
                         }
                     });
                     if (!silent) {
@@ -1703,9 +1703,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     private void clearBlock(Level world, BlockPos pos) {
         if (supportMode) {
-            world.setBlock(pos, BuilderModule.SUPPORT.get().defaultBlockState(), 3);
+            world.setBlock(pos, BuilderModule.SUPPORT.get().defaultBlockState(), Block.UPDATE_ALL);
         } else {
-            world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            world.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         }
     }
 
@@ -1743,7 +1743,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 // This block can't be placed
                 return;
             }
-            destWorld.setBlock(destPos, newState, 3);  // placeBlockAt can reset the orientation. Restore it here
+            destWorld.setBlock(destPos, newState, Block.UPDATE_ALL);  // placeBlockAt can reset the orientation. Restore it here
 
             if (!ItemStack.matches(consumedStack, takeableItem.peek())) { // Did we actually use up whatever we were holding?
                 if (!consumedStack.isEmpty()) { // Are we holding something else that we should put back?
@@ -1892,7 +1892,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
             clearBlock(srcWorld, srcPos);
 
-            destWorld.setBlock(destPos, srcState, 3);
+            destWorld.setBlock(destPos, srcState, Block.UPDATE_ALL);
             if (srcTileEntity != null) {
                 setTileEntityNBT(destWorld, tc, destPos, srcState);
             }
@@ -1958,23 +1958,23 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         destWorld.setBlockAndUpdate(dstPos, Blocks.AIR.defaultBlockState());
 
         BlockState newDstState = oldSrcState;
-        destWorld.setBlock(dstPos, newDstState, 3);
+        destWorld.setBlock(dstPos, newDstState, Block.UPDATE_ALL);
 //        destWorld.setBlockMetadataWithNotify(destX, destY, destZ, srcMeta, 3);
         if (srcTileEntity != null) {
             srcTileEntity.clearRemoved();
             destWorld.setBlockEntity(srcTileEntity);
             srcTileEntity.setChanged();
-            destWorld.sendBlockUpdated(dstPos, newDstState, newDstState, 3);
+            destWorld.sendBlockUpdated(dstPos, newDstState, newDstState, Block.UPDATE_ALL);
         }
 
         BlockState newSrcState = oldDstState;
-        srcWorld.setBlock(srcPos, newSrcState, 3);
+        srcWorld.setBlock(srcPos, newSrcState, Block.UPDATE_ALL);
 //        world.setBlockMetadataWithNotify(x, y, z, dstMeta, 3);
         if (dstTileEntity != null) {
             dstTileEntity.clearRemoved();
             srcWorld.setBlockEntity(dstTileEntity);
             dstTileEntity.setChanged();
-            srcWorld.sendBlockUpdated(srcPos, newSrcState, newSrcState, 3);
+            srcWorld.sendBlockUpdated(srcPos, newSrcState, newSrcState, Block.UPDATE_ALL);
         }
 
         if (!silent) {
