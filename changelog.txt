@@ -1,4 +1,4 @@
-Upcoming:
+1.18-4.0.13:
 - Fixed a problem with the builder when copying a wither structure it would duplicate one wither skull
 - Blocks with the tag 'dontremoveme' didn't let the Builder consume power
 - Fixed the shield not updating when redstone is toggled
