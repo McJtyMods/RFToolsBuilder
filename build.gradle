@@ -5,6 +5,7 @@ buildscript {
         maven { url = 'https://maven.minecraftforge.net/' }
         maven { url = 'https://maven.parchmentmc.org' }
         maven { url 'https://plugins.gradle.org/m2/' }
+        jcenter()
         mavenCentral()
     }
     dependencies {
@@ -105,17 +106,23 @@ dependencies {
     if (findProject(':TheOneProbe') != null) {
         implementation project(':TheOneProbe')
     } else {
-        implementation(fg.deobf(project.dependencies.create("mcjty.theoneprobe:theoneprobe:${top_version}"))){transitive = false}
+        implementation fg.deobf(project.dependencies.create("mcjty.theoneprobe:theoneprobe:${top_version}") {
+            transitive = false
+        })
     }
     if (findProject(':McJtyLib') != null) {
         implementation project(':McJtyLib')
     } else {
-        implementation(fg.deobf(project.dependencies.create("com.github.mcjty:mcjtylib:${mcjtylib_version}"))){transitive = false}
+        implementation fg.deobf (project.dependencies.create("com.github.mcjty:mcjtylib:${mcjtylib_version}") {
+            transitive = false
+        })
     }
     if (findProject(':RFToolsBase') != null) {
         implementation project(':RFToolsBase')
     } else {
-        implementation(fg.deobf(project.dependencies.create("com.github.mcjty:rftoolsbase:${rftoolsbase_version}"))){transitive = false}
+        implementation fg.deobf (project.dependencies.create("com.github.mcjty:rftoolsbase:${rftoolsbase_version}") {
+            transitive = false
+        })
     }
     //deobfCompile "com.github.mcjty:intwheel:${intwheel_version}"
     //deobfCompile "com.github.mcjty:rftools:1.12-7.50"
