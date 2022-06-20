@@ -719,9 +719,14 @@ public class ShieldProjectorTileEntity extends GenericTileEntity implements ISma
 
         if (needsUpdate) {
             updateShield();
-            setChanged();
+            markDirtyClient();
         }
     }
+
+    public void clientIsReady() {
+        updateShield();
+    }
+
 
     private int getRfPerTick() {
         int rf = calculateRfPerTick();

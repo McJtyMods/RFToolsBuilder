@@ -7,6 +7,7 @@ import mcjty.rftoolsbuilder.modules.builder.network.*;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnExtraData;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnShapeData;
+import mcjty.rftoolsbuilder.modules.shield.network.PackertNotifyServerClientReady;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -43,6 +44,7 @@ public class RFToolsBuilderMessages {
         net.registerMessage(id(), PacketCloseContainerAndOpenCardGui.class, PacketCloseContainerAndOpenCardGui::toBytes, PacketCloseContainerAndOpenCardGui::new, PacketCloseContainerAndOpenCardGui::handle);
         net.registerMessage(id(), PacketOpenCardGuiFromBuilder.class, PacketOpenCardGuiFromBuilder::toBytes, PacketOpenCardGuiFromBuilder::new, PacketOpenCardGuiFromBuilder::handle);
         net.registerMessage(id(), PacketOpenBuilderGui.class, PacketOpenBuilderGui::toBytes, PacketOpenBuilderGui::new, PacketOpenBuilderGui::handle);
+        net.registerMessage(id(), PackertNotifyServerClientReady.class, PackertNotifyServerClientReady::toBytes, PackertNotifyServerClientReady::new, PackertNotifyServerClientReady::handle);
 
         net.registerMessage(id(), PacketRequestDataFromServer.class, PacketRequestDataFromServer::toBytes, PacketRequestDataFromServer::new, new ChannelBoundHandler<>(net, PacketRequestDataFromServer::handle));
 
