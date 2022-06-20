@@ -1,5 +1,6 @@
 Upcoming:
 - Fixed a problem with the builder when copying a wither structure it would duplicate one wither skull
+- Blocks with the tag 'dontremoveme' didn't let the Builder consume power
 
 1.16-3.1.10:
 - Added a new block tag rftoolsbuilder:dontremoveme which the Builder will respect and in which case the Builder will not remove the block (or replace with dirt)
