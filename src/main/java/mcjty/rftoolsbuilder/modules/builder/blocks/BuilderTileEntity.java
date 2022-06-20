@@ -321,7 +321,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
             BlockPos p = entry.getKey();
             if (level.isEmptyBlock(p)) {
-                level.setBlock(p, state, 2);
+                level.setBlock(p, state, Constants.BlockFlags.BLOCK_UPDATE);
             }
         }
     }
@@ -362,10 +362,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                             error = SupportBlock.SupportStatus.max(error1, error2);
                         }
                         if (isEmpty(srcState, srcBlock) && !isEmpty(dstState, dstBlock)) {
-                            world.setBlock(src, BuilderModule.SUPPORT.get().defaultBlockState().setValue(SupportBlock.STATUS, error), 3);
+                            world.setBlock(src, BuilderModule.SUPPORT.get().defaultBlockState().setValue(SupportBlock.STATUS, error), Constants.BlockFlags.DEFAULT);
                         }
                         if (isEmpty(dstState, dstBlock) && !isEmpty(srcState, srcBlock)) {
-                            world.setBlock(dest, BuilderModule.SUPPORT.get().defaultBlockState().setValue(SupportBlock.STATUS, error), 3);
+                            world.setBlock(dest, BuilderModule.SUPPORT.get().defaultBlockState().setValue(SupportBlock.STATUS, error), Constants.BlockFlags.DEFAULT);
                         }
                     }
                 }
@@ -1093,9 +1093,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return;
         }
         if (clear) {
-            level.setBlock(spos, Blocks.AIR.defaultBlockState(), 2);
+            level.setBlock(spos, Blocks.AIR.defaultBlockState(), Constants.BlockFlags.BLOCK_UPDATE);
         } else {
-            level.setBlock(spos, getReplacementBlock(), 2);       // No block update!
+            level.setBlock(spos, getReplacementBlock(), Constants.BlockFlags.BLOCK_UPDATE);       // No block update!
         }
         energyStorage.consumeEnergy(rfNeeded);
         if (!silent) {
@@ -1263,7 +1263,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 // We assume here the liquid is placable.
                 Block block = fluid.defaultFluidState().createLegacyBlock().getBlock();   // @todo 1.14 check blockstate
                 PlayerEntity fakePlayer = harvester.get();
-                level.setBlock(srcPos, block.defaultBlockState(), 11);
+                level.setBlock(srcPos, block.defaultBlockState(), Constants.BlockFlags.DEFAULT_AND_RERENDER);
 
                 if (!silent) {
                     SoundType soundType = block.getSoundType(block.defaultBlockState(), level, srcPos, fakePlayer);
@@ -1313,9 +1313,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                     boolean clear = getCardType().isClearing();
                     FluidTools.pickupFluidBlock(level, srcPos, s -> true, () -> {
                         if (clear) {
-                            level.setBlock(srcPos, Blocks.AIR.defaultBlockState(), 2);
+                            level.setBlock(srcPos, Blocks.AIR.defaultBlockState(), Constants.BlockFlags.BLOCK_UPDATE);
                         } else {
-                            level.setBlock(srcPos, getReplacementBlock(), 2);       // No block update!
+                            level.setBlock(srcPos, getReplacementBlock(), Constants.BlockFlags.BLOCK_UPDATE);       // No block update!
                         }
                     });
                     if (!silent) {
@@ -1706,9 +1706,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     private void clearBlock(World world, BlockPos pos) {
         if (supportMode) {
-            world.setBlock(pos, BuilderModule.SUPPORT.get().defaultBlockState(), 3);
+            world.setBlock(pos, BuilderModule.SUPPORT.get().defaultBlockState(), Constants.BlockFlags.DEFAULT);
         } else {
-            world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            world.setBlock(pos, Blocks.AIR.defaultBlockState(), Constants.BlockFlags.DEFAULT);
         }
     }
 
@@ -1748,7 +1748,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 // This block can't be placed
                 return;
             }
-            destWorld.setBlock(destPos, newState, 3);  // placeBlockAt can reset the orientation. Restore it here
+            destWorld.setBlock(destPos, newState, Constants.BlockFlags.DEFAULT);  // placeBlockAt can reset the orientation. Restore it here
 
             if (!ItemStack.matches(consumedStack, takeableItem.peek())) { // Did we actually use up whatever we were holding?
                 if (!consumedStack.isEmpty()) { // Are we holding something else that we should put back?
@@ -1898,7 +1898,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
             clearBlock(srcWorld, srcPos);
 
-            destWorld.setBlock(destPos, srcState, 3);
+            destWorld.setBlock(destPos, srcState, Constants.BlockFlags.DEFAULT);
             if (srcTileEntity != null) {
                 setTileEntityNBT(destWorld, tc, destPos, srcState);
             }
@@ -1919,7 +1919,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (tileEntity != null) {
             destWorld.getChunk(destpos).setBlockEntity(destpos, tileEntity);
             tileEntity.setChanged();
-            destWorld.sendBlockUpdated(destpos, newDestState, newDestState, 3);
+            destWorld.sendBlockUpdated(destpos, newDestState, newDestState, Constants.BlockFlags.DEFAULT);
         }
     }
 
@@ -1963,23 +1963,23 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         destWorld.setBlockAndUpdate(dstPos, Blocks.AIR.defaultBlockState());
 
         BlockState newDstState = oldSrcState;
-        destWorld.setBlock(dstPos, newDstState, 3);
-//        destWorld.setBlockMetadataWithNotify(destX, destY, destZ, srcMeta, 3);
+        destWorld.setBlock(dstPos, newDstState, Constants.BlockFlags.DEFAULT);
+//        destWorld.setBlockMetadataWithNotify(destX, destY, destZ, srcMeta, BlockFlags.DEFAULT);
         if (srcTileEntity != null) {
             srcTileEntity.clearRemoved();
             destWorld.setBlockEntity(dstPos, srcTileEntity);
             srcTileEntity.setChanged();
-            destWorld.sendBlockUpdated(dstPos, newDstState, newDstState, 3);
+            destWorld.sendBlockUpdated(dstPos, newDstState, newDstState, Constants.BlockFlags.DEFAULT);
         }
 
         BlockState newSrcState = oldDstState;
-        srcWorld.setBlock(srcPos, newSrcState, 3);
-//        world.setBlockMetadataWithNotify(x, y, z, dstMeta, 3);
+        srcWorld.setBlock(srcPos, newSrcState, Constants.BlockFlags.DEFAULT);
+//        world.setBlockMetadataWithNotify(x, y, z, dstMeta, BlockFlags.DEFAULT);
         if (dstTileEntity != null) {
             dstTileEntity.clearRemoved();
             srcWorld.setBlockEntity(srcPos, dstTileEntity);
             dstTileEntity.setChanged();
-            srcWorld.sendBlockUpdated(srcPos, newSrcState, newSrcState, 3);
+            srcWorld.sendBlockUpdated(srcPos, newSrcState, newSrcState, Constants.BlockFlags.DEFAULT);
         }
 
         if (!silent) {
