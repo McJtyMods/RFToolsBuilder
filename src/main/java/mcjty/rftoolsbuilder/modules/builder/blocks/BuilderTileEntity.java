@@ -1091,6 +1091,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     private void clearOrDirtBlock(int rfNeeded, BlockPos spos, BlockState srcState, boolean clear) {
         energyStorage.consumeEnergy(rfNeeded);
+        if (!silent) {
+            SoundType soundType = srcState.getBlock().getSoundType(srcState, level, spos, null);
+            playBreakSoundSafe(soundType, level, srcState, spos.getX(), spos.getY(), spos.getZ());
+        }
         if (srcState.is(DONT_REMOVE_ME_TAG)) {
             return;
         }
@@ -1098,10 +1102,6 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             level.setBlock(spos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
         } else {
             level.setBlock(spos, getReplacementBlock(), Block.UPDATE_CLIENTS);       // No block update!
-        }
-        if (!silent) {
-            SoundType soundType = srcState.getBlock().getSoundType(srcState, level, spos, null);
-            playBreakSoundSafe(soundType, level, srcState, spos.getX(), spos.getY(), spos.getZ());
         }
     }
 
