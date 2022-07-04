@@ -62,7 +62,7 @@
   "message.rftoolsbuilder.space_chamber_card.extra": "(final cost depends on infusion level)",
 
   "message.rftoolsbuilder.shape_card.warning": "Disabled in config!",
-  "message.rftoolsbuilder.shape_card.header": "This card represents an area that can be used by the shield or builder. Sneak right click on builder to start mark mode, then right click to mark two corners of wanted area",
+  "message.rftoolsbuilder.shape_card.header": "This card represents an area that can be used by the shield or builder. Sneak right click on builder or shield projector to start mark mode, then right click to mark two corners of wanted area",
   "message.rftoolsbuilder.shape_card.shape": "Shape: ",
   "message.rftoolsbuilder.shape_card.dimension": "Dimension: ",
   "message.rftoolsbuilder.shape_card.offset": "Offset: ",
