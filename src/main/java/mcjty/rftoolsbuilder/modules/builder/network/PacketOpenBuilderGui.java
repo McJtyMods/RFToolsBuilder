@@ -35,7 +35,7 @@ public class PacketOpenBuilderGui {
                 return;
             }
             te.getCapability(CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY).ifPresent(h -> {
-                NetworkHooks.openGui(ctx.getSender(), h, pos);
+                NetworkHooks.openScreen(ctx.getSender(), h, pos);
             });
         });
         ctx.setPacketHandled(true);
