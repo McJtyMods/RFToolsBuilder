@@ -150,7 +150,7 @@ public class MoverTileEntity extends TickingTileEntity {
                 logic.tryMoveVehicleClientEntities(partialTicks);
 
             }, this::isMoverThere);
-            DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec) -> {
+            DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec, renderType) -> {
                 float partialTicks = MoverRenderer.getPartialTicks();
                 Vec3 offset = logic.tryMoveVehicleThisPlayer(partialTicks);
 //                logic.tryMoveVehicleClientEntities(partialTicks + dpartial);
@@ -158,7 +158,7 @@ public class MoverTileEntity extends TickingTileEntity {
 //                    dpartial = partialTicks-prevPartialTicks;
 //                }
 //                prevPartialTicks = partialTicks;
-                MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle, partialTicks, offset);
+                MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle, partialTicks, offset, renderType);
             }, this::isMoverThere);
         }
     }

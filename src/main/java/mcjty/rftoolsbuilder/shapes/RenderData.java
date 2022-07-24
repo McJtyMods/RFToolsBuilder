@@ -151,7 +151,8 @@ public class RenderData {
         public void performRenderToList() {
             vboBuffer.end();
 //            vboBuffer.reset();
-            vbo.upload(vboBuffer);
+            // @todo 1.19
+//            vbo.upload(vboBuffer);
             vboBuffer.clear();
         }
     }

@@ -54,7 +54,7 @@ public class ShieldingBlock extends Block implements EntityBlock {
                 .noOcclusion()
                 .isRedstoneConductor((state, world, pos) -> false)
                 .strength(-1.0F, 3600000.0F)
-                .noDrops());
+                .noLootTable());
         registerDefaultState(defaultBlockState()
                 .setValue(BLOCKED_ITEMS, false)
                 .setValue(BLOCKED_PASSIVE, false)

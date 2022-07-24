@@ -73,12 +73,13 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.common.world.ForgeChunkManager;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
@@ -832,7 +833,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (bottles > 0) {
             if (insertItem(new ItemStack(Items.EXPERIENCE_BOTTLE, bottles)).isEmpty()) {
                 collectXP = collectXP % 7;
-                ((ServerLevel) world).removeEntity(orb);
+                orb.kill();
                 energyStorage.consumeEnergy(rfNeeded);
             } else {
                 collectXP = 0;
@@ -858,7 +859,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
         energyStorage.consumeEnergy(rfNeeded);
 
-        ((ServerLevel) world).removeEntity(item);
+        item.kill();
         stack = insertItem(stack);
         if (!stack.isEmpty()) {
             BlockPos position = item.blockPosition();
@@ -1258,8 +1259,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
 
             Fluid fluid = stack.getFluid();
-            if (fluid.getAttributes().doesVaporize(level, srcPos, stack) && level.dimensionType().ultraWarm()) {
-                fluid.getAttributes().vaporize(null, level, srcPos, stack);
+            if (fluid.getFluidType().isVaporizedOnPlacement(level, srcPos, stack) && level.dimensionType().ultraWarm()) {
+                fluid.getFluidType().onVaporize(null, level, srcPos, stack);
             } else {
                 // We assume here the liquid is placable.
                 Block block = fluid.defaultFluidState().createLegacyBlock().getBlock();   // @todo 1.14 check blockstate

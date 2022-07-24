@@ -33,7 +33,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.locale.Language;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -560,7 +559,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
             int x = GuiTools.getRelativeX(this);
             int y = GuiTools.getRelativeY(this);
             // @todo check on 1.16
-            List<FormattedText> properties = tooltips.stream().map(TextComponent::new).collect(Collectors.toList());
+            List<FormattedText> properties = tooltips.stream().map(ComponentFactory::literal).collect(Collectors.toList());
             List<FormattedCharSequence> processors = Language.getInstance().getVisualOrder(properties);
             renderTooltip(matrixStack, processors, x - guiLeft, y - guiTop);
         }

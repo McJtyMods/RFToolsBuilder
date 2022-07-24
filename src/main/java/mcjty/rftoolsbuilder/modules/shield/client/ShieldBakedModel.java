@@ -6,6 +6,8 @@ import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
 import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingTileEntity;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -13,7 +15,8 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.model.data.IModelData;
+import net.minecraftforge.client.model.data.ModelData;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,26 +47,26 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
         }
     }
 
-    @Nonnull
     @Override
-    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
+    @NotNull
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand, @NotNull ModelData extraData, @Nullable RenderType renderType) {
         initTextures();
         ShieldRenderingMode mode = state.getValue(ShieldingBlock.RENDER_MODE);
         return switch (mode) {
             case INVISIBLE -> Collections.emptyList();
             case SHIELD -> getQuadsShield(side, extraData);
-            case MIMIC -> getQuadsMimic(state, side, rand, extraData);
+            case MIMIC -> getQuadsMimic(state, side, rand, extraData, renderType);
             case TRANSP -> getQuadsTextured(side, shieldtransparent, extraData);
             case SOLID -> getQuadsTextured(side, shieldfull, extraData);
         };
     }
 
-    private List<BakedQuad> getQuadsShield(@Nullable Direction side, IModelData extraData) {
+    private List<BakedQuad> getQuadsShield(@Nullable Direction side, ModelData extraData) {
         List<BakedQuad> quads = new ArrayList<>();
         if (side != null) {
-            Integer iconTopdown = extraData.getData(ShieldingTileEntity.ICON_TOPDOWN);
-            Integer iconSide = extraData.getData(ShieldingTileEntity.ICON_SIDE);
-            ShieldRenderData renderData = extraData.getData(ShieldingTileEntity.RENDER_DATA);
+            Integer iconTopdown = extraData.get(ShieldingTileEntity.ICON_TOPDOWN);
+            Integer iconSide = extraData.get(ShieldingTileEntity.ICON_SIDE);
+            ShieldRenderData renderData = extraData.get(ShieldingTileEntity.RENDER_DATA);
             if (renderData == null) {
                 return quads;
             }
@@ -84,10 +87,10 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
         return quads;
     }
 
-    private List<BakedQuad> getQuadsTextured(@Nullable Direction side, TextureAtlasSprite texture, IModelData extraData) {
+    private List<BakedQuad> getQuadsTextured(@Nullable Direction side, TextureAtlasSprite texture, ModelData extraData) {
         List<BakedQuad> quads = new ArrayList<>();
         if (side != null) {
-            ShieldRenderData renderData = extraData.getData(ShieldingTileEntity.RENDER_DATA);
+            ShieldRenderData renderData = extraData.get(ShieldingTileEntity.RENDER_DATA);
             if (renderData == null) {
                 return quads;
             }
@@ -108,8 +111,9 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
     }
 
 
-    private List<BakedQuad> getQuadsMimic(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, IModelData extraData) {
-        BlockState camo = extraData.getData(ShieldingTileEntity.MIMIC);
+    private List<BakedQuad> getQuadsMimic(@Nullable BlockState state, @Nullable Direction side, @Nonnull RandomSource rand, ModelData extraData,
+                                          @Nullable RenderType renderType) {
+        BlockState camo = extraData.get(ShieldingTileEntity.MIMIC);
         if (camo == null) {
             return Collections.emptyList();
         }
@@ -121,7 +125,7 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
 //        }
         BakedModel model = getModel(camo);
         try {
-            return model.getQuads(state, side, rand, null);
+            return model.getQuads(state, side, rand, ModelData.EMPTY, renderType);
         } catch (Exception e) {
             return Collections.emptyList();
         }

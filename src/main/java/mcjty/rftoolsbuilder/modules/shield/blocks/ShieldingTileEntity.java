@@ -11,9 +11,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.ModelDataManager;
-import net.minecraftforge.client.model.data.IModelData;
-import net.minecraftforge.client.model.data.ModelDataMap;
+import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 
 import javax.annotation.Nonnull;
@@ -52,7 +50,7 @@ public class ShieldingTileEntity extends BlockEntity {
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
         load(pkt.getTag());
-        ModelDataManager.requestModelDataRefresh(this);
+        requestModelDataUpdate();
         BlockState state = level.getBlockState(worldPosition);
         level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_ALL);
     }
@@ -80,7 +78,7 @@ public class ShieldingTileEntity extends BlockEntity {
 
     @Nonnull
     @Override
-    public IModelData getModelData() {
+    public ModelData getModelData() {
         int x = worldPosition.getX();
         int y = worldPosition.getY();
         int z = worldPosition.getZ();
@@ -93,11 +91,11 @@ public class ShieldingTileEntity extends BlockEntity {
                 renderData = shield.getRenderData();
             }
         }
-        return new ModelDataMap.Builder()
-                .withInitial(ICON_SIDE, side)
-                .withInitial(ICON_TOPDOWN, topdown)
-                .withInitial(MIMIC, mimic)
-                .withInitial(RENDER_DATA, renderData)
+        return ModelData.builder()
+                .with(ICON_SIDE, side)
+                .with(ICON_TOPDOWN, topdown)
+                .with(MIMIC, mimic)
+                .with(RENDER_DATA, renderData)
                 .build();
     }
 

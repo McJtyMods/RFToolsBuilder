@@ -6,7 +6,6 @@ import mcjty.lib.varia.Logging;
 import mcjty.lib.worlddata.AbstractWorldData;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -123,14 +122,14 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
             Scan scan = entry.getValue();
             BlockPos dim = scan.getDataDim();
             if (dim == null) {
-                sender.sendMessage(ComponentFactory.literal(
+                sender.sendSystemMessage(ComponentFactory.literal(
                         ChatFormatting.YELLOW + "Scan: " + ChatFormatting.WHITE + scanid +
-                                ChatFormatting.RED + "   Invalid"), Util.NIL_UUID);
+                                ChatFormatting.RED + "   Invalid"));
             } else {
-                sender.sendMessage(ComponentFactory.literal(
+                sender.sendSystemMessage(ComponentFactory.literal(
                         ChatFormatting.YELLOW + "Scan: " + ChatFormatting.WHITE + scanid +
                                 ChatFormatting.YELLOW + "   Dim: " + ChatFormatting.WHITE + dim.getX() + "," + dim.getY() + "," + dim.getZ() +
-                                ChatFormatting.YELLOW + "   Size: " + ChatFormatting.WHITE + scan.getRledata().length + " bytes"), Util.NIL_UUID);
+                                ChatFormatting.YELLOW + "   Size: " + ChatFormatting.WHITE + scan.getRledata().length + " bytes"));
             }
         }
     }

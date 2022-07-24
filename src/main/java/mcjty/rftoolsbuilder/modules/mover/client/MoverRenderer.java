@@ -6,6 +6,7 @@ import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
@@ -13,8 +14,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.EntityViewRenderEvent;
-import net.minecraftforge.client.model.data.EmptyModelData;
+import net.minecraftforge.client.event.ViewportEvent;
+import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -30,7 +31,8 @@ public class MoverRenderer {
         return Minecraft.getInstance().getFrameTime();
     }
 
-    public static void actualRender(MoverTileEntity mover, @NotNull PoseStack matrixStack, Vec3 cameraPos, ItemStack card, float partialTicks, Vec3 offset) {
+    public static void actualRender(MoverTileEntity mover, @NotNull PoseStack matrixStack, Vec3 cameraPos, ItemStack card, float partialTicks, Vec3 offset,
+                                    RenderType renderType) {
         matrixStack.pushPose();
         Level level = mover.getLevel();
         Vec3 current = mover.getLogic().getMovingPosition(partialTicks, level.getGameTime());
@@ -46,7 +48,7 @@ public class MoverRenderer {
                 BlockPos realPos = new BlockPos(current.x, current.y, current.z).offset(pos.getX(), pos.getY(), pos.getZ());
                 int lightColor = LevelRenderer.getLightColor(level, realPos);
 
-                blockRenderer.renderSingleBlock(state, matrixStack, buffer, lightColor, OverlayTexture.NO_OVERLAY, EmptyModelData.INSTANCE);
+                blockRenderer.renderSingleBlock(state, matrixStack, buffer, lightColor, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, renderType);
                 matrixStack.popPose();
             });
         });
@@ -80,7 +82,7 @@ public class MoverRenderer {
     /**
      * Hook to allow us to move the entities very early in rendering (before entities are rendered)
      */
-    public static void onCameraSetup(EntityViewRenderEvent.CameraSetup event) {
+    public static void onCameraSetup(ViewportEvent.ComputeCameraAngles event) {
         preRender();
     }
 }

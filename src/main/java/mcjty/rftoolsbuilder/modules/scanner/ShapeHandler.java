@@ -9,7 +9,7 @@ public class ShapeHandler {
 
     @SubscribeEvent
     public void onWorldTick(TickEvent.LevelTickEvent event) {
-        if (event.phase == TickEvent.Phase.START && event.world.dimension().equals(Level.OVERWORLD)) {
+        if (event.phase == TickEvent.Phase.START && event.level.dimension().equals(Level.OVERWORLD)) {
             ShapeDataManagerServer.handleWork();
         }
     }

@@ -135,15 +135,15 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
 
     private boolean checkValid(Player player, BlockPos minCorner, BlockPos maxCorner) {
         if (maxCorner.getX() - minCorner.getX() >= MAXDIM) {
-            player.sendMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
+            player.sendSystemMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"));
             return false;
         }
         if (maxCorner.getY() - minCorner.getY() >= MAXDIM) {
-            player.sendMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
+            player.sendSystemMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"));
             return false;
         }
         if (maxCorner.getZ() - minCorner.getZ() >= MAXDIM) {
-            player.sendMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"), Util.NIL_UUID);
+            player.sendSystemMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"));
             return false;
         }
         return true;
