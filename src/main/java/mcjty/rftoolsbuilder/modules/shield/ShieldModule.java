@@ -27,10 +27,10 @@ import static mcjty.rftoolsbuilder.setup.Registration.*;
 
 public class ShieldModule implements IModule {
 
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK1 = BLOCKS.register("shield_block1", () -> new ShieldProjectorBlock(ShieldModule::createProjector1, ShieldConfiguration.maxShieldSize.get()));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK2 = BLOCKS.register("shield_block2", () -> new ShieldProjectorBlock(ShieldModule::createProjector2, ShieldConfiguration.maxShieldSize.get() * 4));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK3 = BLOCKS.register("shield_block3", () -> new ShieldProjectorBlock(ShieldModule::createProjector3, ShieldConfiguration.maxShieldSize.get() * 16));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK4 = BLOCKS.register("shield_block4", () -> new ShieldProjectorBlock(ShieldModule::createProjector4, ShieldConfiguration.maxShieldSize.get() * 128));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK1 = BLOCKS.register("shield_block1", () -> new ShieldProjectorBlock(ShieldModule::createProjector1, ShieldConfiguration.maxShieldSize));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK2 = BLOCKS.register("shield_block2", () -> new ShieldProjectorBlock(ShieldModule::createProjector2, () -> ShieldConfiguration.maxShieldSize.get() * 4));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK3 = BLOCKS.register("shield_block3", () -> new ShieldProjectorBlock(ShieldModule::createProjector3, () -> ShieldConfiguration.maxShieldSize.get() * 16));
+    public static final RegistryObject<BaseBlock> SHIELD_BLOCK4 = BLOCKS.register("shield_block4", () -> new ShieldProjectorBlock(ShieldModule::createProjector4, () -> ShieldConfiguration.maxShieldSize.get() * 128));
     public static final RegistryObject<Item> SHIELD_BLOCK1_ITEM = ITEMS.register("shield_block1", () -> new BlockItem(SHIELD_BLOCK1.get(), Registration.createStandardProperties()));
     public static final RegistryObject<Item> SHIELD_BLOCK2_ITEM = ITEMS.register("shield_block2", () -> new BlockItem(SHIELD_BLOCK2.get(), Registration.createStandardProperties()));
     public static final RegistryObject<Item> SHIELD_BLOCK3_ITEM = ITEMS.register("shield_block3", () -> new BlockItem(SHIELD_BLOCK3.get(), Registration.createStandardProperties()));

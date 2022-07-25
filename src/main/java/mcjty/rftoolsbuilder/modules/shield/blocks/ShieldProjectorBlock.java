@@ -28,18 +28,19 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 
 public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIngredient {
 
-    public ShieldProjectorBlock(BlockEntityType.BlockEntitySupplier<BlockEntity> te, int max) {
+    public ShieldProjectorBlock(BlockEntityType.BlockEntitySupplier<BlockEntity> te, Supplier<Integer> max) {
         super(new BlockBuilder()
                 .manualEntry(ManualHelper.create("rftoolsbuilder:shield/shield_intro"))
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
                 .info(key("message.rftoolsbuilder.shiftmessage"))
-                .infoShift(header(), gold(), parameter("info", stack -> Integer.toString(max)))
+                .infoShift(header(), gold(), parameter("info", stack -> Integer.toString(max.get())))
                 .tileEntitySupplier(te));
     }
 
