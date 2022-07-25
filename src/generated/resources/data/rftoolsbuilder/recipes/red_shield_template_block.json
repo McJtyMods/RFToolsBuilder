@@ -1,23 +1,23 @@
 {
   "type": "minecraft:crafting_shaped",
+  "key": {
+    "G": {
+      "tag": "forge:glass"
+    },
+    "l": {
+      "tag": "forge:dyes/red"
+    },
+    "w": {
+      "tag": "minecraft:wool"
+    }
+  },
   "pattern": [
     "www",
     "lGl",
     "www"
   ],
-  "key": {
-    "w": {
-      "tag": "minecraft:wool"
-    },
-    "l": {
-      "tag": "forge:dyes/red"
-    },
-    "G": {
-      "tag": "forge:glass"
-    }
-  },
   "result": {
-    "item": "rftoolsbuilder:red_shield_template_block",
-    "count": 8
+    "count": 8,
+    "item": "rftoolsbuilder:red_shield_template_block"
   }
 }

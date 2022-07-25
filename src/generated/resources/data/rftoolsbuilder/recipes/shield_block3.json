@@ -1,21 +1,21 @@
 {
   "type": "mcjtylib:copy_nbt",
+  "key": {
+    "M": {
+      "item": "rftoolsbuilder:shield_block2"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "s": {
+      "item": "rftoolsbase:dimensionalshard"
+    }
+  },
   "pattern": [
     "sOs",
     "OMO",
     "sOs"
   ],
-  "key": {
-    "M": {
-      "item": "rftoolsbuilder:shield_block2"
-    },
-    "s": {
-      "item": "rftoolsbase:dimensionalshard"
-    },
-    "O": {
-      "item": "minecraft:obsidian"
-    }
-  },
   "result": {
     "item": "rftoolsbuilder:shield_block3"
   }

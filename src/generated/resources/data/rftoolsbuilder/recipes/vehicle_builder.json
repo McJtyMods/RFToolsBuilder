@@ -1,25 +1,28 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "B": {
-      "item": "minecraft:bricks"
+    "C": {
+      "item": "minecraft:minecart"
     },
     "F": {
       "item": "rftoolsbase:machine_frame"
     },
-    "o": {
-      "tag": "forge:ender_pearls"
+    "T": {
+      "item": "minecraft:redstone_torch"
+    },
+    "i": {
+      "tag": "forge:ingots/iron"
     },
     "r": {
       "item": "minecraft:redstone"
     }
   },
   "pattern": [
-    "BoB",
+    "iCi",
     "rFr",
-    "BrB"
+    "iTi"
   ],
   "result": {
-    "item": "rftoolsbuilder:builder"
+    "item": "rftoolsbuilder:vehicle_builder"
   }
 }

@@ -1,23 +1,23 @@
 {
   "type": "minecraft:crafting_shaped",
+  "key": {
+    "G": {
+      "tag": "forge:glass"
+    },
+    "l": {
+      "tag": "forge:dyes/blue"
+    },
+    "w": {
+      "tag": "minecraft:wool"
+    }
+  },
   "pattern": [
     "www",
     "lGl",
     "www"
   ],
-  "key": {
-    "w": {
-      "tag": "minecraft:wool"
-    },
-    "l": {
-      "tag": "forge:dyes/blue"
-    },
-    "G": {
-      "tag": "forge:glass"
-    }
-  },
   "result": {
-    "item": "rftoolsbuilder:blue_shield_template_block",
-    "count": 8
+    "count": 8,
+    "item": "rftoolsbuilder:blue_shield_template_block"
   }
 }

@@ -1,18 +1,18 @@
 {
   "type": "mcjtylib:copy_nbt",
+  "key": {
+    "D": {
+      "item": "minecraft:dirt"
+    },
+    "M": {
+      "item": "rftoolsbuilder:shape_card_quarry_clear_fortune"
+    }
+  },
   "pattern": [
     "DDD",
     "DMD",
     "DDD"
   ],
-  "key": {
-    "M": {
-      "item": "rftoolsbuilder:shape_card_quarry_clear_fortune"
-    },
-    "D": {
-      "item": "minecraft:dirt"
-    }
-  },
   "result": {
     "item": "rftoolsbuilder:shape_card_quarry_fortune"
   }

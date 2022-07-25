@@ -2,19 +2,21 @@ package mcjty.rftoolsbuilder.modules.shield.client;
 
 import mcjty.lib.client.AbstractDynamicBakedModel;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
 import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingTileEntity;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 
@@ -136,6 +138,21 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
         return Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(facadeState);
     }
 
+    private static final ChunkRenderTypeSet RT_TRANSLUCENT = ChunkRenderTypeSet.of(RenderType.translucent());
+    private static final ChunkRenderTypeSet RT_CUTOUT = ChunkRenderTypeSet.of(RenderType.cutout());
+    private static final ChunkRenderTypeSet RT_SOLID = ChunkRenderTypeSet.of(RenderType.solid());
+
+    @Override
+    @Nonnull
+    public ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData data) {
+        if (state.getBlock() == ShieldModule.SHIELDING_SOLID.get()) {
+            return RT_SOLID;
+        } else if (state.getBlock() == ShieldModule.SHIELDING_TRANSLUCENT.get()) {
+            return RT_TRANSLUCENT;
+        } else {
+            return RT_CUTOUT;
+        }
+    }
 
     @Nonnull
     @Override

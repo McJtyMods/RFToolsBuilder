@@ -1,18 +1,18 @@
 {
   "type": "mcjtylib:copy_nbt",
+  "key": {
+    "G": {
+      "tag": "forge:glass"
+    },
+    "M": {
+      "item": "rftoolsbuilder:shape_card_pump"
+    }
+  },
   "pattern": [
     "GGG",
     "GMG",
     "GGG"
   ],
-  "key": {
-    "M": {
-      "item": "rftoolsbuilder:shape_card_pump"
-    },
-    "G": {
-      "tag": "forge:glass"
-    }
-  },
   "result": {
     "item": "rftoolsbuilder:shape_card_pump_clear"
   }

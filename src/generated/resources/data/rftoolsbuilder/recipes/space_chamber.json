@@ -1,21 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "xGx",
-    "GFG",
-    "xGx"
-  ],
   "key": {
-    "x": {
-      "tag": "forge:dyes/blue"
-    },
     "F": {
       "item": "rftoolsbase:machine_frame"
     },
     "G": {
       "tag": "forge:glass"
+    },
+    "x": {
+      "tag": "forge:dyes/blue"
     }
   },
+  "pattern": [
+    "xGx",
+    "GFG",
+    "xGx"
+  ],
   "result": {
     "item": "rftoolsbuilder:space_chamber"
   }

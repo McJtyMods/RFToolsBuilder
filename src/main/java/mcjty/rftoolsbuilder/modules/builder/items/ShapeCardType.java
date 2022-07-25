@@ -9,6 +9,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,10 +28,10 @@ public enum ShapeCardType {
 
     CARD_SHAPE("def", false, false, false, BuilderTileEntity::buildBlock, null,
             () -> BuilderConfiguration.builderRfPerOperation.get(),
-            "This item can be configured as a shape. You",
+            () -> new String[] {"This item can be configured as a shape. You",
             "can then use it in the shield projector to make",
             "a shield of that shape or in the builder to",
-            "actually build the shape") {
+            "actually build the shape"}) {
         @Override
         public void addHudLog(List<String> list, IItemHandler inventory) {
             list.add("    Shape card");
@@ -46,62 +47,62 @@ public enum ShapeCardType {
 
     CARD_VOID("void", false, false, false, BuilderTileEntity::voidBlock, "    Void mode",
             () -> (BuilderConfiguration.builderRfPerQuarry.get() * (int) (double) BuilderConfiguration.voidShapeCardFactor.get()),
-            "This item will cause the builder to void",
-            "all blocks in the configured space."),
+            () -> new String[] {"This item will cause the builder to void",
+            "all blocks in the configured space."}),
 
     CARD_QUARRY("quarry", true, false, false, BuilderTileEntity::quarryBlock, "    Normal quarry",
             () -> BuilderConfiguration.builderRfPerQuarry.get(),
-            "This item will cause the builder to quarry",
+            () -> new String[] {"This item will cause the builder to quarry",
             "all blocks in the configured space and replace",
-            "them with " + getDirtOrCobbleName() + "."),
+            "them with " + getDirtOrCobbleName() + "."}),
 
     CARD_QUARRY_SILK("quarry_silk", true, false, false, BuilderTileEntity::silkQuarryBlock, "    Silktouch quarry",
             () -> (int) (BuilderConfiguration.builderRfPerQuarry.get() * BuilderConfiguration.silkquarryShapeCardFactor.get()),
-            "This item will cause the builder to quarry",
+            () -> new String[] {"This item will cause the builder to quarry",
             "all blocks in the configured space and replace",
             "them with " + getDirtOrCobbleName() + ".",
-            "Blocks are harvested with silk touch"),
+            "Blocks are harvested with silk touch"}),
 
     CARD_QUARRY_FORTUNE("quarry_fortune", true, false, true, BuilderTileEntity::quarryBlock, "    Fortune quarry",
             () -> (int) (BuilderConfiguration.builderRfPerQuarry.get() * BuilderConfiguration.fortunequarryShapeCardFactor.get()),
-            "This item will cause the builder to quarry",
+            () -> new String[] {"This item will cause the builder to quarry",
             "all blocks in the configured space and replace",
             "them with " + getDirtOrCobbleName() + ".",
-            "Blocks are harvested with fortune"),
+            "Blocks are harvested with fortune"}),
 
     CARD_QUARRY_CLEAR("quarry_clear", true, true, false, BuilderTileEntity::quarryBlock, "    Normal quarry",
             () -> BuilderConfiguration.builderRfPerQuarry.get(),
-            "This item will cause the builder to quarry",
-            "all blocks in the configured space"),
+            () -> new String[] {"This item will cause the builder to quarry",
+            "all blocks in the configured space"}),
 
     CARD_QUARRY_CLEAR_SILK("quarry_clear_silk", true, true, false, BuilderTileEntity::silkQuarryBlock, "    Silktouch quarry",
             () -> (int) (BuilderConfiguration.builderRfPerQuarry.get() * BuilderConfiguration.silkquarryShapeCardFactor.get()),
-            "This item will cause the builder to quarry",
+            () -> new String[] {"This item will cause the builder to quarry",
             "all blocks in the configured space.",
-            "Blocks are harvested with silk touch"),
+            "Blocks are harvested with silk touch"}),
 
     CARD_QUARRY_CLEAR_FORTUNE("quarry_clear_fortune", true, true, true, BuilderTileEntity::quarryBlock, "    Fortune quarry",
             () -> (int) (BuilderConfiguration.builderRfPerQuarry.get() * BuilderConfiguration.fortunequarryShapeCardFactor.get()),
-            "This item will cause the builder to quarry",
+            () -> new String[] {"This item will cause the builder to quarry",
             "all blocks in the configured space.",
-            "Blocks are harvested with fortune"),
+            "Blocks are harvested with fortune"}),
 
     CARD_PUMP("pump", false, false, false, BuilderTileEntity::pumpBlock, "    Pump",
             () -> BuilderConfiguration.builderRfPerLiquid.get(),
-            "This item will cause the builder to collect",
+            () -> new String[] {"This item will cause the builder to collect",
             "all liquids in the configured space.",
-            "The liquid will be replaced with " + getDirtOrCobbleName() + "."),
+            "The liquid will be replaced with " + getDirtOrCobbleName() + "."}),
 
     CARD_PUMP_CLEAR("pump_clear", false, true, false, BuilderTileEntity::pumpBlock, "    Pump",
             () -> BuilderConfiguration.builderRfPerLiquid.get(),
-            "This item will cause the builder to collect",
+            () -> new String[] {"This item will cause the builder to collect",
             "all liquids in the configured space.",
-            "The liquid will be removed from the world"),
+            "The liquid will be removed from the world"}),
 
     CARD_PUMP_LIQUID("liquid", false, false, false, BuilderTileEntity::placeLiquidBlock, "    Place liquids",
             () -> BuilderConfiguration.builderRfPerLiquid.get(),
-            "This item will cause the builder to place",
-            "liquids from an tank on top/bottom into the world.");
+            () -> new String[] {"This item will cause the builder to place",
+            "liquids from an tank on top/bottom into the world."});
 
     private static String getDirtOrCobbleName() {
         // @todo 1.14, re-evaluate
@@ -122,7 +123,7 @@ public enum ShapeCardType {
     private final boolean quarry;
     private final boolean clearing;
     private final boolean fortune;
-    private final List<Component> information;
+    private final Supplier<String[]> information;
     private final String resourceSuffix;
 
 //    private static final Map<Integer, ShapeCardType> SHAPE_TYPE_MAP;
@@ -139,10 +140,10 @@ public enum ShapeCardType {
 //    }
 
     private ShapeCardType() {
-        this(null, false, false, false, BuilderTileEntity::suspend, null, () -> 0);
+        this(null, false, false, false, BuilderTileEntity::suspend, null, () -> 0, () -> new String[]{});
     }
 
-    private ShapeCardType(String resourceSuffix, boolean quarry, boolean clearing, boolean fortune, SingleBlockHandler singleBlockHandler, String hudLogEntry, Supplier<Integer> rfNeeded, String... information) {
+    private ShapeCardType(String resourceSuffix, boolean quarry, boolean clearing, boolean fortune, SingleBlockHandler singleBlockHandler, String hudLogEntry, Supplier<Integer> rfNeeded, Supplier<String[]> information) {
         this.resourceSuffix = resourceSuffix;
         this.modelResourceLocation = resourceSuffix == null ? null : new ModelResourceLocation(RFToolsBuilder.MODID + ":shape_card_" + resourceSuffix, "inventory");
         this.quarry = quarry;
@@ -151,7 +152,7 @@ public enum ShapeCardType {
         this.rfNeeded = rfNeeded;
         this.singleBlockHandler = singleBlockHandler;
         this.hudLogEntry = hudLogEntry;
-        this.information = Arrays.stream(information).map(a -> ComponentFactory.literal(ChatFormatting.WHITE.toString() + a)).collect(Collectors.toList());
+        this.information = information;
     }
 
     public boolean isItem() {
@@ -192,7 +193,8 @@ public enum ShapeCardType {
     }
 
     public void addInformation(List<Component> list) {
-        list.addAll(information);
+        List<MutableComponent> info = Arrays.stream(information.get()).map(a -> ComponentFactory.literal(ChatFormatting.WHITE.toString() + a)).collect(Collectors.toList());
+        list.addAll(info);
         list.add(ComponentFactory.literal(ChatFormatting.GREEN + "Max area: " + BuilderConfiguration.maxBuilderDimension.get() + "x" + Math.min(256, BuilderConfiguration.maxBuilderDimension.get()) + "x" + BuilderConfiguration.maxBuilderDimension.get()));
         list.add(ComponentFactory.literal(ChatFormatting.GREEN + "Base cost: " + rfNeeded.get() + " RF/t per block"));
         list.add(ComponentFactory.literal(ChatFormatting.GREEN + (this == CARD_SHAPE ? "(final cost depends on infusion level)" : "(final cost depends on infusion level and block hardness)")));

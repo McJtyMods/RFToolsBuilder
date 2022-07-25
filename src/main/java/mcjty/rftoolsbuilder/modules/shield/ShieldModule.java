@@ -4,7 +4,6 @@ import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbuilder.modules.shield.blocks.*;
-import mcjty.rftoolsbuilder.modules.shield.client.ClientSetup;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldModelLoader;
 import mcjty.rftoolsbuilder.setup.Config;
@@ -15,10 +14,10 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
 
@@ -117,8 +116,6 @@ public class ShieldModule implements IModule {
         event.enqueueWork(() -> {
             GuiShield.register();
         });
-
-        ClientSetup.initClient();
     }
 
     @Override

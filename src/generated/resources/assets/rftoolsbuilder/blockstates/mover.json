@@ -4,9 +4,9 @@
       "model": "rftoolsbuilder:block/mover",
       "x": 90
     },
-    "facing=up": {
+    "facing=east": {
       "model": "rftoolsbuilder:block/mover",
-      "x": -90
+      "y": 90
     },
     "facing=north": {
       "model": "rftoolsbuilder:block/mover"
@@ -15,13 +15,13 @@
       "model": "rftoolsbuilder:block/mover",
       "y": 180
     },
+    "facing=up": {
+      "model": "rftoolsbuilder:block/mover",
+      "x": -90
+    },
     "facing=west": {
       "model": "rftoolsbuilder:block/mover",
       "y": 270
-    },
-    "facing=east": {
-      "model": "rftoolsbuilder:block/mover",
-      "y": 90
     }
   }
 }

@@ -1,5 +1,9 @@
 {
   "variants": {
+    "facing=east": {
+      "model": "rftoolsbuilder:block/builder",
+      "y": 90
+    },
     "facing=north": {
       "model": "rftoolsbuilder:block/builder"
     },
@@ -10,10 +14,6 @@
     "facing=west": {
       "model": "rftoolsbuilder:block/builder",
       "y": 270
-    },
-    "facing=east": {
-      "model": "rftoolsbuilder:block/builder",
-      "y": 90
     }
   }
 }

@@ -21,10 +21,10 @@ public class BlockStates extends BaseBlockStateProvider {
 
     @Override
     protected void registerStatesAndModels() {
-        singleTextureBlock(ShieldModule.TEMPLATE_BLUE.get(), "blue_shield_template", "block/shieldtemplate");
-        singleTextureBlock(ShieldModule.TEMPLATE_RED.get(), "red_shield_template", "block/shieldtemplate1");
-        singleTextureBlock(ShieldModule.TEMPLATE_GREEN.get(), "green_shield_template", "block/shieldtemplate2");
-        singleTextureBlock(ShieldModule.TEMPLATE_YELLOW.get(), "yellow_shield_template", "block/shieldtemplate3");
+        singleTextureBlockC(ShieldModule.TEMPLATE_BLUE.get(), "blue_shield_template", "block/shieldtemplate", builder -> builder.renderType("cutout"));
+        singleTextureBlockC(ShieldModule.TEMPLATE_RED.get(), "red_shield_template", "block/shieldtemplate1", builder -> builder.renderType("cutout"));
+        singleTextureBlockC(ShieldModule.TEMPLATE_GREEN.get(), "green_shield_template", "block/shieldtemplate2", builder -> builder.renderType("cutout"));
+        singleTextureBlockC(ShieldModule.TEMPLATE_YELLOW.get(), "yellow_shield_template", "block/shieldtemplate3", builder -> builder.renderType("cutout"));
 
         horizontalOrientedBlock(BuilderModule.BUILDER.get(), frontBasedModel("builder", modLoc("block/machinebuilder")));
         singleTextureBlock(BuilderModule.SPACE_CHAMBER.get(), "space_chamber", "block/machinespacechamber");
@@ -34,9 +34,9 @@ public class BlockStates extends BaseBlockStateProvider {
         orientedBlock(MoverModule.MOVER_CONTROLLER.get(), frontBasedModel("mover_controller", modLoc("block/machinemovercontroller")));
         orientedBlock(MoverModule.VEHICLE_BUILDER.get(), frontBasedModel("vehicle_builder", modLoc("block/machinevehiclebuilder")));
 
-        BlockModelBuilder support0 = models().cubeAll("supportblock_status0", modLoc("block/supportblock"));
-        BlockModelBuilder support1 = models().cubeAll("supportblock_status1", modLoc("block/supportyellowblock"));
-        BlockModelBuilder support2 = models().cubeAll("supportblock_status2", modLoc("block/supportredblock"));
+        BlockModelBuilder support0 = models().cubeAll("supportblock_status0", modLoc("block/supportblock")).renderType("translucent");
+        BlockModelBuilder support1 = models().cubeAll("supportblock_status1", modLoc("block/supportyellowblock")).renderType("translucent");
+        BlockModelBuilder support2 = models().cubeAll("supportblock_status2", modLoc("block/supportredblock")).renderType("translucent");
         VariantBlockStateBuilder builder = getVariantBuilder(BuilderModule.SUPPORT.get());
         builder.partialState().with(SupportBlock.STATUS, SupportBlock.SupportStatus.STATUS_OK)
                 .modelForState().modelFile(support0)

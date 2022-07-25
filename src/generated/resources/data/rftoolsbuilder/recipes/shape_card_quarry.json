@@ -1,27 +1,27 @@
 {
   "type": "mcjtylib:copy_nbt",
-  "pattern": [
-    "rPr",
-    "iMi",
-    "rSr"
-  ],
   "key": {
+    "M": {
+      "item": "rftoolsbuilder:shape_card_def"
+    },
     "P": {
       "item": "minecraft:diamond_pickaxe"
     },
     "S": {
       "item": "minecraft:diamond_shovel"
     },
-    "M": {
-      "item": "rftoolsbuilder:shape_card_def"
+    "i": {
+      "tag": "forge:ingots/iron"
     },
     "r": {
       "item": "minecraft:redstone"
-    },
-    "i": {
-      "tag": "forge:ingots/iron"
     }
   },
+  "pattern": [
+    "rPr",
+    "iMi",
+    "rSr"
+  ],
   "result": {
     "item": "rftoolsbuilder:shape_card_quarry"
   }

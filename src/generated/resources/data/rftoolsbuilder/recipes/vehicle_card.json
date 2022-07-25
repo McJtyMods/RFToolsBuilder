@@ -1,11 +1,8 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "B": {
-      "item": "minecraft:bricks"
-    },
-    "i": {
-      "tag": "forge:ingots/iron"
+    "C": {
+      "item": "minecraft:minecart"
     },
     "p": {
       "item": "minecraft:paper"
@@ -15,11 +12,11 @@
     }
   },
   "pattern": [
-    "pBp",
-    "rir",
-    "pBp"
+    " C ",
+    "rpr",
+    " r "
   ],
   "result": {
-    "item": "rftoolsbuilder:shape_card_def"
+    "item": "rftoolsbuilder:vehicle_card"
   }
 }

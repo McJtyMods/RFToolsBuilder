@@ -9,7 +9,6 @@ import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerBlock;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.client.BuilderRenderer;
-import mcjty.rftoolsbuilder.modules.builder.client.ClientSetup;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
@@ -17,16 +16,16 @@ import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.Material;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.registries.RegistryObject;
 
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
@@ -96,7 +95,6 @@ public class BuilderModule implements IModule {
             GuiBuilder.register();
         });
         BuilderRenderer.register();
-        ClientSetup.initClient();
     }
 
     @Override

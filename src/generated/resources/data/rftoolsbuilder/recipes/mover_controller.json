@@ -1,28 +1,28 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
+    "C": {
+      "item": "minecraft:activator_rail"
+    },
     "F": {
       "item": "rftoolsbase:machine_frame"
-    },
-    "O": {
-      "item": "minecraft:obsidian"
     },
     "T": {
       "item": "minecraft:redstone_torch"
     },
-    "g": {
-      "tag": "forge:ingots/gold"
+    "i": {
+      "tag": "forge:ingots/iron"
     },
-    "r": {
-      "item": "minecraft:redstone"
+    "o": {
+      "tag": "forge:ender_pearls"
     }
   },
   "pattern": [
-    "gTg",
-    "rFr",
-    "OOO"
+    "iTo",
+    "CFC",
+    "oTi"
   ],
   "result": {
-    "item": "rftoolsbuilder:shield_block1"
+    "item": "rftoolsbuilder:mover_controller"
   }
 }
