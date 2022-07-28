@@ -1,7 +1,5 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -194,10 +192,6 @@ public class FakePlayerConnection extends ServerGamePacketListenerImpl {
 
     @Override
     public void handleSetBeaconPacket(@Nonnull ServerboundSetBeaconPacket packetIn) {
-    }
-
-    @Override
-    public void send(@Nonnull Packet<?> packetIn, GenericFutureListener<? extends Future<? super Void>> futureListeners) {
     }
 
     @Override
