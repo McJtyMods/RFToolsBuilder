@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem where the builder with the pump card would not replace lava with dirt
+
 1.18-4.0.13:
 - Fixed a problem with the builder when copying a wither structure it would duplicate one wither skull
 - Blocks with the tag 'dontremoveme' didn't let the Builder consume power
