@@ -39,6 +39,7 @@ public class RFToolsBuilder {
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             modbus.addListener(ClientSetup::init);
+            modbus.addListener(ClientSetup::registerKeyBinds);
             modbus.addListener(modules::initClient);
         });
     }
