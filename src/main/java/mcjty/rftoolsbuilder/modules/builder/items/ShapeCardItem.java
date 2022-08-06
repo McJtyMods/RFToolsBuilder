@@ -533,7 +533,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         int dimX = tagCompound.getInt("dimX");
         int dimY = tagCompound.getInt("dimY");
         int dimZ = tagCompound.getInt("dimZ");
-        return new BlockPos(dimX, clampDimension(dimY, 256), dimZ);
+        return new BlockPos(dimX, clampDimension(dimY, 4096), dimZ);
     }
 
     public static BlockPos getClampedDimension(ItemStack stack, int maximum) {
@@ -660,7 +660,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
 
     public static int getRenderPositions(ItemStack stack, boolean solid, RLE positions, StatePalette statePalette, IFormula formula, int oy) {
         BlockPos dimension = ShapeCardItem.getDimension(stack);
-        BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 256), Math.min(dimension.getZ(), 512));
+        BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 4096), Math.min(dimension.getZ(), 512));
 
         int dx = clamped.getX();
         int dy = clamped.getY();
@@ -696,7 +696,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     // Used for saving
     public static int getDataPositions(Level world, ItemStack stack, Shape shape, boolean solid, RLE positions, StatePalette statePalette) {
         BlockPos dimension = ShapeCardItem.getDimension(stack);
-        BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 256), Math.min(dimension.getZ(), 512));
+        BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 4096), Math.min(dimension.getZ(), 512));
 
         IFormula formula = shape.getFormulaFactory().get();
         int dx = clamped.getX();
