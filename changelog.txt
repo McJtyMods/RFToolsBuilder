@@ -1,4 +1,5 @@
 Upcoming:
+- Shapecard height was still limited to 256
 - Fixed keybindings
 
 1.19.1-5.0.1:
