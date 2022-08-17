@@ -1,3 +1,6 @@
+1.19.1-5.0.3:
+- Fixed a server side problem with shape cards
+
 1.19.1-5.0.2:
 - Shapecard height was still limited to 256
 - Fixed keybindings

@@ -1,12 +1,10 @@
 package mcjty.rftoolsbuilder.modules.builder.items;
 
 import mcjty.lib.varia.ComponentFactory;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -117,7 +115,6 @@ public enum ShapeCardType {
     }
 
     private final Supplier<Integer> rfNeeded;
-    private final ModelResourceLocation modelResourceLocation;
     private final SingleBlockHandler singleBlockHandler;
     private final String hudLogEntry;
     private final boolean quarry;
@@ -145,7 +142,6 @@ public enum ShapeCardType {
 
     private ShapeCardType(String resourceSuffix, boolean quarry, boolean clearing, boolean fortune, SingleBlockHandler singleBlockHandler, String hudLogEntry, Supplier<Integer> rfNeeded, Supplier<String[]> information) {
         this.resourceSuffix = resourceSuffix;
-        this.modelResourceLocation = resourceSuffix == null ? null : new ModelResourceLocation(RFToolsBuilder.MODID + ":shape_card_" + resourceSuffix, "inventory");
         this.quarry = quarry;
         this.clearing = clearing;
         this.fortune = fortune;
@@ -177,10 +173,6 @@ public enum ShapeCardType {
 
     public int getRfNeeded() {
         return rfNeeded.get();
-    }
-
-    public ModelResourceLocation getModelResourceLocation() {
-        return modelResourceLocation;
     }
 
     public void addHudLog(List<String> list, IItemHandler inventoryHelper) {
