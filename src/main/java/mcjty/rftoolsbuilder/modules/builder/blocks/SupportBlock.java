@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.blocks;
 
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
@@ -57,7 +58,10 @@ public class SupportBlock extends Block {
     public static final EnumProperty<SupportStatus> STATUS = EnumProperty.create("status", SupportStatus.class);
 
     public SupportBlock() {
-        super(Properties.of(Material.STRUCTURAL_AIR).noOcclusion().isRedstoneConductor((state, world, pos) -> false));
+        super(Properties.of(Material.STRUCTURAL_AIR)
+                .noOcclusion()
+//                .air()
+                .isRedstoneConductor((state, world, pos) -> false));
     }
 
     @Nonnull
@@ -116,8 +120,22 @@ public class SupportBlock extends Block {
         builder.add(STATUS);
     }
 
+    @Override
+    public boolean propagatesSkylightDown(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
+        return true;
+    }
 
-//    @Override
+    @Override
+    public boolean useShapeForLightOcclusion(BlockState pState) {
+        return super.useShapeForLightOcclusion(pState);
+    }
+
+    @Override
+    public int getLightBlock(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
+        return 0;
+    }
+
+    //    @Override
 //    public void getSubBlocks(CreativeTabs itemIn, NonNullList<ItemStack> tab) {
 //        super.getSubBlocks(itemIn, tab);
 //    }
