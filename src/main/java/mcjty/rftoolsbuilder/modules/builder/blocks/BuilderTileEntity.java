@@ -982,8 +982,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     // Return true if we have to wait at this spot.
     private boolean handleSingleBlock(BlockState pickState) {
-        if( level == null )
+        if( level == null ) {
             return false;
+        }
 
         BlockPos srcPos = scan;
         int sx = scan.getX();
@@ -1016,6 +1017,11 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
         float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
         rfNeeded = (int) (rfNeeded * (3.0f - factor) / 3.0f);
+
+        if (rfNeeded > energyStorage.getMaxEnergyStored()) {
+            // The energy needed is more then what the builder can handle. Skip this block
+            return skip("Block exceeds max power!");
+        }
 
         if (rfNeeded > energyStorage.getEnergyStored()) {
             // Not enough energy.
