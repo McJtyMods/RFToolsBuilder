@@ -672,7 +672,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             int x = ox - dx / 2;
             for (int oz = 0; oz < dz; oz++) {
                 int z = oz - dz / 2;
-                int v = 255;
+                int v = 255;    // @todo world height?
                 if (formula.isInside(x, y, z)) {
                     cnt++;
                     BlockState lastState = formula.getLastState();
@@ -714,7 +714,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
                 int z = oz - dz/2;
                 for (int oy = 0; oy < dy; oy++) {
                     int y = oy - dy/2;
-                    int v = 255;
+                    int v = 255;    // @todo world height?
                     if (formula.isInside(x, y, z)) {
                         cnt++;
                         BlockState lastState = formula.getLastState();

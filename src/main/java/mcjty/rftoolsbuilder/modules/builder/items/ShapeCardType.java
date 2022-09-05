@@ -193,7 +193,7 @@ public enum ShapeCardType {
 
     public void addInformation(List<Component> list) {
         list.addAll(information);
-        list.add(ComponentFactory.literal(ChatFormatting.GREEN + "Max area: " + BuilderConfiguration.maxBuilderDimension.get() + "x" + Math.min(256, BuilderConfiguration.maxBuilderDimension.get()) + "x" + BuilderConfiguration.maxBuilderDimension.get()));
+        list.add(ComponentFactory.literal(ChatFormatting.GREEN + "Max area: " + BuilderConfiguration.maxBuilderDimension.get() + "x" + Math.min(1024, BuilderConfiguration.maxBuilderDimension.get()) + "x" + BuilderConfiguration.maxBuilderDimension.get()));
         list.add(ComponentFactory.literal(ChatFormatting.GREEN + "Base cost: " + rfNeeded.get() + " RF/t per block"));
         list.add(ComponentFactory.literal(ChatFormatting.GREEN + (this == CARD_SHAPE ? "(final cost depends on infusion level)" : "(final cost depends on infusion level and block hardness)")));
     }
