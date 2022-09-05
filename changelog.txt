@@ -1,3 +1,6 @@
+Upcoming:
+- When the Builder encounters a block that it can't possibly harvest because it's hardness/power exceeds the maximum power of the Builder then it will skip this block
+
 1.18-4.0.14:
 - Shapecard height was still limited to 256
 
