@@ -1,4 +1,4 @@
-Upcoming:
+1.19.1-5.0.4:
 - When the Builder encounters a block that it can't possibly harvest because it's hardness/power exceeds the maximum power of the Builder then it will skip this block
 
 1.19.1-5.0.3:
