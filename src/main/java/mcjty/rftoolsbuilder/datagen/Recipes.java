@@ -45,6 +45,10 @@ public class Recipes extends BaseRecipeProvider {
                         .define('C', Items.MINECART)
                         .unlockedBy("paper", has(Items.PAPER)),
                 " C ", "rpr", " r ");
+        build(consumer, ShapedRecipeBuilder.shaped(MoverModule.VEHICLE_CALLCARD.get())
+                        .define('C', MoverModule.VEHICLE_CARD.get())
+                        .unlockedBy("paper", has(Items.PAPER)),
+                "rrr", "rCr", "rrr");
 
         build(consumer, ShapedRecipeBuilder.shaped(BuilderModule.BUILDER.get())
                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
