@@ -1,3 +1,6 @@
+Upcoming:
+- Fix patchouli manual
+
 1.18-4.0.15:
 - When the Builder encounters a block that it can't possibly harvest because it's hardness/power exceeds the maximum power of the Builder then it will skip this block
 
