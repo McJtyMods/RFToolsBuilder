@@ -6,6 +6,7 @@ import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.Entity;
@@ -124,9 +125,34 @@ public class EntityMovementLogic {
             // We are moving
             checkUnmounts();
             actualMoveServer(vehicle);
-        } else if (!mover.getNetwork().isEmpty()) {
-            if (mover.isMachineEnabled() && !vehicle.isEmpty()) {
-                actualStartMovementServer();
+//        } else if (!mover.getNetwork().isEmpty()) {
+//            if (mover.isMachineEnabled() && !vehicle.isEmpty()) {
+//                actualStartMovementServer();
+//            }
+        } else if (!vehicle.isEmpty()) {
+            // Check if the vehicle card here wants to go somewhere
+            BlockPos destination = VehicleCard.getDesiredDestination(vehicle);
+            if (destination != null) {
+                if (destination.equals(mover.getBlockPos())) {
+                    // We have arrived!
+                    VehicleCard.clearDesiredDestination(vehicle);
+                    return;
+                }
+
+                if (mover.hasDirectContectionTo(destination)) {
+                    // We have a direct connection
+                    setupMovementTo(destination);
+                } else {
+                    // We need to find the destination
+                    for (Map.Entry<Direction, BlockPos> entry : mover.getNetwork().entrySet()) {
+                        if (mover.getLevel().getBlockEntity(entry.getValue()) instanceof MoverTileEntity destMover) {
+                            if (destMover.hasDirectContectionTo(destination)) {
+                                setupMovementTo(entry.getValue());
+                                return;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -147,17 +173,7 @@ public class EntityMovementLogic {
         }
     }
 
-    private void actualStartMovementServer() {
-        // @todo here we should routing
-        // For now we pick the first destination
-        Iterator<BlockPos> iterator = mover.getNetwork().values().iterator();
-        BlockPos dest = iterator.next();
-        if (iterator.hasNext()) {
-            float r = random.nextFloat();
-            if (r < .5f) {
-                dest = iterator.next();
-            }
-        }
+    public void setupMovementTo(BlockPos dest) {
         Level level = mover.getLevel();
         if (level.getBlockEntity(dest) instanceof MoverTileEntity destMover) {
             if (destMover.isAvailable()) {

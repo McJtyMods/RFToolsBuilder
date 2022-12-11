@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +76,27 @@ public class VehicleCard extends Item implements ITooltipSettings {
         });
         vehicleCard.getOrCreateTag().put("blocks", list);
         vehicleCard.getOrCreateTag().putString("vehicleName", vehicleName);
+    }
+
+    public static void setDesiredDestination(ItemStack vehicleCard, BlockPos pos) {
+        vehicleCard.getOrCreateTag().putIntArray("desiredPos", new int[] { pos.getX(), pos.getY(), pos.getZ()});
+    }
+
+    @Nullable
+    public static BlockPos getDesiredDestination(ItemStack vehicleCard) {
+        CompoundTag tag = vehicleCard.getTag();
+        if (tag == null ) {
+            return null;
+        }
+        if (tag.contains("desiredPos")) {
+            int[] desiredPos = tag.getIntArray("desiredPos");
+            return new BlockPos(desiredPos[0], desiredPos[1], desiredPos[2]);
+        }
+        return null;
+    }
+
+    public static void clearDesiredDestination(ItemStack vehicleCard) {
+        vehicleCard.getOrCreateTag().remove("desiredPos");
     }
 
     public static Map<BlockState, List<BlockPos>> getBlocks(ItemStack vehicleCard, BlockPos minPos) {

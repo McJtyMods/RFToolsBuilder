@@ -138,6 +138,11 @@ public class MoverTileEntity extends TickingTileEntity {
         handleRender();
     }
 
+    // Return true if there is a direct connection to the given position
+    public boolean hasDirectContectionTo(BlockPos destination) {
+        return network.containsValue(destination);
+    }
+
     private float prevPartialTicks = Float.NaN;
     private float dpartial = 0;
 
