@@ -30,6 +30,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
@@ -60,9 +61,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     @Cap(type = CapType.INFUSABLE)
     private final IInfusable infusable = new DefaultInfusable(MoverControllerTileEntity.this);
 
-    public static final int MAXSCAN = 512;  //@todo configurable
-//    private final Map<BlockPos, MoverGraphNode> nodes = new HashMap<>();
-//    private MoverGraphNode graph;
+    public static final int MAXSCAN = 128;  //@todo configurable
 
     // For the gui: the selected vehicle
     @GuiValue
@@ -95,7 +94,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 //        for (Tag tag : graphTag) {
 //            CompoundTag nodeTag = ((CompoundTag) tag);
 //            BlockPos pos = new BlockPos(nodeTag.getInt("x"), nodeTag.getInt("y"), nodeTag.getInt("z"));
-//            MoverGraphNode childNode = new MoverGraphNode(pos);
+//            MoverGraphNode childNode = new MoverGraphNode(pos) ;
 //            nodes.put(pos, childNode);
 //            CompoundTag childrenTag = nodeTag.getCompound("c");
 //            for (Direction direction : OrientationTools.DIRECTION_VALUES) {
@@ -160,9 +159,11 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     @Nullable
     private <T> T traverse(BiFunction<BlockPos, MoverTileEntity, T> function) {
+        Set<BlockPos> alreadyHandled = new HashSet<>();
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             BlockPos moverPos = worldPosition.relative(direction);
-            T result = traverse(moverPos, function);
+            alreadyHandled.add(moverPos);
+            T result = traverse(alreadyHandled, moverPos, function);
             if (result != null) {
                 return result;
             }
@@ -171,16 +172,20 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     }
 
     @Nullable
-    private <T> T traverse(BlockPos pos, BiFunction<BlockPos, MoverTileEntity, T> function) {
+    private <T> T traverse(Set<BlockPos> alreadyHandled, BlockPos pos, BiFunction<BlockPos, MoverTileEntity, T> function) {
         if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
             T result = function.apply(pos, mover);
             if (result != null) {
                 return result;
             }
             for (Map.Entry<Direction, BlockPos> entry : mover.getNetwork().entrySet()) {
-                result = traverse(entry.getValue(), function);
-                if (result != null) {
-                    return result;
+                BlockPos p = entry.getValue();
+                if (!alreadyHandled.contains(p)) {
+                    alreadyHandled.add(p);
+                    result = traverse(alreadyHandled, p, function);
+                    if (result != null) {
+                        return result;
+                    }
                 }
             }
         }
@@ -223,23 +228,17 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     }
 
     private void doScan(BlockPos moverPos, MoverTileEntity mover, Set<BlockPos> alreadyHandled) {
-        Map<Direction, BlockPos> network = mover.getNetwork();
-        mover.setChanged();
+        mover.clearNetwork();
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             for (int distance = 1 ; distance <= MAXSCAN ; distance++) {
-                BlockPos newPos = moverPos.relative(direction, distance);
-                // If we have already handled this position we can stop for this direction
-                if (!alreadyHandled.contains(newPos)) {
-                    if (level.getBlockEntity(newPos) instanceof MoverTileEntity destMover) {
-//                        MoverGraphNode child = new MoverGraphNode(newPos);
-//                        nodes.put(newPos, child);
-//                        moverNode.add(direction, newPos);
-//                        child.add(direction.getOpposite(), moverNode.pos());
-                        network.put(direction, newPos);
-                        destMover.getNetwork().put(direction.getOpposite(), moverPos);
-                        alreadyHandled.add(newPos);
-                        doScan(newPos, destMover, alreadyHandled);
+                BlockPos destPos = moverPos.relative(direction, distance);
+                if (level.getBlockEntity(destPos) instanceof MoverTileEntity destMover) {
+                    mover.addConnection(direction, destPos);
+                    if (!alreadyHandled.contains(destPos)) {
+                        alreadyHandled.add(destPos);
+                        doScan(destPos, destMover, alreadyHandled);
                     }
+                    break;  // Stop at the first mover we find
                 }
             }
         }

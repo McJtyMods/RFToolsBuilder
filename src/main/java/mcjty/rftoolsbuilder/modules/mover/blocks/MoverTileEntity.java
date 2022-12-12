@@ -294,9 +294,16 @@ public class MoverTileEntity extends TickingTileEntity {
         return items.getStackInSlot(SLOT_VEHICLE_CARD);
     }
 
-    private void addConnection(Direction direction, BlockPos pos) {
+    public void clearNetwork() {
+        network.clear();
+        connections = "";
+        setChanged();
+    }
+
+    public void addConnection(Direction direction, BlockPos pos) {
         network.put(direction, pos);
         connections = connections + direction.name().toUpperCase().charAt(0);
+        setChanged();
     }
 
     @Override
