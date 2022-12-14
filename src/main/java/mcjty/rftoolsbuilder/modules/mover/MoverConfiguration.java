@@ -10,9 +10,15 @@ public class MoverConfiguration {
     public static ForgeConfigSpec.IntValue RECEIVEPERTICK;
     public static ForgeConfigSpec.IntValue rfPerOperation;
 
+    public static ForgeConfigSpec.IntValue VEHICLE_CONTROL_RFPERTICK; //6;
+
     public static void init(ForgeConfigSpec.Builder SERVER_BUILDER, ForgeConfigSpec.Builder CLIENT_BUILDER) {
         SERVER_BUILDER.comment("Settings for the crafter").push(CATEGORY_MOVER);
         CLIENT_BUILDER.comment("Settings for the crafter").push(CATEGORY_MOVER);
+
+        VEHICLE_CONTROL_RFPERTICK = SERVER_BUILDER
+                .comment("RF per tick/per block for the vehicle control module")
+                .defineInRange("vehicleControlRFPerTick", 0, 0, Integer.MAX_VALUE);
 
         rfPerOperation = SERVER_BUILDER
                 .comment("Amount of RF used per tick while moving")

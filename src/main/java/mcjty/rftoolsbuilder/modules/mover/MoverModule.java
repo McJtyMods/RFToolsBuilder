@@ -10,6 +10,7 @@ import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.blocks.VehicleBuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.client.*;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
+import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlScreenModule;
 import mcjty.rftoolsbuilder.setup.Config;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -43,6 +44,7 @@ public class MoverModule implements IModule {
     public static final RegistryObject<Block> INVISIBLE_MOVER_BLOCK = BLOCKS.register("invisible_mover_block", InvisibleMoverBlock::new);
 
     public static final RegistryObject<VehicleCard> VEHICLE_CARD = ITEMS.register("vehicle_card", VehicleCard::new);
+    public static final RegistryObject<VehicleCard> VEHICLE_CONTROL_MODULE = ITEMS.register("vehicle_control_module", VehicleControlScreenModule::new);
 
     @Override
     public void init(FMLCommonSetupEvent event) {

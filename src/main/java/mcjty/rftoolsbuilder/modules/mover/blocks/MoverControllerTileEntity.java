@@ -27,16 +27,13 @@ import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -83,56 +80,6 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         super(MoverModule.TYPE_MOVER_CONTROLLER.get(), pos, state);
     }
 
-    @Override
-    public void load(CompoundTag tagCompound) {
-        super.load(tagCompound);
-//        if (graph == null) {
-//            graph = new MoverGraphNode(worldPosition);
-//        }
-//        nodes.clear();
-//        ListTag graphTag = tagCompound.getList("graph", Tag.TAG_COMPOUND);
-//        for (Tag tag : graphTag) {
-//            CompoundTag nodeTag = ((CompoundTag) tag);
-//            BlockPos pos = new BlockPos(nodeTag.getInt("x"), nodeTag.getInt("y"), nodeTag.getInt("z"));
-//            MoverGraphNode childNode = new MoverGraphNode(pos) ;
-//            nodes.put(pos, childNode);
-//            CompoundTag childrenTag = nodeTag.getCompound("c");
-//            for (Direction direction : OrientationTools.DIRECTION_VALUES) {
-//                if (childrenTag.contains(direction.name())) {
-//                    CompoundTag childTag = childrenTag.getCompound(direction.name());
-//                    BlockPos childpos = new BlockPos(childTag.getInt("x"), childTag.getInt("y"), childTag.getInt("z"));
-//                    childNode.add(direction, childpos);
-//                }
-//            }
-//
-//        }
-    }
-
-    @Override
-    public void saveAdditional(@Nonnull CompoundTag tagCompound) {
-        super.saveAdditional(tagCompound);
-//        ListTag graphTag = new ListTag();
-//        nodes.forEach((pos, node) -> {
-//            CompoundTag nodeTag = new CompoundTag();
-//            nodeTag.putInt("x", pos.getX());
-//            nodeTag.putInt("y", pos.getY());
-//            nodeTag.putInt("z", pos.getZ());
-//
-//            CompoundTag childrenTag = new CompoundTag();
-//            node.children().forEach((direction, childpos) -> {
-//                CompoundTag childTag = new CompoundTag();
-//                childTag.putInt("x", childpos.getX());
-//                childTag.putInt("y", childpos.getY());
-//                childTag.putInt("z", childpos.getZ());
-//                childrenTag.put(direction.name(), childTag);
-//            });
-//            nodeTag.put("c", childrenTag);
-//
-//            graphTag.add(nodeTag);
-//        });
-//        tagCompound.put("graph", graphTag);
-    }
-
     private void selectNode(BlockPos pos) {
         if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
             ItemStack card = mover.getCard();
@@ -156,6 +103,8 @@ public class MoverControllerTileEntity extends GenericTileEntity {
             GuiMoverController.setSelectedVehicle(vehicle);
         }
     }
+
+    // @todo make other version of traverse too
 
     @Nullable
     private <T> T traverse(BiFunction<BlockPos, MoverTileEntity, T> function) {
@@ -193,7 +142,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     }
 
     // Find a vehicle and setup movement to a certain node
-    private void startMove(BlockPos pos, String vehicle) {
+    private void startMove(BlockPos pos, String destinationName, String vehicle) {
         MoverTileEntity moverContainingVehicle = traverse((p, mover) -> {
             ItemStack card = mover.getCard();
             String name = VehicleCard.getVehicleName(card);
@@ -206,19 +155,15 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
         if (moverContainingVehicle != null) {
             ItemStack card = moverContainingVehicle.getCard();
-            VehicleCard.setDesiredDestination(card, pos);
+            VehicleCard.setDesiredDestination(card, pos, destinationName);
         }
     }
 
     private void doScan() {
         setChanged();
-//        nodes.clear();
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             BlockPos moverPos = worldPosition.relative(direction);
             if (level.getBlockEntity(moverPos) instanceof MoverTileEntity mover) {
-                // Find the first mover
-//                graph = new MoverGraphNode(moverPos);
-//                nodes.put(moverPos, graph);
                 Set<BlockPos> alreadyHandled = new HashSet<>();
                 alreadyHandled.add(moverPos);
                 doScan(moverPos, mover, alreadyHandled);
@@ -244,14 +189,26 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         }
     }
 
+    public List<String> getMovers() {
+        List<String> movers = new ArrayList<>();
+        traverse((p, mover) -> {
+            movers.add(mover.getName());
+            return null;
+        });
+        return movers;
+    }
+
+
     private List<String> getVehicles() {
         List<String> vehicles = new ArrayList<>();
         traverse((p, mover) -> {
             ItemStack card = mover.getCard();
             if (!card.isEmpty()) {
                 String name = VehicleCard.getVehicleName(card);
-                if (mover.isMoving()) {
-                    name += " (M)";
+                BlockPos destination = VehicleCard.getDesiredDestination(card);
+                String destinationName = VehicleCard.getDesiredDestinationName(card);
+                if (destination != null) {
+                    name += " -> " + destinationName;
                 }
                 vehicles.add(name);
             }
@@ -275,11 +232,13 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     public static final Key<BlockPos> SELECTED_NODE = new Key<>("node", Type.BLOCKPOS);
     public static final Key<String> SELECTED_VEHICLE = new Key<>("vehicle", Type.STRING);
+    public static final Key<String> SELECTED_DESTINATION = new Key<>("destination", Type.STRING);
 
     @ServerCommand
     public static final Command<?> CMD_SCAN = Command.<MoverControllerTileEntity>create("scan", (te, player, params) -> te.doScan());
     @ServerCommand
-    public static final Command<?> CMD_MOVE = Command.<MoverControllerTileEntity>create("move", (te, player, params) -> te.startMove(params.get(SELECTED_NODE), params.get(SELECTED_VEHICLE)));
+    public static final Command<?> CMD_MOVE = Command.<MoverControllerTileEntity>create("move", (te, player, params) ->
+            te.startMove(params.get(SELECTED_NODE), params.get(SELECTED_VEHICLE), params.get(SELECTED_DESTINATION)));
 
     @ServerCommand
     public static final Command<?> CMD_SELECTNODE = Command.<MoverControllerTileEntity>create("selectNode", (te, player, params) -> te.selectNode(params.get(SELECTED_NODE)));

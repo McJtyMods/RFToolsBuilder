@@ -83,6 +83,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_MOVE, TypedMap.builder()
                 .put(MoverControllerTileEntity.SELECTED_NODE, nodeList.getSelected().getLeft())
                 .put(MoverControllerTileEntity.SELECTED_VEHICLE, vehicleList.getSelected())
+                .put(MoverControllerTileEntity.SELECTED_DESTINATION, nodeList.getSelected().getRight())
                 .build());
         vehicleList.refresh();
         nodeList.refresh();

@@ -38,9 +38,9 @@ import static mcjty.lib.builder.TooltipBuilder.*;
 public class VehicleCard extends Item implements ITooltipSettings {
 
     private final Lazy<TooltipBuilder> tooltipBuilder = () -> new TooltipBuilder()
-            .info(key("message.rftoolsbuilder.shiftmessage"))
-            .infoShift(header(),
+            .info(
                     parameter("name", VehicleCard::getVehicleName),
+                    parameter("destination", VehicleCard::isMoving, VehicleCard::getDesiredDestinationName),
                     parameter("contents", VehicleCard::getContentsDescription));
 
     public VehicleCard() {
@@ -78,9 +78,16 @@ public class VehicleCard extends Item implements ITooltipSettings {
         vehicleCard.getOrCreateTag().putString("vehicleName", vehicleName);
     }
 
-    public static void setDesiredDestination(ItemStack vehicleCard, BlockPos pos) {
+    public static void setDesiredDestination(ItemStack vehicleCard, BlockPos pos, String name) {
         vehicleCard.getOrCreateTag().putIntArray("desiredPos", new int[] { pos.getX(), pos.getY(), pos.getZ()});
+        vehicleCard.getOrCreateTag().putString("desiredPosName", name);
     }
+
+    public static void clearDesiredDestination(ItemStack vehicleCard) {
+        vehicleCard.getOrCreateTag().remove("desiredPos");
+        vehicleCard.getOrCreateTag().remove("desiredPosName");
+    }
+
 
     @Nullable
     public static BlockPos getDesiredDestination(ItemStack vehicleCard) {
@@ -95,8 +102,24 @@ public class VehicleCard extends Item implements ITooltipSettings {
         return null;
     }
 
-    public static void clearDesiredDestination(ItemStack vehicleCard) {
-        vehicleCard.getOrCreateTag().remove("desiredPos");
+    private static boolean isMoving(ItemStack vehicleCard) {
+        CompoundTag tag = vehicleCard.getTag();
+        if (tag == null ) {
+            return false;
+        }
+        return tag.contains("desiredPosName");
+    }
+
+    @Nullable
+    public static String getDesiredDestinationName(ItemStack vehicleCard) {
+        CompoundTag tag = vehicleCard.getTag();
+        if (tag == null ) {
+            return null;
+        }
+        if (tag.contains("desiredPosName")) {
+            return tag.getString("desiredPosName");
+        }
+        return null;
     }
 
     public static Map<BlockState, List<BlockPos>> getBlocks(ItemStack vehicleCard, BlockPos minPos) {
