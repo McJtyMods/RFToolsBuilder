@@ -31,6 +31,7 @@
   "item.rftoolsbuilder.shape_card_void": "Shape Card (Void)",
   "item.rftoolsbuilder.space_chamber_card": "Space Card",
   "item.rftoolsbuilder.vehicle_card": "Vehicle Card",
+  "item.rftoolsbuilder.vehicle_control_module": "Vehicle Control Module",
   "itemGroup.rftoolsbuilder": "RFTools Builder",
 
   "key.unmountVehicle": "Unmount Vehicle",

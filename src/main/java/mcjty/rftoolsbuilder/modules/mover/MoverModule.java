@@ -8,16 +8,18 @@ import mcjty.rftoolsbuilder.modules.mover.blocks.InvisibleMoverBlock;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.blocks.VehicleBuilderTileEntity;
-import mcjty.rftoolsbuilder.modules.mover.client.*;
+import mcjty.rftoolsbuilder.modules.mover.client.ClientSetup;
+import mcjty.rftoolsbuilder.modules.mover.client.GuiMover;
+import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
+import mcjty.rftoolsbuilder.modules.mover.client.GuiVehicleBuilder;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
-import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlScreenModule;
+import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlModuleItem;
 import mcjty.rftoolsbuilder.setup.Config;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.RegistryObject;
@@ -44,7 +46,7 @@ public class MoverModule implements IModule {
     public static final RegistryObject<Block> INVISIBLE_MOVER_BLOCK = BLOCKS.register("invisible_mover_block", InvisibleMoverBlock::new);
 
     public static final RegistryObject<VehicleCard> VEHICLE_CARD = ITEMS.register("vehicle_card", VehicleCard::new);
-    public static final RegistryObject<VehicleCard> VEHICLE_CONTROL_MODULE = ITEMS.register("vehicle_control_module", VehicleControlScreenModule::new);
+    public static final RegistryObject<VehicleControlModuleItem> VEHICLE_CONTROL_MODULE = ITEMS.register("vehicle_control_module", VehicleControlModuleItem::new);
 
     @Override
     public void init(FMLCommonSetupEvent event) {

@@ -61,12 +61,12 @@ public class VehicleControlModuleItem extends GenericModuleItem implements INBTP
             }
             ModuleTools.setPositionInModule(stack, world.dimension(), pos, name);
             if (world.isClientSide) {
-                Logging.message(player, "Storage module is set to block '" + name + "'");
+                Logging.message(player, "Vehicle control module is set to block '" + name + "'");
             }
         } else {
             ModuleTools.clearPositionInModule(stack);
             if (world.isClientSide) {
-                Logging.message(player, "Storage module is cleared");
+                Logging.message(player, "Vehicle control module is cleared");
             }
         }
         return InteractionResult.SUCCESS;
@@ -90,11 +90,10 @@ public class VehicleControlModuleItem extends GenericModuleItem implements INBTP
     @Override
     public void createGui(IModuleGuiBuilder guiBuilder) {
         guiBuilder
-                .ghostStack("stack0").ghostStack("stack1").ghostStack("stack2").nl()
-                .ghostStack("stack3").ghostStack("stack4").ghostStack("stack5").nl()
-                .ghostStack("stack6").ghostStack("stack7").ghostStack("stack8").nl()
-                .toggle("starred", "Starred", "If enabled only count items", "in 'starred' inventories", "(mark inventories in storage scanner)")
-                .block("monitor").nl();
+                .label("Label:").text("text", "Label text").color("color", "Label color").nl()
+                .label("Button:").text("button", "Button text").color("buttonColor", "Button color").nl()
+                .label("Mover:").text("mover", "Name of the mover").nl()
+                .choices("align", "Label alignment", "Left", "Center", "Right").nl();
     }
 
     // @todo 1.14 implement!
