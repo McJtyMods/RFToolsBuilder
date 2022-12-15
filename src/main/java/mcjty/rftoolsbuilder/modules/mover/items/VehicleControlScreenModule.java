@@ -27,10 +27,15 @@ public class VehicleControlScreenModule implements IScreenModule<VehicleControlS
 
     private String line = "";
     private String mover = "";
+    private String vehicle = "";
 
     public static class ModuleVehicleInfo implements IModuleData {
 
         public static final String ID = RFToolsBuilder.MODID + ":vehicle_control";
+
+        public ModuleVehicleInfo(FriendlyByteBuf buf) {
+
+        }
 
         @Override
         public String getId() {
@@ -55,6 +60,7 @@ public class VehicleControlScreenModule implements IScreenModule<VehicleControlS
             setupCoordinateFromNBT(tagCompound, dim, pos);
             line = tagCompound.getString("text");
             mover = tagCompound.getString("mover");
+            vehicle = tagCompound.getString("vehicle");
         }
     }
 
@@ -86,7 +92,7 @@ public class VehicleControlScreenModule implements IScreenModule<VehicleControlS
         if (x >= xoffset) {
             if (!mover.isEmpty()) {
                 getMoverController(world, dim, coordinate).ifPresent(controller -> {
-
+                    controller.setupMovement(mover, vehicle);
                 });
             } else {
                 if (player != null) {

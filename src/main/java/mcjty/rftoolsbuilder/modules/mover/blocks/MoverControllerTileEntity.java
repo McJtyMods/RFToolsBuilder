@@ -107,43 +107,74 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     // @todo make other version of traverse too
 
     @Nullable
-    private <T> T traverse(BiFunction<BlockPos, MoverTileEntity, T> function) {
-        Set<BlockPos> alreadyHandled = new HashSet<>();
+    public <T> T traverseBreadthFirst(BiFunction<BlockPos, MoverTileEntity, T> function) {
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             BlockPos moverPos = worldPosition.relative(direction);
-            alreadyHandled.add(moverPos);
-            T result = traverse(alreadyHandled, moverPos, function);
-            if (result != null) {
-                return result;
+            if (level.getBlockEntity(moverPos) instanceof MoverTileEntity mover) {
+                return mover.traverseBreadthFirst(function);
             }
         }
         return null;
     }
 
     @Nullable
-    private <T> T traverse(Set<BlockPos> alreadyHandled, BlockPos pos, BiFunction<BlockPos, MoverTileEntity, T> function) {
-        if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
-            T result = function.apply(pos, mover);
-            if (result != null) {
-                return result;
-            }
-            for (Map.Entry<Direction, BlockPos> entry : mover.getNetwork().entrySet()) {
-                BlockPos p = entry.getValue();
-                if (!alreadyHandled.contains(p)) {
-                    alreadyHandled.add(p);
-                    result = traverse(alreadyHandled, p, function);
-                    if (result != null) {
-                        return result;
-                    }
-                }
+    private <T> T traverseDepthFirst(BiFunction<BlockPos, MoverTileEntity, T> function) {
+        for (Direction direction : OrientationTools.DIRECTION_VALUES) {
+            BlockPos moverPos = worldPosition.relative(direction);
+            if (level.getBlockEntity(moverPos) instanceof MoverTileEntity mover) {
+                return mover.traverseDepthFirst(function);
             }
         }
         return null;
     }
 
+    // Find a mover and an optional vehicle and setup movement
+    // The vehicle can be null or empty string in which case we take the
+    // vehicle nearest to the mover
+    public void setupMovement(String moverName, String vehicle) {
+        MoverTileEntity destinationMover = findMover(moverName);
+        if (destinationMover != null) {
+            if (vehicle == null || vehicle.trim().isEmpty()) {
+                // Find the vehicle closest to this mover
+                vehicle = traverseBreadthFirst((p, mover) -> {
+                    ItemStack card = mover.getCard();
+                    if (!card.isEmpty()) {
+                        return VehicleCard.getVehicleName(card);
+                    } else {
+                        return null;
+                    }
+                });
+            }
+            if (vehicle != null) {
+                startMove(destinationMover.getBlockPos(), vehicle, destinationMover.getName());
+            }
+        }
+    }
+
     // Find a vehicle and setup movement to a certain node
-    private void startMove(BlockPos pos, String destinationName, String vehicle) {
-        MoverTileEntity moverContainingVehicle = traverse((p, mover) -> {
+    private void startMove(BlockPos destination, String vehicle, String destinationName) {
+        MoverTileEntity moverContainingVehicle = findVehicle(vehicle);
+
+        if (moverContainingVehicle != null) {
+            ItemStack card = moverContainingVehicle.getCard();
+            VehicleCard.setDesiredDestination(card, destination, destinationName);
+        }
+    }
+
+    @Nullable
+    private MoverTileEntity findMover(String moverName) {
+        return traverseDepthFirst((p, mover) -> {
+            if (Objects.equals(moverName, mover.getName())) {
+                return mover;
+            } else {
+                return null;
+            }
+        });
+    }
+
+    @Nullable
+    private MoverTileEntity findVehicle(String vehicle) {
+        return traverseDepthFirst((p, mover) -> {
             ItemStack card = mover.getCard();
             String name = VehicleCard.getVehicleName(card);
             if (Objects.equals(name, vehicle)) {
@@ -152,11 +183,6 @@ public class MoverControllerTileEntity extends GenericTileEntity {
                 return null;
             }
         });
-
-        if (moverContainingVehicle != null) {
-            ItemStack card = moverContainingVehicle.getCard();
-            VehicleCard.setDesiredDestination(card, pos, destinationName);
-        }
     }
 
     private void doScan() {
@@ -175,7 +201,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     private void doScan(BlockPos moverPos, MoverTileEntity mover, Set<BlockPos> alreadyHandled) {
         mover.clearNetwork();
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
-            for (int distance = 1 ; distance <= MAXSCAN ; distance++) {
+            for (int distance = 1; distance <= MAXSCAN; distance++) {
                 BlockPos destPos = moverPos.relative(direction, distance);
                 if (level.getBlockEntity(destPos) instanceof MoverTileEntity destMover) {
                     mover.addConnection(direction, destPos);
@@ -191,7 +217,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     public List<String> getMovers() {
         List<String> movers = new ArrayList<>();
-        traverse((p, mover) -> {
+        traverseDepthFirst((p, mover) -> {
             movers.add(mover.getName());
             return null;
         });
@@ -201,7 +227,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     private List<String> getVehicles() {
         List<String> vehicles = new ArrayList<>();
-        traverse((p, mover) -> {
+        traverseDepthFirst((p, mover) -> {
             ItemStack card = mover.getCard();
             if (!card.isEmpty()) {
                 String name = VehicleCard.getVehicleName(card);
@@ -219,7 +245,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     private List<Pair<BlockPos, String>> getNodes() {
         List<Pair<BlockPos, String>> nodeNames = new ArrayList<>();
-        traverse((p, mover) -> {
+        traverseDepthFirst((p, mover) -> {
             String name = mover.getName();
             if (name == null || name.trim().isEmpty()) {
                 name = p.getX() + "," + p.getY() + "," + p.getZ();
@@ -253,18 +279,18 @@ public class MoverControllerTileEntity extends GenericTileEntity {
             (te, player, params) -> te.getNodes(),
             (te, player, params, list) -> GuiMoverController.setNodesFromServer(list));
 
-    public static class NodePairSerializer implements ISerializer<Pair<BlockPos, String>> {
-        @Override
-        public Function<FriendlyByteBuf, Pair<BlockPos, String>> getDeserializer() {
-            return buf -> Pair.of(buf.readBlockPos(), buf.readUtf(32767));
-        }
-
-        @Override
-        public BiConsumer<FriendlyByteBuf, Pair<BlockPos, String>> getSerializer() {
-            return (buf, pair) -> {
-                buf.writeBlockPos(pair.getLeft());
-                buf.writeUtf(pair.getRight());
-            };
-        }
+public static class NodePairSerializer implements ISerializer<Pair<BlockPos, String>> {
+    @Override
+    public Function<FriendlyByteBuf, Pair<BlockPos, String>> getDeserializer() {
+        return buf -> Pair.of(buf.readBlockPos(), buf.readUtf(32767));
     }
+
+    @Override
+    public BiConsumer<FriendlyByteBuf, Pair<BlockPos, String>> getSerializer() {
+        return (buf, pair) -> {
+            buf.writeBlockPos(pair.getLeft());
+            buf.writeUtf(pair.getRight());
+        };
+    }
+}
 }

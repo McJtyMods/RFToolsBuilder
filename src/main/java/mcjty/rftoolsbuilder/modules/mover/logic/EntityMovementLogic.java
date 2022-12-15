@@ -143,15 +143,15 @@ public class EntityMovementLogic {
                     // We have a direct connection
                     setupMovementTo(destination);
                 } else {
-                    // We need to find the destination
-                    for (Map.Entry<Direction, BlockPos> entry : mover.getNetwork().entrySet()) {
-                        if (mover.getLevel().getBlockEntity(entry.getValue()) instanceof MoverTileEntity destMover) {
-                            if (destMover.hasDirectContectionTo(destination)) {
-                                setupMovementTo(entry.getValue());
-                                return;
-                            }
+                    BlockPos dest = mover.traverseBreadthFirstWithPath((p, child) -> {
+                        if (destination.equals(child.getBlockPos())) {
+                            // We found it!
+                            return p.get(0);    // This the first node we should move too
+                        } else {
+                            return null;
                         }
-                    }
+                    });
+                    setupMovementTo(dest);
                 }
             }
         }

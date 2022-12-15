@@ -106,7 +106,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
     private void initializeFields() {
         energyBar = window.findChild("energybar");
-        vehicleList = new SyncedList<>(window.findChild("vehicles"), this::requestVehicles, this::makeVehicleLine, -1);
+        vehicleList = new SyncedList<>(window.findChild("vehicles"), this::requestVehicles, this::makeVehicleLine, 10);
         nodeList = new SyncedList<>(window.findChild("nodes"), this::requestNodes, this::makeNodeLine, 20);
 
         updateFields();
@@ -152,7 +152,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
     }
 
     private Panel makeVehicleLine(String vehicle) {
-        Panel panel = horizontal(0, 0).hint(0, 0, 100, 14);
+        Panel panel = horizontal(0, 0).hint(0, 0, 130, 14);
         panel.children(label(vehicle));
         return panel;
     }

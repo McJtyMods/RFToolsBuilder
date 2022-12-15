@@ -5,10 +5,10 @@ import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.ModuleTools;
 import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbase.api.screens.IModuleGuiBuilder;
-import mcjty.rftoolsbase.api.storage.IStorageScanner;
 import mcjty.rftoolsbase.tools.GenericModuleItem;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
+import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -52,7 +52,7 @@ public class VehicleControlModuleItem extends GenericModuleItem implements INBTP
         Player player = context.getPlayer();
         BlockPos pos = context.getClickedPos();
         BlockEntity te = world.getBlockEntity(pos);
-        if (te instanceof IStorageScanner) {
+        if (te instanceof MoverControllerTileEntity) {
             BlockState state = world.getBlockState(pos);
             Block block = state.getBlock();
             String name = "<invalid>";
@@ -93,6 +93,7 @@ public class VehicleControlModuleItem extends GenericModuleItem implements INBTP
                 .label("Label:").text("text", "Label text").color("color", "Label color").nl()
                 .label("Button:").text("button", "Button text").color("buttonColor", "Button color").nl()
                 .label("Mover:").text("mover", "Name of the mover").nl()
+                .label("Vehicle:").text("vehicle", "Name of the vehicle").nl()
                 .choices("align", "Label alignment", "Left", "Center", "Right").nl();
     }
 

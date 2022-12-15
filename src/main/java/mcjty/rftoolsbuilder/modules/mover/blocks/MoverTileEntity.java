@@ -35,10 +35,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BiFunction;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.*;
@@ -167,6 +170,105 @@ public class MoverTileEntity extends TickingTileEntity {
             }, this::isMoverThere);
         }
     }
+
+    @Nullable
+    public <T> T traverseDepthFirst(BiFunction<BlockPos, MoverTileEntity, T> function) {
+        Set<BlockPos> alreadyHandled = new HashSet<>();
+        alreadyHandled.add(worldPosition);
+        return traverseDepthFirstInt(alreadyHandled, function);
+    }
+
+    @Nullable
+    private <T> T traverseDepthFirstInt(Set<BlockPos> alreadyHandled, BiFunction<BlockPos, MoverTileEntity, T> function) {
+        T result = function.apply(worldPosition, this);
+        if (result != null) {
+            return result;
+        }
+        for (Map.Entry<Direction, BlockPos> entry : getNetwork().entrySet()) {
+            BlockPos p = entry.getValue();
+            if (!alreadyHandled.contains(p)) {
+                alreadyHandled.add(p);
+                if (level.getBlockEntity(p) instanceof MoverTileEntity child) {
+                    result = child.traverseDepthFirstInt(alreadyHandled, function);
+                    if (result != null) {
+                        return result;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public <T> T traverseBreadthFirst(BiFunction<BlockPos, MoverTileEntity, T> function) {
+        Set<BlockPos> alreadyHandled = new HashSet<>();
+        List<Pair<BlockPos, MoverTileEntity>> todo = new ArrayList<>();
+        todo.add(Pair.of(worldPosition, this));
+        alreadyHandled.add(worldPosition);
+        int toProcess = 0;
+        int toExpand = 0;
+        while (toExpand < todo.size()) {
+            // We can already process everything we expanded
+            while (toProcess < todo.size()) {
+                Pair<BlockPos, MoverTileEntity> pair = todo.get(toProcess);
+                T result = function.apply(pair.getLeft(), pair.getRight());
+                if (result != null) {
+                    return result;
+                }
+                toProcess++;
+            }
+            // Expand the current node
+            for (Map.Entry<Direction, BlockPos> entry : todo.get(toExpand).getRight().getNetwork().entrySet()) {
+                BlockPos childPos = entry.getValue();
+                if (!alreadyHandled.contains(childPos)) {
+                    if (level.getBlockEntity(childPos) instanceof MoverTileEntity childMover) {
+                        alreadyHandled.add(childPos);
+                        todo.add(Pair.of(childPos, childMover));
+                    }
+                }
+            }
+            toExpand++;
+        }
+        return null;
+    }
+
+
+    // The position of the current mover (in the function) is not included
+    @Nullable
+    public <T> T traverseBreadthFirstWithPath(BiFunction<List<BlockPos>, MoverTileEntity, T> function) {
+        Set<BlockPos> alreadyHandled = new HashSet<>();
+        List<Pair<List<BlockPos>, MoverTileEntity>> todo = new ArrayList<>();
+        todo.add(Pair.of(new ArrayList<>(), this));
+        alreadyHandled.add(worldPosition);
+        int toProcess = 0;
+        int toExpand = 0;
+        while (toExpand < todo.size()) {
+            // We can already process everything we expanded
+            while (toProcess < todo.size()) {
+                Pair<List<BlockPos>, MoverTileEntity> pair = todo.get(toProcess);
+                T result = function.apply(pair.getLeft(), pair.getRight());
+                if (result != null) {
+                    return result;
+                }
+                toProcess++;
+            }
+            // Expand the current node
+            for (Map.Entry<Direction, BlockPos> entry : todo.get(toExpand).getRight().getNetwork().entrySet()) {
+                BlockPos childPos = entry.getValue();
+                if (!alreadyHandled.contains(childPos)) {
+                    if (level.getBlockEntity(childPos) instanceof MoverTileEntity childMover) {
+                        alreadyHandled.add(childPos);
+                        List<BlockPos> path = new ArrayList<>(todo.get(toExpand).getLeft());
+                        path.add(childPos);
+                        todo.add(Pair.of(path, childMover));
+                    }
+                }
+            }
+            toExpand++;
+        }
+        return null;
+    }
+
 
     @NotNull
     private Boolean isMoverThere(Level level, BlockPos pos) {

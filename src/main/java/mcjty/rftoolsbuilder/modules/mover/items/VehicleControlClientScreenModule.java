@@ -18,6 +18,7 @@ public class VehicleControlClientScreenModule implements IClientScreenModule<Veh
     private int color = 0xffffff;
     private int buttonColor = 0xffffff;
     private boolean activated = false;
+    private String vehicle = "";
     private String mover = "";
 
     private final ITextRenderHelper labelCache = new ScreenTextHelper();
@@ -25,7 +26,7 @@ public class VehicleControlClientScreenModule implements IClientScreenModule<Veh
 
     @Override
     public TransformMode getTransformMode() {
-        return TransformMode.ITEM;
+        return TransformMode.TEXT;
     }
 
     @Override
@@ -85,6 +86,7 @@ public class VehicleControlClientScreenModule implements IClientScreenModule<Veh
                 buttonColor = 0xffffff;
             }
             mover = tagCompound.getString("mover");
+            vehicle = tagCompound.getString("vehicle");
             if (tagCompound.contains("align")) {
                 String alignment = tagCompound.getString("align");
                 labelCache.align(TextAlign.get(alignment));

@@ -39,7 +39,7 @@ window {
         }
 
         panel('','horizontal') {
-            hint(110,28,100,208)
+            hint(110,28,130,208)
             widgetlist('vehicles') {
                 channel('vehicles')
                 bgthickness(-1)
