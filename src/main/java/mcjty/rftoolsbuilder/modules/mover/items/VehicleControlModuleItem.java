@@ -9,6 +9,7 @@ import mcjty.rftoolsbase.tools.GenericModuleItem;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
+import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -41,7 +42,7 @@ public class VehicleControlModuleItem extends GenericModuleItem implements INBTP
     }
 
     public VehicleControlModuleItem() {
-        super(new Properties().stacksTo(1).defaultDurability(1).tab(RFToolsBuilder.setup.getTab()));
+        super(Registration.createStandardProperties().stacksTo(1));
     }
 
     @Nonnull

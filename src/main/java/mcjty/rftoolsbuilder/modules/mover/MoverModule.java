@@ -4,10 +4,7 @@ package mcjty.rftoolsbuilder.modules.mover;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.modules.IModule;
-import mcjty.rftoolsbuilder.modules.mover.blocks.InvisibleMoverBlock;
-import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
-import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
-import mcjty.rftoolsbuilder.modules.mover.blocks.VehicleBuilderTileEntity;
+import mcjty.rftoolsbuilder.modules.mover.blocks.*;
 import mcjty.rftoolsbuilder.modules.mover.client.ClientSetup;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiMover;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
@@ -44,6 +41,8 @@ public class MoverModule implements IModule {
     public static final RegistryObject<MenuType<GenericContainer>> CONTAINER_VEHICLE_BUILDER = CONTAINERS.register("vehicle_builder", GenericContainer::createContainerType);
 
     public static final RegistryObject<Block> INVISIBLE_MOVER_BLOCK = BLOCKS.register("invisible_mover_block", InvisibleMoverBlock::new);
+    public static final RegistryObject<Block> PLACEHOLDER_MOVER_CONTROL_BLOCK = BLOCKS.register("placeholder_mover_control", PlaceholderMoverControlBlock::new);
+    public static final RegistryObject<Item> PLACEHOLDER_MOVER_CONTROL_ITEM = ITEMS.register("placeholder_mover_control", () -> new BlockItem(PLACEHOLDER_MOVER_CONTROL_BLOCK.get(), createStandardProperties()));
 
     public static final RegistryObject<VehicleCard> VEHICLE_CARD = ITEMS.register("vehicle_card", VehicleCard::new);
     public static final RegistryObject<VehicleControlModuleItem> VEHICLE_CONTROL_MODULE = ITEMS.register("vehicle_control_module", VehicleControlModuleItem::new);

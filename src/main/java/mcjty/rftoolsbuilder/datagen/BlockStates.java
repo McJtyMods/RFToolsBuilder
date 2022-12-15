@@ -33,6 +33,7 @@ public class BlockStates extends BaseBlockStateProvider {
         orientedBlock(MoverModule.MOVER.get(), frontBasedModel("mover", modLoc("block/machinemover")));
         orientedBlock(MoverModule.MOVER_CONTROLLER.get(), frontBasedModel("mover_controller", modLoc("block/machinemovercontroller")));
         orientedBlock(MoverModule.VEHICLE_BUILDER.get(), frontBasedModel("vehicle_builder", modLoc("block/machinevehiclebuilder")));
+        orientedBlock(MoverModule.PLACEHOLDER_MOVER_CONTROL_BLOCK.get(), frontBasedModel("placeholder_mover_control", modLoc("block/placeholdermovercontrol")));
 
         BlockModelBuilder support0 = models().cubeAll("supportblock_status0", modLoc("block/supportblock")).renderType("translucent");
         BlockModelBuilder support1 = models().cubeAll("supportblock_status1", modLoc("block/supportyellowblock")).renderType("translucent");

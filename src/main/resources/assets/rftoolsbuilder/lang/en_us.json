@@ -15,8 +15,10 @@
   "block.rftoolsbuilder.support_block": "Support Block",
   "block.rftoolsbuilder.yellow_shield_template_block": "Yellow Shield Template",
   "block.rftoolsbuilder.mover": "Mover (WIP)",
+  "block.rftoolsbuilder.mover_controller": "Mover Controller (WIP)",
   "block.rftoolsbuilder.vehicle_builder": "Vehicle Builder (WIP)",
   "block.rftoolsbuilder.invisible_mover_block": "Vehicle (WIP)",
+  "block.rftoolsbuilder.placeholder_mover_control": "Placeholder Mover Control (WIP)",
 
   "item.rftoolsbuilder.shape_card_def": "Shape Card",
   "item.rftoolsbuilder.shape_card_liquid": "Shape Card (Placing Liquids)",
@@ -64,6 +66,9 @@
 
   "message.rftoolsbuilder.mover.header": "This block can move vehicles to other movers (WIP)",
   "message.rftoolsbuilder.mover.gold": "DO NOT USE YET! Infusing bonus: reduced power consumption while moving",
+
+  "message.rftoolsbuilder.mover_controller.header": "The controller for the mover system (WIP)",
+  "message.rftoolsbuilder.mover_controller.gold": "DO NOT USE YET!",
 
   "message.rftoolsbuilder.vehicle_builder.header": "Using a space card linked to a space chamber, this block can make a vehicle in the vehicle card (WIP)",
   "message.rftoolsbuilder.vehicle_card.header": "A vehicle card. Use the Vehicle Builder to put a vehicle in this card",
