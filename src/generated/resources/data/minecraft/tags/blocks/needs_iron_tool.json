@@ -3,7 +3,7 @@
     "rftoolsbuilder:mover",
     "rftoolsbuilder:mover_controller",
     "rftoolsbuilder:vehicle_builder",
-    "rftoolsbuilder:placeholder_mover_control",
+    "rftoolsbuilder:mover_control",
     "rftoolsbuilder:builder",
     "rftoolsbuilder:space_chamber",
     "rftoolsbuilder:space_chamber_controller",

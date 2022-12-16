@@ -346,8 +346,10 @@ public class MoverTileEntity extends TickingTileEntity {
             // We are moving. Remove the mover blocks if there are any
             if (invisibleMoverBlocks != null) {
                 BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
+                BlockState invisibleControlState = MoverModule.INVISIBLE_MOVER_CONTROL_BLOCK.get().defaultBlockState(); // @todo can be better
                 invisibleMoverBlocks.forEach(p -> {
-                    if (level.getBlockState(p) == invisibleState) {
+                    BlockState state = level.getBlockState(p);
+                    if (state == invisibleState || state == invisibleControlState) {
                         level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                     }
                 });
@@ -363,8 +365,11 @@ public class MoverTileEntity extends TickingTileEntity {
             if (cnt <= 0) {
                 cnt = 4;
                 BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
+                BlockState invisibleControlState = MoverModule.INVISIBLE_MOVER_CONTROL_BLOCK.get().defaultBlockState();  // @todo can be better
                 invisibleMoverBlocks.forEach(p -> {
-                    if (level.getBlockState(p) != invisibleState && level.getBlockState(p).getMaterial().isReplaceable()) {
+                    BlockState state = level.getBlockState(p);
+                    // @TODO INCORRECT HERE!
+                    if (state != invisibleState && state != invisibleControlState && state.getMaterial().isReplaceable()) {
                         level.setBlock(p, invisibleState, Block.UPDATE_ALL);
                     }
                 });
@@ -390,8 +395,10 @@ public class MoverTileEntity extends TickingTileEntity {
 
     private void removeInvisibleBlocks() {
         BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
+        BlockState invisibleControlState = MoverModule.INVISIBLE_MOVER_CONTROL_BLOCK.get().defaultBlockState();// @todo can be better
         invisibleMoverBlocks.forEach(p -> {
-            if (level.getBlockState(p) == invisibleState) {
+            BlockState state = level.getBlockState(p);
+            if (state == invisibleState || state == invisibleControlState) {
                 level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             }
         });

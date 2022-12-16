@@ -6,7 +6,7 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
-import mcjty.rftoolsbuilder.modules.mover.blocks.PlaceholderMoverControlBlock;
+import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControlBlock;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -66,7 +66,7 @@ public class MoverRenderer {
                 blockRenderer.renderSingleBlock(state, matrixStack, buffer, lightColor, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, renderType);
                 matrixStack.popPose();
             });
-            if (state.getBlock() instanceof PlaceholderMoverControlBlock) {
+            if (state.getBlock() instanceof MoverControlBlock) {
                 positions.forEach(pos -> {
                     matrixStack.pushPose();
                     matrixStack.translate(pos.getX(), pos.getY(), pos.getZ());
@@ -84,7 +84,7 @@ public class MoverRenderer {
                                             MoverTileEntity mover,
                                             int lightColor, BlockState state) {
         Direction facing = state.getValue(BlockStateProperties.FACING);
-        Direction horizontalFacing = state.getValue(PlaceholderMoverControlBlock.HORIZ_FACING);
+        Direction horizontalFacing = state.getValue(MoverControlBlock.HORIZ_FACING);
         float yRotation = switch (horizontalFacing) {
             case NORTH -> -180.0F;
             case WEST -> -90.0F;
@@ -117,53 +117,18 @@ public class MoverRenderer {
 
         VertexConsumer builder = buffer.getBuffer(RenderType.solid());
 
-        float dim = .46f;
-        float zback = .05f;
-        float zfront = -renderOffset;
+        float zfront = -renderOffset+.05f;
         float ss = .5f;
 
         float u0 = sprite.getU0();
         float v0 = sprite.getV0();
         float u1 = sprite.getU1();
         float v1 = sprite.getV1();
-        float su = (u1 - u0) * (.1f+renderOffset);
-        float sv = (v1 - v0) * (.1f+renderOffset);
 
-        // BACK
-        vt(builder, matrix, -ss, -ss, zback, u0, v0, packedLight);
-        vt(builder, matrix, ss, -ss, zback, u1, v0, packedLight);
-        vt(builder, matrix, ss, ss, zback, u1, v1, packedLight);
-        vt(builder, matrix, -ss, ss, zback, u0, v1, packedLight);
-
-        // FRONT
         vt(builder, matrix, -ss, ss, zfront, u0, v0, packedLight);
         vt(builder, matrix, ss, ss, zfront, u1, v0, packedLight);
         vt(builder, matrix, ss, -ss, zfront, u1, v1, packedLight);
         vt(builder, matrix, -ss, -ss, zfront, u0, v1, packedLight);
-
-        // DOWN
-        vt(builder, matrix, -ss, ss, zback, u0, v0, packedLight);
-        vt(builder, matrix, ss, ss, zback, u1, v0, packedLight);
-        vt(builder, matrix, ss, ss, zfront, u1, v0+sv, packedLight);
-        vt(builder, matrix, -ss, ss, zfront, u0, v0+sv, packedLight);
-
-        // UP
-        vt(builder, matrix, -ss, -ss, zfront, u0, v0, packedLight);
-        vt(builder, matrix, ss, -ss, zfront, u1, v0, packedLight);
-        vt(builder, matrix, ss, -ss, zback, u1, v0+sv, packedLight);
-        vt(builder, matrix, -ss, -ss, zback, u0, v0+sv, packedLight);
-
-        // LEFT
-        vt(builder, matrix, -ss, -ss, zfront, u0, v0, packedLight);
-        vt(builder, matrix, -ss, -ss, zback, u0+su, v0, packedLight);
-        vt(builder, matrix, -ss, ss, zback, u0+su, v1, packedLight);
-        vt(builder, matrix, -ss, ss, zfront, u0, v1, packedLight);
-
-        // RIGHT
-        vt(builder, matrix, ss, ss, zfront, u0, v0, packedLight);
-        vt(builder, matrix, ss, ss, zback, u0+su, v0, packedLight);
-        vt(builder, matrix, ss, -ss, zback, u0+su, v1, packedLight);
-        vt(builder, matrix, ss, -ss, zfront, u0, v1, packedLight);
 
         matrixStack.popPose();
     }
@@ -186,7 +151,7 @@ public class MoverRenderer {
         float f = 0.005F;
 
         matrixStack.pushPose();
-        matrixStack.translate(-0.5F, 0.5F, 0.02F + 1);  // @todo tileEntity.getRenderOffset());
+        matrixStack.translate(-0.5F, 0.5F, 1 -.03);  // @todo tileEntity.getRenderOffset());
         matrixStack.scale(f * factor, -1.0f * f * factor, f);
         int l = 0;
         int linesSupported = 4;//@todo tileEntity.getLinesSupported();
@@ -196,7 +161,7 @@ public class MoverRenderer {
         String currentPlatform = mover.getCurrentPlatform();
         for (String line : mover.getPlatformsFromServer()) {
             int color = line.equals(currentPlatform) ? currentcolor : textcolor;
-            fontrenderer.drawInBatch(line, 5, currenty, 0xff000000 | color, false, matrixStack.last().pose(), buffer, false, 0,
+            fontrenderer.drawInBatch(line, 10, currenty, 0xff000000 | color, false, matrixStack.last().pose(), buffer, false, 0,
                     bright ? LightTexture.FULL_BRIGHT : lightmapValue);
             currenty += 10;
             l++;

@@ -14,11 +14,11 @@ import javax.annotation.Nullable;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 
-public class PlaceholderMoverControlBlock extends BaseBlock {
+public class MoverControlBlock extends BaseBlock {
 
     public static final DirectionProperty HORIZ_FACING = DirectionProperty.create("horizfacing", Direction.Plane.HORIZONTAL);
 
-    public PlaceholderMoverControlBlock() {
+    public MoverControlBlock() {
         super(new BlockBuilder()
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .info(key("message.rftoolsbuilder.shiftmessage"))

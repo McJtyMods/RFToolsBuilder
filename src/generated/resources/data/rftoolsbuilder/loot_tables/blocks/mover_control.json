@@ -6,10 +6,10 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "rftoolsbuilder:placeholder_mover_control"
+          "name": "rftoolsbuilder:mover_control"
         }
       ],
-      "name": "placeholder_mover_control",
+      "name": "mover_control",
       "rolls": 1.0
     }
   ]

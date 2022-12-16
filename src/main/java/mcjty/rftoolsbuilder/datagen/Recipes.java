@@ -49,7 +49,7 @@ public class Recipes extends BaseRecipeProvider {
                         .define('C', MoverModule.VEHICLE_CARD.get())
                         .unlockedBy("paper", has(Items.PAPER)),
                 " C ", "rpr", " r ");
-        build(consumer, ShapedRecipeBuilder.shaped(MoverModule.PLACEHOLDER_MOVER_CONTROL_BLOCK.get())
+        build(consumer, ShapedRecipeBuilder.shaped(MoverModule.MOVER_CONTROL_BLOCK.get())
                         .define('C', Blocks.COMPARATOR)
                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
                 "rTr", "CFC", "iTi");

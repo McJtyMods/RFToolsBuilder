@@ -30,7 +30,7 @@ public class LootTables extends BaseLootTableProvider {
         lootTables.put(MoverModule.MOVER.get(), createStandardTable("mover", MoverModule.MOVER.get(), MoverModule.TYPE_MOVER.get()));
         lootTables.put(MoverModule.MOVER_CONTROLLER.get(), createStandardTable("mover_controller", MoverModule.MOVER_CONTROLLER.get(), MoverModule.TYPE_MOVER_CONTROLLER.get()));
         lootTables.put(MoverModule.VEHICLE_BUILDER.get(), createStandardTable("vehicle_builder", MoverModule.VEHICLE_BUILDER.get(), MoverModule.TYPE_VEHICLE_BUILDER.get()));
-        lootTables.put(MoverModule.PLACEHOLDER_MOVER_CONTROL_BLOCK.get(), createSimpleTable("placeholder_mover_control", MoverModule.PLACEHOLDER_MOVER_CONTROL_BLOCK.get()));
+        lootTables.put(MoverModule.MOVER_CONTROL_BLOCK.get(), createSimpleTable("mover_control", MoverModule.MOVER_CONTROL_BLOCK.get()));
     }
 
     @Nonnull

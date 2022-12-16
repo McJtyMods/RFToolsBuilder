@@ -12,8 +12,6 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import java.util.Random;
-
 public class InvisibleMoverBlock extends Block {
 
     public InvisibleMoverBlock() {
