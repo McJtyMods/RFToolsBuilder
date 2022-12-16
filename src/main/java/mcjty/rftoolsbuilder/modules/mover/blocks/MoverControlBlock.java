@@ -8,6 +8,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
 import javax.annotation.Nullable;
@@ -28,7 +29,11 @@ public class MoverControlBlock extends BaseBlock {
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return super.getStateForPlacement(context).setValue(HORIZ_FACING, context.getPlayer().getDirection().getOpposite());
+        BlockState state = super.getStateForPlacement(context).setValue(HORIZ_FACING, context.getPlayer().getDirection().getOpposite());
+        Direction facing = state.getValue(BlockStateProperties.FACING);
+        Direction horizFacing = state.getValue(HORIZ_FACING);
+        System.out.println("facing = " + facing + ", horizFacing = " + horizFacing);
+        return state;
     }
 
     @Override

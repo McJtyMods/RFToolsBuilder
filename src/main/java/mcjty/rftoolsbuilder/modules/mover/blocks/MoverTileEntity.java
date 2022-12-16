@@ -16,6 +16,7 @@ import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.TickingTileEntity;
 import mcjty.lib.typed.Type;
 import mcjty.lib.varia.OrientationTools;
+import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
@@ -34,6 +35,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
@@ -92,11 +95,15 @@ public class MoverTileEntity extends TickingTileEntity {
 
     // Counter for sending info to the clients
     private int clientUpdateCnt;
+
+    // Client side variables
     private List<String> platformsFromServer = Collections.emptyList();
     private String currentPlatform = "";
+    public double cursorX;
+    public double cursorY;
 
-    private float prevPartialTicks = Float.NaN;
-    private float dpartial = 0;
+//    private float prevPartialTicks = Float.NaN;
+//    private float dpartial = 0;
 
     // A cache for invisible mover blocks
     private Set<BlockPos> invisibleMoverBlocks = null;
@@ -153,6 +160,26 @@ public class MoverTileEntity extends TickingTileEntity {
     protected void tickClient() {
         //@todo optimize to only render when in front and distance
         handleRender();
+        setCursor();
+    }
+
+    private void setCursor() {
+        HitResult mouseOver = SafeClientTools.getClientMouseOver();
+        if (mouseOver instanceof BlockHitResult blockResult) {
+            BlockPos pos = blockResult.getBlockPos();
+            List<InvisibleMoverBlock.MoverData> list = MoverModule.INVISIBLE_MOVER_BLOCK.get().getData(worldPosition);
+            if (list != null) {
+                for (InvisibleMoverBlock.MoverData data : list) {
+                    if (pos.equals(data.controlPos())) {
+                        Pair<Double, Double> cursor = getCursor(mouseOver.getLocation().x - pos.getX(), mouseOver.getLocation().y - pos.getY(), mouseOver.getLocation().z - pos.getZ(),
+                                data.horizDirection(), data.direction());
+                        cursorX = cursor.getLeft();
+                        cursorY = cursor.getRight();
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     // Return true if there is a direct connection to the given position
@@ -346,10 +373,9 @@ public class MoverTileEntity extends TickingTileEntity {
             // We are moving. Remove the mover blocks if there are any
             if (invisibleMoverBlocks != null) {
                 BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
-                BlockState invisibleControlState = MoverModule.INVISIBLE_MOVER_CONTROL_BLOCK.get().defaultBlockState(); // @todo can be better
                 invisibleMoverBlocks.forEach(p -> {
                     BlockState state = level.getBlockState(p);
-                    if (state == invisibleState || state == invisibleControlState) {
+                    if (state == invisibleState) {
                         level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                     }
                 });
@@ -365,11 +391,9 @@ public class MoverTileEntity extends TickingTileEntity {
             if (cnt <= 0) {
                 cnt = 4;
                 BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
-                BlockState invisibleControlState = MoverModule.INVISIBLE_MOVER_CONTROL_BLOCK.get().defaultBlockState();  // @todo can be better
                 invisibleMoverBlocks.forEach(p -> {
                     BlockState state = level.getBlockState(p);
-                    // @TODO INCORRECT HERE!
-                    if (state != invisibleState && state != invisibleControlState && state.getMaterial().isReplaceable()) {
+                    if (state != invisibleState && state.getMaterial().isReplaceable()) {
                         level.setBlock(p, invisibleState, Block.UPDATE_ALL);
                     }
                 });
@@ -395,10 +419,9 @@ public class MoverTileEntity extends TickingTileEntity {
 
     private void removeInvisibleBlocks() {
         BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
-        BlockState invisibleControlState = MoverModule.INVISIBLE_MOVER_CONTROL_BLOCK.get().defaultBlockState();// @todo can be better
         invisibleMoverBlocks.forEach(p -> {
             BlockState state = level.getBlockState(p);
-            if (state == invisibleState || state == invisibleControlState) {
+            if (state == invisibleState) {
                 level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             }
         });
@@ -463,6 +486,48 @@ public class MoverTileEntity extends TickingTileEntity {
         network.clear();
         connections = "";
         setChanged();
+    }
+
+    public void hitScreenClient(double x, double y, double z, Direction hitDirection, Direction horizDirection, Direction direction) {
+//        System.out.println("x = " + x + "," + y + "," + z);
+//        System.out.println("hitDirection = " + hitDirection);
+//        System.out.println("horizDirection = " + horizDirection);
+//        System.out.println("direction = " + direction);
+
+        if (hitDirection == direction) {
+            Pair<Double, Double> pair = getCursor(x, y, z, horizDirection, direction);
+            cursorX = pair.getLeft();
+            cursorY = pair.getRight();
+        }
+    }
+
+    @NotNull
+    private Pair<Double, Double> getCursor(double x, double y, double z, Direction horizDirection, Direction direction) {
+        Pair<Double, Double> pair = switch (direction) {
+            case UP -> switch (horizDirection) {
+                case DOWN -> Pair.of(1- x, 1- z);
+                case UP -> Pair.of(1- x, 1- z);
+                case NORTH -> Pair.of(1- x, 1- z);    // <- OK
+                case SOUTH -> Pair.of(x, z);
+                case WEST -> Pair.of(1- z, 1- x);
+                case EAST -> Pair.of(z, x);
+            };
+            case DOWN -> switch (horizDirection) {
+                case DOWN -> Pair.of(1- x, z);
+                case UP -> Pair.of(1- x, z);
+                case NORTH -> Pair.of(1- x, z);      // <- OK
+                case SOUTH -> Pair.of(x, 1- z);
+                case WEST -> Pair.of(z, 1- x);
+                case EAST -> Pair.of(1- z, x);
+            };
+            case NORTH -> Pair.of(1- x, 1- y);
+            case SOUTH -> Pair.of(x, 1- y);
+            case WEST -> Pair.of(z, 1- y);
+            case EAST -> Pair.of(1- z, 1- y);
+        };
+
+//        System.out.println("pair = " + pair.getLeft() + "   ,   " + pair.getRight());
+        return pair;
     }
 
     public void addConnection(Direction direction, BlockPos pos) {

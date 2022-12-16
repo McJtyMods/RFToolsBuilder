@@ -4,9 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
+import mcjty.lib.client.RenderHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
-import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
+import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControlBlock;
+import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -37,8 +39,8 @@ import java.util.function.BiFunction;
 public class MoverRenderer {
 
     // Global pre renderers
-    private static final Map<BlockPos, Runnable> delayedPreRenders = new HashMap<>();
-    private static final Map<BlockPos, BiFunction<Level, BlockPos, Boolean>> prerenderValidations = new HashMap<>();
+    private static final Map<BlockPos, Runnable> DELAYED_PRE_RENDERS = new HashMap<>();
+    private static final Map<BlockPos, BiFunction<Level, BlockPos, Boolean>> PRERENDER_VALIDATIONS = new HashMap<>();
 
     public static final ResourceLocation BLACK = new ResourceLocation(RFToolsBuilder.MODID, "effects/black");
 
@@ -56,6 +58,7 @@ public class MoverRenderer {
         MultiBufferSource.BufferSource buffer = Minecraft.getInstance().renderBuffers().bufferSource();
         BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
         Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(card, new BlockPos(1, 1, 1));
+        MoverModule.INVISIBLE_MOVER_BLOCK.get().removeData(mover.getBlockPos());
         blocks.forEach((state, positions) -> {
             positions.forEach(pos -> {
                 matrixStack.pushPose();
@@ -71,6 +74,8 @@ public class MoverRenderer {
                     matrixStack.pushPose();
                     matrixStack.translate(pos.getX(), pos.getY(), pos.getZ());
                     BlockPos realPos = new BlockPos(current.x, current.y, current.z).offset(pos.getX(), pos.getY(), pos.getZ());
+                    MoverModule.INVISIBLE_MOVER_BLOCK.get().registerData(mover.getBlockPos(), realPos,
+                            state.getValue(MoverControlBlock.HORIZ_FACING), state.getValue(BlockStateProperties.FACING));
                     int lightColor = LevelRenderer.getLightColor(level, realPos);
                     renderMoverControls(matrixStack, buffer, mover, lightColor, state);
                     matrixStack.popPose();
@@ -110,16 +115,17 @@ public class MoverRenderer {
                                           float renderOffset, int packedLight) {
         matrixStack.pushPose();
         matrixStack.scale(1, -1, -1);
-
         Matrix4f matrix = matrixStack.last().pose();
 
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(BLACK);
 
         VertexConsumer builder = buffer.getBuffer(RenderType.solid());
+        renderQuad(matrix, sprite, packedLight, builder, -renderOffset+.05f, .5f);
 
-        float zfront = -renderOffset+.05f;
-        float ss = .5f;
+        matrixStack.popPose();
+    }
 
+    private static void renderQuad(Matrix4f matrix, TextureAtlasSprite sprite, int packedLight, VertexConsumer builder, float zfront, float ss) {
         float u0 = sprite.getU0();
         float v0 = sprite.getV0();
         float u1 = sprite.getU1();
@@ -129,8 +135,6 @@ public class MoverRenderer {
         vt(builder, matrix, ss, ss, zfront, u1, v0, packedLight);
         vt(builder, matrix, ss, -ss, zfront, u1, v1, packedLight);
         vt(builder, matrix, -ss, -ss, zfront, u0, v1, packedLight);
-
-        matrixStack.popPose();
     }
 
     public static void vt(VertexConsumer renderer, Matrix4f matrix, float x, float y, float z, float u, float v,
@@ -154,15 +158,22 @@ public class MoverRenderer {
         matrixStack.translate(-0.5F, 0.5F, 1 -.03);  // @todo tileEntity.getRenderOffset());
         matrixStack.scale(f * factor, -1.0f * f * factor, f);
         int l = 0;
-        int linesSupported = 4;//@todo tileEntity.getLinesSupported();
+        int linesSupported = 10;//@todo tileEntity.getLinesSupported();
         if (large) {
             linesSupported /= 2;
         }
+        int light = bright ? LightTexture.FULL_BRIGHT : lightmapValue;
         String currentPlatform = mover.getCurrentPlatform();
         for (String line : mover.getPlatformsFromServer()) {
             int color = line.equals(currentPlatform) ? currentcolor : textcolor;
-            fontrenderer.drawInBatch(line, 10, currenty, 0xff000000 | color, false, matrixStack.last().pose(), buffer, false, 0,
-                    bright ? LightTexture.FULL_BRIGHT : lightmapValue);
+
+            if (currenty / 100.0 <= mover.cursorY && mover.cursorY <= (currenty+10) / 100.0) {
+                matrixStack.translate(0, 0, -0.01);  // @todo tileEntity.getRenderOffset());
+                RenderHelper.drawHorizontalGradientRect(matrixStack, buffer, 5, currenty-1, 95, currenty + 9, 0xff333333, 0xff333333, light);
+                matrixStack.translate(0, 0, 0.01);  // @todo tileEntity.getRenderOffset());
+            }
+
+            fontrenderer.drawInBatch(line, 10, currenty, 0xff000000 | color, false, matrixStack.last().pose(), buffer, false, 0, light);
             currenty += 10;
             l++;
             if (l >= linesSupported) {
@@ -176,22 +187,22 @@ public class MoverRenderer {
      * Add code that is called very early in rendering
      */
     public static void addPreRender(BlockPos pos, Runnable renderer, BiFunction<Level, BlockPos, Boolean> validator) {
-        delayedPreRenders.put(pos, renderer);
-        prerenderValidations.put(pos, validator);
+        DELAYED_PRE_RENDERS.put(pos, renderer);
+        PRERENDER_VALIDATIONS.put(pos, validator);
     }
 
     public static void preRender() {
         Set<BlockPos> todelete = new HashSet<>();
-        delayedPreRenders.forEach((pos, consumer) -> {
-            if (prerenderValidations.getOrDefault(pos, (level, blockPos) -> false).apply(Minecraft.getInstance().level, pos)) {
+        DELAYED_PRE_RENDERS.forEach((pos, consumer) -> {
+            if (PRERENDER_VALIDATIONS.getOrDefault(pos, (level, blockPos) -> false).apply(Minecraft.getInstance().level, pos)) {
                 consumer.run();
             } else {
                 todelete.add(pos);
             }
         });
         for (BlockPos pos : todelete) {
-            delayedPreRenders.remove(pos);
-            prerenderValidations.remove(pos);
+            DELAYED_PRE_RENDERS.remove(pos);
+            PRERENDER_VALIDATIONS.remove(pos);
         }
     }
 

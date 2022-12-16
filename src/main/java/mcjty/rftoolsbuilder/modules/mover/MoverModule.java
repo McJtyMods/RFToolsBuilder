@@ -42,9 +42,7 @@ public class MoverModule implements IModule {
     public static final RegistryObject<BlockEntityType<?>> TYPE_VEHICLE_BUILDER = TILES.register("vehicle_builder", () -> BlockEntityType.Builder.of(VehicleBuilderTileEntity::new, VEHICLE_BUILDER.get()).build(null));
     public static final RegistryObject<MenuType<GenericContainer>> CONTAINER_VEHICLE_BUILDER = CONTAINERS.register("vehicle_builder", GenericContainer::createContainerType);
 
-    public static final RegistryObject<Block> INVISIBLE_MOVER_BLOCK = BLOCKS.register("invisible_mover", InvisibleMoverBlock::new);
-    public static final RegistryObject<Block> INVISIBLE_MOVER_CONTROL_BLOCK = BLOCKS.register("invisible_mover_control", InvisibleMoverControlBlock::new);
-    public static final RegistryObject<BlockEntityType<?>> TYPE_INVISIBLE_MOVER_CONTROL = TILES.register("invisible_mover_control", () -> BlockEntityType.Builder.of(InvisibleMoverControlBE::new, INVISIBLE_MOVER_BLOCK.get()).build(null));
+    public static final RegistryObject<InvisibleMoverBlock> INVISIBLE_MOVER_BLOCK = BLOCKS.register("invisible_mover", InvisibleMoverBlock::new);
 
     public static final RegistryObject<Block> MOVER_CONTROL_BLOCK = BLOCKS.register("mover_control", MoverControlBlock::new);
     public static final RegistryObject<Item> MOVER_CONTROL_ITEM = ITEMS.register("mover_control", () -> new BlockItem(MOVER_CONTROL_BLOCK.get(), createStandardProperties()));
