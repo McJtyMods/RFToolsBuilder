@@ -23,6 +23,7 @@ import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.logic.EntityMovementLogic;
+import mcjty.rftoolsbuilder.modules.mover.network.PacketClickMover;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketSyncVehicleInformationToClient;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
@@ -90,6 +91,9 @@ public class MoverTileEntity extends TickingTileEntity {
     // @todo a bit clumsy but it works. Better would be a cap in the player
     public static final Set<Integer> wantUnmount = new HashSet<>();
 
+    // A reference to the controller
+    private BlockPos controller;
+
     // Counter to make setting invisible blocks more efficient
     private int cnt;
 
@@ -99,8 +103,9 @@ public class MoverTileEntity extends TickingTileEntity {
     // Client side variables
     private List<String> platformsFromServer = Collections.emptyList();
     private String currentPlatform = "";
-    public double cursorX;
-    public double cursorY;
+    public double cursorX;      // @todo Make private
+    public double cursorY;      // @todo Make private
+    public String highlightedMover; // @todo Make private
 
 //    private float prevPartialTicks = Float.NaN;
 //    private float dpartial = 0;
@@ -498,12 +503,29 @@ public class MoverTileEntity extends TickingTileEntity {
             Pair<Double, Double> pair = getCursor(x, y, z, horizDirection, direction);
             cursorX = pair.getLeft();
             cursorY = pair.getRight();
+            RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketClickMover(worldPosition, highlightedMover));
         }
+    }
+
+    /**
+     * Start movement of the vehicle currently on this platform towards the destination mover
+     */
+    public void startMove(String mover) {
+        if (controller != null && !getCard().isEmpty()) {
+            if (level.getBlockEntity(controller) instanceof MoverControllerTileEntity controllerTile) {
+                controllerTile.setupMovement(mover, VehicleCard.getVehicleName(getCard()));
+            }
+        }
+    }
+
+    public void setController(MoverControllerTileEntity controller) {
+        this.controller = controller.getBlockPos();
+        setChanged();
     }
 
     @NotNull
     private Pair<Double, Double> getCursor(double x, double y, double z, Direction horizDirection, Direction direction) {
-        Pair<Double, Double> pair = switch (direction) {
+        return switch (direction) {
             case UP -> switch (horizDirection) {
                 case DOWN -> Pair.of(1- x, 1- z);
                 case UP -> Pair.of(1- x, 1- z);
@@ -525,9 +547,6 @@ public class MoverTileEntity extends TickingTileEntity {
             case WEST -> Pair.of(z, 1- y);
             case EAST -> Pair.of(1- z, 1- y);
         };
-
-//        System.out.println("pair = " + pair.getLeft() + "   ,   " + pair.getRight());
-        return pair;
     }
 
     public void addConnection(Direction direction, BlockPos pos) {
@@ -545,6 +564,12 @@ public class MoverTileEntity extends TickingTileEntity {
             }
         }
         logic.load(tagCompound);
+        int[] controller = tagCompound.getIntArray("controller");
+        if (controller.length >= 3) {
+            this.controller = new BlockPos(controller[0], controller[1], controller[2]);
+        } else {
+            this.controller = null;
+        }
     }
 
     @Override
@@ -563,6 +588,9 @@ public class MoverTileEntity extends TickingTileEntity {
             }
         }
         logic.save(tagCompound);
+        if (controller != null) {
+            tagCompound.putIntArray("controller", new int[] { controller.getX(), controller.getY(), controller.getZ() });
+        }
     }
 
     @Override

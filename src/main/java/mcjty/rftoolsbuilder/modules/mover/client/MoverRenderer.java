@@ -171,6 +171,7 @@ public class MoverRenderer {
                 matrixStack.translate(0, 0, -0.01);  // @todo tileEntity.getRenderOffset());
                 RenderHelper.drawHorizontalGradientRect(matrixStack, buffer, 5, currenty-1, 95, currenty + 9, 0xff333333, 0xff333333, light);
                 matrixStack.translate(0, 0, 0.01);  // @todo tileEntity.getRenderOffset());
+                mover.highlightedMover = line;
             }
 
             fontrenderer.drawInBatch(line, 10, currenty, 0xff000000 | color, false, matrixStack.last().pose(), buffer, false, 0, light);

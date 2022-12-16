@@ -200,6 +200,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     private void doScan(BlockPos moverPos, MoverTileEntity mover, Set<BlockPos> alreadyHandled) {
         mover.clearNetwork();
+        mover.setController(this);
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             for (int distance = 1; distance <= MAXSCAN; distance++) {
                 BlockPos destPos = moverPos.relative(direction, distance);

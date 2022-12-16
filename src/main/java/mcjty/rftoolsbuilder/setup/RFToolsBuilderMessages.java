@@ -4,6 +4,7 @@ import mcjty.lib.network.*;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.network.*;
+import mcjty.rftoolsbuilder.modules.mover.network.PacketClickMover;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketSyncVehicleInformationToClient;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
@@ -49,6 +50,7 @@ public class RFToolsBuilderMessages {
         net.registerMessage(id(), PacketGrabbedEntitiesToClient.class, PacketGrabbedEntitiesToClient::toBytes, PacketGrabbedEntitiesToClient::new, PacketGrabbedEntitiesToClient::handle);
         net.registerMessage(id(), PacketSyncVehicleInformationToClient.class, PacketSyncVehicleInformationToClient::toBytes, PacketSyncVehicleInformationToClient::new, PacketSyncVehicleInformationToClient::handle);
         net.registerMessage(id(), PacketNotifyServerClientReady.class, PacketNotifyServerClientReady::toBytes, PacketNotifyServerClientReady::new, PacketNotifyServerClientReady::handle);
+        net.registerMessage(id(), PacketClickMover.class, PacketClickMover::toBytes, PacketClickMover::new, PacketClickMover::handle);
 
         net.registerMessage(id(), PacketRequestDataFromServer.class, PacketRequestDataFromServer::toBytes, PacketRequestDataFromServer::new, new ChannelBoundHandler<>(net, PacketRequestDataFromServer::handle));
 
