@@ -22,6 +22,8 @@ import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.logic.EntityMovementLogic;
+import mcjty.rftoolsbuilder.modules.mover.network.PacketSyncVehicleInformationToClient;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -35,6 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.network.PacketDistributor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,6 +45,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.*;
@@ -85,6 +89,14 @@ public class MoverTileEntity extends TickingTileEntity {
 
     // Counter to make setting invisible blocks more efficient
     private int cnt;
+
+    // Counter for sending info to the clients
+    private int clientUpdateCnt;
+    private List<String> platformsFromServer = Collections.emptyList();
+    private String currentPlatform = "";
+
+    private float prevPartialTicks = Float.NaN;
+    private float dpartial = 0;
 
     // A cache for invisible mover blocks
     private Set<BlockPos> invisibleMoverBlocks = null;
@@ -133,6 +145,8 @@ public class MoverTileEntity extends TickingTileEntity {
     protected void tickServer() {
         updateVehicleStatus();
         logic.tryMoveVehicleServer();
+        // If there is a vehicle we sync status to clients
+        syncVehicleStatus();
     }
 
     @Override
@@ -146,8 +160,30 @@ public class MoverTileEntity extends TickingTileEntity {
         return network.containsValue(destination);
     }
 
-    private float prevPartialTicks = Float.NaN;
-    private float dpartial = 0;
+    public void setClientRenderInfo(List<String> platforms, String currentPlatform) {
+        this.platformsFromServer = platforms;
+        this.currentPlatform = currentPlatform;
+    }
+
+    public List<String> getPlatformsFromServer() {
+        return platformsFromServer;
+    }
+
+    public String getCurrentPlatform() {
+        return currentPlatform;
+    }
+
+    private void syncVehicleStatus() {
+        clientUpdateCnt--;
+        if (clientUpdateCnt <= 0) {
+            clientUpdateCnt = 20;
+            if (!getCard().isEmpty()) {
+                List<String> platforms = traverseAndCollect().values().stream().map(MoverTileEntity::getName).sorted().collect(Collectors.toList());
+                RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(worldPosition)),
+                        new PacketSyncVehicleInformationToClient(worldPosition, platforms, getName()));
+            }
+        }
+    }
 
     private void handleRender() {
         ItemStack vehicle = getCard();
@@ -168,6 +204,26 @@ public class MoverTileEntity extends TickingTileEntity {
 //                prevPartialTicks = partialTicks;
                 MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle, partialTicks, offset, renderType);
             }, this::isMoverThere);
+        }
+    }
+
+    @Nonnull
+    public Map<BlockPos, MoverTileEntity> traverseAndCollect() {
+        Map<BlockPos, MoverTileEntity> alreadyHandled = new HashMap<>();
+        alreadyHandled.put(worldPosition, this);
+        traverseAndCollectInt(alreadyHandled);
+        return alreadyHandled;
+    }
+
+    private void traverseAndCollectInt(Map<BlockPos, MoverTileEntity> alreadyHandled) {
+        for (Map.Entry<Direction, BlockPos> entry : getNetwork().entrySet()) {
+            BlockPos p = entry.getValue();
+            if (!alreadyHandled.containsKey(p)) {
+                if (level.getBlockEntity(p) instanceof MoverTileEntity child) {
+                    alreadyHandled.put(p, child);
+                    child.traverseAndCollectInt(alreadyHandled);
+                }
+            }
         }
     }
 

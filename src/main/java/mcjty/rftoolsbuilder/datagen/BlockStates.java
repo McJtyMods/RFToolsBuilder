@@ -6,12 +6,15 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
+import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.client.model.generators.VariantBlockStateBuilder;
 import net.minecraftforge.common.data.ExistingFileHelper;
+
+import static net.minecraftforge.client.model.generators.ModelProvider.BLOCK_FOLDER;
 
 public class BlockStates extends BaseBlockStateProvider {
 
@@ -33,7 +36,9 @@ public class BlockStates extends BaseBlockStateProvider {
         orientedBlock(MoverModule.MOVER.get(), frontBasedModel("mover", modLoc("block/machinemover")));
         orientedBlock(MoverModule.MOVER_CONTROLLER.get(), frontBasedModel("mover_controller", modLoc("block/machinemovercontroller")));
         orientedBlock(MoverModule.VEHICLE_BUILDER.get(), frontBasedModel("vehicle_builder", modLoc("block/machinevehiclebuilder")));
-        orientedBlock(MoverModule.PLACEHOLDER_MOVER_CONTROL_BLOCK.get(), frontBasedModel("placeholder_mover_control", modLoc("block/placeholdermovercontrol")));
+
+        ModelFile model = controlModuleBlock("placeholder_mover_control", modLoc("block/placeholdermovercontrol"), 0);
+        orientedBlock(MoverModule.PLACEHOLDER_MOVER_CONTROL_BLOCK.get(), model);
 
         BlockModelBuilder support0 = models().cubeAll("supportblock_status0", modLoc("block/supportblock")).renderType("translucent");
         BlockModelBuilder support1 = models().cubeAll("supportblock_status1", modLoc("block/supportyellowblock")).renderType("translucent");
@@ -61,4 +66,23 @@ public class BlockStates extends BaseBlockStateProvider {
         simpleBlock(ShieldModule.SHIELDING_TRANSLUCENT.get(), shieldingModel);
         simpleBlock(ShieldModule.SHIELDING_CUTOUT.get(), shieldingModel);
     }
+
+    public ModelFile controlModuleBlock(String modelName, ResourceLocation texture, int offset) {
+        BlockModelBuilder model = models().getBuilder(BLOCK_FOLDER + "/" + modelName)
+                .parent(models().getExistingFile(mcLoc("block")));
+        model.element().from(0, 0, offset).to(16, 16, 16)
+                .face(Direction.DOWN).cullface(Direction.DOWN).texture("#side").end()
+                .face(Direction.UP).cullface(Direction.UP).texture("#top").end()
+                .face(Direction.EAST).cullface(Direction.EAST).texture("#side").end()
+                .face(Direction.WEST).cullface(Direction.WEST).texture("#side").end()
+                .face(Direction.NORTH).texture("#front").end()
+                .face(Direction.SOUTH).cullface(Direction.SOUTH).texture("#side").end()
+                .end()
+                .texture("side", RFTOOLSBASE_SIDE)
+                .texture("top", RFTOOLSBASE_TOP)
+                .texture("particle", RFTOOLSBASE_SIDE)
+                .texture("front", texture);
+        return model;
+    }
+
 }

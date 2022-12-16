@@ -17,8 +17,10 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.RegistryObject;
 
 import static mcjty.rftoolsbuilder.setup.Registration.*;
@@ -46,6 +48,11 @@ public class MoverModule implements IModule {
 
     public static final RegistryObject<VehicleCard> VEHICLE_CARD = ITEMS.register("vehicle_card", VehicleCard::new);
     public static final RegistryObject<VehicleControlModuleItem> VEHICLE_CONTROL_MODULE = ITEMS.register("vehicle_control_module", VehicleControlModuleItem::new);
+
+    public MoverModule() {
+        IEventBus modbus = FMLJavaModLoadingContext.get().getModEventBus();
+        modbus.addListener(ClientSetup::onTextureStitch);
+    }
 
     @Override
     public void init(FMLCommonSetupEvent event) {

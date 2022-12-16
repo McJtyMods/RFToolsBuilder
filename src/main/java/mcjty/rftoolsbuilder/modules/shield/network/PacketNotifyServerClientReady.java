@@ -7,7 +7,7 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class PackertNotifyServerClientReady {
+public class PacketNotifyServerClientReady {
 
     private final BlockPos pos;
 
@@ -15,11 +15,11 @@ public class PackertNotifyServerClientReady {
         buf.writeBlockPos(pos);
     }
 
-    public PackertNotifyServerClientReady(BlockPos pos) {
+    public PacketNotifyServerClientReady(BlockPos pos) {
         this.pos = pos;
     }
 
-    public PackertNotifyServerClientReady(FriendlyByteBuf buf) {
+    public PacketNotifyServerClientReady(FriendlyByteBuf buf) {
         pos = buf.readBlockPos();
     }
 
