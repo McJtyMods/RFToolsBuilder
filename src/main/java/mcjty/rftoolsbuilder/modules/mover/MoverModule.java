@@ -46,6 +46,8 @@ public class MoverModule implements IModule {
 
     public static final RegistryObject<Block> MOVER_CONTROL_BLOCK = BLOCKS.register("mover_control", MoverControlBlock::new);
     public static final RegistryObject<Item> MOVER_CONTROL_ITEM = ITEMS.register("mover_control", () -> new BlockItem(MOVER_CONTROL_BLOCK.get(), createStandardProperties()));
+    public static final RegistryObject<Block> MOVER_STATUS_BLOCK = BLOCKS.register("mover_status", MoverStatusBlock::new);
+    public static final RegistryObject<Item> MOVER_STATUS_ITEM = ITEMS.register("mover_status", () -> new BlockItem(MOVER_STATUS_BLOCK.get(), createStandardProperties()));
 
     public static final RegistryObject<VehicleCard> VEHICLE_CARD = ITEMS.register("vehicle_card", VehicleCard::new);
     public static final RegistryObject<VehicleControlModuleItem> VEHICLE_CONTROL_MODULE = ITEMS.register("vehicle_control_module", VehicleControlModuleItem::new);

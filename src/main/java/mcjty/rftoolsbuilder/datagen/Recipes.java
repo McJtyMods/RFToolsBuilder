@@ -50,6 +50,10 @@ public class Recipes extends BaseRecipeProvider {
                         .unlockedBy("paper", has(Items.PAPER)),
                 " C ", "rpr", " r ");
         build(consumer, ShapedRecipeBuilder.shaped(MoverModule.MOVER_CONTROL_BLOCK.get())
+                        .define('C', Blocks.REPEATER)
+                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                "rTr", "CFC", "iTi");
+        build(consumer, ShapedRecipeBuilder.shaped(MoverModule.MOVER_STATUS_BLOCK.get())
                         .define('C', Blocks.COMPARATOR)
                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
                 "rTr", "CFC", "iTi");

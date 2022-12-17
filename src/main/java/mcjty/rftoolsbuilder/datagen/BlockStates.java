@@ -10,6 +10,7 @@ import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.minecraftforge.client.model.generators.ModelBuilder;
@@ -45,28 +46,16 @@ public class BlockStates extends BaseBlockStateProvider {
         ModelFile model180 = controlModuleBlock("mover_control_180", modLoc("block/movercontrol"), 0, ModelBuilder.FaceRotation.UPSIDE_DOWN);
         ModelFile model270 = controlModuleBlock("mover_control_270", modLoc("block/movercontrol"), 0, ModelBuilder.FaceRotation.COUNTERCLOCKWISE_90);
         orientedBlock(MoverModule.MOVER_CONTROL_BLOCK.get(), (blockState, bld) -> {
-            ModelFile model = switch (blockState.getValue(BlockStateProperties.FACING)) {
-                case UP -> switch (blockState.getValue(MoverControlBlock.HORIZ_FACING)) {
-                    case DOWN -> model0;
-                    case UP -> model0;
-                    case NORTH -> model0;
-                    case SOUTH -> model180;
-                    case WEST -> model270;
-                    case EAST -> model90;
-                };
-                case DOWN -> switch (blockState.getValue(MoverControlBlock.HORIZ_FACING)) {
-                    case DOWN -> model0;
-                    case UP -> model0;
-                    case NORTH -> model180;
-                    case SOUTH -> model0;
-                    case WEST -> model90;
-                    case EAST -> model270;
-                };
-                case NORTH -> model0;
-                case SOUTH -> model0;
-                case WEST -> model0;
-                case EAST -> model0;
-            };
+            ModelFile model = getModelOriented24(model0, model90, model180, model270, blockState);
+            bld.modelFile(model);
+        });
+
+        ModelFile smodel0 = controlModuleBlock("mover_status_0", modLoc("block/moverstatus"), 0, ModelBuilder.FaceRotation.ZERO);
+        ModelFile smodel90 = controlModuleBlock("mover_status_90", modLoc("block/moverstatus"), 0, ModelBuilder.FaceRotation.CLOCKWISE_90);
+        ModelFile smodel180 = controlModuleBlock("mover_status_180", modLoc("block/moverstatus"), 0, ModelBuilder.FaceRotation.UPSIDE_DOWN);
+        ModelFile smodel270 = controlModuleBlock("mover_status_270", modLoc("block/moverstatus"), 0, ModelBuilder.FaceRotation.COUNTERCLOCKWISE_90);
+        orientedBlock(MoverModule.MOVER_STATUS_BLOCK.get(), (blockState, bld) -> {
+            ModelFile model = getModelOriented24(smodel0, smodel90, smodel180, smodel270, blockState);
             bld.modelFile(model);
         });
 
@@ -95,6 +84,32 @@ public class BlockStates extends BaseBlockStateProvider {
         simpleBlock(ShieldModule.SHIELDING_SOLID.get(), shieldingModel);
         simpleBlock(ShieldModule.SHIELDING_TRANSLUCENT.get(), shieldingModel);
         simpleBlock(ShieldModule.SHIELDING_CUTOUT.get(), shieldingModel);
+    }
+
+    private ModelFile getModelOriented24(ModelFile model0, ModelFile model90, ModelFile model180, ModelFile model270, BlockState blockState) {
+        ModelFile model = switch (blockState.getValue(BlockStateProperties.FACING)) {
+            case UP -> switch (blockState.getValue(MoverControlBlock.HORIZ_FACING)) {
+                case DOWN -> model0;
+                case UP -> model0;
+                case NORTH -> model0;
+                case SOUTH -> model180;
+                case WEST -> model270;
+                case EAST -> model90;
+            };
+            case DOWN -> switch (blockState.getValue(MoverControlBlock.HORIZ_FACING)) {
+                case DOWN -> model0;
+                case UP -> model0;
+                case NORTH -> model180;
+                case SOUTH -> model0;
+                case WEST -> model90;
+                case EAST -> model270;
+            };
+            case NORTH -> model0;
+            case SOUTH -> model0;
+            case WEST -> model0;
+            case EAST -> model0;
+        };
+        return model;
     }
 
     public ModelFile controlModuleBlock(String modelName, ResourceLocation texture, int offset, ModelBuilder.FaceRotation faceRotation) {

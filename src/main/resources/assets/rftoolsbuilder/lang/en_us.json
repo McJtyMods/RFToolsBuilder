@@ -19,6 +19,7 @@
   "block.rftoolsbuilder.vehicle_builder": "Vehicle Builder (WIP)",
   "block.rftoolsbuilder.invisible_mover_block": "Vehicle (WIP)",
   "block.rftoolsbuilder.mover_control": "Mover Control (WIP)",
+  "block.rftoolsbuilder.mover_status": "Mover Status (WIP)",
 
   "item.rftoolsbuilder.shape_card_def": "Shape Card",
   "item.rftoolsbuilder.shape_card_liquid": "Shape Card (Placing Liquids)",
@@ -72,6 +73,9 @@
 
   "message.rftoolsbuilder.mover_control.header": "The Mover control screen (WIP)",
   "message.rftoolsbuilder.mover_control.gold": "Put this in your vehicle!",
+
+  "message.rftoolsbuilder.mover_status.header": "The Mover status screen (WIP)",
+  "message.rftoolsbuilder.mover_status.gold": "Put this in your vehicle!",
 
   "message.rftoolsbuilder.vehicle_builder.header": "Using a space card linked to a space chamber, this block can make a vehicle in the vehicle card (WIP)",
   "message.rftoolsbuilder.vehicle_card.header": "A vehicle card. Use the Vehicle Builder to put a vehicle in this card",

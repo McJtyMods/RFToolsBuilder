@@ -6,7 +6,6 @@ import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.Entity;
@@ -39,12 +38,11 @@ public class EntityMovementLogic {
 
     // All 'grabbed' entities during movement (key is entity id)
     private Map<Integer, Vec3> grabbedEntities = new HashMap<>();
+    private int grabTimeout = 0;
 
     public EntityMovementLogic(MoverTileEntity mover) {
         this.mover = mover;
     }
-
-    private final Random random = new Random();
 
     public void setGrabbedEntitiesClient(Set<Integer> grabbedEntities) {
         Level level = mover.getLevel();
@@ -124,12 +122,16 @@ public class EntityMovementLogic {
         if (destination != null) {
             // We are moving
             checkUnmounts();
-            actualMoveServer(vehicle);
+            actualMoveServer();
 //        } else if (!mover.getNetwork().isEmpty()) {
 //            if (mover.isMachineEnabled() && !vehicle.isEmpty()) {
 //                actualStartMovementServer();
 //            }
         } else if (!vehicle.isEmpty()) {
+            if (grabTimeout > 0) {
+                grabTimeout--;
+                doGrab(0, .5, 0);
+            }
             // Check if the vehicle card here wants to go somewhere
             BlockPos destination = VehicleCard.getDesiredDestination(vehicle);
             if (destination != null) {
@@ -188,7 +190,15 @@ public class EntityMovementLogic {
         }
     }
 
-    private void grabEntities() {
+    public int getGrabTimeout() {
+        return grabTimeout;
+    }
+
+    public void setGrabTimeout(int grabTimeout) {
+        this.grabTimeout = grabTimeout;
+    }
+
+    public void grabEntities() {
         grabbedEntities.clear();
         AABB aabb = getVehicleAABB();
         Level level = mover.getLevel();
@@ -232,17 +242,8 @@ public class EntityMovementLogic {
         return new AABB(minx, miny, minz, maxx, maxy, maxz);
     }
 
-    private void actualMoveServer(ItemStack vehicle) {
+    public void doGrab(double dx, double dy, double dz) {
         Level level = mover.getLevel();
-        long totalTicks = getTotalTicks();
-        long currentTick = level.getGameTime() - starttick;
-
-        // First move entities
-        Vec3 startPos = getMovingPosition(0, starttick);
-        Vec3 currentPos = getMovingPosition(0, level.getGameTime()+1);
-        double dx = currentPos.x - startPos.x;
-        double dy = currentPos.y - startPos.y;
-        double dz = currentPos.z - startPos.z;
         grabbedEntities.forEach((id, basePos) -> {
             Entity entity = level.getEntity(id);
             if (entity != null && entity.isAlive()) {
@@ -253,6 +254,21 @@ public class EntityMovementLogic {
                 entity.setOnGround(true);
             }
         });
+
+    }
+
+    private void actualMoveServer() {
+        Level level = mover.getLevel();
+        long totalTicks = getTotalTicks();
+        long currentTick = level.getGameTime() - starttick;
+
+        // First move entities
+        Vec3 startPos = getMovingPosition(0, starttick);
+        Vec3 currentPos = getMovingPosition(0, level.getGameTime()+1);
+        double dx = currentPos.x - startPos.x;
+        double dy = currentPos.y - startPos.y;
+        double dz = currentPos.z - startPos.z;
+        doGrab(dx, dy, dz);
 
         if (currentTick >= totalTicks) {
             // We are at the destination

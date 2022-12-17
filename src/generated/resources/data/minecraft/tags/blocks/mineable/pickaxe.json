@@ -4,6 +4,7 @@
     "rftoolsbuilder:mover_controller",
     "rftoolsbuilder:vehicle_builder",
     "rftoolsbuilder:mover_control",
+    "rftoolsbuilder:mover_status",
     "rftoolsbuilder:builder",
     "rftoolsbuilder:space_chamber",
     "rftoolsbuilder:space_chamber_controller",

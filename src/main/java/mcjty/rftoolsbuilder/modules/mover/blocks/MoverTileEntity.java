@@ -103,12 +103,11 @@ public class MoverTileEntity extends TickingTileEntity {
     // Client side variables
     private List<String> platformsFromServer = Collections.emptyList();
     private String currentPlatform = "";
-    public double cursorX;      // @todo Make private
-    public double cursorY;      // @todo Make private
-    public String highlightedMover; // @todo Make private
-
-//    private float prevPartialTicks = Float.NaN;
-//    private float dpartial = 0;
+    private double cursorX;
+    private double cursorY;
+    private String highlightedMover;
+    private boolean moverValid;
+    private int currentPage = 0;
 
     // A cache for invisible mover blocks
     private Set<BlockPos> invisibleMoverBlocks = null;
@@ -168,6 +167,34 @@ public class MoverTileEntity extends TickingTileEntity {
         setCursor();
     }
 
+    // Only call client side
+    public void setHighlightedMover(String highlightedMover) {
+        this.highlightedMover = highlightedMover;
+    }
+
+    // Only call client side
+    public double getCursorX() {
+        return cursorX;
+    }
+
+    // Only call client side
+    public double getCursorY() {
+        return cursorY;
+    }
+
+    // Only call client side
+    public boolean isMoverValid() {
+        return moverValid;
+    }
+
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
+    }
+
     private void setCursor() {
         HitResult mouseOver = SafeClientTools.getClientMouseOver();
         if (mouseOver instanceof BlockHitResult blockResult) {
@@ -192,9 +219,10 @@ public class MoverTileEntity extends TickingTileEntity {
         return network.containsValue(destination);
     }
 
-    public void setClientRenderInfo(List<String> platforms, String currentPlatform) {
+    public void setClientRenderInfo(List<String> platforms, String currentPlatform, boolean valid) {
         this.platformsFromServer = platforms;
         this.currentPlatform = currentPlatform;
+        this.moverValid = valid;
     }
 
     public List<String> getPlatformsFromServer() {
@@ -210,9 +238,15 @@ public class MoverTileEntity extends TickingTileEntity {
         if (clientUpdateCnt <= 0) {
             clientUpdateCnt = 20;
             if (!getCard().isEmpty()) {
-                List<String> platforms = traverseAndCollect().values().stream().map(MoverTileEntity::getName).sorted().collect(Collectors.toList());
+                List<String> platforms;
+                boolean valid = isValid();
+                if (valid) {
+                    platforms = traverseAndCollect().values().stream().map(MoverTileEntity::getName).sorted().collect(Collectors.toList());
+                } else {
+                    platforms = Collections.emptyList();
+                }
                 RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(worldPosition)),
-                        new PacketSyncVehicleInformationToClient(worldPosition, platforms, getName()));
+                        new PacketSyncVehicleInformationToClient(worldPosition, platforms, getName(), valid));
             }
         }
     }
@@ -366,6 +400,16 @@ public class MoverTileEntity extends TickingTileEntity {
         return false;
     }
 
+    /**
+     * Return true if this mover is valid and connected to a network
+     */
+    public boolean isValid() {
+        if (controller == null) {
+            return false;
+        }
+        return level.getBlockEntity(controller) instanceof MoverControllerTileEntity;
+    }
+
     public boolean isMoving() {
         if (getCard().isEmpty()) {
             return false;
@@ -440,6 +484,8 @@ public class MoverTileEntity extends TickingTileEntity {
             destMover.setSource(null);
             destMover.updateVehicle();
             destMover.updateVehicleStatus();
+            destMover.getLogic().grabEntities();
+            destMover.getLogic().setGrabTimeout(5);
         } else {
             // Something is wrong. The destination is gone. Stop the movement
             // @todo handle this more gracefully. Move back
@@ -503,7 +549,23 @@ public class MoverTileEntity extends TickingTileEntity {
             Pair<Double, Double> pair = getCursor(x, y, z, horizDirection, direction);
             cursorX = pair.getLeft();
             cursorY = pair.getRight();
-            RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketClickMover(worldPosition, highlightedMover));
+            if (highlightedMover != null && !highlightedMover.isEmpty()) {
+                if ("___<___".equals(highlightedMover)) {
+                    // Previous page
+                    if (currentPage > 0) {
+                        currentPage--;
+                    }
+                } else if ("___>___".equals(highlightedMover)) {
+                    // Next page
+                    currentPage++;
+                    int pages = (platformsFromServer.size() + MoverRenderer.LINES_SUPPORTED-1) / MoverRenderer.LINES_SUPPORTED;
+                    if (currentPage >= pages) {
+                        currentPage = pages-1;
+                    }
+                } else {
+                    RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketClickMover(worldPosition, highlightedMover));
+                }
+            }
         }
     }
 

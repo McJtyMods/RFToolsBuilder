@@ -8,6 +8,7 @@ import mcjty.lib.client.RenderHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControlBlock;
+import mcjty.rftoolsbuilder.modules.mover.blocks.MoverStatusBlock;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.client.Minecraft;
@@ -44,6 +45,9 @@ public class MoverRenderer {
 
     public static final ResourceLocation BLACK = new ResourceLocation(RFToolsBuilder.MODID, "effects/black");
 
+    // Number of lines supported per page on the renderer
+    public static final int LINES_SUPPORTED = 7;
+
     public static float getPartialTicks() {
         return Minecraft.getInstance().getFrameTime();
     }
@@ -69,7 +73,7 @@ public class MoverRenderer {
                 blockRenderer.renderSingleBlock(state, matrixStack, buffer, lightColor, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, renderType);
                 matrixStack.popPose();
             });
-            if (state.getBlock() instanceof MoverControlBlock) {
+            if (state.getBlock() instanceof MoverControlBlock || state.getBlock() instanceof MoverStatusBlock) {
                 positions.forEach(pos -> {
                     matrixStack.pushPose();
                     matrixStack.translate(pos.getX(), pos.getY(), pos.getZ());
@@ -77,7 +81,12 @@ public class MoverRenderer {
                     MoverModule.INVISIBLE_MOVER_BLOCK.get().registerData(mover.getBlockPos(), realPos,
                             state.getValue(MoverControlBlock.HORIZ_FACING), state.getValue(BlockStateProperties.FACING));
                     int lightColor = LevelRenderer.getLightColor(level, realPos);
-                    renderMoverControls(matrixStack, buffer, mover, lightColor, state);
+                    setupTransform(matrixStack, state);
+                    if (state.getBlock() instanceof MoverControlBlock) {
+                        renderMoverControl(matrixStack, buffer, mover, lightColor);
+                    } else {
+                        renderMoverStatus(matrixStack, buffer, mover, lightColor);
+                    }
                     matrixStack.popPose();
                 });
             }
@@ -85,9 +94,19 @@ public class MoverRenderer {
         matrixStack.popPose();
     }
 
-    private static void renderMoverControls(@NotNull PoseStack matrixStack, @NotNull MultiBufferSource buffer,
-                                            MoverTileEntity mover,
-                                            int lightColor, BlockState state) {
+    private static void renderMoverStatus(@NotNull PoseStack matrixStack, @NotNull MultiBufferSource buffer,
+                                          MoverTileEntity mover, int lightColor) {
+        renderScreenBoard(matrixStack, buffer, 1.0f, lightColor);
+        renderStatus(matrixStack, buffer, Minecraft.getInstance().font, lightColor, mover);
+    }
+
+    private static void renderMoverControl(@NotNull PoseStack matrixStack, @NotNull MultiBufferSource buffer,
+                                           MoverTileEntity mover, int lightColor) {
+        renderScreenBoard(matrixStack, buffer, 1.0f, lightColor);
+        renderMovers(matrixStack, buffer, Minecraft.getInstance().font, lightColor, mover);
+    }
+
+    private static void setupTransform(@NotNull PoseStack matrixStack, BlockState state) {
         Direction facing = state.getValue(BlockStateProperties.FACING);
         Direction horizontalFacing = state.getValue(MoverControlBlock.HORIZ_FACING);
         float yRotation = switch (horizontalFacing) {
@@ -106,9 +125,6 @@ public class MoverRenderer {
         matrixStack.mulPose(Vector3f.YP.rotationDegrees(yRotation));
         matrixStack.mulPose(Vector3f.XP.rotationDegrees(xRotation));
         matrixStack.translate(0.0F, 0.0F, -0.4375F);
-
-        renderScreenBoard(matrixStack, buffer, 1.0f, lightColor);
-        renderMovers(matrixStack, buffer, Minecraft.getInstance().font, lightColor, mover);
     }
 
     private static void renderScreenBoard(PoseStack matrixStack, @Nullable MultiBufferSource buffer,
@@ -144,13 +160,12 @@ public class MoverRenderer {
 
     private static void renderMovers(PoseStack matrixStack, MultiBufferSource buffer, Font fontrenderer, int lightmapValue,
                                      MoverTileEntity mover) {
-        boolean large = false;  // @todo
         boolean bright = true;  // @todo
         int textcolor = 0x999999;
         int currentcolor = 0x00ff00;
 
-        float factor = 2.0f + (large ? 2 : 0);
-        int currenty = 9 - (large ? 4 : 0);
+        float factor = 2.0f;
+        int currenty = 9;
 
         float f = 0.005F;
 
@@ -158,31 +173,93 @@ public class MoverRenderer {
         matrixStack.translate(-0.5F, 0.5F, 1 -.03);  // @todo tileEntity.getRenderOffset());
         matrixStack.scale(f * factor, -1.0f * f * factor, f);
         int l = 0;
-        int linesSupported = 10;//@todo tileEntity.getLinesSupported();
-        if (large) {
-            linesSupported /= 2;
-        }
+        int linesSupported = LINES_SUPPORTED;
         int light = bright ? LightTexture.FULL_BRIGHT : lightmapValue;
         String currentPlatform = mover.getCurrentPlatform();
-        for (String line : mover.getPlatformsFromServer()) {
-            int color = line.equals(currentPlatform) ? currentcolor : textcolor;
+        mover.setHighlightedMover("");
 
-            if (currenty / 100.0 <= mover.cursorY && mover.cursorY <= (currenty+10) / 100.0) {
-                matrixStack.translate(0, 0, -0.01);  // @todo tileEntity.getRenderOffset());
-                RenderHelper.drawHorizontalGradientRect(matrixStack, buffer, 5, currenty-1, 95, currenty + 9, 0xff333333, 0xff333333, light);
-                matrixStack.translate(0, 0, 0.01);  // @todo tileEntity.getRenderOffset());
-                mover.highlightedMover = line;
+        if (!mover.isMoverValid()) {
+            fontrenderer.drawInBatch("Not Connected!", 10, currenty, 0xffff0000, false, matrixStack.last().pose(), buffer, false, 0, light);
+            fontrenderer.drawInBatch("Press 'Scan'", 10, currenty+20, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
+            fontrenderer.drawInBatch("at controller", 10, currenty+30, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
+        } else {
+            double cursorX = mover.getCursorX();
+            double cursorY = mover.getCursorY();
+
+            List<String> platforms = mover.getPlatformsFromServer();
+            int start = mover.getCurrentPage() * LINES_SUPPORTED;
+            for (int i = start ; i < platforms.size() ; i++) {
+                String line = platforms.get(i);
+                int color = line.equals(currentPlatform) ? currentcolor : textcolor;
+
+                renderCursor(matrixStack, buffer, mover, currenty, light, cursorY, currenty, currenty + 10, 5, 95, line);
+                fontrenderer.drawInBatch(line, 10, currenty, 0xff000000 | color, false, matrixStack.last().pose(), buffer, false, 0, light);
+                currenty += 10;
+                l++;
+                if (l >= linesSupported) {
+                    break;
+                }
             }
 
-            fontrenderer.drawInBatch(line, 10, currenty, 0xff000000 | color, false, matrixStack.last().pose(), buffer, false, 0, light);
-            currenty += 10;
-            l++;
-            if (l >= linesSupported) {
-                break;
+            if (platforms.size() > LINES_SUPPORTED) {
+                currenty = 12 + 10 * LINES_SUPPORTED;
+                if (currenty / 100.0 <= cursorY && cursorY <= (currenty + 10) / 100.0) {
+                    renderCursor(matrixStack, buffer, mover, currenty, light, cursorX, 68, 78, 68, 78, "___<___");
+                    renderCursor(matrixStack, buffer, mover, currenty, light, cursorX, 78, 88, 78, 88, "");
+                    renderCursor(matrixStack, buffer, mover, currenty, light, cursorX, 88, 98, 88, 98, "___>___");
+                }
+                fontrenderer.drawInBatch("<", 70, currenty, 0xff0033dd, false, matrixStack.last().pose(), buffer, false, 0, light);
+                fontrenderer.drawInBatch("" + (mover.getCurrentPage() + 1), 80, currenty, 0xff0033dd, false, matrixStack.last().pose(), buffer, false, 0, light);
+                fontrenderer.drawInBatch(">", 90, currenty, 0xff0033dd, false, matrixStack.last().pose(), buffer, false, 0, light);
             }
         }
         matrixStack.popPose();
     }
+
+    private static void renderCursor(PoseStack matrixStack, MultiBufferSource buffer, MoverTileEntity mover, int currenty, int light, double cursor, int cursor1, int cursor2, int x1, int x2, String s) {
+        if (cursor1 / 100.0 <= cursor && cursor <= cursor2 / 100.0) {
+            matrixStack.translate(0, 0, -0.01);
+            RenderHelper.drawHorizontalGradientRect(matrixStack, buffer, x1, currenty - 1, x2, currenty + 9, 0xff333333, 0xff333333, light);
+            matrixStack.translate(0, 0, 0.01);
+            mover.setHighlightedMover(s);
+        }
+    }
+
+    private static void renderStatus(PoseStack matrixStack, MultiBufferSource buffer, Font fontrenderer, int lightmapValue,
+                                     MoverTileEntity mover) {
+        boolean bright = true;  // @todo
+        int textcolor = 0xff999999;
+        int currentcolor = 0x00ff00;
+
+        float factor = 2.0f;
+        int currenty = 9;
+
+        float f = 0.005F;
+
+        matrixStack.pushPose();
+        matrixStack.translate(-0.5F, 0.5F, 1 -.03);  // @todo tileEntity.getRenderOffset());
+        matrixStack.scale(f * factor, -1.0f * f * factor, f);
+        int l = 0;
+        int light = bright ? LightTexture.FULL_BRIGHT : lightmapValue;
+        String currentPlatform = mover.getCurrentPlatform();
+
+        if (!mover.isMoverValid()) {
+            fontrenderer.drawInBatch("Not Connected!", 10, currenty, 0xffff0000, false, matrixStack.last().pose(), buffer, false, 0, light);
+            fontrenderer.drawInBatch("Press 'Scan'", 10, currenty+20, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
+            fontrenderer.drawInBatch("at controller", 10, currenty+30, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
+        } else {
+            fontrenderer.drawInBatch("At:", 10, currenty, textcolor, false, matrixStack.last().pose(), buffer, false, 0, light);
+            fontrenderer.drawInBatch(currentPlatform, 30, currenty, currentcolor, false, matrixStack.last().pose(), buffer, false, 0, light);
+            currenty += 10;
+            String destinationName = VehicleCard.getDesiredDestinationName(mover.getCard());
+            if (destinationName != null && !destinationName.isEmpty()) {
+                fontrenderer.drawInBatch("To:", 10, currenty, textcolor, false, matrixStack.last().pose(), buffer, false, 0, light);
+                fontrenderer.drawInBatch(destinationName, 30, currenty, currentcolor, false, matrixStack.last().pose(), buffer, false, 0, light);
+            }
+        }
+        matrixStack.popPose();
+    }
+
 
     /**
      * Add code that is called very early in rendering

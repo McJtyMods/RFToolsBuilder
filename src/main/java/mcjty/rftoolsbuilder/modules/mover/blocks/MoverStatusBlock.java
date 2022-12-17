@@ -14,12 +14,11 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import javax.annotation.Nullable;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
+import static mcjty.rftoolsbuilder.modules.mover.blocks.MoverControlBlock.HORIZ_FACING;
 
-public class MoverControlBlock extends BaseBlock {
+public class MoverStatusBlock extends BaseBlock {
 
-    public static final DirectionProperty HORIZ_FACING = DirectionProperty.create("horizfacing", Direction.Plane.HORIZONTAL);
-
-    public MoverControlBlock() {
+    public MoverStatusBlock() {
         super(new BlockBuilder()
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .info(key("message.rftoolsbuilder.shiftmessage"))
