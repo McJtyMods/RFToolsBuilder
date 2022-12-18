@@ -83,7 +83,6 @@ public class MoverTileEntity extends TickingTileEntity {
     @GuiValue
     private String name;
 
-    // @todo REMOVE ME
     @GuiValue
     public static final Value<?, String> VALUE_CONNECTIONS = Value.create("connections", Type.STRING, MoverTileEntity::getConnectionCount, MoverTileEntity::setConnectionCount);
     private String connections = "";
@@ -110,7 +109,7 @@ public class MoverTileEntity extends TickingTileEntity {
     private int currentPage = 0;
 
     // A cache for invisible mover blocks
-    private Set<BlockPos> invisibleMoverBlocks = null;
+    private Map<BlockPos, BlockState> invisibleMoverBlocks = null;
 
     private final EntityMovementLogic logic = new EntityMovementLogic(this);
 
@@ -422,7 +421,7 @@ public class MoverTileEntity extends TickingTileEntity {
             // We are moving. Remove the mover blocks if there are any
             if (invisibleMoverBlocks != null) {
                 BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
-                invisibleMoverBlocks.forEach(p -> {
+                invisibleMoverBlocks.forEach((p, st) -> {
                     BlockState state = level.getBlockState(p);
                     if (state == invisibleState) {
                         level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
@@ -440,10 +439,14 @@ public class MoverTileEntity extends TickingTileEntity {
             if (cnt <= 0) {
                 cnt = 4;
                 BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
-                invisibleMoverBlocks.forEach(p -> {
+                invisibleMoverBlocks.forEach((p, originalState) -> {
                     BlockState state = level.getBlockState(p);
                     if (state != invisibleState && state.getMaterial().isReplaceable()) {
                         level.setBlock(p, invisibleState, Block.UPDATE_ALL);
+                        if (level.getBlockEntity(p) instanceof InvisibleMoverBE invisibleMover) {
+                            invisibleMover.setOriginalState(originalState);
+                            level.sendBlockUpdated(p, invisibleState, invisibleState, Block.UPDATE_CLIENTS + Block.UPDATE_NEIGHBORS);
+                        }
                     }
                 });
             }
@@ -453,13 +456,17 @@ public class MoverTileEntity extends TickingTileEntity {
     private void updateVehicle() {
         ItemStack vehicle = items.getStackInSlot(SLOT_VEHICLE_CARD);
         if (invisibleMoverBlocks == null) {
-            invisibleMoverBlocks = new HashSet<>();
+            invisibleMoverBlocks = new HashMap<>();
         }
         cnt = 0;
         removeInvisibleBlocks();
         if (!vehicle.isEmpty()) {
             Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(vehicle, worldPosition.offset(1, 1, 1));
-            blocks.values().forEach(invisibleMoverBlocks::addAll);
+            for (Map.Entry<BlockState, List<BlockPos>> entry : blocks.entrySet()) {
+                for (BlockPos pos : entry.getValue()) {
+                    invisibleMoverBlocks.put(pos, entry.getKey());
+                }
+            }
         } else {
             logic.setDestination(null);
         }
@@ -468,7 +475,7 @@ public class MoverTileEntity extends TickingTileEntity {
 
     private void removeInvisibleBlocks() {
         BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
-        invisibleMoverBlocks.forEach(p -> {
+        invisibleMoverBlocks.forEach((p, st) -> {
             BlockState state = level.getBlockState(p);
             if (state == invisibleState) {
                 level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);

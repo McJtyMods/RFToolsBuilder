@@ -10,13 +10,17 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -24,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InvisibleMoverBlock extends Block {
+public class InvisibleMoverBlock extends Block implements EntityBlock {
 
     public static record MoverData(BlockPos mover, BlockPos controlPos, Direction horizDirection, Direction direction) {}
 
@@ -34,7 +38,13 @@ public class InvisibleMoverBlock extends Block {
     private final Map<BlockPos, List<MoverData>> dataByMover = new HashMap<>();
 
     public InvisibleMoverBlock() {
-        super(Properties.of(Material.AIR).noLootTable().strength(-1.0F, 3600000.0F).noOcclusion().randomTicks());
+        super(Properties.of(Material.STONE).noLootTable().strength(-1.0F, 3600000.0F).noOcclusion().randomTicks());
+    }
+
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new InvisibleMoverBE(pos, state);
     }
 
     @Override
@@ -43,8 +53,14 @@ public class InvisibleMoverBlock extends Block {
     }
 
     @Override
-    public VoxelShape getOcclusionShape(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
-        return Shapes.empty();
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (level.getBlockEntity(pos) instanceof InvisibleMoverBE invisibleMover) {
+            BlockState originalState = invisibleMover.getOriginalState();
+            if (originalState != null && !originalState.isAir()) {
+                return originalState.getShape(level, pos, context);
+            }
+        }
+        return super.getShape(state, level, pos, context);
     }
 
     @Override
