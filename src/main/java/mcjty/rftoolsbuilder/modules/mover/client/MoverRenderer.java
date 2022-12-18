@@ -153,8 +153,7 @@ public class MoverRenderer {
         vt(builder, matrix, -ss, -ss, zfront, u0, v1, packedLight);
     }
 
-    public static void vt(VertexConsumer renderer, Matrix4f matrix, float x, float y, float z, float u, float v,
-                          int packedLight) {
+    public static void vt(VertexConsumer renderer, Matrix4f matrix, float x, float y, float z, float u, float v, int packedLight) {
         renderer.vertex(matrix, x, y, z).color(1f, 1f, 1f, 1f).uv(u, v).uv2(packedLight).normal(1.0F, 0.0F, 0.0F).endVertex();
     }
 
@@ -173,15 +172,16 @@ public class MoverRenderer {
         matrixStack.translate(-0.5F, 0.5F, 1 -.03);  // @todo tileEntity.getRenderOffset());
         matrixStack.scale(f * factor, -1.0f * f * factor, f);
         int l = 0;
-        int linesSupported = LINES_SUPPORTED;
         int light = bright ? LightTexture.FULL_BRIGHT : lightmapValue;
         String currentPlatform = mover.getCurrentPlatform();
         mover.setHighlightedMover("");
 
         if (!mover.isMoverValid()) {
             fontrenderer.drawInBatch("Not Connected!", 10, currenty, 0xffff0000, false, matrixStack.last().pose(), buffer, false, 0, light);
-            fontrenderer.drawInBatch("Press 'Scan'", 10, currenty+20, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
-            fontrenderer.drawInBatch("at controller", 10, currenty+30, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
+            fontrenderer.drawInBatch("Press 'Scan'", 10, currenty + 20, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
+            fontrenderer.drawInBatch("at controller", 10, currenty + 30, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
+        } else if (!mover.hasEnoughPower()) {
+            fontrenderer.drawInBatch("No Power!", 10, currenty, 0xffff0000, false, matrixStack.last().pose(), buffer, false, 0, light);
         } else {
             double cursorX = mover.getCursorX();
             double cursorY = mover.getCursorY();
@@ -196,7 +196,7 @@ public class MoverRenderer {
                 fontrenderer.drawInBatch(line, 10, currenty, 0xff000000 | color, false, matrixStack.last().pose(), buffer, false, 0, light);
                 currenty += 10;
                 l++;
-                if (l >= linesSupported) {
+                if (l >= LINES_SUPPORTED) {
                     break;
                 }
             }

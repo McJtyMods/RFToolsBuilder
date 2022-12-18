@@ -1,8 +1,6 @@
 package mcjty.rftoolsbuilder.modules.mover.blocks;
 
 import mcjty.lib.api.container.DefaultContainerProvider;
-import mcjty.lib.api.infusable.DefaultInfusable;
-import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.bindings.GuiValue;
 import mcjty.lib.bindings.Value;
 import mcjty.lib.blocks.BaseBlock;
@@ -77,9 +75,6 @@ public class MoverTileEntity extends TickingTileEntity {
             .setupSync(this));
 
 
-    @Cap(type = CapType.INFUSABLE)
-    private final IInfusable infusable = new DefaultInfusable(MoverTileEntity.this);
-
     @GuiValue
     private String name;
 
@@ -98,6 +93,8 @@ public class MoverTileEntity extends TickingTileEntity {
 
     // Counter for sending info to the clients
     private int clientUpdateCnt;
+    // Data on server, is synced with client
+    private boolean enoughPower = false;
 
     // Client side variables
     private List<String> platformsFromServer = Collections.emptyList();
@@ -105,7 +102,7 @@ public class MoverTileEntity extends TickingTileEntity {
     private double cursorX;
     private double cursorY;
     private String highlightedMover;
-    private boolean moverValid;
+    private boolean moverValid = false;
     private int currentPage = 0;
 
     // A cache for invisible mover blocks
@@ -120,7 +117,6 @@ public class MoverTileEntity extends TickingTileEntity {
         return new BaseBlock(new BlockBuilder()
                 .tileEntitySupplier(MoverTileEntity::new)
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
-                .infusable()
                 .manualEntry(ManualHelper.create("rftoolsbuilder:todo"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(), gold()));
@@ -157,6 +153,11 @@ public class MoverTileEntity extends TickingTileEntity {
         logic.tryMoveVehicleServer();
         // If there is a vehicle we sync status to clients
         syncVehicleStatus();
+        MoverControllerTileEntity controller = getController();
+        enoughPower = false;
+        if (controller != null) {
+            enoughPower = controller.hasEnoughPower();
+        }
     }
 
     @Override
@@ -184,6 +185,11 @@ public class MoverTileEntity extends TickingTileEntity {
     // Only call client side
     public boolean isMoverValid() {
         return moverValid;
+    }
+
+    // Only call client side
+    public boolean hasEnoughPower() {
+        return enoughPower;
     }
 
     public int getCurrentPage() {
@@ -218,10 +224,11 @@ public class MoverTileEntity extends TickingTileEntity {
         return network.containsValue(destination);
     }
 
-    public void setClientRenderInfo(List<String> platforms, String currentPlatform, boolean valid) {
+    public void setClientRenderInfo(List<String> platforms, String currentPlatform, boolean valid, boolean enoughPower) {
         this.platformsFromServer = platforms;
         this.currentPlatform = currentPlatform;
         this.moverValid = valid;
+        this.enoughPower = enoughPower;
     }
 
     public List<String> getPlatformsFromServer() {
@@ -245,7 +252,7 @@ public class MoverTileEntity extends TickingTileEntity {
                     platforms = Collections.emptyList();
                 }
                 RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(worldPosition)),
-                        new PacketSyncVehicleInformationToClient(worldPosition, platforms, getName(), valid));
+                        new PacketSyncVehicleInformationToClient(worldPosition, platforms, getName(), valid, hasEnoughPower()));
             }
         }
     }
@@ -590,6 +597,16 @@ public class MoverTileEntity extends TickingTileEntity {
     public void setController(MoverControllerTileEntity controller) {
         this.controller = controller.getBlockPos();
         setChanged();
+    }
+
+    public MoverControllerTileEntity getController() {
+        if (controller == null) {
+            return null;
+        }
+        if (level.getBlockEntity(controller) instanceof MoverControllerTileEntity controller) {
+            return controller;
+        }
+        return null;
     }
 
     @NotNull

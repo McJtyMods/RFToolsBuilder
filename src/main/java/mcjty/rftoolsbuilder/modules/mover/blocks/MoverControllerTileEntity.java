@@ -60,7 +60,6 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     public static final int MAXSCAN = 128;  //@todo configurable
 
-    // For the gui: the selected vehicle
     @GuiValue
     public static final Value<?, String> VALUE_SELECTED_VEHICLE = Value.create("selectedVehicle", Type.STRING, MoverControllerTileEntity::getSelectedVehicle, MoverControllerTileEntity::setSelectedVehicle);
     private String selectedVehicle;
@@ -128,10 +127,20 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         return null;
     }
 
+    public boolean hasEnoughPower() {
+        return energyStorage.getEnergyStored() >= MoverConfiguration.RF_PER_MOVE.get();
+    }
+
     // Find a mover and an optional vehicle and setup movement
     // The vehicle can be null or empty string in which case we take the
     // vehicle nearest to the mover
     public void setupMovement(String moverName, String vehicle) {
+        if (energyStorage.getEnergyStored() < MoverConfiguration.RF_PER_MOVE.get()) {
+            // Not enough power
+            return;
+        }
+        energyStorage.consumeEnergy(MoverConfiguration.RF_PER_MOVE.get());
+
         MoverTileEntity destinationMover = findMover(moverName);
         if (destinationMover != null) {
             if (vehicle == null || vehicle.trim().isEmpty()) {
@@ -280,7 +289,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
             (te, player, params) -> te.getNodes(),
             (te, player, params, list) -> GuiMoverController.setNodesFromServer(list));
 
-public static class NodePairSerializer implements ISerializer<Pair<BlockPos, String>> {
+    public static class NodePairSerializer implements ISerializer<Pair<BlockPos, String>> {
     @Override
     public Function<FriendlyByteBuf, Pair<BlockPos, String>> getDeserializer() {
         return buf -> Pair.of(buf.readBlockPos(), buf.readUtf(32767));
