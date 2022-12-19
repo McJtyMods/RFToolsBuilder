@@ -19,6 +19,9 @@
   "block.rftoolsbuilder.vehicle_builder": "Vehicle Builder",
   "block.rftoolsbuilder.invisible_mover_block": "Vehicle",
   "block.rftoolsbuilder.mover_control": "Mover Control",
+  "block.rftoolsbuilder.mover_control2": "Mover Control (Page 2)",
+  "block.rftoolsbuilder.mover_control3": "Mover Control (Page 3)",
+  "block.rftoolsbuilder.mover_control4": "Mover Control (Page 4)",
   "block.rftoolsbuilder.mover_status": "Mover Status",
 
   "item.rftoolsbuilder.shape_card_def": "Shape Card",

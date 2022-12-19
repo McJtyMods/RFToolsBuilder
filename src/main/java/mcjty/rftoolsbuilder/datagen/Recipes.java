@@ -10,9 +10,10 @@ import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.world.item.Items;
-import net.minecraft.tags.ItemTags;
+import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.Tags;
 
@@ -53,6 +54,18 @@ public class Recipes extends BaseRecipeProvider {
                         .define('C', Blocks.REPEATER)
                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
                 "rTr", "CFC", "iTi");
+        build(consumer, ShapelessRecipeBuilder.shapeless(MoverModule.MOVER_CONTROL2_BLOCK.get())
+                        .requires(MoverModule.MOVER_CONTROL_BLOCK.get())
+                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())));
+        build(consumer, ShapelessRecipeBuilder.shapeless(MoverModule.MOVER_CONTROL3_BLOCK.get())
+                        .requires(MoverModule.MOVER_CONTROL2_BLOCK.get())
+                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())));
+        build(consumer, ShapelessRecipeBuilder.shapeless(MoverModule.MOVER_CONTROL4_BLOCK.get())
+                        .requires(MoverModule.MOVER_CONTROL3_BLOCK.get())
+                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())));
+        build(consumer, new ResourceLocation(RFToolsBuilder.MODID, "mover_control_back"), ShapelessRecipeBuilder.shapeless(MoverModule.MOVER_CONTROL_BLOCK.get())
+                        .requires(MoverModule.MOVER_CONTROL4_BLOCK.get())
+                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())));
         build(consumer, ShapedRecipeBuilder.shaped(MoverModule.MOVER_STATUS_BLOCK.get())
                         .define('C', Blocks.COMPARATOR)
                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),

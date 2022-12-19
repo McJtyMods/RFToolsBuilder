@@ -1,0 +1,96 @@
+{
+  "variants": {
+    "facing=down,horizfacing=east": {
+      "model": "rftoolsbuilder:block/mover_control2_270",
+      "x": 90
+    },
+    "facing=down,horizfacing=north": {
+      "model": "rftoolsbuilder:block/mover_control2_180",
+      "x": 90
+    },
+    "facing=down,horizfacing=south": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "x": 90
+    },
+    "facing=down,horizfacing=west": {
+      "model": "rftoolsbuilder:block/mover_control2_90",
+      "x": 90
+    },
+    "facing=east,horizfacing=east": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 90
+    },
+    "facing=east,horizfacing=north": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 90
+    },
+    "facing=east,horizfacing=south": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 90
+    },
+    "facing=east,horizfacing=west": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 90
+    },
+    "facing=north,horizfacing=east": {
+      "model": "rftoolsbuilder:block/mover_control2_0"
+    },
+    "facing=north,horizfacing=north": {
+      "model": "rftoolsbuilder:block/mover_control2_0"
+    },
+    "facing=north,horizfacing=south": {
+      "model": "rftoolsbuilder:block/mover_control2_0"
+    },
+    "facing=north,horizfacing=west": {
+      "model": "rftoolsbuilder:block/mover_control2_0"
+    },
+    "facing=south,horizfacing=east": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 180
+    },
+    "facing=south,horizfacing=north": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 180
+    },
+    "facing=south,horizfacing=south": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 180
+    },
+    "facing=south,horizfacing=west": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 180
+    },
+    "facing=up,horizfacing=east": {
+      "model": "rftoolsbuilder:block/mover_control2_90",
+      "x": -90
+    },
+    "facing=up,horizfacing=north": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "x": -90
+    },
+    "facing=up,horizfacing=south": {
+      "model": "rftoolsbuilder:block/mover_control2_180",
+      "x": -90
+    },
+    "facing=up,horizfacing=west": {
+      "model": "rftoolsbuilder:block/mover_control2_270",
+      "x": -90
+    },
+    "facing=west,horizfacing=east": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 270
+    },
+    "facing=west,horizfacing=north": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 270
+    },
+    "facing=west,horizfacing=south": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 270
+    },
+    "facing=west,horizfacing=west": {
+      "model": "rftoolsbuilder:block/mover_control2_0",
+      "y": 270
+    }
+  }
+}

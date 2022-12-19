@@ -17,18 +17,24 @@ import static mcjty.lib.builder.TooltipBuilder.*;
 public class MoverControlBlock extends BaseBlock {
 
     public static final DirectionProperty HORIZ_FACING = DirectionProperty.create("horizfacing", Direction.Plane.HORIZONTAL);
+    private final int page;
 
-    public MoverControlBlock() {
+    public MoverControlBlock(int page) {
         super(new BlockBuilder()
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(), gold()));
+        this.page = page;
     }
 
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return super.getStateForPlacement(context).setValue(HORIZ_FACING, context.getPlayer().getDirection().getOpposite());
+    }
+
+    public int getPage() {
+        return page;
     }
 
     @Override

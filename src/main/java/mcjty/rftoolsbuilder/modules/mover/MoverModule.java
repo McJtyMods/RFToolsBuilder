@@ -45,8 +45,15 @@ public class MoverModule implements IModule {
     public static final RegistryObject<InvisibleMoverBlock> INVISIBLE_MOVER_BLOCK = BLOCKS.register("invisible_mover", InvisibleMoverBlock::new);
     public static final RegistryObject<BlockEntityType<?>> TYPE_INVISIBLE_MOVER = TILES.register("invisible_mover", () -> BlockEntityType.Builder.of(InvisibleMoverBE::new, INVISIBLE_MOVER_BLOCK.get()).build(null));
 
-    public static final RegistryObject<Block> MOVER_CONTROL_BLOCK = BLOCKS.register("mover_control", MoverControlBlock::new);
+    public static final RegistryObject<Block> MOVER_CONTROL_BLOCK = BLOCKS.register("mover_control", () -> new MoverControlBlock(0));
     public static final RegistryObject<Item> MOVER_CONTROL_ITEM = ITEMS.register("mover_control", () -> new BlockItem(MOVER_CONTROL_BLOCK.get(), createStandardProperties()));
+    public static final RegistryObject<Block> MOVER_CONTROL2_BLOCK = BLOCKS.register("mover_control2", () -> new MoverControlBlock(1));
+    public static final RegistryObject<Item> MOVER_CONTROL2_ITEM = ITEMS.register("mover_control2", () -> new BlockItem(MOVER_CONTROL2_BLOCK.get(), createStandardProperties()));
+    public static final RegistryObject<Block> MOVER_CONTROL3_BLOCK = BLOCKS.register("mover_control3", () -> new MoverControlBlock(2));
+    public static final RegistryObject<Item> MOVER_CONTROL3_ITEM = ITEMS.register("mover_control3", () -> new BlockItem(MOVER_CONTROL3_BLOCK.get(), createStandardProperties()));
+    public static final RegistryObject<Block> MOVER_CONTROL4_BLOCK = BLOCKS.register("mover_control4", () -> new MoverControlBlock(3));
+    public static final RegistryObject<Item> MOVER_CONTROL4_ITEM = ITEMS.register("mover_control4", () -> new BlockItem(MOVER_CONTROL4_BLOCK.get(), createStandardProperties()));
+
     public static final RegistryObject<Block> MOVER_STATUS_BLOCK = BLOCKS.register("mover_status", MoverStatusBlock::new);
     public static final RegistryObject<Item> MOVER_STATUS_ITEM = ITEMS.register("mover_status", () -> new BlockItem(MOVER_STATUS_BLOCK.get(), createStandardProperties()));
 

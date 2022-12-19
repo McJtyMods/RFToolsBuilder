@@ -36,6 +36,9 @@ public class Items extends BaseItemModelProvider {
         parentedBlock(MoverModule.MOVER_CONTROLLER.get(), "block/mover_controller");
         parentedBlock(MoverModule.VEHICLE_BUILDER.get(), "block/vehicle_builder");
         parentedBlock(MoverModule.MOVER_CONTROL_BLOCK.get(), "block/mover_control_0");
+        parentedBlock(MoverModule.MOVER_CONTROL2_BLOCK.get(), "block/mover_control2_0");
+        parentedBlock(MoverModule.MOVER_CONTROL3_BLOCK.get(), "block/mover_control3_0");
+        parentedBlock(MoverModule.MOVER_CONTROL4_BLOCK.get(), "block/mover_control4_0");
         parentedBlock(MoverModule.MOVER_STATUS_BLOCK.get(), "block/mover_status_0");
 
         itemGenerated(BuilderModule.SPACE_CHAMBER_CARD.get(), "item/spacechambercarditem");

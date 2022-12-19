@@ -10,6 +10,7 @@ import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraftforge.client.model.generators.BlockModelBuilder;
@@ -41,23 +42,11 @@ public class BlockStates extends BaseBlockStateProvider {
         orientedBlock(MoverModule.MOVER_CONTROLLER.get(), frontBasedModel("mover_controller", modLoc("block/machinemovercontroller")));
         orientedBlock(MoverModule.VEHICLE_BUILDER.get(), frontBasedModel("vehicle_builder", modLoc("block/machinevehiclebuilder")));
 
-        ModelFile model0 = controlModuleBlock("mover_control_0", modLoc("block/movercontrol"), 0, ModelBuilder.FaceRotation.ZERO);
-        ModelFile model90 = controlModuleBlock("mover_control_90", modLoc("block/movercontrol"), 0, ModelBuilder.FaceRotation.CLOCKWISE_90);
-        ModelFile model180 = controlModuleBlock("mover_control_180", modLoc("block/movercontrol"), 0, ModelBuilder.FaceRotation.UPSIDE_DOWN);
-        ModelFile model270 = controlModuleBlock("mover_control_270", modLoc("block/movercontrol"), 0, ModelBuilder.FaceRotation.COUNTERCLOCKWISE_90);
-        orientedBlock(MoverModule.MOVER_CONTROL_BLOCK.get(), (blockState, bld) -> {
-            ModelFile model = getModelOriented24(model0, model90, model180, model270, blockState);
-            bld.modelFile(model);
-        });
-
-        ModelFile smodel0 = controlModuleBlock("mover_status_0", modLoc("block/moverstatus"), 0, ModelBuilder.FaceRotation.ZERO);
-        ModelFile smodel90 = controlModuleBlock("mover_status_90", modLoc("block/moverstatus"), 0, ModelBuilder.FaceRotation.CLOCKWISE_90);
-        ModelFile smodel180 = controlModuleBlock("mover_status_180", modLoc("block/moverstatus"), 0, ModelBuilder.FaceRotation.UPSIDE_DOWN);
-        ModelFile smodel270 = controlModuleBlock("mover_status_270", modLoc("block/moverstatus"), 0, ModelBuilder.FaceRotation.COUNTERCLOCKWISE_90);
-        orientedBlock(MoverModule.MOVER_STATUS_BLOCK.get(), (blockState, bld) -> {
-            ModelFile model = getModelOriented24(smodel0, smodel90, smodel180, smodel270, blockState);
-            bld.modelFile(model);
-        });
+        create24Model(MoverModule.MOVER_CONTROL_BLOCK.get(), "mover_control_", "block/movercontrol");
+        create24Model(MoverModule.MOVER_CONTROL2_BLOCK.get(), "mover_control2_", "block/movercontrol2");
+        create24Model(MoverModule.MOVER_CONTROL3_BLOCK.get(), "mover_control3_", "block/movercontrol3");
+        create24Model(MoverModule.MOVER_CONTROL4_BLOCK.get(), "mover_control4_", "block/movercontrol4");
+        create24Model(MoverModule.MOVER_STATUS_BLOCK.get(), "mover_status_", "block/moverstatus");
 
         BlockModelBuilder support0 = models().cubeAll("supportblock_status0", modLoc("block/supportblock")).renderType("translucent");
         BlockModelBuilder support1 = models().cubeAll("supportblock_status1", modLoc("block/supportyellowblock")).renderType("translucent");
@@ -84,6 +73,17 @@ public class BlockStates extends BaseBlockStateProvider {
         simpleBlock(ShieldModule.SHIELDING_SOLID.get(), shieldingModel);
         simpleBlock(ShieldModule.SHIELDING_TRANSLUCENT.get(), shieldingModel);
         simpleBlock(ShieldModule.SHIELDING_CUTOUT.get(), shieldingModel);
+    }
+
+    private void create24Model(Block block, String modelPrefix, String txt) {
+        ModelFile model0 = controlModuleBlock(modelPrefix + "0", modLoc(txt), 0, ModelBuilder.FaceRotation.ZERO);
+        ModelFile model90 = controlModuleBlock(modelPrefix + "90", modLoc(txt), 0, ModelBuilder.FaceRotation.CLOCKWISE_90);
+        ModelFile model180 = controlModuleBlock(modelPrefix + "180", modLoc(txt), 0, ModelBuilder.FaceRotation.UPSIDE_DOWN);
+        ModelFile model270 = controlModuleBlock(modelPrefix + "270", modLoc(txt), 0, ModelBuilder.FaceRotation.COUNTERCLOCKWISE_90);
+        orientedBlock(block, (blockState, bld) -> {
+            ModelFile model = getModelOriented24(model0, model90, model180, model270, blockState);
+            bld.modelFile(model);
+        });
     }
 
     private ModelFile getModelOriented24(ModelFile model0, ModelFile model90, ModelFile model180, ModelFile model270, BlockState blockState) {
