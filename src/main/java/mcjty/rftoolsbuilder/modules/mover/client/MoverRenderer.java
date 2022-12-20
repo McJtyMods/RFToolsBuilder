@@ -65,7 +65,7 @@ public class MoverRenderer {
         Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(card, new BlockPos(1, 1, 1));
         MoverModule.INVISIBLE_MOVER_BLOCK.get().removeData(mover.getBlockPos());
         AtomicInteger totalPagers = new AtomicInteger();
-        boolean pagers[] = new boolean[] { false, false, false, false };
+        boolean[] pagers = new boolean[] { false, false, false, false };
         blocks.forEach((state, positions) -> {
             if (state.getBlock() instanceof MoverControlBlock moverControl) {
                 if (!pagers[moverControl.getPage()]) {
@@ -73,6 +73,9 @@ public class MoverRenderer {
                     totalPagers.incrementAndGet();
                 }
             }
+        });
+        mover.setHighlightedMover("");
+        blocks.forEach((state, positions) -> {
             positions.forEach(pos -> {
                 matrixStack.pushPose();
                 matrixStack.translate(pos.getX(), pos.getY(), pos.getZ());
@@ -92,7 +95,7 @@ public class MoverRenderer {
                     int lightColor = LevelRenderer.getLightColor(level, realPos);
                     setupTransform(matrixStack, state);
                     if (state.getBlock() instanceof MoverControlBlock moverControl) {
-                        renderMoverControl(matrixStack, buffer, mover, lightColor, getCorrectedPage(moverControl.getPage(), pagers), totalPagers.get());
+                        renderMoverControl(matrixStack, buffer, mover, lightColor, Objects.equals(realPos, mover.getCursorBlock()), getCorrectedPage(moverControl.getPage(), pagers), totalPagers.get());
                     } else {
                         renderMoverStatus(matrixStack, buffer, mover, lightColor);
                     }
@@ -103,7 +106,7 @@ public class MoverRenderer {
         matrixStack.popPose();
     }
 
-    private static int getCorrectedPage(int page, boolean pagers[]) {
+    private static int getCorrectedPage(int page, boolean[] pagers) {
         for (int i = 0 ; i < pagers.length ; i++) {
             if (pagers[i]) {
                 if (page == 0) {
@@ -122,9 +125,9 @@ public class MoverRenderer {
     }
 
     private static void renderMoverControl(@NotNull PoseStack matrixStack, @NotNull MultiBufferSource buffer,
-                                           MoverTileEntity mover, int lightColor, int page, int totalPagers) {
+                                           MoverTileEntity mover, int lightColor, boolean doCursor, int page, int totalPagers) {
         renderScreenBoard(matrixStack, buffer, 1.0f, lightColor);
-        renderMovers(matrixStack, buffer, Minecraft.getInstance().font, lightColor, mover, page, totalPagers);
+        renderMovers(matrixStack, buffer, Minecraft.getInstance().font, lightColor, mover, doCursor, page, totalPagers);
     }
 
     private static void setupTransform(@NotNull PoseStack matrixStack, BlockState state) {
@@ -179,7 +182,7 @@ public class MoverRenderer {
     }
 
     private static void renderMovers(PoseStack matrixStack, MultiBufferSource buffer, Font fontrenderer, int lightmapValue,
-                                     MoverTileEntity mover, int page, int totalPagers) {
+                                     MoverTileEntity mover, boolean doCursor, int page, int totalPagers) {
         boolean bright = true;  // @todo
         int textcolor = 0x999999;
         int currentcolor = 0x00ff00;
@@ -194,7 +197,6 @@ public class MoverRenderer {
         matrixStack.scale(f * factor, -1.0f * f * factor, f);
         int light = bright ? LightTexture.FULL_BRIGHT : lightmapValue;
         String currentPlatform = mover.getCurrentPlatform();
-        mover.setHighlightedMover("");
 
         if (!mover.isMoverValid()) {
             fontrenderer.drawInBatch("Not Connected!", 10, currenty, 0xffff0000, false, matrixStack.last().pose(), buffer, false, 0, light);
@@ -222,7 +224,9 @@ public class MoverRenderer {
                 String line = platforms.get(i);
                 int color = line.equals(currentPlatform) ? currentcolor : textcolor;
 
-                renderCursor(matrixStack, buffer, mover, currenty, light, cursorY, currenty, currenty + 10, 5, 95, line);
+                if (doCursor) {
+                    renderCursor(matrixStack, buffer, mover, currenty, light, cursorY, currenty, currenty + 10, 5, 95, line);
+                }
                 fontrenderer.drawInBatch(line, 10, currenty, 0xff000000 | color, false, matrixStack.last().pose(), buffer, false, 0, light);
                 currenty += 10;
                 l++;
@@ -233,7 +237,7 @@ public class MoverRenderer {
 
             if (platforms.size() > totalSupportedMovers && showNavigator) {
                 currenty = 12 + 10 * LINES_SUPPORTED;
-                if (currenty / 100.0 <= cursorY && cursorY <= (currenty + 10) / 100.0) {
+                if (doCursor && currenty / 100.0 <= cursorY && cursorY <= (currenty + 10) / 100.0) {
                     renderCursor(matrixStack, buffer, mover, currenty, light, cursorX, 68, 78, 68, 78, "___<___");
                     renderCursor(matrixStack, buffer, mover, currenty, light, cursorX, 78, 88, 78, 88, "");
                     renderCursor(matrixStack, buffer, mover, currenty, light, cursorX, 88, 98, 88, 98, "___>___");

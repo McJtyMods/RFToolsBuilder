@@ -99,6 +99,7 @@ public class MoverTileEntity extends TickingTileEntity {
     // Client side variables
     private List<String> platformsFromServer = Collections.emptyList();
     private String currentPlatform = "";
+    private BlockPos cursorBlock;
     private double cursorX;
     private double cursorY;
     private String highlightedMover;
@@ -173,6 +174,11 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
     // Only call client side
+    public BlockPos getCursorBlock() {
+        return cursorBlock;
+    }
+
+    // Only call client side
     public double getCursorX() {
         return cursorX;
     }
@@ -210,6 +216,7 @@ public class MoverTileEntity extends TickingTileEntity {
                     if (pos.equals(data.controlPos())) {
                         Pair<Double, Double> cursor = getCursor(mouseOver.getLocation().x - pos.getX(), mouseOver.getLocation().y - pos.getY(), mouseOver.getLocation().z - pos.getZ(),
                                 data.horizDirection(), data.direction());
+                        cursorBlock = pos;
                         cursorX = cursor.getLeft();
                         cursorY = cursor.getRight();
                         return;
@@ -498,8 +505,9 @@ public class MoverTileEntity extends TickingTileEntity {
             destMover.setSource(null);
             destMover.updateVehicle();
             destMover.updateVehicleStatus();
+            destMover.getLogic().snapEntitiesToSafety();
             destMover.getLogic().grabEntities();
-            destMover.getLogic().setGrabTimeout(5);
+            destMover.getLogic().setGrabTimeout(20);
         } else {
             // Something is wrong. The destination is gone. Stop the movement
             // @todo handle this more gracefully. Move back
@@ -553,7 +561,7 @@ public class MoverTileEntity extends TickingTileEntity {
         setChanged();
     }
 
-    public void hitScreenClient(double x, double y, double z, Direction hitDirection, Direction horizDirection, Direction direction) {
+    public void hitScreenClient(BlockPos pos, double x, double y, double z, Direction hitDirection, Direction horizDirection, Direction direction) {
 //        System.out.println("x = " + x + "," + y + "," + z);
 //        System.out.println("hitDirection = " + hitDirection);
 //        System.out.println("horizDirection = " + horizDirection);
@@ -561,6 +569,7 @@ public class MoverTileEntity extends TickingTileEntity {
 
         if (hitDirection == direction) {
             Pair<Double, Double> pair = getCursor(x, y, z, horizDirection, direction);
+            cursorBlock = pos;
             cursorX = pair.getLeft();
             cursorY = pair.getRight();
             if (highlightedMover != null && !highlightedMover.isEmpty()) {

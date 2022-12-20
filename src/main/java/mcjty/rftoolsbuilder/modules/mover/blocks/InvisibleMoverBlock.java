@@ -98,7 +98,7 @@ public class InvisibleMoverBlock extends Block implements EntityBlock {
                 HitResult mouseOver = SafeClientTools.getClientMouseOver();
                 if (mouseOver instanceof BlockHitResult blockResult) {
                     if (world.getBlockEntity(data.mover) instanceof MoverTileEntity mover) {
-                        mover.hitScreenClient(mouseOver.getLocation().x - pos.getX(), mouseOver.getLocation().y - pos.getY(), mouseOver.getLocation().z - pos.getZ(),
+                        mover.hitScreenClient(blockResult.getBlockPos(), mouseOver.getLocation().x - pos.getX(), mouseOver.getLocation().y - pos.getY(), mouseOver.getLocation().z - pos.getZ(),
                                 blockResult.getDirection(),
                                 data.horizDirection, data.direction);
                     }

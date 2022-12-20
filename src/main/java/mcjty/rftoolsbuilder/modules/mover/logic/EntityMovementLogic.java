@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
@@ -130,7 +131,7 @@ public class EntityMovementLogic {
         } else if (!vehicle.isEmpty()) {
             if (grabTimeout > 0) {
                 grabTimeout--;
-                doGrab(0, .5, 0);
+                doGrab(0, .1, 0);
             }
             // Check if the vehicle card here wants to go somewhere
             BlockPos destination = VehicleCard.getDesiredDestination(vehicle);
@@ -196,6 +197,20 @@ public class EntityMovementLogic {
 
     public void setGrabTimeout(int grabTimeout) {
         this.grabTimeout = grabTimeout;
+    }
+
+    // Make sure the entities don't collide with anything
+    public void snapEntitiesToSafety() {
+        AABB aabb = getVehicleAABB();
+        Level level = mover.getLevel();
+        for (Entity entity : level.getEntitiesOfClass(Entity.class, aabb)) {
+            List<VoxelShape> list = new ArrayList<>();
+            for (VoxelShape collision : level.getBlockCollisions(entity, entity.getBoundingBox().inflate(.1))) {
+                list.add(collision);
+            }
+            Vec3 vec3 = Entity.collideBoundingBox(entity, new Vec3(0, -.1, 0), entity.getBoundingBox().inflate(.1), level, list);
+            System.out.println("vec3 = " + vec3);
+        }
     }
 
     public void grabEntities() {
@@ -278,7 +293,7 @@ public class EntityMovementLogic {
 
     public long getTotalTicks() {
         // How long the entire movement should last
-        return (long) (totalDist * 70);
+        return (long) (totalDist * 30);
     }
 
     public BlockPos getDestination() {
