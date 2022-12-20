@@ -11,6 +11,7 @@ import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiVehicleBuilder;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlModuleItem;
+import mcjty.rftoolsbuilder.modules.mover.sound.Sounds;
 import mcjty.rftoolsbuilder.setup.Config;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -63,6 +64,7 @@ public class MoverModule implements IModule {
     public MoverModule() {
         IEventBus modbus = FMLJavaModLoadingContext.get().getModEventBus();
         modbus.addListener(ClientSetup::onTextureStitch);
+        Sounds.init();
     }
 
     @Override

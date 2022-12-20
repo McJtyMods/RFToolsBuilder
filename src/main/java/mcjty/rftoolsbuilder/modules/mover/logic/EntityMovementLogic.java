@@ -16,7 +16,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
@@ -131,7 +130,7 @@ public class EntityMovementLogic {
         } else if (!vehicle.isEmpty()) {
             if (grabTimeout > 0) {
                 grabTimeout--;
-                doGrab(0, .1, 0);
+                doGrab(0, 0, 0);
             }
             // Check if the vehicle card here wants to go somewhere
             BlockPos destination = VehicleCard.getDesiredDestination(vehicle);
@@ -199,20 +198,6 @@ public class EntityMovementLogic {
         this.grabTimeout = grabTimeout;
     }
 
-    // Make sure the entities don't collide with anything
-    public void snapEntitiesToSafety() {
-        AABB aabb = getVehicleAABB();
-        Level level = mover.getLevel();
-        for (Entity entity : level.getEntitiesOfClass(Entity.class, aabb)) {
-            List<VoxelShape> list = new ArrayList<>();
-            for (VoxelShape collision : level.getBlockCollisions(entity, entity.getBoundingBox().inflate(.1))) {
-                list.add(collision);
-            }
-            Vec3 vec3 = Entity.collideBoundingBox(entity, new Vec3(0, -.1, 0), entity.getBoundingBox().inflate(.1), level, list);
-            System.out.println("vec3 = " + vec3);
-        }
-    }
-
     public void grabEntities() {
         grabbedEntities.clear();
         AABB aabb = getVehicleAABB();
@@ -222,8 +207,6 @@ public class EntityMovementLogic {
             MoverTileEntity.wantUnmount.remove(entity.getId());
         }
 
-        // @todo Note resend grabbed entities for new players that come into range?
-        System.out.println("grabbedEntities.size() in grabEntities = " + grabbedEntities.size());
         syncGrabbedToClient();
     }
 
@@ -269,7 +252,16 @@ public class EntityMovementLogic {
                 entity.setOnGround(true);
             }
         });
+    }
 
+    public void endMoveServer() {
+        Level level = mover.getLevel();
+        Vec3 startPos = getMovingPosition(0, starttick);
+        Vec3 currentPos = getMovingPosition(0, starttick + getTotalTicks());
+        double dx = currentPos.x - startPos.x;
+        double dy = currentPos.y - startPos.y;
+        double dz = currentPos.z - startPos.z;
+        doGrab(dx, dy, dz);
     }
 
     private void actualMoveServer() {
@@ -289,6 +281,10 @@ public class EntityMovementLogic {
             // We are at the destination
             mover.arriveAtDestination();
         }
+    }
+
+    public long getStarttick() {
+        return starttick;
     }
 
     public long getTotalTicks() {

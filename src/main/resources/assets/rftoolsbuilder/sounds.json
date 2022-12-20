@@ -1,0 +1,5 @@
+{
+    "elevator_start" : {"category": "block", "sounds": ["rftoolsbuilder:elevator_start"]},
+    "elevator_loop" : {"category": "block", "sounds": ["rftoolsbuilder:elevator_loop"]},
+    "elevator_stop" : {"category": "block", "sounds": ["rftoolsbuilder:elevator_stop"]}
+}

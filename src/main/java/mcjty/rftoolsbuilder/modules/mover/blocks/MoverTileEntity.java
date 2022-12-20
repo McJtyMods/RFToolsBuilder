@@ -23,6 +23,7 @@ import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.logic.EntityMovementLogic;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketClickMover;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketSyncVehicleInformationToClient;
+import mcjty.rftoolsbuilder.modules.mover.sound.MoverSoundController;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -85,7 +86,7 @@ public class MoverTileEntity extends TickingTileEntity {
     // @todo a bit clumsy but it works. Better would be a cap in the player
     public static final Set<Integer> wantUnmount = new HashSet<>();
 
-    // A reference to the controller
+    // A reference to the controller (synced to client)
     private BlockPos controller;
 
     // Counter to make setting invisible blocks more efficient
@@ -165,6 +166,7 @@ public class MoverTileEntity extends TickingTileEntity {
     protected void tickClient() {
         //@todo optimize to only render when in front and distance
         handleRender();
+        handleSound();
         setCursor();
     }
 
@@ -261,6 +263,36 @@ public class MoverTileEntity extends TickingTileEntity {
                 RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(worldPosition)),
                         new PacketSyncVehicleInformationToClient(worldPosition, platforms, getName(), valid, hasEnoughPower()));
             }
+        }
+    }
+
+    private void handleSound() {
+        if (controller == null) {
+            return;
+        }
+        long starttick = getLogic().getStarttick();
+        long totalTicks = getLogic().getTotalTicks();
+        long current = level.getGameTime();
+        long endtick = starttick + totalTicks;
+        if (current >= starttick && current <= endtick) {
+            if (current <= endtick - 100) {
+                if (!MoverSoundController.isLoopPlaying(level, controller)) {
+                    if (current < starttick + 20) {
+                        if (!MoverSoundController.isStartupPlaying(level, controller)) {
+                            MoverSoundController.playStartup(level, controller, worldPosition);
+                        }
+                    } else {
+                        MoverSoundController.playLoop(level, controller, worldPosition);
+                    }
+                }
+            } else {
+                if (MoverSoundController.isLoopPlaying(level, controller)) {
+                    MoverSoundController.stopSound(level, controller);
+                }
+                MoverSoundController.playShutdown(level, controller, worldPosition);
+            }
+        } else {
+            MoverSoundController.stopSound(level, controller);
         }
     }
 
@@ -500,14 +532,15 @@ public class MoverTileEntity extends TickingTileEntity {
 
     public void arriveAtDestination() {
         if (level.getBlockEntity(logic.getDestination()) instanceof MoverTileEntity destMover) {
+            getLogic().endMoveServer();
+
             destMover.items.setStackInSlot(SLOT_VEHICLE_CARD, getCard());
             items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.EMPTY);
             destMover.setSource(null);
             destMover.updateVehicle();
             destMover.updateVehicleStatus();
-            destMover.getLogic().snapEntitiesToSafety();
             destMover.getLogic().grabEntities();
-            destMover.getLogic().setGrabTimeout(20);
+//            destMover.getLogic().setGrabTimeout(5);
         } else {
             // Something is wrong. The destination is gone. Stop the movement
             // @todo handle this more gracefully. Move back
@@ -710,6 +743,9 @@ public class MoverTileEntity extends TickingTileEntity {
         card.save(tag);
         tagCompound.put("card", tag);
         logic.saveClientDataToNBT(tagCompound);
+        if (controller != null) {
+            tagCompound.putIntArray("controller", new int[] { controller.getX(), controller.getY(), controller.getZ() });
+        }
     }
 
     @Override
@@ -717,5 +753,11 @@ public class MoverTileEntity extends TickingTileEntity {
         CompoundTag tag = tagCompound.getCompound("card");
         items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.of(tag));
         logic.loadClientDataFromNBT(tagCompound);
+        int[] controller = tagCompound.getIntArray("controller");
+        if (controller.length >= 3) {
+            this.controller = new BlockPos(controller[0], controller[1], controller[2]);
+        } else {
+            this.controller = null;
+        }
     }
 }
