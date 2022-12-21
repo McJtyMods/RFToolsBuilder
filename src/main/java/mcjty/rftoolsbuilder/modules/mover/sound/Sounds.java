@@ -8,9 +8,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class Sounds {
 
-    public static final RegistryObject<SoundEvent> ELEVATOR_START = Registration.SOUNDS.register("elevator_start", () -> new SoundEvent(new ResourceLocation(RFToolsBuilder.MODID, "elevator_start")));
-    public static final RegistryObject<SoundEvent> ELEVATOR_LOOP = Registration.SOUNDS.register("elevator_loop", () -> new SoundEvent(new ResourceLocation(RFToolsBuilder.MODID, "elevator_loop")));
-    public static final RegistryObject<SoundEvent> ELEVATOR_STOP = Registration.SOUNDS.register("elevator_stop", () -> new SoundEvent(new ResourceLocation(RFToolsBuilder.MODID, "elevator_stop")));
+    public static final RegistryObject<SoundEvent> MOVER_LOOP = Registration.SOUNDS.register("mover_loop", () -> new SoundEvent(new ResourceLocation(RFToolsBuilder.MODID, "mover_loop")));
 
     public static void init() {
     }

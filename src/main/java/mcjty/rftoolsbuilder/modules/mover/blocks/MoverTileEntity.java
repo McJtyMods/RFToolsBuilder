@@ -23,7 +23,6 @@ import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.logic.EntityMovementLogic;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketClickMover;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketSyncVehicleInformationToClient;
-import mcjty.rftoolsbuilder.modules.mover.sound.MoverSound;
 import mcjty.rftoolsbuilder.modules.mover.sound.MoverSoundController;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
@@ -107,6 +106,9 @@ public class MoverTileEntity extends TickingTileEntity {
     private String highlightedMover;
     private boolean moverValid = false;
     private int currentPage = 0;
+    private ItemStack renderCopy;
+    private int renderCopyTimer = 0;
+    private Vec3 renderLastOffset;
 
     // A cache for invisible mover blocks
     private Map<BlockPos, BlockState> invisibleMoverBlocks = null;
@@ -277,60 +279,37 @@ public class MoverTileEntity extends TickingTileEntity {
         long endtick = starttick + totalTicks;
         if (current >= starttick && current <= endtick) {
             Vec3 currentPos = getLogic().getMovingPosition(0, level.getGameTime());
-            if (MoverSoundController.isLoopPlaying(level, controller, worldPosition)) {
-                MoverSoundController.moveSound(level, controller, worldPosition, currentPos);
+            if (MoverSoundController.isPlaying(level, controller, worldPosition)) {
+                MoverSoundController.move(level, controller, worldPosition, currentPos);
             } else {
-                MoverSoundController.playLoop(level, controller, worldPosition, currentPos);
+                MoverSoundController.play(level, controller, worldPosition, currentPos);
             }
-//            if (current <= endtick - 20) {
-//                if (!MoverSoundController.isLoopPlaying(level, controller, worldPosition)) {
-//                    if (current < starttick + 10) {
-//                        System.out.println("1");
-//                        if (!MoverSoundController.isStartupPlaying(level, controller, worldPosition)) {
-//                            MoverSoundController.playStartup(level, controller, worldPosition, currentPos);
-//                        }
-//                    } else {
-//                        System.out.println("2");
-//                        MoverSoundController.playLoop(level, controller, worldPosition, currentPos);
-//                    }
-//                } else {
-//                    System.out.println("3");
-//                    // Update position
-//                    MoverSoundController.moveSound(level, controller, worldPosition, currentPos);
-//                }
-//            } else {
-//                if (MoverSoundController.isLoopPlaying(level, controller, worldPosition)) {
-//                    System.out.println("4");
-//                    MoverSoundController.stopSound(level, controller, worldPosition);
-//                }
-//                if (!MoverSoundController.isShutdownPlaying(level, controller, worldPosition)) {
-//                    System.out.println("5");
-//                    MoverSoundController.playShutdown(level, controller, worldPosition, currentPos);
-//                }
-//            }
         } else {
-            MoverSoundController.stopSound(level, controller, worldPosition);
+            MoverSoundController.stop(level, controller, worldPosition);
         }
     }
 
     private void handleRender() {
         ItemStack vehicle = getCard();
         if (VehicleBuilderTileEntity.isVehicleCard(vehicle)) {
+            renderCopy = vehicle.copy();
+            renderCopyTimer = 10;
             MoverRenderer.addPreRender(worldPosition, () -> {
                 float partialTicks = MoverRenderer.getPartialTicks();
-//                Vec3 offset = logic.tryMoveVehicleThisPlayer(partialTicks);
                 logic.tryMoveVehicleClientEntities(partialTicks);
 
             }, this::isMoverThere);
             DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec, renderType) -> {
                 float partialTicks = MoverRenderer.getPartialTicks();
                 Vec3 offset = logic.tryMoveVehicleThisPlayer(partialTicks);
-//                logic.tryMoveVehicleClientEntities(partialTicks + dpartial);
-//                if (!Float.isNaN(prevPartialTicks)) {
-//                    dpartial = partialTicks-prevPartialTicks;
-//                }
-//                prevPartialTicks = partialTicks;
+                renderLastOffset = offset;
                 MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle, partialTicks, offset, renderType);
+            }, this::isMoverThere);
+        } else if (renderCopyTimer > 0) {
+            renderCopyTimer--;
+            DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec, renderType) -> {
+                float partialTicks = MoverRenderer.getPartialTicks();
+                MoverRenderer.actualRender(this, poseStack, cameraVec, renderCopy, partialTicks, renderLastOffset, renderType);
             }, this::isMoverThere);
         }
     }
