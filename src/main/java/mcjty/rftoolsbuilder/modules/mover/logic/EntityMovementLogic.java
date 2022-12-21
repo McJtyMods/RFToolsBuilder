@@ -47,7 +47,6 @@ public class EntityMovementLogic {
     public void setGrabbedEntitiesClient(Set<Integer> grabbedEntities) {
         Level level = mover.getLevel();
         this.grabbedEntities = new HashMap<>();
-        System.out.println("grabbedEntities.size() from server = " + grabbedEntities.size());
         for (Integer id : grabbedEntities) {
             Entity entity = level.getEntity(id);
             if (entity != null) {

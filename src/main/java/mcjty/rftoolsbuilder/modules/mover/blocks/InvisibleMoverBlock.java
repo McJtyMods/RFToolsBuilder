@@ -5,6 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -91,13 +93,23 @@ public class InvisibleMoverBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public void attack(@Nonnull BlockState state, Level world, @Nonnull BlockPos pos, @Nonnull Player player) {
-        if (world.isClientSide) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
+        activate(level, pos);
+        return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public void attack(@Nonnull BlockState state, Level level, @Nonnull BlockPos pos, @Nonnull Player player) {
+        activate(level, pos);
+    }
+
+    private void activate(Level level, BlockPos pos) {
+        if (level.isClientSide) {
             MoverData data = dataByControl.get(pos);
             if (data != null) {
                 HitResult mouseOver = SafeClientTools.getClientMouseOver();
                 if (mouseOver instanceof BlockHitResult blockResult) {
-                    if (world.getBlockEntity(data.mover) instanceof MoverTileEntity mover) {
+                    if (level.getBlockEntity(data.mover) instanceof MoverTileEntity mover) {
                         mover.hitScreenClient(blockResult.getBlockPos(), mouseOver.getLocation().x - pos.getX(), mouseOver.getLocation().y - pos.getY(), mouseOver.getLocation().z - pos.getZ(),
                                 blockResult.getDirection(),
                                 data.horizDirection, data.direction);

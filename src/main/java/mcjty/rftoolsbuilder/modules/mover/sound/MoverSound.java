@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.Vec3;
 
 public class MoverSound extends AbstractTickableSoundInstance {
 
@@ -28,20 +29,21 @@ public class MoverSound extends AbstractTickableSoundInstance {
     }
 
     private final Level world;
-    private final BlockPos pos;
     private final boolean loop;
     private final SoundEvent sound;
+    private BlockPos pos;
 
 
     @Override
     public void tick() {
         Block block = world.getBlockState(pos).getBlock();
-        if (block != MoverModule.MOVER_CONTROLLER.get()) {
+        if (block != MoverModule.MOVER.get()) {
             stop();
             return;
         }
 
         LocalPlayer player = Minecraft.getInstance().player;
+        xxx todo use pos here
         double distance = Math.sqrt(this.pos.distToCenterSqr(player.getX(), player.getY(), player.getZ()));
         if (distance > 20) {
             volume = 0;
@@ -55,4 +57,9 @@ public class MoverSound extends AbstractTickableSoundInstance {
         return sound == event;
     }
 
+    public void setPosition(Vec3 pos) {
+        this.x = pos.x;
+        this.y = pos.y;
+        this.z = pos.z;
+    }
 }
