@@ -22,6 +22,7 @@ public class MoverSound extends AbstractTickableSoundInstance {
         this.z = pos.getZ();
         this.attenuation = Attenuation.LINEAR;
         this.looping = true;
+        this.volume = 1;
         this.delay = 0;
         this.sound = event;
         this.relative = false;
@@ -29,7 +30,7 @@ public class MoverSound extends AbstractTickableSoundInstance {
 
     private final Level world;
     private final SoundEvent sound;
-    private BlockPos pos;
+    private final BlockPos pos;
 
 
     private static double distToCenterSqr(double x1, double y1, double z1, double x2, double y2, double z2) {
@@ -50,11 +51,11 @@ public class MoverSound extends AbstractTickableSoundInstance {
 
         Player player = SafeClientTools.getClientPlayer();
         double distance = Math.sqrt(distToCenterSqr(x, y, z, player.getX(), player.getY(), player.getZ()));
-        if (distance > 20) {
+        if (distance > 40) {
             volume = 0;
         } else {
 //            volume = (float) (GeneratorConfig.BASE_GENERATOR_VOLUME.get() * (20-distance)/20.0);
-            volume = (float) (1.0 * (20-distance)/20.0);
+            volume = (float) (1.0 * (40-distance)/40.0);
         }
     }
 

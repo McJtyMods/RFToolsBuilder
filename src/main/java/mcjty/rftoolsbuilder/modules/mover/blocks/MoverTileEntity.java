@@ -293,7 +293,7 @@ public class MoverTileEntity extends TickingTileEntity {
         ItemStack vehicle = getCard();
         if (VehicleBuilderTileEntity.isVehicleCard(vehicle)) {
             renderCopy = vehicle.copy();
-            renderCopyTimer = 10;
+            renderCopyTimer = 50;
             MoverRenderer.addPreRender(worldPosition, () -> {
                 float partialTicks = MoverRenderer.getPartialTicks();
                 logic.tryMoveVehicleClientEntities(partialTicks);
