@@ -108,7 +108,8 @@ public class MoverTileEntity extends TickingTileEntity {
     private int currentPage = 0;
     private ItemStack renderCopy;
     private int renderCopyTimer = 0;
-    private Vec3 renderLastOffset;
+    private BlockPos lastDestination;
+    private long lastTotalTicks;
 
     // A cache for invisible mover blocks
     private Map<BlockPos, BlockState> invisibleMoverBlocks = null;
@@ -293,7 +294,7 @@ public class MoverTileEntity extends TickingTileEntity {
         ItemStack vehicle = getCard();
         if (VehicleBuilderTileEntity.isVehicleCard(vehicle)) {
             renderCopy = vehicle.copy();
-            renderCopyTimer = 50;
+            renderCopyTimer = 1;
             MoverRenderer.addPreRender(worldPosition, () -> {
                 float partialTicks = MoverRenderer.getPartialTicks();
                 logic.tryMoveVehicleClientEntities(partialTicks);
@@ -302,17 +303,34 @@ public class MoverTileEntity extends TickingTileEntity {
             DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec, renderType) -> {
                 float partialTicks = MoverRenderer.getPartialTicks();
                 Vec3 offset = logic.tryMoveVehicleThisPlayer(partialTicks);
-                renderLastOffset = offset;
-                MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle, partialTicks, offset, renderType);
+                Vec3 current;
+                if (getCard().isEmpty()) {
+                    // Render at the last known destination
+                    current = new Vec3(lastDestination.getX(), lastDestination.getY(), lastDestination.getZ());
+                } else {
+                    current = logic.getMovingPosition(partialTicks, level.getGameTime());
+                    lastDestination = logic.getDestination();
+                    lastTotalTicks = logic.getTotalTicks();
+                }
+                MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle, current, offset, renderType);
             }, this::isMoverThere);
         } else if (renderCopyTimer > 0) {
             renderCopyTimer--;
-            DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec, renderType) -> {
-                float partialTicks = MoverRenderer.getPartialTicks();
-                MoverRenderer.actualRender(this, poseStack, cameraVec, renderCopy, partialTicks, renderLastOffset, renderType);
-            }, this::isMoverThere);
         }
     }
+
+    @NotNull
+    private Boolean isMoverThere(Level level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
+            // renderCopyTimer is used to 'linger' the rendering to avoid flickering
+            if (renderCopyTimer > 0) {
+                return true;
+            }
+            return !mover.getCard().isEmpty();
+        }
+        return false;
+    }
+
 
     @Nonnull
     public Map<BlockPos, MoverTileEntity> traverseAndCollect() {
@@ -432,14 +450,6 @@ public class MoverTileEntity extends TickingTileEntity {
         return null;
     }
 
-
-    @NotNull
-    private Boolean isMoverThere(Level level, BlockPos pos) {
-        if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
-            return !mover.getCard().isEmpty();
-        }
-        return false;
-    }
 
     /**
      * Return true if this mover is valid and connected to a network

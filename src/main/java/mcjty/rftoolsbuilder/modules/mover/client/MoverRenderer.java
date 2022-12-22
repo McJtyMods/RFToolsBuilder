@@ -53,11 +53,10 @@ public class MoverRenderer {
         return Minecraft.getInstance().getFrameTime();
     }
 
-    public static void actualRender(MoverTileEntity mover, @NotNull PoseStack matrixStack, Vec3 cameraPos, ItemStack card, float partialTicks, Vec3 offset,
+    public static void actualRender(MoverTileEntity mover, @NotNull PoseStack matrixStack, Vec3 cameraPos, ItemStack card, Vec3 current, Vec3 offset,
                                     RenderType renderType) {
         matrixStack.pushPose();
         Level level = mover.getLevel();
-        Vec3 current = mover.getLogic().getMovingPosition(partialTicks, level.getGameTime());
         matrixStack.translate(current.x - cameraPos.x - offset.x, current.y - cameraPos.y - offset.y, current.z - cameraPos.z - offset.z);
 
         MultiBufferSource.BufferSource buffer = Minecraft.getInstance().renderBuffers().bufferSource();
