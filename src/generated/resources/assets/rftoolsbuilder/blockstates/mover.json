@@ -1,27 +1,7 @@
 {
   "variants": {
-    "facing=down": {
-      "model": "rftoolsbuilder:block/mover",
-      "x": 90
-    },
-    "facing=east": {
-      "model": "rftoolsbuilder:block/mover",
-      "y": 90
-    },
-    "facing=north": {
+    "": {
       "model": "rftoolsbuilder:block/mover"
-    },
-    "facing=south": {
-      "model": "rftoolsbuilder:block/mover",
-      "y": 180
-    },
-    "facing=up": {
-      "model": "rftoolsbuilder:block/mover",
-      "x": -90
-    },
-    "facing=west": {
-      "model": "rftoolsbuilder:block/mover",
-      "y": 270
     }
   }
 }

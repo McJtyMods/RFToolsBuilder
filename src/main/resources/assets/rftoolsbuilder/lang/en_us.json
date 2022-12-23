@@ -17,7 +17,7 @@
   "block.rftoolsbuilder.mover": "Mover",
   "block.rftoolsbuilder.mover_controller": "Mover Controller",
   "block.rftoolsbuilder.vehicle_builder": "Vehicle Builder",
-  "block.rftoolsbuilder.invisible_mover_block": "Vehicle",
+  "block.rftoolsbuilder.invisible_mover": "Vehicle",
   "block.rftoolsbuilder.mover_control": "Mover Control",
   "block.rftoolsbuilder.mover_control2": "Mover Control (Page 2)",
   "block.rftoolsbuilder.mover_control3": "Mover Control (Page 3)",
@@ -38,6 +38,7 @@
   "item.rftoolsbuilder.space_chamber_card": "Space Card",
   "item.rftoolsbuilder.vehicle_card": "Vehicle Card",
   "item.rftoolsbuilder.vehicle_control_module": "Vehicle Control Module",
+  "item.rftoolsbuilder.vehicle_status_module": "Vehicle Status Module",
   "itemGroup.rftoolsbuilder": "RFTools Builder",
 
   "key.unmountVehicle": "Unmount Vehicle",
@@ -71,13 +72,22 @@
   "message.rftoolsbuilder.mover.header": "This block can move vehicles to other movers",
   "message.rftoolsbuilder.mover.gold": "Use in combination with a mover controller",
 
-  "message.rftoolsbuilder.mover_controller.header": "The controller for the mover system",
+  "message.rftoolsbuilder.mover_controller.header": "The controller for the mover system. Place this next to one of the movers",
   "message.rftoolsbuilder.mover_controller.gold": "Infusing bonus: reduced power consumption",
 
-  "message.rftoolsbuilder.mover_control.header": "The Mover control screen",
+  "message.rftoolsbuilder.mover_control.header": "The Mover control screen (page 1). With this block you can control movement of this platform",
   "message.rftoolsbuilder.mover_control.gold": "Put this in your vehicle!",
 
-  "message.rftoolsbuilder.mover_status.header": "The Mover status screen",
+  "message.rftoolsbuilder.mover_control2.header": "The Mover control screen (page 2). With this block you can control movement of this platform",
+  "message.rftoolsbuilder.mover_control2.gold": "Put this in your vehicle!",
+
+  "message.rftoolsbuilder.mover_control3.header": "The Mover control screen (page 3). With this block you can control movement of this platform",
+  "message.rftoolsbuilder.mover_control3.gold": "Put this in your vehicle!",
+
+  "message.rftoolsbuilder.mover_control4.header": "The Mover control screen (page 4). With this block you can control movement of this platform",
+  "message.rftoolsbuilder.mover_control4.gold": "Put this in your vehicle!",
+
+  "message.rftoolsbuilder.mover_status.header": "The Mover status screen. With this block you can get more information about this platform",
   "message.rftoolsbuilder.mover_status.gold": "Put this in your vehicle!",
 
   "message.rftoolsbuilder.vehicle_builder.header": "Using a space card linked to a space chamber, this block can make a vehicle in the vehicle card",

@@ -44,6 +44,7 @@ public class Items extends BaseItemModelProvider {
         itemGenerated(BuilderModule.SPACE_CHAMBER_CARD.get(), "item/spacechambercarditem");
         itemGenerated(MoverModule.VEHICLE_CARD.get(), "item/vehiclecard");
         itemGenerated(MoverModule.VEHICLE_CONTROL_MODULE.get(), "item/vehiclecontrolmoduleitem");
+        itemGenerated(MoverModule.VEHICLE_STATUS_MODULE.get(), "item/vehiclestatusmoduleitem");
 
         itemGenerated(BuilderModule.SHAPE_CARD_DEF.get(), "item/shapecarditem");
         itemGenerated(BuilderModule.SHAPE_CARD_LIQUID.get(), "item/shapecardliquiditem");

@@ -11,7 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-public class VehicleControlClientScreenModule implements IClientScreenModule<VehicleControlScreenModule.ModuleVehicleInfo> {
+public class VehicleControlClientScreenModule implements IClientScreenModule<VehicleControlScreenModule.EmptyData> {
 
     private String line = "";
     private String button = "";
@@ -35,7 +35,7 @@ public class VehicleControlClientScreenModule implements IClientScreenModule<Veh
     }
 
     @Override
-    public void render(PoseStack matrixStack, MultiBufferSource buffer, IModuleRenderHelper renderHelper, Font fontRenderer, int currenty, VehicleControlScreenModule.ModuleVehicleInfo screenData, ModuleRenderInfo renderInfo) {
+    public void render(PoseStack matrixStack, MultiBufferSource buffer, IModuleRenderHelper renderHelper, Font fontRenderer, int currenty, VehicleControlScreenModule.EmptyData screenData, ModuleRenderInfo renderInfo) {
         int xoffset;
         int buttonWidth;
         if (!line.isEmpty()) {

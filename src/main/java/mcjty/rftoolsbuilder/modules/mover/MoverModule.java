@@ -11,6 +11,7 @@ import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiVehicleBuilder;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlModuleItem;
+import mcjty.rftoolsbuilder.modules.mover.items.VehicleStatusModuleItem;
 import mcjty.rftoolsbuilder.modules.mover.sound.Sounds;
 import mcjty.rftoolsbuilder.setup.Config;
 import net.minecraft.world.inventory.MenuType;
@@ -60,6 +61,7 @@ public class MoverModule implements IModule {
 
     public static final RegistryObject<VehicleCard> VEHICLE_CARD = ITEMS.register("vehicle_card", VehicleCard::new);
     public static final RegistryObject<VehicleControlModuleItem> VEHICLE_CONTROL_MODULE = ITEMS.register("vehicle_control_module", VehicleControlModuleItem::new);
+    public static final RegistryObject<VehicleStatusModuleItem> VEHICLE_STATUS_MODULE = ITEMS.register("vehicle_status_module", VehicleStatusModuleItem::new);
 
     public MoverModule() {
         IEventBus modbus = FMLJavaModLoadingContext.get().getModEventBus();

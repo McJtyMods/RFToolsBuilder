@@ -128,19 +128,23 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     }
 
     public boolean hasEnoughPower() {
-        return energyStorage.getEnergyStored() >= MoverConfiguration.RF_PER_MOVE.get();
+        return energyStorage.getEnergyStored() >= getPowerPerMove();
+    }
+
+    private Integer getPowerPerMove() {
+        int power = MoverConfiguration.RF_PER_MOVE.get();
+        power = (int) (power * (2.0f - infusable.getInfusedFactor()) / 2.0f);
+        return power;
     }
 
     // Find a mover and an optional vehicle and setup movement
     // The vehicle can be null or empty string in which case we take the
     // vehicle nearest to the mover
     public void setupMovement(String moverName, String vehicle) {
-        if (energyStorage.getEnergyStored() < MoverConfiguration.RF_PER_MOVE.get()) {
+        if (energyStorage.getEnergyStored() < getPowerPerMove()) {
             // Not enough power
             return;
         }
-        energyStorage.consumeEnergy(MoverConfiguration.RF_PER_MOVE.get());
-
         MoverTileEntity destinationMover = findMover(moverName);
         if (destinationMover != null) {
             if (vehicle == null || vehicle.trim().isEmpty()) {
@@ -155,6 +159,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
                 });
             }
             if (vehicle != null) {
+                energyStorage.consumeEnergy(getPowerPerMove());
                 startMove(destinationMover.getBlockPos(), vehicle, destinationMover.getName());
             }
         }
@@ -182,7 +187,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     }
 
     @Nullable
-    private MoverTileEntity findVehicle(String vehicle) {
+    public MoverTileEntity findVehicle(String vehicle) {
         return traverseDepthFirst((p, mover) -> {
             ItemStack card = mover.getCard();
             String name = VehicleCard.getVehicleName(card);

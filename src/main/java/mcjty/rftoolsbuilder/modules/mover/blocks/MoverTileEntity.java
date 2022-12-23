@@ -4,6 +4,7 @@ import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.bindings.GuiValue;
 import mcjty.lib.bindings.Value;
 import mcjty.lib.blocks.BaseBlock;
+import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.client.DelayedRenderer;
 import mcjty.lib.container.ContainerFactory;
@@ -125,7 +126,12 @@ public class MoverTileEntity extends TickingTileEntity {
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .manualEntry(ManualHelper.create("rftoolsbuilder:todo"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
-                .infoShift(header(), gold()));
+                .infoShift(header(), gold())) {
+            @Override
+            public RotationType getRotationType() {
+                return RotationType.NONE;
+            }
+        };
     }
 
 
