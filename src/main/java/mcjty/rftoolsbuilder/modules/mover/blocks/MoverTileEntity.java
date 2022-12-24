@@ -312,6 +312,9 @@ public class MoverTileEntity extends TickingTileEntity {
                 Vec3 current;
                 if (getCard().isEmpty()) {
                     // Render at the last known destination
+                    if (lastDestination == null) {
+                        return;
+                    }
                     current = new Vec3(lastDestination.getX(), lastDestination.getY(), lastDestination.getZ());
                 } else {
                     current = logic.getMovingPosition(partialTicks, level.getGameTime());

@@ -52,11 +52,7 @@ public class VehicleStatusScreenModule implements IScreenModule<IModuleDataStrin
         coordinate = BlockPosTools.INVALID;
         if (tagCompound.contains("monitorx")) {
             this.dim = LevelTools.getId(tagCompound.getString("monitordim"));
-            BlockPos c = new BlockPos(tagCompound.getInt("monitorx"), tagCompound.getInt("monitory"), tagCompound.getInt("monitorz"));
-            int dx = Math.abs(c.getX() - pos.getX());
-            int dy = Math.abs(c.getY() - pos.getY());
-            int dz = Math.abs(c.getZ() - pos.getZ());
-            coordinate = c;
+            coordinate = new BlockPos(tagCompound.getInt("monitorx"), tagCompound.getInt("monitory"), tagCompound.getInt("monitorz"));
         }
     }
 

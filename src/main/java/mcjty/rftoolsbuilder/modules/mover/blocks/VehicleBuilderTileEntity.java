@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.modules.mover.blocks;
 
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.bindings.GuiValue;
+import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
@@ -19,16 +20,18 @@ import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.BuilderTools;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
+import mcjty.rftoolsbuilder.modules.builder.blocks.RotateMode;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
@@ -52,9 +55,13 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
     @GuiValue
     private String vehicleName = "";
 
+    private RotateMode rotate = RotateMode.ROTATE_0;
+    @GuiValue
+    public static final Value<VehicleBuilderTileEntity, String> VALUE_ROTATE = Value.createEnum("rotate", RotateMode.values(), VehicleBuilderTileEntity::getRotate, VehicleBuilderTileEntity::setRotate);
+
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(2)
             .slot(specific(BuilderModule.SPACE_CHAMBER_CARD.get()).in(), SLOT_SPACE_CARD, 64, 24)
-            .slot(specific(MoverModule.VEHICLE_CARD.get()).in().out(), SLOT_VEHICLE_CARD, 118, 24)
+            .slot(specific(MoverModule.VEHICLE_CARD.get()).in().out(), SLOT_VEHICLE_CARD, 154, 24)
             .playerSlots(10, 70));
 
     @Cap(type = CapType.ITEMS_AUTOMATION)
@@ -95,6 +102,16 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
 
     private static final int MAXDIM = 16;
 
+    public RotateMode getRotate() {
+        return rotate;
+    }
+
+    public void setRotate(RotateMode rotate) {
+        this.rotate = rotate;
+        setChanged();
+    }
+
+
     private void copyVehicle(Player player) {
         ItemStack spaceCard = items.getStackInSlot(SLOT_SPACE_CARD);
         ItemStack vehicleCard = items.getStackInSlot(SLOT_VEHICLE_CARD);
@@ -117,6 +134,30 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
     private Map<BlockState, List<Integer>> getBlocks(BlockPos minCorner, BlockPos maxCorner, ServerLevel world) {
         Map<BlockState, List<Integer>> blocks = new HashMap<>();
         var mpos = new BlockPos.MutableBlockPos(0, 0, 0);
+        Rotation rotation = switch (rotate) {
+            case ROTATE_0 -> Rotation.NONE;
+            case ROTATE_90 -> Rotation.CLOCKWISE_90;
+            case ROTATE_180 -> Rotation.CLOCKWISE_180;
+            case ROTATE_270 -> Rotation.COUNTERCLOCKWISE_90;
+        };
+        BlockPos realMin;
+        if (rotation == Rotation.NONE) {
+            realMin = minCorner;
+        } else {
+            realMin = new BlockPos(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+            for (int x = minCorner.getX(); x <= maxCorner.getX(); x++) {
+                mpos.setX(x);
+                for (int y = minCorner.getY(); y <= maxCorner.getY(); y++) {
+                    mpos.setY(y);
+                    for (int z = minCorner.getZ(); z <= maxCorner.getZ(); z++) {
+                        mpos.setZ(z);
+                        BlockPos rotated = mpos.rotate(rotation);
+                        realMin = new BlockPos(Math.min(realMin.getX(), rotated.getX()), Math.min(realMin.getY(), rotated.getY()), Math.min(realMin.getZ(), rotated.getZ()));
+                    }
+                }
+            }
+        }
+
         for (int x = minCorner.getX(); x <= maxCorner.getX(); x++) {
             mpos.setX(x);
             for (int y = minCorner.getY(); y <= maxCorner.getY(); y++) {
@@ -125,12 +166,41 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
                     mpos.setZ(z);
                     BlockState state = world.getBlockState(mpos);
                     if (!state.isAir()) {
-                        blocks.computeIfAbsent(state, s -> new ArrayList<>()).add(VehicleCard.convertPosToInt(minCorner, mpos));
+                        BlockPos p;
+                        if (rotation != Rotation.NONE) {
+                            if (state.getBlock() instanceof MoverControlBlock) {
+                                System.out.println("Before: " + state + ", Rotation: " + rotation);
+                            }
+                            state = state.rotate(rotation);
+                            if (state.getBlock() instanceof MoverControlBlock) {
+                                System.out.println("After: " + state);
+                            }
+                            p = mpos.rotate(rotation);
+                        } else {
+                            p = mpos;
+                        }
+                        blocks.computeIfAbsent(state, s -> new ArrayList<>()).add(VehicleCard.convertPosToInt(realMin, p));
                     }
                 }
             }
         }
         return blocks;
+    }
+
+    private void rotatePos(BlockPos.MutableBlockPos pos, Rotation rotation) {
+        switch (rotation) {
+            case NONE -> {
+            }
+            case CLOCKWISE_90 -> {
+                pos.set(-pos.getZ(), pos.getY(), pos.getX());
+            }
+            case CLOCKWISE_180 -> {
+                pos.set(-pos.getX(), pos.getY(), -pos.getZ());
+            }
+            case COUNTERCLOCKWISE_90 -> {
+                pos.set(pos.getZ(), pos.getY(), -pos.getX());
+            }
+        }
     }
 
     private boolean checkValid(Player player, BlockPos minCorner, BlockPos maxCorner) {
@@ -161,6 +231,23 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
             return false;
         }
         return true;
+    }
+
+    @Override
+    protected void saveInfo(CompoundTag tagCompound) {
+        super.saveInfo(tagCompound);
+        getOrCreateInfo(tagCompound).putInt("rotate", rotate.ordinal());
+    }
+
+    @Override
+    protected void loadInfo(CompoundTag tagCompound) {
+        super.loadInfo(tagCompound);
+        if (tagCompound.contains("Info")) {
+            CompoundTag info = tagCompound.getCompound("Info");
+            if (info.contains("rotate")) {
+                rotate = RotateMode.values()[info.getInt("rotate")];
+            }
+        }
     }
 
     @ServerCommand

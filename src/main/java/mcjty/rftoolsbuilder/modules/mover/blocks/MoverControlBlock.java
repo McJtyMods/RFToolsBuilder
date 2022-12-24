@@ -6,8 +6,10 @@ import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
 import javax.annotation.Nullable;
@@ -35,6 +37,19 @@ public class MoverControlBlock extends BaseBlock {
 
     public int getPage() {
         return page;
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        state = super.rotate(state, rot);
+        Direction facing = state.getValue(BlockStateProperties.FACING);
+        if (facing.getStepY() == 0) {
+            // It's horizontal
+            return state.setValue(HORIZ_FACING, facing);
+        } else {
+            Direction horizFacing = state.getValue(HORIZ_FACING);
+            return state.setValue(HORIZ_FACING, rot.rotate(horizFacing));
+        }
     }
 
     @Override

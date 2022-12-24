@@ -48,8 +48,7 @@ public class VehicleStatusClientScreenModule implements IClientScreenModule<IMod
         String line = screenData == null ? null : screenData.get();
         if (line != null) {
             cache.setup(line, buttonWidth, renderInfo);
-            cache.setup(line, 512, renderInfo);
-            int y = cache.isLarge() ? (currenty / 2 + 1) : currenty;
+            cache.setDirty();
             cache.renderText(matrixStack, buffer, xoffset -10, currenty + 2, color, renderInfo);
         }
     }
