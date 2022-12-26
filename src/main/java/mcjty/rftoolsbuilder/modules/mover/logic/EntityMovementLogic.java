@@ -219,7 +219,7 @@ public class EntityMovementLogic {
 
     private AABB getVehicleAABB() {
         BlockPos blockPos = mover.getBlockPos();
-        Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(mover.getCard(), blockPos);
+        Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(mover.getCard(), blockPos.offset(mover.getOffset()));
         int minx = Integer.MAX_VALUE;
         int miny = Integer.MAX_VALUE;
         int minz = Integer.MAX_VALUE;

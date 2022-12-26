@@ -61,7 +61,7 @@ public class MoverRenderer {
 
         MultiBufferSource.BufferSource buffer = Minecraft.getInstance().renderBuffers().bufferSource();
         BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
-        Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(card, new BlockPos(1, 1, 1));
+        Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(card, mover.getOffset());
         MoverModule.INVISIBLE_MOVER_BLOCK.get().removeData(mover.getBlockPos());
         AtomicInteger totalPagers = new AtomicInteger();
         boolean[] pagers = new boolean[] { false, false, false, false };

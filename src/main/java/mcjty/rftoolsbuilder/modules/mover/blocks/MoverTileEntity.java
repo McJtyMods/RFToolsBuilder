@@ -87,6 +87,9 @@ public class MoverTileEntity extends TickingTileEntity {
     // @todo a bit clumsy but it works. Better would be a cap in the player
     public static final Set<Integer> wantUnmount = new HashSet<>();
 
+    // The offset as set by the controller
+    private BlockPos offset = new BlockPos(1, 1, 1);
+
     // A reference to the controller (synced to client)
     private BlockPos controller;
 
@@ -107,7 +110,6 @@ public class MoverTileEntity extends TickingTileEntity {
     private String highlightedMover;
     private boolean moverValid = false;
     private int currentPage = 0;
-    private ItemStack renderCopy;
     private int renderCopyTimer = 0;
     private BlockPos lastDestination;
     private long lastTotalTicks;
@@ -299,7 +301,6 @@ public class MoverTileEntity extends TickingTileEntity {
     private void handleRender() {
         ItemStack vehicle = getCard();
         if (VehicleBuilderTileEntity.isVehicleCard(vehicle)) {
-            renderCopy = vehicle.copy();
             renderCopyTimer = 1;
             MoverRenderer.addPreRender(worldPosition, () -> {
                 float partialTicks = MoverRenderer.getPartialTicks();
@@ -522,7 +523,7 @@ public class MoverTileEntity extends TickingTileEntity {
         cnt = 0;
         removeInvisibleBlocks();
         if (!vehicle.isEmpty()) {
-            Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(vehicle, worldPosition.offset(1, 1, 1));
+            Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(vehicle, worldPosition.offset(offset));
             for (Map.Entry<BlockState, List<BlockPos>> entry : blocks.entrySet()) {
                 for (BlockPos pos : entry.getValue()) {
                     invisibleMoverBlocks.put(pos, entry.getKey());
@@ -713,6 +714,7 @@ public class MoverTileEntity extends TickingTileEntity {
         } else {
             this.controller = null;
         }
+        offset = new BlockPos(tagCompound.getInt("offsetX"), tagCompound.getInt("offsetY"), tagCompound.getInt("offsetZ"));
     }
 
     @Override
@@ -734,6 +736,9 @@ public class MoverTileEntity extends TickingTileEntity {
         if (controller != null) {
             tagCompound.putIntArray("controller", new int[] { controller.getX(), controller.getY(), controller.getZ() });
         }
+        tagCompound.putInt("offsetX", offset.getX());
+        tagCompound.putInt("offsetY", offset.getY());
+        tagCompound.putInt("offsetZ", offset.getZ());
     }
 
     @Override
@@ -761,6 +766,9 @@ public class MoverTileEntity extends TickingTileEntity {
         if (controller != null) {
             tagCompound.putIntArray("controller", new int[] { controller.getX(), controller.getY(), controller.getZ() });
         }
+        tagCompound.putInt("offsetX", offset.getX());
+        tagCompound.putInt("offsetY", offset.getY());
+        tagCompound.putInt("offsetZ", offset.getZ());
     }
 
     @Override
@@ -774,5 +782,16 @@ public class MoverTileEntity extends TickingTileEntity {
         } else {
             this.controller = null;
         }
+        offset = new BlockPos(tagCompound.getInt("offsetX"), tagCompound.getInt("offsetY"), tagCompound.getInt("offsetZ"));
+    }
+
+    public void setOffset(int x, int y, int z) {
+        offset = new BlockPos(x, y, z);
+        updateVehicle();
+        markDirtyClient();
+    }
+
+    public BlockPos getOffset() {
+        return offset;
     }
 }

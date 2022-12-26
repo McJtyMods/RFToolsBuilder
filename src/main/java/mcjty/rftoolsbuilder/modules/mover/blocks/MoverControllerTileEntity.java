@@ -27,6 +27,7 @@ import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
@@ -64,6 +65,16 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     public static final Value<?, String> VALUE_SELECTED_VEHICLE = Value.create("selectedVehicle", Type.STRING, MoverControllerTileEntity::getSelectedVehicle, MoverControllerTileEntity::setSelectedVehicle);
     private String selectedVehicle;
 
+    @GuiValue
+    public static final Value<?, Integer> VALUE_OFFSET_X = Value.<MoverControllerTileEntity, Integer>create("x", Type.INTEGER, te -> te.offsetX, (te, x) -> te.setOffset(x, te.offsetY, te.offsetZ));
+    private int offsetX = 1;
+    @GuiValue
+    public static final Value<?, Integer> VALUE_OFFSET_Y = Value.<MoverControllerTileEntity, Integer>create("y", Type.INTEGER, te -> te.offsetY, (te, y) -> te.setOffset(te.offsetX, y, te.offsetZ));
+    private int offsetY = 1;
+    @GuiValue
+    public static final Value<?, Integer> VALUE_OFFSET_Z = Value.<MoverControllerTileEntity, Integer>create("z", Type.INTEGER, te -> te.offsetZ, (te, z) -> te.setOffset(te.offsetX, te.offsetY, z));
+    private int offsetZ = 1;
+
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
                 .tileEntitySupplier(MoverControllerTileEntity::new)
@@ -90,6 +101,20 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         } else {
             selectedVehicle = null;
         }
+    }
+
+    private void setOffset(int x, int y, int z) {
+        if (offsetX == x && offsetY == y && offsetZ == z) {
+            return;
+        }
+        offsetX = x;
+        offsetY = y;
+        offsetZ = z;
+        setChanged();
+        traverseDepthFirst((pos, mover) -> {
+            mover.setOffset(x, y, z);
+            return null;
+        });
     }
 
     public String getSelectedVehicle() {
@@ -269,6 +294,27 @@ public class MoverControllerTileEntity extends GenericTileEntity {
             return null;
         });
         return nodeNames;
+    }
+
+    @Override
+    protected void saveInfo(CompoundTag tagCompound) {
+        super.saveInfo(tagCompound);
+        getOrCreateInfo(tagCompound).putInt("offsetX", offsetX);
+        getOrCreateInfo(tagCompound).putInt("offsetY", offsetY);
+        getOrCreateInfo(tagCompound).putInt("offsetZ", offsetZ);
+    }
+
+    @Override
+    protected void loadInfo(CompoundTag tagCompound) {
+        super.loadInfo(tagCompound);
+        if (tagCompound.contains("Info")) {
+            CompoundTag info = tagCompound.getCompound("Info");
+            offsetX = info.getInt("offsetX");
+            offsetY = info.getInt("offsetY");
+            offsetZ = info.getInt("offsetZ");
+        } else {
+            offsetX = offsetY = offsetZ = 1;
+        }
     }
 
     public static final Key<BlockPos> SELECTED_NODE = new Key<>("node", Type.BLOCKPOS);
