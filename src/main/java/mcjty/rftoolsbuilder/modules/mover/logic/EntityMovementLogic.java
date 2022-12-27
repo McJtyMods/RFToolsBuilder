@@ -152,7 +152,9 @@ public class EntityMovementLogic {
                             return null;
                         }
                     });
-                    setupMovementTo(dest);
+                    if (dest != null) {
+                        setupMovementTo(dest);
+                    }
                 }
             }
         }

@@ -81,6 +81,19 @@ public class MoverTileEntity extends TickingTileEntity {
     private String name;
 
     @GuiValue
+    private boolean down = true;
+    @GuiValue
+    private boolean up = true;
+    @GuiValue
+    private boolean north = true;
+    @GuiValue
+    private boolean south = true;
+    @GuiValue
+    private boolean west = true;
+    @GuiValue
+    private boolean east = true;
+
+    @GuiValue
     public static final Value<?, String> VALUE_CONNECTIONS = Value.create("connections", Type.STRING, MoverTileEntity::getConnectionCount, MoverTileEntity::setConnectionCount);
     private String connections = "";
 
@@ -610,6 +623,17 @@ public class MoverTileEntity extends TickingTileEntity {
         setChanged();
     }
 
+    public boolean canConnect(Direction direction) {
+        return switch (direction) {
+            case DOWN -> down;
+            case UP -> up;
+            case NORTH -> north;
+            case SOUTH -> south;
+            case WEST -> west;
+            case EAST -> east;
+        };
+    }
+
     public void hitScreenClient(BlockPos pos, double x, double y, double z, Direction hitDirection, Direction horizDirection, Direction direction) {
 //        System.out.println("x = " + x + "," + y + "," + z);
 //        System.out.println("hitDirection = " + hitDirection);
@@ -722,6 +746,12 @@ public class MoverTileEntity extends TickingTileEntity {
         super.loadInfo(tagCompound);
         CompoundTag info = tagCompound.getCompound("Info");
         name = info.getString("name");
+        down = info.getBoolean("down");
+        up = info.getBoolean("up");
+        north = info.getBoolean("north");
+        south = info.getBoolean("south");
+        west = info.getBoolean("west");
+        east = info.getBoolean("east");
     }
 
     @Override
@@ -748,6 +778,12 @@ public class MoverTileEntity extends TickingTileEntity {
         if (name != null) {
             info.putString("name", name);
         }
+        info.putBoolean("down", down);
+        info.putBoolean("up", up);
+        info.putBoolean("north", north);
+        info.putBoolean("south", south);
+        info.putBoolean("west", west);
+        info.putBoolean("east", east);
     }
 
     @Override

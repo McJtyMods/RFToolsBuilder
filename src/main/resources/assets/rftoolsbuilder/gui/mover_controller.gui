@@ -63,12 +63,18 @@ window {
             label('', 'Offset')
             integerfield('x') {
                 channel('x')
+                minimum(-20)
+                maximum(20)
             }
             integerfield('y') {
                 channel('y')
+                minimum(-20)
+                maximum(20)
             }
             integerfield('z') {
                 channel('z')
+                minimum(-20)
+                maximum(20)
             }
         }
 

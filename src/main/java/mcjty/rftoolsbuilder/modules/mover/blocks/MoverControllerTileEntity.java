@@ -241,15 +241,17 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         mover.clearNetwork();
         mover.setController(this);
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
-            for (int distance = 1; distance <= MAXSCAN; distance++) {
-                BlockPos destPos = moverPos.relative(direction, distance);
-                if (level.getBlockEntity(destPos) instanceof MoverTileEntity destMover) {
-                    mover.addConnection(direction, destPos);
-                    if (!alreadyHandled.contains(destPos)) {
-                        alreadyHandled.add(destPos);
-                        doScan(destPos, destMover, alreadyHandled);
+            if (mover.canConnect(direction)) {
+                for (int distance = 1; distance <= MAXSCAN; distance++) {
+                    BlockPos destPos = moverPos.relative(direction, distance);
+                    if (level.getBlockEntity(destPos) instanceof MoverTileEntity destMover) {
+                        mover.addConnection(direction, destPos);
+                        if (!alreadyHandled.contains(destPos)) {
+                            alreadyHandled.add(destPos);
+                            doScan(destPos, destMover, alreadyHandled);
+                        }
+                        break;  // Stop at the first mover we find
                     }
-                    break;  // Stop at the first mover we find
                 }
             }
         }
