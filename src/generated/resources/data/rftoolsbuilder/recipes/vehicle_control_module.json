@@ -1,19 +1,22 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "rrr",
-    "rCr",
-    "rrr"
+    " C ",
+    "rpr",
+    " r "
   ],
   "key": {
     "C": {
       "item": "rftoolsbuilder:vehicle_card"
+    },
+    "p": {
+      "item": "minecraft:paper"
     },
     "r": {
       "item": "minecraft:redstone"
     }
   },
   "result": {
-    "item": "rftoolsbuilder:vehicle_callcard"
+    "item": "rftoolsbuilder:vehicle_control_module"
   }
 }

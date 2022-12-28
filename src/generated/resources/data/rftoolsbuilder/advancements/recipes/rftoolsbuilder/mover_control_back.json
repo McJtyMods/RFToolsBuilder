@@ -2,17 +2,17 @@
   "parent": "minecraft:recipes/root",
   "rewards": {
     "recipes": [
-      "rftoolsbuilder:vehicle_callcard"
+      "rftoolsbuilder:mover_control_back"
     ]
   },
   "criteria": {
-    "paper": {
+    "machine_frame": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
           {
             "items": [
-              "minecraft:paper"
+              "rftoolsbase:machine_frame"
             ]
           }
         ]
@@ -21,13 +21,13 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "rftoolsbuilder:vehicle_callcard"
+        "recipe": "rftoolsbuilder:mover_control_back"
       }
     }
   },
   "requirements": [
     [
-      "paper",
+      "machine_frame",
       "has_the_recipe"
     ]
   ]

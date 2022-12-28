@@ -4,9 +4,9 @@
     "down": "rftoolsbase:block/base/machinebottom",
     "up": "rftoolsbase:block/base/machinetop",
     "north": "rftoolsbuilder:block/machinemover",
-    "south": "rftoolsbase:block/base/machineside",
-    "east": "rftoolsbase:block/base/machineside",
-    "west": "rftoolsbase:block/base/machineside",
+    "south": "rftoolsbuilder:block/machinemover",
+    "east": "rftoolsbuilder:block/machinemover",
+    "west": "rftoolsbuilder:block/machinemover",
     "particle": "rftoolsbuilder:block/machinemover"
   }
 }

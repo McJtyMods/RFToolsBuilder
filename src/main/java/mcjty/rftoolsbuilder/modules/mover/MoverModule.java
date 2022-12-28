@@ -4,22 +4,25 @@ package mcjty.rftoolsbuilder.modules.mover;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.modules.IModule;
-import mcjty.rftoolsbuilder.modules.mover.blocks.InvisibleMoverBlock;
-import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
-import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
-import mcjty.rftoolsbuilder.modules.mover.blocks.VehicleBuilderTileEntity;
-import mcjty.rftoolsbuilder.modules.mover.client.*;
-import mcjty.rftoolsbuilder.modules.mover.items.VehicleCallCard;
+import mcjty.rftoolsbuilder.modules.mover.blocks.*;
+import mcjty.rftoolsbuilder.modules.mover.client.ClientSetup;
+import mcjty.rftoolsbuilder.modules.mover.client.GuiMover;
+import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
+import mcjty.rftoolsbuilder.modules.mover.client.GuiVehicleBuilder;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
+import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlModuleItem;
+import mcjty.rftoolsbuilder.modules.mover.items.VehicleStatusModuleItem;
+import mcjty.rftoolsbuilder.modules.mover.sound.Sounds;
 import mcjty.rftoolsbuilder.setup.Config;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.RegistryObject;
 
 import static mcjty.rftoolsbuilder.setup.Registration.*;
@@ -41,10 +44,30 @@ public class MoverModule implements IModule {
     public static final RegistryObject<BlockEntityType<?>> TYPE_VEHICLE_BUILDER = TILES.register("vehicle_builder", () -> BlockEntityType.Builder.of(VehicleBuilderTileEntity::new, VEHICLE_BUILDER.get()).build(null));
     public static final RegistryObject<MenuType<GenericContainer>> CONTAINER_VEHICLE_BUILDER = CONTAINERS.register("vehicle_builder", GenericContainer::createContainerType);
 
-    public static final RegistryObject<Block> INVISIBLE_MOVER_BLOCK = BLOCKS.register("invisible_mover_block", InvisibleMoverBlock::new);
+    public static final RegistryObject<InvisibleMoverBlock> INVISIBLE_MOVER_BLOCK = BLOCKS.register("invisible_mover", InvisibleMoverBlock::new);
+    public static final RegistryObject<BlockEntityType<?>> TYPE_INVISIBLE_MOVER = TILES.register("invisible_mover", () -> BlockEntityType.Builder.of(InvisibleMoverBE::new, INVISIBLE_MOVER_BLOCK.get()).build(null));
+
+    public static final RegistryObject<Block> MOVER_CONTROL_BLOCK = BLOCKS.register("mover_control", () -> new MoverControlBlock(0));
+    public static final RegistryObject<Item> MOVER_CONTROL_ITEM = ITEMS.register("mover_control", () -> new BlockItem(MOVER_CONTROL_BLOCK.get(), createStandardProperties()));
+    public static final RegistryObject<Block> MOVER_CONTROL2_BLOCK = BLOCKS.register("mover_control2", () -> new MoverControlBlock(1));
+    public static final RegistryObject<Item> MOVER_CONTROL2_ITEM = ITEMS.register("mover_control2", () -> new BlockItem(MOVER_CONTROL2_BLOCK.get(), createStandardProperties()));
+    public static final RegistryObject<Block> MOVER_CONTROL3_BLOCK = BLOCKS.register("mover_control3", () -> new MoverControlBlock(2));
+    public static final RegistryObject<Item> MOVER_CONTROL3_ITEM = ITEMS.register("mover_control3", () -> new BlockItem(MOVER_CONTROL3_BLOCK.get(), createStandardProperties()));
+    public static final RegistryObject<Block> MOVER_CONTROL4_BLOCK = BLOCKS.register("mover_control4", () -> new MoverControlBlock(3));
+    public static final RegistryObject<Item> MOVER_CONTROL4_ITEM = ITEMS.register("mover_control4", () -> new BlockItem(MOVER_CONTROL4_BLOCK.get(), createStandardProperties()));
+
+    public static final RegistryObject<Block> MOVER_STATUS_BLOCK = BLOCKS.register("mover_status", MoverStatusBlock::new);
+    public static final RegistryObject<Item> MOVER_STATUS_ITEM = ITEMS.register("mover_status", () -> new BlockItem(MOVER_STATUS_BLOCK.get(), createStandardProperties()));
 
     public static final RegistryObject<VehicleCard> VEHICLE_CARD = ITEMS.register("vehicle_card", VehicleCard::new);
-    public static final RegistryObject<VehicleCallCard> VEHICLE_CALLCARD = ITEMS.register("vehicle_callcard", VehicleCallCard::new);
+    public static final RegistryObject<VehicleControlModuleItem> VEHICLE_CONTROL_MODULE = ITEMS.register("vehicle_control_module", VehicleControlModuleItem::new);
+    public static final RegistryObject<VehicleStatusModuleItem> VEHICLE_STATUS_MODULE = ITEMS.register("vehicle_status_module", VehicleStatusModuleItem::new);
+
+    public MoverModule() {
+        IEventBus modbus = FMLJavaModLoadingContext.get().getModEventBus();
+        modbus.addListener(ClientSetup::onTextureStitch);
+        Sounds.init();
+    }
 
     @Override
     public void init(FMLCommonSetupEvent event) {

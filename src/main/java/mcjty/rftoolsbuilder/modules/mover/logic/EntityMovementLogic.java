@@ -38,17 +38,15 @@ public class EntityMovementLogic {
 
     // All 'grabbed' entities during movement (key is entity id)
     private Map<Integer, Vec3> grabbedEntities = new HashMap<>();
+    private int grabTimeout = 0;
 
     public EntityMovementLogic(MoverTileEntity mover) {
         this.mover = mover;
     }
 
-    private final Random random = new Random();
-
     public void setGrabbedEntitiesClient(Set<Integer> grabbedEntities) {
         Level level = mover.getLevel();
         this.grabbedEntities = new HashMap<>();
-        System.out.println("grabbedEntities.size() from server = " + grabbedEntities.size());
         for (Integer id : grabbedEntities) {
             Entity entity = level.getEntity(id);
             if (entity != null) {
@@ -123,10 +121,41 @@ public class EntityMovementLogic {
         if (destination != null) {
             // We are moving
             checkUnmounts();
-            actualMoveServer(vehicle);
-        } else if (!mover.getNetwork().isEmpty()) {
-            if (mover.isMachineEnabled() && !vehicle.isEmpty()) {
-                actualStartMovementServer();
+            actualMoveServer();
+//        } else if (!mover.getNetwork().isEmpty()) {
+//            if (mover.isMachineEnabled() && !vehicle.isEmpty()) {
+//                actualStartMovementServer();
+//            }
+        } else if (!vehicle.isEmpty()) {
+            if (grabTimeout > 0) {
+                grabTimeout--;
+                doGrab(0, 0, 0);
+            }
+            // Check if the vehicle card here wants to go somewhere
+            BlockPos destination = VehicleCard.getDesiredDestination(vehicle);
+            if (destination != null) {
+                if (destination.equals(mover.getBlockPos())) {
+                    // We have arrived!
+                    VehicleCard.clearDesiredDestination(vehicle);
+                    return;
+                }
+
+                if (mover.hasDirectContectionTo(destination)) {
+                    // We have a direct connection
+                    setupMovementTo(destination);
+                } else {
+                    BlockPos dest = mover.traverseBreadthFirstWithPath((p, child) -> {
+                        if (destination.equals(child.getBlockPos())) {
+                            // We found it!
+                            return p.get(0);    // This the first node we should move too
+                        } else {
+                            return null;
+                        }
+                    });
+                    if (dest != null) {
+                        setupMovementTo(dest);
+                    }
+                }
             }
         }
     }
@@ -147,24 +176,14 @@ public class EntityMovementLogic {
         }
     }
 
-    private void actualStartMovementServer() {
-        // @todo here we should routing
-        // For now we pick the first destination
-        Iterator<BlockPos> iterator = mover.getNetwork().values().iterator();
-        BlockPos dest = iterator.next();
-        if (iterator.hasNext()) {
-            float r = random.nextFloat();
-            if (r < .5f) {
-                dest = iterator.next();
-            }
-        }
+    public void setupMovementTo(BlockPos dest) {
         Level level = mover.getLevel();
         if (level.getBlockEntity(dest) instanceof MoverTileEntity destMover) {
             if (destMover.isAvailable()) {
                 BlockPos worldPosition = mover.getBlockPos();
                 destMover.setSource(worldPosition);
                 destination = dest;
-                totalDist = (float) Math.sqrt(worldPosition.distToCenterSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()));
+                totalDist = (float) Math.sqrt(destination.distToCenterSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()));
                 starttick = level.getGameTime();
                 grabEntities();
                 mover.markDirtyClient();
@@ -172,7 +191,15 @@ public class EntityMovementLogic {
         }
     }
 
-    private void grabEntities() {
+    public int getGrabTimeout() {
+        return grabTimeout;
+    }
+
+    public void setGrabTimeout(int grabTimeout) {
+        this.grabTimeout = grabTimeout;
+    }
+
+    public void grabEntities() {
         grabbedEntities.clear();
         AABB aabb = getVehicleAABB();
         Level level = mover.getLevel();
@@ -181,8 +208,6 @@ public class EntityMovementLogic {
             MoverTileEntity.wantUnmount.remove(entity.getId());
         }
 
-        // @todo Note resend grabbed entities for new players that come into range?
-        System.out.println("grabbedEntities.size() in grabEntities = " + grabbedEntities.size());
         syncGrabbedToClient();
     }
 
@@ -196,7 +221,7 @@ public class EntityMovementLogic {
 
     private AABB getVehicleAABB() {
         BlockPos blockPos = mover.getBlockPos();
-        Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(mover.getCard(), blockPos);
+        Map<BlockState, List<BlockPos>> blocks = VehicleCard.getBlocks(mover.getCard(), blockPos.offset(mover.getOffset()));
         int minx = Integer.MAX_VALUE;
         int miny = Integer.MAX_VALUE;
         int minz = Integer.MAX_VALUE;
@@ -216,17 +241,8 @@ public class EntityMovementLogic {
         return new AABB(minx, miny, minz, maxx, maxy, maxz);
     }
 
-    private void actualMoveServer(ItemStack vehicle) {
+    public void doGrab(double dx, double dy, double dz) {
         Level level = mover.getLevel();
-        long totalTicks = getTotalTicks();
-        long currentTick = level.getGameTime() - starttick;
-
-        // First move entities
-        Vec3 startPos = getMovingPosition(0, starttick);
-        Vec3 currentPos = getMovingPosition(0, level.getGameTime()+1);
-        double dx = currentPos.x - startPos.x;
-        double dy = currentPos.y - startPos.y;
-        double dz = currentPos.z - startPos.z;
         grabbedEntities.forEach((id, basePos) -> {
             Entity entity = level.getEntity(id);
             if (entity != null && entity.isAlive()) {
@@ -237,6 +253,29 @@ public class EntityMovementLogic {
                 entity.setOnGround(true);
             }
         });
+    }
+
+    public void endMoveServer() {
+        Vec3 startPos = getMovingPosition(0, starttick);
+        Vec3 currentPos = getMovingPosition(0, starttick + getTotalTicks());
+        double dx = currentPos.x - startPos.x;
+        double dy = currentPos.y - startPos.y;
+        double dz = currentPos.z - startPos.z;
+        doGrab(dx, dy, dz);
+    }
+
+    private void actualMoveServer() {
+        Level level = mover.getLevel();
+        long totalTicks = getTotalTicks();
+        long currentTick = level.getGameTime() - starttick;
+
+        // First move entities
+        Vec3 startPos = getMovingPosition(0, starttick);
+        Vec3 currentPos = getMovingPosition(0, level.getGameTime()+1);
+        double dx = currentPos.x - startPos.x;
+        double dy = currentPos.y - startPos.y;
+        double dz = currentPos.z - startPos.z;
+        doGrab(dx, dy, dz);
 
         if (currentTick >= totalTicks) {
             // We are at the destination
@@ -244,9 +283,13 @@ public class EntityMovementLogic {
         }
     }
 
+    public long getStarttick() {
+        return starttick;
+    }
+
     public long getTotalTicks() {
         // How long the entire movement should last
-        return (long) (totalDist * 70);
+        return (long) (totalDist);
     }
 
     public BlockPos getDestination() {

@@ -83,6 +83,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_MOVE, TypedMap.builder()
                 .put(MoverControllerTileEntity.SELECTED_NODE, nodeList.getSelected().getLeft())
                 .put(MoverControllerTileEntity.SELECTED_VEHICLE, vehicleList.getSelected())
+                .put(MoverControllerTileEntity.SELECTED_DESTINATION, nodeList.getSelected().getRight())
                 .build());
         vehicleList.refresh();
         nodeList.refresh();
@@ -105,7 +106,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
     private void initializeFields() {
         energyBar = window.findChild("energybar");
-        vehicleList = new SyncedList<>(window.findChild("vehicles"), this::requestVehicles, this::makeVehicleLine, -1);
+        vehicleList = new SyncedList<>(window.findChild("vehicles"), this::requestVehicles, this::makeVehicleLine, 10);
         nodeList = new SyncedList<>(window.findChild("nodes"), this::requestNodes, this::makeNodeLine, 20);
 
         updateFields();
@@ -151,7 +152,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
     }
 
     private Panel makeVehicleLine(String vehicle) {
-        Panel panel = horizontal(0, 0).hint(0, 0, 100, 14);
+        Panel panel = horizontal(0, 0).hint(0, 0, 130, 14);
         panel.children(label(vehicle));
         return panel;
     }

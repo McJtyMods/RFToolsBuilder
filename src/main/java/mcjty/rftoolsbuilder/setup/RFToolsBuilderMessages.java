@@ -4,11 +4,13 @@ import mcjty.lib.network.*;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.network.*;
+import mcjty.rftoolsbuilder.modules.mover.network.PacketClickMover;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
+import mcjty.rftoolsbuilder.modules.mover.network.PacketSyncVehicleInformationToClient;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnExtraData;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnShapeData;
-import mcjty.rftoolsbuilder.modules.shield.network.PackertNotifyServerClientReady;
+import mcjty.rftoolsbuilder.modules.shield.network.PacketNotifyServerClientReady;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -46,7 +48,9 @@ public class RFToolsBuilderMessages {
         net.registerMessage(id(), PacketOpenCardGuiFromBuilder.class, PacketOpenCardGuiFromBuilder::toBytes, PacketOpenCardGuiFromBuilder::new, PacketOpenCardGuiFromBuilder::handle);
         net.registerMessage(id(), PacketOpenBuilderGui.class, PacketOpenBuilderGui::toBytes, PacketOpenBuilderGui::new, PacketOpenBuilderGui::handle);
         net.registerMessage(id(), PacketGrabbedEntitiesToClient.class, PacketGrabbedEntitiesToClient::toBytes, PacketGrabbedEntitiesToClient::new, PacketGrabbedEntitiesToClient::handle);
-        net.registerMessage(id(), PackertNotifyServerClientReady.class, PackertNotifyServerClientReady::toBytes, PackertNotifyServerClientReady::new, PackertNotifyServerClientReady::handle);
+        net.registerMessage(id(), PacketSyncVehicleInformationToClient.class, PacketSyncVehicleInformationToClient::toBytes, PacketSyncVehicleInformationToClient::new, PacketSyncVehicleInformationToClient::handle);
+        net.registerMessage(id(), PacketNotifyServerClientReady.class, PacketNotifyServerClientReady::toBytes, PacketNotifyServerClientReady::new, PacketNotifyServerClientReady::handle);
+        net.registerMessage(id(), PacketClickMover.class, PacketClickMover::toBytes, PacketClickMover::new, PacketClickMover::handle);
 
         net.registerMessage(id(), PacketRequestDataFromServer.class, PacketRequestDataFromServer::toBytes, PacketRequestDataFromServer::new, new ChannelBoundHandler<>(net, PacketRequestDataFromServer::handle));
 

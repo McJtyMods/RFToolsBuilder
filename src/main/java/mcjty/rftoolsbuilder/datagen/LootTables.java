@@ -28,8 +28,14 @@ public class LootTables extends BaseLootTableProvider {
         lootTables.put(ShieldModule.TEMPLATE_BLUE.get(), createSimpleTable("template_blue", ShieldModule.TEMPLATE_BLUE.get()));
         lootTables.put(BuilderModule.SPACE_CHAMBER.get(), createSimpleTable("space_chamber", BuilderModule.SPACE_CHAMBER.get()));
         lootTables.put(MoverModule.MOVER.get(), createStandardTable("mover", MoverModule.MOVER.get(), MoverModule.TYPE_MOVER.get()));
+        lootTables.put(MoverModule.MOVER_CONTROL_BLOCK.get(), createSimpleTable("mover_control", MoverModule.MOVER_CONTROL_BLOCK.get()));
+        lootTables.put(MoverModule.MOVER_CONTROL2_BLOCK.get(), createSimpleTable("mover_control2", MoverModule.MOVER_CONTROL2_BLOCK.get()));
+        lootTables.put(MoverModule.MOVER_CONTROL3_BLOCK.get(), createSimpleTable("mover_control3", MoverModule.MOVER_CONTROL3_BLOCK.get()));
+        lootTables.put(MoverModule.MOVER_CONTROL4_BLOCK.get(), createSimpleTable("mover_control4", MoverModule.MOVER_CONTROL4_BLOCK.get()));
+        lootTables.put(MoverModule.MOVER_STATUS_BLOCK.get(), createSimpleTable("mover_status", MoverModule.MOVER_STATUS_BLOCK.get()));
         lootTables.put(MoverModule.MOVER_CONTROLLER.get(), createStandardTable("mover_controller", MoverModule.MOVER_CONTROLLER.get(), MoverModule.TYPE_MOVER_CONTROLLER.get()));
         lootTables.put(MoverModule.VEHICLE_BUILDER.get(), createStandardTable("vehicle_builder", MoverModule.VEHICLE_BUILDER.get(), MoverModule.TYPE_VEHICLE_BUILDER.get()));
+        lootTables.put(MoverModule.MOVER_CONTROL_BLOCK.get(), createSimpleTable("mover_control", MoverModule.MOVER_CONTROL_BLOCK.get()));
     }
 
     @Nonnull

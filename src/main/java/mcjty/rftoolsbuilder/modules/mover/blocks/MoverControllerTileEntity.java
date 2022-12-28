@@ -25,12 +25,9 @@ import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
-import mcjty.rftoolsbuilder.modules.mover.logic.MoverGraphNode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
@@ -38,12 +35,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.annotation.Nullable;
+import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.empty;
@@ -64,14 +59,21 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     @Cap(type = CapType.INFUSABLE)
     private final IInfusable infusable = new DefaultInfusable(MoverControllerTileEntity.this);
 
-    public static final int MAXSCAN = 512;  //@todo configurable
-    private final Map<BlockPos, MoverGraphNode> nodes = new HashMap<>();
-    private MoverGraphNode graph;
+    public static final int MAXSCAN = 128;  //@todo configurable
 
-    // For the gui: the selected vehicle
     @GuiValue
     public static final Value<?, String> VALUE_SELECTED_VEHICLE = Value.create("selectedVehicle", Type.STRING, MoverControllerTileEntity::getSelectedVehicle, MoverControllerTileEntity::setSelectedVehicle);
     private String selectedVehicle;
+
+    @GuiValue
+    public static final Value<?, Integer> VALUE_OFFSET_X = Value.<MoverControllerTileEntity, Integer>create("x", Type.INTEGER, te -> te.offsetX, (te, x) -> te.setOffset(x, te.offsetY, te.offsetZ));
+    private int offsetX = 1;
+    @GuiValue
+    public static final Value<?, Integer> VALUE_OFFSET_Y = Value.<MoverControllerTileEntity, Integer>create("y", Type.INTEGER, te -> te.offsetY, (te, y) -> te.setOffset(te.offsetX, y, te.offsetZ));
+    private int offsetY = 1;
+    @GuiValue
+    public static final Value<?, Integer> VALUE_OFFSET_Z = Value.<MoverControllerTileEntity, Integer>create("z", Type.INTEGER, te -> te.offsetZ, (te, z) -> te.setOffset(te.offsetX, te.offsetY, z));
+    private int offsetZ = 1;
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
@@ -88,56 +90,6 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         super(MoverModule.TYPE_MOVER_CONTROLLER.get(), pos, state);
     }
 
-    @Override
-    public void load(CompoundTag tagCompound) {
-        super.load(tagCompound);
-        if (graph == null) {
-            graph = new MoverGraphNode(worldPosition);
-        }
-        nodes.clear();
-        ListTag graphTag = tagCompound.getList("graph", Tag.TAG_COMPOUND);
-        for (Tag tag : graphTag) {
-            CompoundTag nodeTag = ((CompoundTag) tag);
-            BlockPos pos = new BlockPos(nodeTag.getInt("x"), nodeTag.getInt("y"), nodeTag.getInt("z"));
-            MoverGraphNode childNode = new MoverGraphNode(pos);
-            nodes.put(pos, childNode);
-            CompoundTag childrenTag = nodeTag.getCompound("c");
-            for (Direction direction : OrientationTools.DIRECTION_VALUES) {
-                if (childrenTag.contains(direction.name())) {
-                    CompoundTag childTag = childrenTag.getCompound(direction.name());
-                    BlockPos childpos = new BlockPos(childTag.getInt("x"), childTag.getInt("y"), childTag.getInt("z"));
-                    childNode.add(direction, childpos);
-                }
-            }
-
-        }
-    }
-
-    @Override
-    public void saveAdditional(@Nonnull CompoundTag tagCompound) {
-        super.saveAdditional(tagCompound);
-        ListTag graphTag = new ListTag();
-        nodes.forEach((pos, node) -> {
-            CompoundTag nodeTag = new CompoundTag();
-            nodeTag.putInt("x", pos.getX());
-            nodeTag.putInt("y", pos.getY());
-            nodeTag.putInt("z", pos.getZ());
-
-            CompoundTag childrenTag = new CompoundTag();
-            node.getChildren().forEach((direction, childpos) -> {
-                CompoundTag childTag = new CompoundTag();
-                childTag.putInt("x", childpos.getX());
-                childTag.putInt("y", childpos.getY());
-                childTag.putInt("z", childpos.getZ());
-                childrenTag.put(direction.name(), childTag);
-            });
-            nodeTag.put("c", childrenTag);
-
-            graphTag.add(nodeTag);
-        });
-        tagCompound.put("graph", graphTag);
-    }
-
     private void selectNode(BlockPos pos) {
         if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
             ItemStack card = mover.getCard();
@@ -151,94 +103,234 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         }
     }
 
+    private void setOffset(int x, int y, int z) {
+        if (offsetX == x && offsetY == y && offsetZ == z) {
+            return;
+        }
+        offsetX = x;
+        offsetY = y;
+        offsetZ = z;
+        setChanged();
+        traverseDepthFirst((pos, mover) -> {
+            mover.setOffset(x, y, z);
+            return null;
+        });
+    }
+
     public String getSelectedVehicle() {
         return selectedVehicle;
     }
 
     public void setSelectedVehicle(String vehicle) {
-        this.selectedVehicle = selectedVehicle;
+        this.selectedVehicle = vehicle;
         if (level.isClientSide) {
             GuiMoverController.setSelectedVehicle(vehicle);
         }
     }
 
-    private void doMove(BlockPos pos, String vehicle) {
+    // @todo make other version of traverse too
 
+    @Nullable
+    public <T> T traverseBreadthFirst(BiFunction<BlockPos, MoverTileEntity, T> function) {
+        for (Direction direction : OrientationTools.DIRECTION_VALUES) {
+            BlockPos moverPos = worldPosition.relative(direction);
+            if (level.getBlockEntity(moverPos) instanceof MoverTileEntity mover) {
+                return mover.traverseBreadthFirst(function);
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private <T> T traverseDepthFirst(BiFunction<BlockPos, MoverTileEntity, T> function) {
+        for (Direction direction : OrientationTools.DIRECTION_VALUES) {
+            BlockPos moverPos = worldPosition.relative(direction);
+            if (level.getBlockEntity(moverPos) instanceof MoverTileEntity mover) {
+                return mover.traverseDepthFirst(function);
+            }
+        }
+        return null;
+    }
+
+    public boolean hasEnoughPower() {
+        return energyStorage.getEnergyStored() >= getPowerPerMove();
+    }
+
+    private Integer getPowerPerMove() {
+        int power = MoverConfiguration.RF_PER_MOVE.get();
+        power = (int) (power * (2.0f - infusable.getInfusedFactor()) / 2.0f);
+        return power;
+    }
+
+    // Find a mover and an optional vehicle and setup movement
+    // The vehicle can be null or empty string in which case we take the
+    // vehicle nearest to the mover
+    public void setupMovement(String moverName, String vehicle) {
+        if (energyStorage.getEnergyStored() < getPowerPerMove()) {
+            // Not enough power
+            return;
+        }
+        MoverTileEntity destinationMover = findMover(moverName);
+        if (destinationMover != null) {
+            if (vehicle == null || vehicle.trim().isEmpty()) {
+                // Find the vehicle closest to this mover
+                vehicle = traverseBreadthFirst((p, mover) -> {
+                    ItemStack card = mover.getCard();
+                    if (!card.isEmpty()) {
+                        return VehicleCard.getVehicleName(card);
+                    } else {
+                        return null;
+                    }
+                });
+            }
+            if (vehicle != null) {
+                energyStorage.consumeEnergy(getPowerPerMove());
+                startMove(destinationMover.getBlockPos(), vehicle, destinationMover.getName());
+            }
+        }
+    }
+
+    // Find a vehicle and setup movement to a certain node
+    private void startMove(BlockPos destination, String vehicle, String destinationName) {
+        if (vehicle.contains(" -> ")) {
+            vehicle = vehicle.substring(0, vehicle.indexOf(" -> "));
+        }
+        MoverTileEntity moverContainingVehicle = findVehicle(vehicle);
+
+        if (moverContainingVehicle != null) {
+            ItemStack card = moverContainingVehicle.getCard();
+            VehicleCard.setDesiredDestination(card, destination, destinationName);
+        }
+    }
+
+    @Nullable
+    private MoverTileEntity findMover(String moverName) {
+        return traverseDepthFirst((p, mover) -> {
+            if (Objects.equals(moverName, mover.getName())) {
+                return mover;
+            } else {
+                return null;
+            }
+        });
+    }
+
+    @Nullable
+    public MoverTileEntity findVehicle(String vehicle) {
+        return traverseDepthFirst((p, mover) -> {
+            ItemStack card = mover.getCard();
+            String name = VehicleCard.getVehicleName(card);
+            if (Objects.equals(name, vehicle)) {
+                return mover;
+            } else {
+                return null;
+            }
+        });
     }
 
     private void doScan() {
         setChanged();
-        nodes.clear();
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             BlockPos moverPos = worldPosition.relative(direction);
-            if (level.getBlockEntity(moverPos) instanceof MoverTileEntity) {
-                // Find the first mover
-                graph = new MoverGraphNode(moverPos);
-                nodes.put(moverPos, graph);
-                doScan(moverPos, graph);
+            if (level.getBlockEntity(moverPos) instanceof MoverTileEntity mover) {
+                Set<BlockPos> alreadyHandled = new HashSet<>();
+                alreadyHandled.add(moverPos);
+                doScan(moverPos, mover, alreadyHandled);
                 return;
             }
         }
     }
 
-    private void doScan(BlockPos moverPos, MoverGraphNode moverNode) {
+    private void doScan(BlockPos moverPos, MoverTileEntity mover, Set<BlockPos> alreadyHandled) {
+        mover.clearNetwork();
+        mover.setController(this);
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
-            for (int distance = 1 ; distance <= MAXSCAN ; distance++) {
-                BlockPos newPos = moverPos.relative(direction, distance);
-                // If we have already handled this position we can stop for this direction
-                if (!nodes.containsKey(newPos)) {
-                    if (level.getBlockEntity(newPos) instanceof MoverTileEntity) {
-                        MoverGraphNode child = new MoverGraphNode(newPos);
-                        nodes.put(newPos, child);
-                        moverNode.add(direction, newPos);
-                        child.add(direction.getOpposite(), moverNode.getPos());
-                        doScan(newPos, child);
+            if (mover.canConnect(direction)) {
+                for (int distance = 1; distance <= MAXSCAN; distance++) {
+                    BlockPos destPos = moverPos.relative(direction, distance);
+                    if (level.getBlockEntity(destPos) instanceof MoverTileEntity destMover) {
+                        mover.addConnection(direction, destPos);
+                        if (!alreadyHandled.contains(destPos)) {
+                            alreadyHandled.add(destPos);
+                            doScan(destPos, destMover, alreadyHandled);
+                        }
+                        break;  // Stop at the first mover we find
                     }
                 }
             }
         }
     }
 
+    public List<String> getMovers() {
+        List<String> movers = new ArrayList<>();
+        traverseDepthFirst((p, mover) -> {
+            movers.add(mover.getName());
+            return null;
+        });
+        return movers;
+    }
+
+
     private List<String> getVehicles() {
         List<String> vehicles = new ArrayList<>();
-        nodes.forEach((pos, node) -> {
-            if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
-                ItemStack card = mover.getCard();
-                if (!card.isEmpty()) {
-                    String name = VehicleCard.getVehicleName(card);
-                    if (mover.isMoving()) {
-                        name += " (M)";
-                    }
-                    vehicles.add(name);
+        traverseDepthFirst((p, mover) -> {
+            ItemStack card = mover.getCard();
+            if (!card.isEmpty()) {
+                String name = VehicleCard.getVehicleName(card);
+                BlockPos destination = VehicleCard.getDesiredDestination(card);
+                String destinationName = VehicleCard.getDesiredDestinationName(card);
+                if (destination != null) {
+                    name += " -> " + destinationName;
                 }
+                vehicles.add(name);
             }
+            return null;
         });
         return vehicles;
     }
 
     private List<Pair<BlockPos, String>> getNodes() {
         List<Pair<BlockPos, String>> nodeNames = new ArrayList<>();
-        nodes.forEach((pos, node) -> {
-            if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
-                String name = mover.getName();
-                if (name == null || name.trim().isEmpty()) {
-                    name = pos.getX() + "," + pos.getY() + "," + pos.getZ();
-                }
-                nodeNames.add(Pair.of(pos, name));
-            } else {
-                nodeNames.add(Pair.of(pos, "<INVALID>"));
+        traverseDepthFirst((p, mover) -> {
+            String name = mover.getName();
+            if (name == null || name.trim().isEmpty()) {
+                name = p.getX() + "," + p.getY() + "," + p.getZ();
             }
+            nodeNames.add(Pair.of(p, name));
+            return null;
         });
         return nodeNames;
     }
 
+    @Override
+    protected void saveInfo(CompoundTag tagCompound) {
+        super.saveInfo(tagCompound);
+        getOrCreateInfo(tagCompound).putInt("offsetX", offsetX);
+        getOrCreateInfo(tagCompound).putInt("offsetY", offsetY);
+        getOrCreateInfo(tagCompound).putInt("offsetZ", offsetZ);
+    }
+
+    @Override
+    protected void loadInfo(CompoundTag tagCompound) {
+        super.loadInfo(tagCompound);
+        if (tagCompound.contains("Info")) {
+            CompoundTag info = tagCompound.getCompound("Info");
+            offsetX = info.getInt("offsetX");
+            offsetY = info.getInt("offsetY");
+            offsetZ = info.getInt("offsetZ");
+        } else {
+            offsetX = offsetY = offsetZ = 1;
+        }
+    }
+
     public static final Key<BlockPos> SELECTED_NODE = new Key<>("node", Type.BLOCKPOS);
     public static final Key<String> SELECTED_VEHICLE = new Key<>("vehicle", Type.STRING);
+    public static final Key<String> SELECTED_DESTINATION = new Key<>("destination", Type.STRING);
 
     @ServerCommand
     public static final Command<?> CMD_SCAN = Command.<MoverControllerTileEntity>create("scan", (te, player, params) -> te.doScan());
     @ServerCommand
-    public static final Command<?> CMD_MOVE = Command.<MoverControllerTileEntity>create("move", (te, player, params) -> te.doMove(params.get(SELECTED_NODE), params.get(SELECTED_VEHICLE)));
+    public static final Command<?> CMD_MOVE = Command.<MoverControllerTileEntity>create("move", (te, player, params) ->
+            te.startMove(params.get(SELECTED_NODE), params.get(SELECTED_VEHICLE), params.get(SELECTED_DESTINATION)));
 
     @ServerCommand
     public static final Command<?> CMD_SELECTNODE = Command.<MoverControllerTileEntity>create("selectNode", (te, player, params) -> te.selectNode(params.get(SELECTED_NODE)));
@@ -254,17 +346,17 @@ public class MoverControllerTileEntity extends GenericTileEntity {
             (te, player, params, list) -> GuiMoverController.setNodesFromServer(list));
 
     public static class NodePairSerializer implements ISerializer<Pair<BlockPos, String>> {
-        @Override
-        public Function<FriendlyByteBuf, Pair<BlockPos, String>> getDeserializer() {
-            return buf -> Pair.of(buf.readBlockPos(), buf.readUtf(32767));
-        }
-
-        @Override
-        public BiConsumer<FriendlyByteBuf, Pair<BlockPos, String>> getSerializer() {
-            return (buf, pair) -> {
-                buf.writeBlockPos(pair.getLeft());
-                buf.writeUtf(pair.getRight());
-            };
-        }
+    @Override
+    public Function<FriendlyByteBuf, Pair<BlockPos, String>> getDeserializer() {
+        return buf -> Pair.of(buf.readBlockPos(), buf.readUtf(32767));
     }
+
+    @Override
+    public BiConsumer<FriendlyByteBuf, Pair<BlockPos, String>> getSerializer() {
+        return (buf, pair) -> {
+            buf.writeBlockPos(pair.getLeft());
+            buf.writeUtf(pair.getRight());
+        };
+    }
+}
 }

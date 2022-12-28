@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "rftoolsbuilder:mover_control4"
+    }
+  ],
+  "result": {
+    "item": "rftoolsbuilder:mover_control"
+  }
+}

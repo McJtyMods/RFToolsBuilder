@@ -19,13 +19,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static mcjty.lib.builder.TooltipBuilder.*;
+import static mcjty.lib.builder.TooltipBuilder.parameter;
 
 /**
  * A vehicle is stored in the card as a list of compounds with each compound equal to:
@@ -37,9 +38,9 @@ import static mcjty.lib.builder.TooltipBuilder.*;
 public class VehicleCard extends Item implements ITooltipSettings {
 
     private final Lazy<TooltipBuilder> tooltipBuilder = () -> new TooltipBuilder()
-            .info(key("message.rftoolsbuilder.shiftmessage"))
-            .infoShift(header(),
+            .info(
                     parameter("name", VehicleCard::getVehicleName),
+                    parameter("destination", VehicleCard::isMoving, VehicleCard::getDesiredDestinationName),
                     parameter("contents", VehicleCard::getContentsDescription));
 
     public VehicleCard() {
@@ -75,6 +76,50 @@ public class VehicleCard extends Item implements ITooltipSettings {
         });
         vehicleCard.getOrCreateTag().put("blocks", list);
         vehicleCard.getOrCreateTag().putString("vehicleName", vehicleName);
+    }
+
+    public static void setDesiredDestination(ItemStack vehicleCard, BlockPos pos, String name) {
+        vehicleCard.getOrCreateTag().putIntArray("desiredPos", new int[] { pos.getX(), pos.getY(), pos.getZ()});
+        vehicleCard.getOrCreateTag().putString("desiredPosName", name);
+    }
+
+    public static void clearDesiredDestination(ItemStack vehicleCard) {
+        vehicleCard.getOrCreateTag().remove("desiredPos");
+        vehicleCard.getOrCreateTag().remove("desiredPosName");
+    }
+
+
+    @Nullable
+    public static BlockPos getDesiredDestination(ItemStack vehicleCard) {
+        CompoundTag tag = vehicleCard.getTag();
+        if (tag == null ) {
+            return null;
+        }
+        if (tag.contains("desiredPos")) {
+            int[] desiredPos = tag.getIntArray("desiredPos");
+            return new BlockPos(desiredPos[0], desiredPos[1], desiredPos[2]);
+        }
+        return null;
+    }
+
+    private static boolean isMoving(ItemStack vehicleCard) {
+        CompoundTag tag = vehicleCard.getTag();
+        if (tag == null ) {
+            return false;
+        }
+        return tag.contains("desiredPosName");
+    }
+
+    @Nullable
+    public static String getDesiredDestinationName(ItemStack vehicleCard) {
+        CompoundTag tag = vehicleCard.getTag();
+        if (tag == null ) {
+            return null;
+        }
+        if (tag.contains("desiredPosName")) {
+            return tag.getString("desiredPosName");
+        }
+        return null;
     }
 
     public static Map<BlockState, List<BlockPos>> getBlocks(ItemStack vehicleCard, BlockPos minPos) {

@@ -1,9 +1,8 @@
-package mcjty.rftoolsbuilder.modules.mover.modulesclient;
+package mcjty.rftoolsbuilder.modules.mover.items;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.client.RenderHelper;
 import mcjty.rftoolsbase.api.screens.*;
-import mcjty.rftoolsbase.api.screens.data.IModuleDataContents;
 import mcjty.rftoolsbase.tools.ScreenTextHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -12,14 +11,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-public class CallCardClientScreenModule implements IClientScreenModule<IModuleDataContents> {
+public class VehicleControlClientScreenModule implements IClientScreenModule<VehicleControlScreenModule.EmptyData> {
 
     private String line = "";
     private String button = "";
-    private boolean toggle = false;
     private int color = 0xffffff;
     private int buttonColor = 0xffffff;
     private boolean activated = false;
+    private String vehicle = "";
+    private String mover = "";
 
     private final ITextRenderHelper labelCache = new ScreenTextHelper();
     private final ITextRenderHelper buttonCache = new ScreenTextHelper();
@@ -31,18 +31,18 @@ public class CallCardClientScreenModule implements IClientScreenModule<IModuleDa
 
     @Override
     public int getHeight() {
-        return 10;
+        return 14;
     }
 
     @Override
-    public void render(PoseStack matrixStack, MultiBufferSource buffer, IModuleRenderHelper renderHelper, Font fontRenderer, int currenty, IModuleDataContents screenData, ModuleRenderInfo renderInfo) {
+    public void render(PoseStack matrixStack, MultiBufferSource buffer, IModuleRenderHelper renderHelper, Font fontRenderer, int currenty, VehicleControlScreenModule.EmptyData screenData, ModuleRenderInfo renderInfo) {
         int xoffset;
         int buttonWidth;
         if (!line.isEmpty()) {
             labelCache.setup(line, 316, renderInfo);
             labelCache.renderText(matrixStack, buffer, 0, currenty + 2, color, renderInfo);
-            xoffset = 7 + 80;
-            buttonWidth = 170;
+            xoffset = 7 + 40;
+            buttonWidth = 300;
         } else {
             xoffset = 7 + 5;
             buttonWidth = 490;
@@ -60,7 +60,7 @@ public class CallCardClientScreenModule implements IClientScreenModule<IModuleDa
     public void mouseClick(Level world, int x, int y, boolean clicked) {
         int xoffset;
         if (!line.isEmpty()) {
-            xoffset = 80;
+            xoffset = 40;
         } else {
             xoffset = 5;
         }
@@ -85,7 +85,8 @@ public class CallCardClientScreenModule implements IClientScreenModule<IModuleDa
             } else {
                 buttonColor = 0xffffff;
             }
-            toggle = tagCompound.getBoolean("toggle");
+            mover = tagCompound.getString("mover");
+            vehicle = tagCompound.getString("vehicle");
             if (tagCompound.contains("align")) {
                 String alignment = tagCompound.getString("align");
                 labelCache.align(TextAlign.get(alignment));
@@ -98,6 +99,6 @@ public class CallCardClientScreenModule implements IClientScreenModule<IModuleDa
 
     @Override
     public boolean needsServerData() {
-        return true;
+        return false;
     }
 }
