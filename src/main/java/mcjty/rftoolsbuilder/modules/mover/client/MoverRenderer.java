@@ -212,12 +212,12 @@ public class MoverRenderer {
             int linesSupported = LINES_SUPPORTED;
             boolean showNavigator = page >= totalPagers - 1;
             if (!showNavigator) {
-                linesSupported++;
+                linesSupported += 2;
             }
-            int totalSupportedMovers = (linesSupported + 1) * (totalPagers - 1) + linesSupported;
+            int totalSupportedMovers = (linesSupported + 2) * (totalPagers - 1) + linesSupported;
             int start = mover.getCurrentPage() * totalSupportedMovers;
             if (page > 0) {
-                start += (linesSupported + 1) * page;
+                start += (linesSupported + 2) * page;
             }
             for (int i = start ; i < platforms.size() ; i++) {
                 String line = platforms.get(i);

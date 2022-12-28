@@ -38,8 +38,8 @@ public class VehicleStatusClientScreenModule implements IClientScreenModule<IMod
         if (!label.isEmpty()) {
             labelCache.setup(label, 316, renderInfo);
             labelCache.renderText(matrixStack, buffer, 0, currenty + 2, labelColor, renderInfo);
-            xoffset = 7 + 80;
-            buttonWidth = 170;
+            xoffset = 7 + 40;
+            buttonWidth = 300;
         } else {
             xoffset = 7 + 5;
             buttonWidth = 490;

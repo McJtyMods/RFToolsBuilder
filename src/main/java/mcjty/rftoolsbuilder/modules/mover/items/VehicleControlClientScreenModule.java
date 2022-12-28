@@ -41,8 +41,8 @@ public class VehicleControlClientScreenModule implements IClientScreenModule<Veh
         if (!line.isEmpty()) {
             labelCache.setup(line, 316, renderInfo);
             labelCache.renderText(matrixStack, buffer, 0, currenty + 2, color, renderInfo);
-            xoffset = 7 + 80;
-            buttonWidth = 170;
+            xoffset = 7 + 40;
+            buttonWidth = 300;
         } else {
             xoffset = 7 + 5;
             buttonWidth = 490;
@@ -60,7 +60,7 @@ public class VehicleControlClientScreenModule implements IClientScreenModule<Veh
     public void mouseClick(Level world, int x, int y, boolean clicked) {
         int xoffset;
         if (!line.isEmpty()) {
-            xoffset = 80;
+            xoffset = 40;
         } else {
             xoffset = 5;
         }

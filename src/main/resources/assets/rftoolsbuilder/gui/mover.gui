@@ -44,7 +44,7 @@ window {
             togglebutton('north','N') {
                 tooltips('Enable/disable north direction')
             }
-            togglebutton('north','S') {
+            togglebutton('south','S') {
                 tooltips('Enable/disable south direction')
             }
             togglebutton('west','W') {
