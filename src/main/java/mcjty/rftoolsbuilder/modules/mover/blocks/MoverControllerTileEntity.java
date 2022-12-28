@@ -192,6 +192,9 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     // Find a vehicle and setup movement to a certain node
     private void startMove(BlockPos destination, String vehicle, String destinationName) {
+        if (vehicle.contains(" -> ")) {
+            vehicle = vehicle.substring(0, vehicle.indexOf(" -> "));
+        }
         MoverTileEntity moverContainingVehicle = findVehicle(vehicle);
 
         if (moverContainingVehicle != null) {

@@ -462,9 +462,11 @@ public class MoverTileEntity extends TickingTileEntity {
                 if (!alreadyHandled.contains(childPos)) {
                     if (level.getBlockEntity(childPos) instanceof MoverTileEntity childMover) {
                         alreadyHandled.add(childPos);
-                        List<BlockPos> path = new ArrayList<>(todo.get(toExpand).getLeft());
-                        path.add(childPos);
-                        todo.add(Pair.of(path, childMover));
+                        if (childMover.isAvailable()) {
+                            List<BlockPos> path = new ArrayList<>(todo.get(toExpand).getLeft());
+                            path.add(childPos);
+                            todo.add(Pair.of(path, childMover));
+                        }
                     }
                 }
             }

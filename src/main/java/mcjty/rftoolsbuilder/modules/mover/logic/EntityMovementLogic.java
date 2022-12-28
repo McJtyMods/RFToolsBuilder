@@ -183,7 +183,7 @@ public class EntityMovementLogic {
                 BlockPos worldPosition = mover.getBlockPos();
                 destMover.setSource(worldPosition);
                 destination = dest;
-                totalDist = (float) Math.sqrt(worldPosition.distToCenterSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()));
+                totalDist = (float) Math.sqrt(destination.distToCenterSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()));
                 starttick = level.getGameTime();
                 grabEntities();
                 mover.markDirtyClient();
@@ -256,7 +256,6 @@ public class EntityMovementLogic {
     }
 
     public void endMoveServer() {
-        Level level = mover.getLevel();
         Vec3 startPos = getMovingPosition(0, starttick);
         Vec3 currentPos = getMovingPosition(0, starttick + getTotalTicks());
         double dx = currentPos.x - startPos.x;
@@ -290,7 +289,7 @@ public class EntityMovementLogic {
 
     public long getTotalTicks() {
         // How long the entire movement should last
-        return (long) (totalDist * 30);
+        return (long) (totalDist);
     }
 
     public BlockPos getDestination() {

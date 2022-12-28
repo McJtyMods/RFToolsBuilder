@@ -80,7 +80,7 @@ public class VehicleControlScreenModule implements IScreenModule<VehicleControlS
     public void mouseClick(Level world, int x, int y, boolean clicked, Player player) {
         int xoffset;
         if (!line.isEmpty()) {
-            xoffset = 80;
+            xoffset = 40;
         } else {
             xoffset = 5;
         }

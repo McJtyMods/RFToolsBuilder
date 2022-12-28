@@ -218,6 +218,7 @@ public class MoverRenderer {
             int start = mover.getCurrentPage() * totalSupportedMovers;
             if (page > 0) {
                 start += (linesSupported + 2) * page;
+                currenty = 0;
             }
             for (int i = start ; i < platforms.size() ; i++) {
                 String line = platforms.get(i);
