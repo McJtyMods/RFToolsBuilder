@@ -40,6 +40,8 @@ public class EntityMovementLogic {
     private Map<Integer, Vec3> grabbedEntities = new HashMap<>();
     private int grabTimeout = 0;
 
+    private int waitABit = 0;
+
     public EntityMovementLogic(MoverTileEntity mover) {
         this.mover = mover;
     }
@@ -103,9 +105,6 @@ public class EntityMovementLogic {
                     double desiredX = basePos.x + dx;
                     double desiredY = basePos.y + dy;
                     double desiredZ = basePos.z + dz;
-//                    desiredX = (desiredX + entity.getX()*3) / 4.0;
-//                    desiredY = (desiredY + entity.getY()*3) / 4.0;
-//                    desiredZ = (desiredZ + entity.getZ()*3) / 4.0;
                     entity.setPos(desiredX, desiredY, desiredZ);
                     entity.setOldPosAndRot();
                     entity.fallDistance = 0;
@@ -114,6 +113,10 @@ public class EntityMovementLogic {
                 }
             }
         }
+    }
+
+    public void setWaitABit(int waitABit) {
+        this.waitABit = waitABit;
     }
 
     public void tryMoveVehicleServer() {
@@ -131,6 +134,12 @@ public class EntityMovementLogic {
                 grabTimeout--;
                 doGrab(0, 0, 0);
             }
+
+            if (waitABit > 0) {
+                waitABit--;
+                return;
+            }
+
             // Check if the vehicle card here wants to go somewhere
             BlockPos destination = VehicleCard.getDesiredDestination(vehicle);
             if (destination != null) {
@@ -197,6 +206,13 @@ public class EntityMovementLogic {
 
     public void setGrabTimeout(int grabTimeout) {
         this.grabTimeout = grabTimeout;
+    }
+
+    public void clearGrabbedEntities() {
+        if (!grabbedEntities.isEmpty()) {
+            grabbedEntities.clear();
+            mover.setChanged();
+        }
     }
 
     public void grabEntities() {

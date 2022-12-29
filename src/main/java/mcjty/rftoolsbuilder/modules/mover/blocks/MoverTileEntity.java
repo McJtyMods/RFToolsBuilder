@@ -125,7 +125,6 @@ public class MoverTileEntity extends TickingTileEntity {
     private int currentPage = 0;
     private int renderCopyTimer = 0;
     private BlockPos lastDestination;
-    private long lastTotalTicks;
 
     // A cache for invisible mover blocks
     private Map<BlockPos, BlockState> invisibleMoverBlocks = null;
@@ -176,6 +175,9 @@ public class MoverTileEntity extends TickingTileEntity {
 
     @Override
     protected void tickServer() {
+        if (!isMoving()) {
+            logic.clearGrabbedEntities();
+        }
         updateVehicleStatus();
         logic.tryMoveVehicleServer();
         // If there is a vehicle we sync status to clients
@@ -333,7 +335,6 @@ public class MoverTileEntity extends TickingTileEntity {
                 } else {
                     current = logic.getMovingPosition(partialTicks, level.getGameTime());
                     lastDestination = logic.getDestination();
-                    lastTotalTicks = logic.getTotalTicks();
                 }
                 MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle, current, offset);
             }, this::isMoverThere);
@@ -568,9 +569,10 @@ public class MoverTileEntity extends TickingTileEntity {
             destMover.items.setStackInSlot(SLOT_VEHICLE_CARD, getCard());
             items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.EMPTY);
             destMover.setSource(null);
+            destMover.getLogic().setWaitABit(5);
             destMover.updateVehicle();
             destMover.updateVehicleStatus();
-            destMover.getLogic().grabEntities();
+//            destMover.getLogic().grabEntities();
 //            destMover.getLogic().setGrabTimeout(5);
         } else {
             // Something is wrong. The destination is gone. Stop the movement
