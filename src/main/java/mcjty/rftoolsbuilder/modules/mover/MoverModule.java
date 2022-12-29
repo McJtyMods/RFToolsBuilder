@@ -19,7 +19,9 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -65,7 +67,9 @@ public class MoverModule implements IModule {
 
     public MoverModule() {
         IEventBus modbus = FMLJavaModLoadingContext.get().getModEventBus();
-        modbus.addListener(ClientSetup::onTextureStitch);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            modbus.addListener(ClientSetup::onTextureStitch);
+        });
         Sounds.init();
     }
 
