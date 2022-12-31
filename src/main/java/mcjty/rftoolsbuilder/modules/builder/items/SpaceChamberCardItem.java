@@ -57,7 +57,7 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
     }
 
     public SpaceChamberCardItem() {
-        super(new Properties().stacksTo(1).defaultDurability(0).tab(RFToolsBuilder.setup.getTab()));
+        super(RFToolsBuilder.setup.defaultProperties().stacksTo(1).defaultDurability(0));
     }
 
     @Override
