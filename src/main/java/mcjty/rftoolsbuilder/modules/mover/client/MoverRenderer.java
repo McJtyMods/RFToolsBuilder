@@ -3,7 +3,6 @@ package mcjty.rftoolsbuilder.modules.mover.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
 import mcjty.lib.client.RenderHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
@@ -145,8 +144,8 @@ public class MoverRenderer {
         };
 
         matrixStack.translate(0.5F, 0.5F, 0.5F);
-        matrixStack.mulPose(Vector3f.YP.rotationDegrees(yRotation));
-        matrixStack.mulPose(Vector3f.XP.rotationDegrees(xRotation));
+        RenderHelper.rotateYP(matrixStack, yRotation);
+        RenderHelper.rotateXP(matrixStack, xRotation);
         matrixStack.translate(0.0F, 0.0F, -0.4375F);
     }
 

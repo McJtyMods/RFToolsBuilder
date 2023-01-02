@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Vector3f;
+import mcjty.lib.client.RenderHelper;
 import mcjty.lib.varia.Check32;
 import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
@@ -162,9 +162,9 @@ public class ShapeRenderer {
         matrixStack.pushPose();
 
         matrixStack.translate(dx, dy, 200);
-        matrixStack.mulPose(Vector3f.XP.rotationDegrees(180-xangle));
-        matrixStack.mulPose(Vector3f.YP.rotationDegrees(yangle));
-        matrixStack.mulPose(Vector3f.ZP.rotationDegrees(zangle));
+        RenderHelper.rotateXP(matrixStack, 180-xangle);
+        RenderHelper.rotateYP(matrixStack, yangle);
+        RenderHelper.rotateZP(matrixStack, zangle);
         matrixStack.scale(-scale, scale, scale);
 
         RenderSystem.disableBlend();
