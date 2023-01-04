@@ -1,7 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.math.Matrix4f;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.tuple.Pair;
@@ -112,11 +111,11 @@ public class RenderData {
         }
     }
 
-    private static final Matrix4f IDENTITY = new Matrix4f();
-
-    static {
-        IDENTITY.setIdentity();
-    }
+//    private static final Matrix4f IDENTITY = new Matrix4f();
+//
+//    static {
+//        IDENTITY.setIdentity();
+//    }
 
     public static class RenderElement {
         protected com.mojang.blaze3d.vertex.VertexBuffer vbo;

@@ -2,7 +2,6 @@ package mcjty.rftoolsbuilder.modules.mover.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
 import mcjty.lib.client.RenderHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
@@ -153,30 +152,13 @@ public class MoverRenderer {
                                           float renderOffset, int packedLight) {
         matrixStack.pushPose();
         matrixStack.scale(1, -1, -1);
-        Matrix4f matrix = matrixStack.last().pose();
 
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(BLACK);
 
         VertexConsumer builder = buffer.getBuffer(RenderType.solid());
-        renderQuad(matrix, sprite, packedLight, builder, -renderOffset+.05f, .5f);
+        RenderHelper.renderQuadGui(matrixStack, sprite, packedLight, builder, -renderOffset+.05f, .5f);
 
         matrixStack.popPose();
-    }
-
-    private static void renderQuad(Matrix4f matrix, TextureAtlasSprite sprite, int packedLight, VertexConsumer builder, float zfront, float ss) {
-        float u0 = sprite.getU0();
-        float v0 = sprite.getV0();
-        float u1 = sprite.getU1();
-        float v1 = sprite.getV1();
-
-        vt(builder, matrix, -ss, ss, zfront, u0, v0, packedLight);
-        vt(builder, matrix, ss, ss, zfront, u1, v0, packedLight);
-        vt(builder, matrix, ss, -ss, zfront, u1, v1, packedLight);
-        vt(builder, matrix, -ss, -ss, zfront, u0, v1, packedLight);
-    }
-
-    public static void vt(VertexConsumer renderer, Matrix4f matrix, float x, float y, float z, float u, float v, int packedLight) {
-        renderer.vertex(matrix, x, y, z).color(1f, 1f, 1f, 1f).uv(u, v).uv2(packedLight).normal(1.0F, 0.0F, 0.0F).endVertex();
     }
 
     private static void renderMovers(PoseStack matrixStack, MultiBufferSource buffer, Font fontrenderer, int lightmapValue,
