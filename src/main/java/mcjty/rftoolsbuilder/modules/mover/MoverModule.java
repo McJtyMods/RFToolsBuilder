@@ -3,7 +3,11 @@ package mcjty.rftoolsbuilder.modules.mover;
 
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.container.GenericContainer;
+import mcjty.lib.datagen.DataGen;
+import mcjty.lib.datagen.Dob;
 import mcjty.lib.modules.IModule;
+import mcjty.rftoolsbase.modules.various.VariousModule;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.blocks.*;
 import mcjty.rftoolsbuilder.modules.mover.client.ClientSetup;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiMover;
@@ -14,10 +18,15 @@ import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlModuleItem;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleStatusModuleItem;
 import mcjty.rftoolsbuilder.modules.mover.sound.Sounds;
 import mcjty.rftoolsbuilder.setup.Config;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.ShapelessRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -27,6 +36,9 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.RegistryObject;
 
+import static mcjty.lib.datagen.BaseBlockStateProvider.RFTOOLSBASE_BOTTOM;
+import static mcjty.lib.datagen.BaseBlockStateProvider.RFTOOLSBASE_TOP;
+import static mcjty.lib.datagen.DataGen.has;
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
 public class MoverModule implements IModule {
@@ -90,5 +102,107 @@ public class MoverModule implements IModule {
     @Override
     public void initConfig() {
         MoverConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
+    }
+
+    @Override
+    public void initDatagen(DataGen dataGen) {
+        dataGen.add(
+                Dob.blockBuilder(MOVER)
+                        .ironPickaxeTags()
+                        .parentedItem("block/mover")
+                        .standardLoot(TYPE_MOVER)
+                        .blockState(p -> p.simpleBlock(MOVER.get(), p.frontBasedModel("mover", p.modLoc("block/machinemover"), p.modLoc("block/machinemover"), RFTOOLSBASE_TOP, RFTOOLSBASE_BOTTOM)))
+                        .shaped(builder -> builder
+                                        .define('F', VariousModule.MACHINE_FRAME.get())
+                                        .define('C', Blocks.RAIL)
+                                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                                "iTi", "CFC", "iTi"),
+                Dob.blockBuilder(MOVER_CONTROLLER)
+                        .ironPickaxeTags()
+                        .parentedItem("block/mover_controller")
+                        .standardLoot(TYPE_MOVER_CONTROLLER)
+                        .blockState(p -> p.orientedBlock(MOVER_CONTROLLER.get(), p.frontBasedModel("mover_controller", p.modLoc("block/machinemovercontroller"))))
+                        .shaped(builder -> builder
+                                        .define('F', VariousModule.MACHINE_FRAME.get())
+                                        .define('C', Blocks.ACTIVATOR_RAIL)
+                                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                                "iTo", "CFC", "oTi"),
+                Dob.blockBuilder(VEHICLE_BUILDER)
+                        .ironPickaxeTags()
+                        .parentedItem("block/vehicle_builder")
+                        .standardLoot(TYPE_VEHICLE_BUILDER)
+                        .blockState(p -> p.orientedBlock(VEHICLE_BUILDER.get(), p.frontBasedModel("vehicle_builder", p.modLoc("block/machinevehiclebuilder"))))
+                        .shaped(builder -> builder
+                                        .define('F', VariousModule.MACHINE_FRAME.get())
+                                        .define('C', Items.MINECART)
+                                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                                "iCi", "rFr", "iTi"),
+                Dob.blockBuilder(MOVER_CONTROL_BLOCK)
+                        .ironPickaxeTags()
+                        .simpleLoot()
+                        .parentedItem("block/mover_control_0")
+                        .blockState(p -> DataGenHelper.create24Model(p, MOVER_CONTROL_BLOCK.get(), "mover_control_", "block/movercontrol"))
+                        .shaped(builder -> builder
+                                        .define('F', VariousModule.MACHINE_FRAME.get())
+                                        .define('C', Blocks.REPEATER)
+                                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                                "rTr", "CFC", "iTi")
+                        .shapeless("mover_control_back", builder -> builder
+                                .requires(MOVER_CONTROL4_BLOCK.get())
+                                .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get()))),
+                Dob.blockBuilder(MOVER_CONTROL2_BLOCK)
+                        .ironPickaxeTags()
+                        .simpleLoot()
+                        .parentedItem("block/mover_control2_0")
+                        .blockState(p -> DataGenHelper.create24Model(p, MOVER_CONTROL2_BLOCK.get(), "mover_control2_", "block/movercontrol2"))
+                        .shapeless(builder -> builder
+                                .requires(MOVER_CONTROL_BLOCK.get())
+                                .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get()))),
+                Dob.blockBuilder(MOVER_CONTROL3_BLOCK)
+                        .ironPickaxeTags()
+                        .simpleLoot()
+                        .parentedItem("block/mover_control3_0")
+                        .blockState(p -> DataGenHelper.create24Model(p, MOVER_CONTROL3_BLOCK.get(), "mover_control3_", "block/movercontrol3"))
+                        .shapeless(builder -> builder
+                                .requires(MOVER_CONTROL2_BLOCK.get())
+                                .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get()))),
+                Dob.blockBuilder(MOVER_CONTROL4_BLOCK)
+                        .ironPickaxeTags()
+                        .simpleLoot()
+                        .parentedItem("block/mover_control4_0")
+                        .blockState(p -> DataGenHelper.create24Model(p, MOVER_CONTROL4_BLOCK.get(), "mover_control4_", "block/movercontrol4"))
+                        .shapeless(builder -> builder
+                                .requires(MOVER_CONTROL3_BLOCK.get())
+                                .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get()))),
+                Dob.blockBuilder(MOVER_STATUS_BLOCK)
+                        .ironPickaxeTags()
+                        .simpleLoot()
+                        .parentedItem("block/mover_status_0")
+                        .blockState(p -> DataGenHelper.create24Model(p, MOVER_STATUS_BLOCK.get(), "mover_status_", "block/moverstatus"))
+                        .shaped(builder -> builder
+                                        .define('F', VariousModule.MACHINE_FRAME.get())
+                                        .define('C', Blocks.COMPARATOR)
+                                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                                "rTr", "CFC", "iTi"),
+                Dob.itemBuilder(VEHICLE_CARD)
+                        .generatedItem("item/vehiclecard")
+                        .shaped(builder -> builder
+                                        .define('C', Items.MINECART)
+                                        .unlockedBy("paper", has(Items.PAPER)),
+                                " C ", "rpr", " r "),
+                Dob.itemBuilder(VEHICLE_CONTROL_MODULE)
+                        .generatedItem("item/vehiclecontrolmoduleitem")
+                        .shaped(builder -> builder
+                                        .define('C', VEHICLE_CARD.get())
+                                        .unlockedBy("paper", has(Items.PAPER)),
+                                " C ", "rpr", " r "),
+                Dob.itemBuilder(VEHICLE_STATUS_MODULE)
+                        .generatedItem("item/vehiclestatusmoduleitem")
+                        .shaped(builder -> builder
+                                        .define('C', VEHICLE_CARD.get())
+                                        .define('g', Items.COMPARATOR)
+                                        .unlockedBy("paper", has(Items.PAPER)),
+                                " C ", "rpr", " g ")
+        );
     }
 }

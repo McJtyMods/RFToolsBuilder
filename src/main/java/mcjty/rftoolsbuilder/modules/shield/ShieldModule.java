@@ -2,18 +2,29 @@ package mcjty.rftoolsbuilder.modules.shield;
 
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.container.GenericContainer;
+import mcjty.lib.crafting.CopyNBTRecipeBuilder;
+import mcjty.lib.datagen.DataGen;
+import mcjty.lib.datagen.Dob;
 import mcjty.lib.modules.IModule;
+import mcjty.rftoolsbase.modules.various.VariousModule;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.*;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldModelLoader;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.client.model.generators.ModelFile;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -21,6 +32,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
 
+import static mcjty.lib.datagen.DataGen.has;
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
 
@@ -123,4 +135,98 @@ public class ShieldModule implements IModule {
         ShieldConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
     }
 
+    @Override
+    public void initDatagen(DataGen dataGen) {
+        dataGen.add(
+                Dob.blockBuilder(TEMPLATE_BLUE)
+                        .parentedItem("block/blue_shield_template")
+                        .simpleLoot()
+                        .blockState(p -> p.singleTextureBlockC(TEMPLATE_BLUE.get(), "blue_shield_template", "block/shieldtemplate", builder -> builder.renderType("cutout")))
+                        .shaped(builder -> builder
+                                        .define('w', ItemTags.WOOL)
+                                        .define('l', Tags.Items.DYES_BLUE)
+                                        .unlockedBy("glass", has(Items.GLASS)),
+                                8,
+                                "www", "lGl", "www"),
+                Dob.blockBuilder(TEMPLATE_RED)
+                        .parentedItem("block/red_shield_template")
+                        .simpleLoot()
+                        .blockState(p -> p.singleTextureBlockC(TEMPLATE_RED.get(), "red_shield_template", "block/shieldtemplate1", builder -> builder.renderType("cutout")))
+                        .shaped(builder -> builder
+                                        .define('w', ItemTags.WOOL)
+                                        .define('l', Tags.Items.DYES_RED)
+                                        .unlockedBy("glass", has(Items.GLASS)),
+                                8,
+                                "www", "lGl", "www"),
+                Dob.blockBuilder(TEMPLATE_GREEN)
+                        .parentedItem("block/green_shield_template")
+                        .simpleLoot()
+                        .blockState(p -> p.singleTextureBlockC(TEMPLATE_GREEN.get(), "green_shield_template", "block/shieldtemplate2", builder -> builder.renderType("cutout")))
+                        .shaped(builder -> builder
+                                        .define('w', ItemTags.WOOL)
+                                        .define('l', Tags.Items.DYES_GREEN)
+                                        .unlockedBy("glass", has(Items.GLASS)),
+                                8,
+                                "www", "lGl", "www"),
+                Dob.blockBuilder(TEMPLATE_YELLOW)
+                        .parentedItem("block/yellow_shield_template")
+                        .simpleLoot()
+                        .blockState(p -> p.singleTextureBlockC(TEMPLATE_YELLOW.get(), "yellow_shield_template", "block/shieldtemplate3", builder -> builder.renderType("cutout")))
+                        .shaped(builder -> builder
+                                        .define('w', ItemTags.WOOL)
+                                        .define('l', Tags.Items.DYES_YELLOW)
+                                        .unlockedBy("glass", has(Items.GLASS)),
+                                8,
+                                "www", "lGl", "www"),
+                Dob.blockBuilder(SHIELD_BLOCK1)
+                        .ironPickaxeTags()
+                        .parentedItem("block/shield_block")
+                        .standardLoot(TYPE_SHIELD_BLOCK1)
+                        .blockState(p -> p.simpleBlock(SHIELD_BLOCK1.get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
+                        .shaped(builder -> builder
+                                        .define('F', VariousModule.MACHINE_FRAME.get())
+                                        .define('g', Tags.Items.INGOTS_GOLD)
+                                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                                "gTg", "rFr", "OOO"),
+                Dob.blockBuilder(SHIELD_BLOCK2)
+                        .ironPickaxeTags()
+                        .parentedItem("block/shield_block")
+                        .standardLoot(TYPE_SHIELD_BLOCK2)
+                        .blockState(p -> p.simpleBlock(SHIELD_BLOCK2.get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
+                        .shapedNBT(builder -> builder
+                                        .define('M', SHIELD_BLOCK1.get())
+                                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                                "ROR", "OMO", "ROR"),
+                Dob.blockBuilder(SHIELD_BLOCK3)
+                        .ironPickaxeTags()
+                        .parentedItem("block/shield_block")
+                        .standardLoot(TYPE_SHIELD_BLOCK3)
+                        .blockState(p -> p.simpleBlock(SHIELD_BLOCK3.get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
+                        .shapedNBT(builder -> builder
+                                        .define('s', VariousModule.DIMENSIONALSHARD.get())
+                                        .define('M', SHIELD_BLOCK2.get())
+                                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                                "sOs", "OMO", "sOs"),
+                Dob.blockBuilder(SHIELD_BLOCK4)
+                        .ironPickaxeTags()
+                        .parentedItem("block/shield_block")
+                        .standardLoot(TYPE_SHIELD_BLOCK4)
+                        .blockState(p -> p.simpleBlock(SHIELD_BLOCK4.get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
+                        .shapedNBT(builder -> builder
+                                        .define('s', VariousModule.DIMENSIONALSHARD.get())
+                                        .define('M', SHIELD_BLOCK3.get())
+                                        .define('n', Items.NETHER_STAR)
+                                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                                "nOs", "OMO", "sOn"),
+                Dob.blockBuilder(SHIELDING_SOLID)
+                        .ironPickaxeTags()
+                        .blockState(p -> p.simpleBlock(SHIELDING_SOLID.get(), new ModelFile.UncheckedModelFile(new ResourceLocation(RFToolsBuilder.MODID, "block/shielding")))),
+                Dob.blockBuilder(SHIELDING_TRANSLUCENT)
+                        .ironPickaxeTags()
+                        .blockState(p -> p.simpleBlock(SHIELDING_TRANSLUCENT.get(), new ModelFile.UncheckedModelFile(new ResourceLocation(RFToolsBuilder.MODID, "block/shielding")))),
+                Dob.blockBuilder(SHIELDING_CUTOUT)
+                        .ironPickaxeTags()
+                        .blockState(p -> p.simpleBlock(SHIELDING_CUTOUT.get(), new ModelFile.UncheckedModelFile(new ResourceLocation(RFToolsBuilder.MODID, "block/shielding"))))
+        );
+    }
 }

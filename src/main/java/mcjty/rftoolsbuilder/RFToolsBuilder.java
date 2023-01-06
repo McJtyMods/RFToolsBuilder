@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder;
 
+import mcjty.lib.datagen.DataGen;
 import mcjty.lib.modules.Modules;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
@@ -10,6 +11,7 @@ import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.ModSetup;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
@@ -33,15 +35,22 @@ public class RFToolsBuilder {
 
         Registration.register();
 
-        IEventBus modbus = FMLJavaModLoadingContext.get().getModEventBus();
-        modbus.addListener(setup::init);
-        modbus.addListener(modules::init);
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        bus.addListener(setup::init);
+        bus.addListener(modules::init);
+        bus.addListener(this::onDataGen);
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            modbus.addListener(ClientSetup::init);
-            modbus.addListener(ClientSetup::registerKeyBinds);
-            modbus.addListener(modules::initClient);
+            bus.addListener(ClientSetup::init);
+            bus.addListener(ClientSetup::registerKeyBinds);
+            bus.addListener(modules::initClient);
         });
+    }
+
+    private void onDataGen(GatherDataEvent event) {
+        DataGen datagen = new DataGen(MODID, event);
+        modules.datagen(datagen);
+        datagen.generate();
     }
 
     private void setupModules() {
