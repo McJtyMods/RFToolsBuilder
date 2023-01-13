@@ -10,12 +10,15 @@ import mcjty.rftoolsbuilder.setup.ClientSetup;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.ModSetup;
 import mcjty.rftoolsbuilder.setup.Registration;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+
+import java.util.function.Supplier;
 
 @Mod(RFToolsBuilder.MODID)
 public class RFToolsBuilder {
@@ -45,6 +48,11 @@ public class RFToolsBuilder {
             bus.addListener(ClientSetup::registerKeyBinds);
             bus.addListener(modules::initClient);
         });
+    }
+
+    public static <T extends Item> Supplier<T> tab(Supplier<T> supplier) {
+        instance.setup.tab(supplier);
+        return supplier;
     }
 
     private void onDataGen(GatherDataEvent event) {

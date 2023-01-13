@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static mcjty.lib.builder.TooltipBuilder.*;
+import static mcjty.lib.builder.TooltipBuilder.parameter;
 
 /**
  * A vehicle is stored in the card as a list of compounds with each compound equal to:
@@ -129,7 +129,7 @@ public class VehicleCard extends Item implements ITooltipSettings {
             ListTag list = compoundTag.getList("blocks", Tag.TAG_COMPOUND);
             for (Tag tag : list) {
                 CompoundTag c = (CompoundTag) tag;
-                BlockState state = NbtUtils.readBlockState(c.getCompound("state"));
+                BlockState state = NBTTools.readBlockState(c.getCompound("state"));
                 int[] blocks = c.getIntArray("blocks");
                 List<BlockPos> blockPosList = Arrays.stream(blocks).mapToObj(i -> convertIntToPos(minPos, i)).collect(Collectors.toList());
                 result.put(state, blockPosList);

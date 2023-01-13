@@ -33,6 +33,7 @@ import net.minecraftforge.registries.RegistryObject;
 import javax.annotation.Nonnull;
 
 import static mcjty.lib.datagen.DataGen.has;
+import static mcjty.rftoolsbuilder.RFToolsBuilder.tab;
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
 
@@ -42,10 +43,10 @@ public class ShieldModule implements IModule {
     public static final RegistryObject<BaseBlock> SHIELD_BLOCK2 = BLOCKS.register("shield_block2", () -> new ShieldProjectorBlock(ShieldModule::createProjector2, () -> ShieldConfiguration.maxShieldSize.get() * 4));
     public static final RegistryObject<BaseBlock> SHIELD_BLOCK3 = BLOCKS.register("shield_block3", () -> new ShieldProjectorBlock(ShieldModule::createProjector3, () -> ShieldConfiguration.maxShieldSize.get() * 16));
     public static final RegistryObject<BaseBlock> SHIELD_BLOCK4 = BLOCKS.register("shield_block4", () -> new ShieldProjectorBlock(ShieldModule::createProjector4, () -> ShieldConfiguration.maxShieldSize.get() * 128));
-    public static final RegistryObject<Item> SHIELD_BLOCK1_ITEM = ITEMS.register("shield_block1", () -> new BlockItem(SHIELD_BLOCK1.get(), Registration.createStandardProperties()));
-    public static final RegistryObject<Item> SHIELD_BLOCK2_ITEM = ITEMS.register("shield_block2", () -> new BlockItem(SHIELD_BLOCK2.get(), Registration.createStandardProperties()));
-    public static final RegistryObject<Item> SHIELD_BLOCK3_ITEM = ITEMS.register("shield_block3", () -> new BlockItem(SHIELD_BLOCK3.get(), Registration.createStandardProperties()));
-    public static final RegistryObject<Item> SHIELD_BLOCK4_ITEM = ITEMS.register("shield_block4", () -> new BlockItem(SHIELD_BLOCK4.get(), Registration.createStandardProperties()));
+    public static final RegistryObject<Item> SHIELD_BLOCK1_ITEM = ITEMS.register("shield_block1", tab(() -> new BlockItem(SHIELD_BLOCK1.get(), Registration.createStandardProperties())));
+    public static final RegistryObject<Item> SHIELD_BLOCK2_ITEM = ITEMS.register("shield_block2", tab(() -> new BlockItem(SHIELD_BLOCK2.get(), Registration.createStandardProperties())));
+    public static final RegistryObject<Item> SHIELD_BLOCK3_ITEM = ITEMS.register("shield_block3", tab(() -> new BlockItem(SHIELD_BLOCK3.get(), Registration.createStandardProperties())));
+    public static final RegistryObject<Item> SHIELD_BLOCK4_ITEM = ITEMS.register("shield_block4", tab(() -> new BlockItem(SHIELD_BLOCK4.get(), Registration.createStandardProperties())));
     public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELD_BLOCK1 = TILES.register("shield_block1", () -> BlockEntityType.Builder.of(ShieldModule::createProjector1, SHIELD_BLOCK1.get()).build(null));
     public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELD_BLOCK2 = TILES.register("shield_block2", () -> BlockEntityType.Builder.of(ShieldModule::createProjector2, SHIELD_BLOCK2.get()).build(null));
     public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELD_BLOCK3 = TILES.register("shield_block3", () -> BlockEntityType.Builder.of(ShieldModule::createProjector3, SHIELD_BLOCK3.get()).build(null));
@@ -57,10 +58,10 @@ public class ShieldModule implements IModule {
     public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_GREEN = BLOCKS.register("green_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.GREEN));
     public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_YELLOW = BLOCKS.register("yellow_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.YELLOW));
 
-    public static final RegistryObject<Item> TEMPLATE_BLUE_ITEM = ITEMS.register("blue_shield_template_block", () -> new BlockItem(TEMPLATE_BLUE.get(), Registration.createStandardProperties()));
-    public static final RegistryObject<Item> TEMPLATE_RED_ITEM = ITEMS.register("red_shield_template_block", () -> new BlockItem(TEMPLATE_RED.get(), Registration.createStandardProperties()));
-    public static final RegistryObject<Item> TEMPLATE_GREEN_ITEM = ITEMS.register("green_shield_template_block", () -> new BlockItem(TEMPLATE_GREEN.get(), Registration.createStandardProperties()));
-    public static final RegistryObject<Item> TEMPLATE_YELLOW_ITEM = ITEMS.register("yellow_shield_template_block", () -> new BlockItem(TEMPLATE_YELLOW.get(), Registration.createStandardProperties()));
+    public static final RegistryObject<Item> TEMPLATE_BLUE_ITEM = ITEMS.register("blue_shield_template_block", tab(() -> new BlockItem(TEMPLATE_BLUE.get(), Registration.createStandardProperties())));
+    public static final RegistryObject<Item> TEMPLATE_RED_ITEM = ITEMS.register("red_shield_template_block", tab(() -> new BlockItem(TEMPLATE_RED.get(), Registration.createStandardProperties())));
+    public static final RegistryObject<Item> TEMPLATE_GREEN_ITEM = ITEMS.register("green_shield_template_block", tab(() -> new BlockItem(TEMPLATE_GREEN.get(), Registration.createStandardProperties())));
+    public static final RegistryObject<Item> TEMPLATE_YELLOW_ITEM = ITEMS.register("yellow_shield_template_block", tab(() -> new BlockItem(TEMPLATE_YELLOW.get(), Registration.createStandardProperties())));
 
     public static final RegistryObject<ShieldingBlock> SHIELDING_SOLID = BLOCKS.register("shielding_solid", ShieldingBlock::new);
     public static final RegistryObject<ShieldingBlock> SHIELDING_TRANSLUCENT = BLOCKS.register("shielding_translucent", ShieldingBlock::new);

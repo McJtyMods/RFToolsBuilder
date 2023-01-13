@@ -41,7 +41,6 @@ import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -73,7 +72,6 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Lazy;
@@ -109,7 +107,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     public static final int SLOT_FILTER = 1;
 
     public static final ResourceLocation DONT_REMOVE_ME = new ResourceLocation(RFToolsBuilder.MODID, "dontremoveme");
-    public static final TagKey<Block> DONT_REMOVE_ME_TAG = TagKey.create(Registry.BLOCK_REGISTRY, DONT_REMOVE_ME);
+    public static final TagKey<Block> DONT_REMOVE_ME_TAG = TagTools.createBlockTagKey(DONT_REMOVE_ME);
 
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(2)
             .slot(specific(s -> (s.getItem() instanceof ShapeCardItem) || (s.getItem() instanceof SpaceChamberCardItem)).in().out(), SLOT_TAB, 100, 10)

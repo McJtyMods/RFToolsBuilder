@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
+import mcjty.lib.varia.NBTTools;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldRenderData;
@@ -104,7 +105,7 @@ public class ShieldingTileEntity extends BlockEntity {
         super.load(tag);
         shieldProjector = new BlockPos(tag.getInt("sx"), tag.getInt("sy"), tag.getInt("sz"));
         if (tag.contains("mimic")) {
-            mimic = NbtUtils.readBlockState(tag.getCompound("mimic"));
+            mimic = NBTTools.readBlockState(level, tag.getCompound("mimic"));
         } else {
             mimic = null;
         }

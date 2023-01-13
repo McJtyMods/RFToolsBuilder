@@ -1,8 +1,10 @@
 package mcjty.rftoolsbuilder.modules.mover.client;
 
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+
+import java.util.Collections;
+import java.util.List;
 
 import static mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer.BLACK;
 
@@ -12,11 +14,8 @@ public class ClientSetup {
         MinecraftForge.EVENT_BUS.addListener(MoverRenderer::onCameraSetup);
     }
 
-    public static void onTextureStitch(TextureStitchEvent.Pre event) {
-        if (!event.getAtlas().location().equals(TextureAtlas.LOCATION_BLOCKS)) {
-            return;
-        }
-        event.addSprite(BLACK);
+    public static List<ResourceLocation> onTextureStitch() {
+        return Collections.singletonList(BLACK);
     }
 
 }
