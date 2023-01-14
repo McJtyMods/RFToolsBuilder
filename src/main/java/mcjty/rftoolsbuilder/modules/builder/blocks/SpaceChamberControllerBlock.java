@@ -3,8 +3,11 @@ package mcjty.rftoolsbuilder.modules.builder.blocks;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
+import mcjty.lib.varia.SoundTools;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.SoundType;
@@ -62,8 +65,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     @Override
     protected boolean wrenchUse(Level level, BlockPos pos, Direction side, Player player) {
         if (level.isClientSide) {
-            // @todo 1.19.3 .get()
-            SoundEvent pling = SoundEvents.NOTE_BLOCK_BELL;
+            SoundEvent pling = SoundTools.findSound(new ResourceLocation("minecraft", "block.note_block.bell"));
             level.playSound(player, pos, pling, SoundSource.BLOCKS, 1.0f, 1.0f);
         } else {
             SpaceChamberControllerTileEntity chamberControllerTileEntity = (SpaceChamberControllerTileEntity) level.getBlockEntity(pos);
