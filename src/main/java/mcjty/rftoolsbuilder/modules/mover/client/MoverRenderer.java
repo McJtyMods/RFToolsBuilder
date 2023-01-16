@@ -42,7 +42,7 @@ public class MoverRenderer {
     private static final Map<BlockPos, Runnable> DELAYED_PRE_RENDERS = new HashMap<>();
     private static final Map<BlockPos, BiFunction<Level, BlockPos, Boolean>> PRERENDER_VALIDATIONS = new HashMap<>();
 
-    public static final ResourceLocation BLACK = new ResourceLocation(RFToolsBuilder.MODID, "effects/black");
+    public static final ResourceLocation BLACK = new ResourceLocation(RFToolsBuilder.MODID, "block/effects/black");
 
     // Number of lines supported per page on the renderer
     public static final int LINES_SUPPORTED = 7;
