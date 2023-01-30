@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.*;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.GuiTools;
 import mcjty.lib.client.RenderHelper;
+import mcjty.lib.gui.BaseScreen;
 import mcjty.lib.gui.IKeyReceiver;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.WindowManager;
@@ -28,7 +29,6 @@ import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.locale.Language;
 import net.minecraft.nbt.CompoundTag;
@@ -40,7 +40,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nonnull;
@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 import static mcjty.lib.gui.layout.AbstractLayout.DEFAULT_SPACING;
 import static mcjty.lib.gui.widgets.Widgets.*;
 
-public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceiver {
+public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyReceiver {
 
     /**
      * The X size of the window in pixels.
@@ -137,7 +137,7 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     private ItemStack getStackToEdit() {
         if (fromTE) {
             BlockEntity te = minecraft.level.getBlockEntity(fromTEPos);
-            return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(fromTEStackSlot)).orElse(ItemStack.EMPTY);
+            return te.getCapability(ForgeCapabilities.ITEM_HANDLER).map(h -> h.getStackInSlot(fromTEStackSlot)).orElse(ItemStack.EMPTY);
         } else {
             return minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
         }
@@ -509,13 +509,11 @@ public class GuiShapeCard extends Screen implements IShapeParentGui, IKeyReceive
     private static int updateCounter = 20;
 
     @Override
-    public void render(@Nonnull PoseStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
+    protected void renderInternal(PoseStack matrixStack, int pMouseX, int pMouseY, float pPartialTick) {
         // If not initialized yet we do nothing
         if (window == null) {
             return;
         }
-
-        super.render(matrixStack, xSize_lo, ySize_lo, par3);
 
         dimZ.enabled(!isTorus());
 

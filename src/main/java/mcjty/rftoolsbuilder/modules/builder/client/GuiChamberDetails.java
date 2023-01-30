@@ -184,12 +184,10 @@ public class GuiChamberDetails extends GuiItemScreen {
     }
 
     @Override
-    public void render(@Nonnull PoseStack matrixStack, int xSize_lo, int ySize_lo, float par3) {
-        super.render(matrixStack, xSize_lo, ySize_lo, par3);
-
+    protected void renderInternal(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
         populateLists();
 
-        drawWindow(matrixStack);
+        drawWindow(pPoseStack);
     }
 
     public static void open() {
