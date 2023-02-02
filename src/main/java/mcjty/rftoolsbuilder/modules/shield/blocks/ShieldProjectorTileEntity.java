@@ -492,7 +492,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             ServerPlayer killer = fakePlayer.get();
             killer.setLevel((ServerLevel) level);
             killer.setPos(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
-            new FakePlayerConnection(killer);
+            new FakePlayerConnection(level.getServer(), killer);
             ItemStack shards = items.getStackInSlot(SLOT_SHARD);
             if (!shards.isEmpty() && shards.getCount() >= ShieldConfiguration.shardsPerLootingKill.get()) {
                 items.extractItem(SLOT_SHARD, ShieldConfiguration.shardsPerLootingKill.get(), false);
