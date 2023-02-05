@@ -179,11 +179,11 @@ public class MoverRenderer {
         String currentPlatform = mover.getCurrentPlatform();
 
         if (!mover.isMoverValid()) {
-            fontrenderer.drawInBatch("Not Connected!", 10, currenty, 0xffff0000, false, matrixStack.last().pose(), buffer, false, 0, light);
-            fontrenderer.drawInBatch("Press 'Scan'", 10, currenty + 20, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
-            fontrenderer.drawInBatch("at controller", 10, currenty + 30, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
+            RenderHelper.renderText(fontrenderer, "Not Connected!", 10, currenty, 0xffff0000, matrixStack, buffer, light);
+            RenderHelper.renderText(fontrenderer, "Press 'Scan'", 10, currenty + 20, 0xffffffff, matrixStack, buffer, light);
+            RenderHelper.renderText(fontrenderer, "at controller", 10, currenty + 30, 0xffffffff, matrixStack, buffer, light);
         } else if (!mover.hasEnoughPower()) {
-            fontrenderer.drawInBatch("No Power!", 10, currenty, 0xffff0000, false, matrixStack.last().pose(), buffer, false, 0, light);
+            RenderHelper.renderText(fontrenderer, "No Power!", 10, currenty, 0xffff0000, matrixStack, buffer, light);
         } else {
             double cursorX = mover.getCursorX();
             double cursorY = mover.getCursorY();
@@ -208,7 +208,7 @@ public class MoverRenderer {
                 if (doCursor) {
                     renderCursor(matrixStack, buffer, mover, currenty, light, cursorY, currenty, currenty + 10, 5, 95, line);
                 }
-                fontrenderer.drawInBatch(line, 10, currenty, 0xff000000 | color, false, matrixStack.last().pose(), buffer, false, 0, light);
+                RenderHelper.renderText(fontrenderer, line, 10, currenty, 0xff000000 | color, matrixStack, buffer, light);
                 currenty += 10;
                 l++;
                 if (l >= linesSupported) {
@@ -223,9 +223,9 @@ public class MoverRenderer {
                     renderCursor(matrixStack, buffer, mover, currenty, light, cursorX, 78, 88, 78, 88, "");
                     renderCursor(matrixStack, buffer, mover, currenty, light, cursorX, 88, 98, 88, 98, "___>___");
                 }
-                fontrenderer.drawInBatch("<", 70, currenty, 0xff0033dd, false, matrixStack.last().pose(), buffer, false, 0, light);
-                fontrenderer.drawInBatch("" + (mover.getCurrentPage() + 1), 80, currenty, 0xff0033dd, false, matrixStack.last().pose(), buffer, false, 0, light);
-                fontrenderer.drawInBatch(">", 90, currenty, 0xff0033dd, false, matrixStack.last().pose(), buffer, false, 0, light);
+                RenderHelper.renderText(fontrenderer, "<", 70, currenty, 0xff0033dd, matrixStack, buffer, light);
+                RenderHelper.renderText(fontrenderer, "" + (mover.getCurrentPage() + 1), 80, currenty, 0xff0033dd, matrixStack, buffer, light);
+                RenderHelper.renderText(fontrenderer, ">", 90, currenty, 0xff0033dd, matrixStack, buffer, light);
             }
         }
         matrixStack.popPose();
@@ -259,17 +259,17 @@ public class MoverRenderer {
         String currentPlatform = mover.getCurrentPlatform();
 
         if (!mover.isMoverValid()) {
-            fontrenderer.drawInBatch("Not Connected!", 10, currenty, 0xffff0000, false, matrixStack.last().pose(), buffer, false, 0, light);
-            fontrenderer.drawInBatch("Press 'Scan'", 10, currenty+20, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
-            fontrenderer.drawInBatch("at controller", 10, currenty+30, 0xffffffff, false, matrixStack.last().pose(), buffer, false, 0, light);
+            RenderHelper.renderText(fontrenderer, "Not Connected!", 10, currenty, 0xffff0000, matrixStack, buffer, light);
+            RenderHelper.renderText(fontrenderer, "Press 'Scan'", 10, currenty+20, 0xffffffff, matrixStack, buffer, light);
+            RenderHelper.renderText(fontrenderer, "at controller", 10, currenty+30, 0xffffffff, matrixStack, buffer, light);
         } else {
-            fontrenderer.drawInBatch("At:", 10, currenty, textcolor, false, matrixStack.last().pose(), buffer, false, 0, light);
-            fontrenderer.drawInBatch(currentPlatform, 30, currenty, currentcolor, false, matrixStack.last().pose(), buffer, false, 0, light);
+            RenderHelper.renderText(fontrenderer, "At:", 10, currenty, textcolor, matrixStack, buffer, light);
+            RenderHelper.renderText(fontrenderer, currentPlatform, 30, currenty, currentcolor, matrixStack, buffer, light);
             currenty += 10;
             String destinationName = VehicleCard.getDesiredDestinationName(mover.getCard());
             if (destinationName != null && !destinationName.isEmpty()) {
-                fontrenderer.drawInBatch("To:", 10, currenty, textcolor, false, matrixStack.last().pose(), buffer, false, 0, light);
-                fontrenderer.drawInBatch(destinationName, 30, currenty, currentcolor, false, matrixStack.last().pose(), buffer, false, 0, light);
+                RenderHelper.renderText(fontrenderer, "To:", 10, currenty, textcolor, matrixStack, buffer, light);
+                RenderHelper.renderText(fontrenderer, destinationName, 30, currenty, currentcolor, matrixStack, buffer, light);
             }
         }
         matrixStack.popPose();
