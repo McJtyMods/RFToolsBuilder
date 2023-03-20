@@ -582,7 +582,6 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
 
         buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION);
         GlStateManager._enableBlend();
-        GlStateManager._disableTexture();
         GlStateManager._disableDepthTest();
         GL11.glLineWidth(2.0f);
         GlStateManager._blendFuncSeparate(770, 771, 1, 0);
@@ -590,7 +589,6 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         buffer.vertex(x1, y1, 0.0D).endVertex();
         buffer.vertex(x2, y2, 0.0D).endVertex();
         tessellator.end();
-        GlStateManager._enableTexture();
         GlStateManager._enableDepthTest();
         GlStateManager._disableBlend();
     }

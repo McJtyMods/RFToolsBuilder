@@ -44,6 +44,7 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -486,7 +487,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         int rf;
         if (DamageTypeMode.DAMAGETYPE_GENERIC.equals(damageMode)) {
             rf = ShieldConfiguration.rfDamage.get();
-            source = DamageSource.GENERIC;
+            source = entity.damageSources().generic();
         } else {
             rf = ShieldConfiguration.rfDamagePlayer.get();
             ServerPlayer killer = fakePlayer.get();
@@ -504,7 +505,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             } else {
                 killer.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             }
-            source = DamageSource.playerAttack(killer);
+            source = killer.damageSources().playerAttack(killer);
         }
 
         float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);

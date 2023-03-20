@@ -76,7 +76,7 @@ public class MoverRenderer {
             positions.forEach(pos -> {
                 matrixStack.pushPose();
                 matrixStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                BlockPos realPos = new BlockPos(current.x, current.y, current.z).offset(pos.getX(), pos.getY(), pos.getZ());
+                BlockPos realPos = new BlockPos((int) current.x, (int) current.y, (int) current.z).offset(pos.getX(), pos.getY(), pos.getZ());
                 int lightColor = LevelRenderer.getLightColor(level, realPos);
 
                 blockRenderer.renderSingleBlock(state, matrixStack, buffer, lightColor, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, renderType);
@@ -86,7 +86,7 @@ public class MoverRenderer {
                 positions.forEach(pos -> {
                     matrixStack.pushPose();
                     matrixStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                    BlockPos realPos = new BlockPos(current.x, current.y, current.z).offset(pos.getX(), pos.getY(), pos.getZ());
+                    BlockPos realPos = new BlockPos((int) current.x, (int) current.y, (int) current.z).offset(pos.getX(), pos.getY(), pos.getZ());
                     MoverModule.INVISIBLE_MOVER_BLOCK.get().registerData(mover.getBlockPos(), realPos,
                             state.getValue(MoverControlBlock.HORIZ_FACING), state.getValue(BlockStateProperties.FACING));
                     int lightColor = LevelRenderer.getLightColor(level, realPos);

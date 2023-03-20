@@ -8,6 +8,7 @@ import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.entity.RelativeMovement;
 
 import javax.annotation.Nonnull;
 import java.util.Set;
@@ -196,7 +197,7 @@ public class FakePlayerConnection extends ServerGamePacketListenerImpl {
     }
 
     @Override
-    public void teleport(double x, double y, double z, float yaw, float pitch, @Nonnull Set<ClientboundPlayerPositionPacket.RelativeArgument> relativeSet) {
+    public void teleport(double x, double y, double z, float p_9784_, float p_9785_, Set<RelativeMovement> relativeSet) {
     }
 
     @Override

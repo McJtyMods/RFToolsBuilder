@@ -169,7 +169,6 @@ public class ShapeRenderer {
 
         RenderSystem.disableBlend();
         RenderSystem.disableCull();
-        RenderSystem.disableTexture();
 //        RenderSystem.disableLighting();
 
         Tesselator tessellator = Tesselator.getInstance();
@@ -197,7 +196,6 @@ public class ShapeRenderer {
             tessellator.end();
         }
 
-        RenderSystem.enableTexture();
         RenderSystem.disableBlend();
 //        RenderHelper.turnBackOn();    // @todo 1.18
 
