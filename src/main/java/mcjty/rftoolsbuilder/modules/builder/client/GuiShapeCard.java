@@ -322,8 +322,6 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         dimZ.text(Integer.toString(dz));
         if (dy < 0) {
             dy = 0;
-        } else if (dy > 256) {
-            dy = 256;
         }
         dimY.text(Integer.toString(dy));
 
