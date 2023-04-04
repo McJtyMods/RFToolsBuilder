@@ -1,4 +1,4 @@
-Upcoming:
+1.19-5.2.5:
 - There was still an issue with the shape card not accepting heights more than 256
 
 1.19-5.2.4:
