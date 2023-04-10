@@ -33,7 +33,11 @@ public class PacketSyncVehicleInformationToClient {
         for (int i = 0 ; i < size ; i++) {
             platforms.add(buf.readUtf(32767));
         }
-        currentPlatform = buf.readUtf(32767);
+        if (buf.readBoolean()) {
+            currentPlatform = buf.readUtf(32767);
+        } else {
+            currentPlatform = null;
+        }
         valid = buf.readBoolean();
         enoughPower = buf.readBoolean();
     }
@@ -44,7 +48,12 @@ public class PacketSyncVehicleInformationToClient {
         for (String s : platforms) {
             buf.writeUtf(s);
         }
-        buf.writeUtf(currentPlatform);
+        if (currentPlatform != null) {
+            buf.writeBoolean(true);
+            buf.writeUtf(currentPlatform);
+        } else {
+            buf.writeBoolean(false);
+        }
         buf.writeBoolean(valid);
         buf.writeBoolean(enoughPower);
     }
