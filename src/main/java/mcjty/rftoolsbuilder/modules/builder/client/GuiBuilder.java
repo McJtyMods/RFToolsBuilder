@@ -17,10 +17,10 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenCardGui;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 
 import javax.annotation.Nonnull;
 
@@ -73,7 +73,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         int cury = getCurrentLevelClientSide();
         currentLevel.text("Y: " + (cury == -1 ? "stop" : cury));
 
-        ItemStack card = tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY);
+        ItemStack card = tileEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY);
         if (card.isEmpty()) {
             window.setFlag("!validcard");
         } else if (card.getItem() instanceof ShapeCardItem) {
@@ -114,7 +114,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     }
 
     private boolean isShapeCard() {
-        ItemStack card = tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY);
+        ItemStack card = tileEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY);
         return !card.isEmpty() && card.getItem() instanceof ShapeCardItem;
     }
 

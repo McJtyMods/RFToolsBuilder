@@ -1,14 +1,14 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.items.CapabilityItemHandler;
 
 import java.util.function.Supplier;
 
@@ -52,7 +52,7 @@ public class PacketUpdateNBTItemInventoryShape {
                 if (!isValidBlock(world, pos, te)) {
                     return;
                 }
-                te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
+                te.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(h -> {
                     ItemStack stack = h.getStackInSlot(slotIndex);
                     if (!stack.isEmpty()) {
                         stack.setTag(tagCompound);

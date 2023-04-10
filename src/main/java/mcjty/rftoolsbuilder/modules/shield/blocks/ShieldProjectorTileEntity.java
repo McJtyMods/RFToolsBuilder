@@ -63,9 +63,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
@@ -360,7 +360,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         if (!ShieldRenderingMode.MIMIC.equals(shieldRenderingMode)) {
             return null;
         }
-        Optional<BlockState> map = getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+        Optional<BlockState> map = getCapability(ForgeCapabilities.ITEM_HANDLER)
                 .map(h -> h.getStackInSlot(SLOT_BUFFER))
                 .filter(stack -> !stack.isEmpty())
                 .map(this::getStateFromItem);

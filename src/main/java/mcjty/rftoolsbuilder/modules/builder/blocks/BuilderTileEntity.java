@@ -74,14 +74,13 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.common.world.ForgeChunkManager;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.server.ServerLifecycleHooks;
@@ -1478,7 +1477,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private boolean checkFluidTank(FluidStack fluidStack, BlockPos up, Direction side) {
         BlockEntity te = level.getBlockEntity(up);
         if (te != null) {
-            return te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side).map(h -> {
+            return te.getCapability(ForgeCapabilities.FLUID_HANDLER, side).map(h -> {
                 int amount = h.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
                 if (amount == 1000) {
                     h.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
@@ -1501,13 +1500,13 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             couldntHandle.copyList(items);
             return;
         }
-        LazyOptional<IItemHandler> capability = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction);
+        LazyOptional<IItemHandler> capability = te.getCapability(ForgeCapabilities.ITEM_HANDLER, direction);
         if (!capability.isPresent()) {
             couldntHandle.copyList(items);
             return;
         }
         couldntHandle.clear();
-        te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.DOWN).ifPresent(h -> {
+        te.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN).ifPresent(h -> {
             for (ItemStack item : items) {
                 ItemStack overflow = ItemHandlerHelper.insertItem(h, item, false);
                 if (!overflow.isEmpty()) {
@@ -1592,7 +1591,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private TakeableItem createTakeableItem(Direction direction, Level srcWorld, BlockPos srcPos, BlockState state) {
         BlockEntity te = level.getBlockEntity(getBlockPos().relative(direction));
         if (te != null) {
-            return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).map(h -> findBlockTakeableItem(h, srcWorld, srcPos, state)).orElse(TakeableItem.EMPTY);
+            return te.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite()).map(h -> findBlockTakeableItem(h, srcWorld, srcPos, state)).orElse(TakeableItem.EMPTY);
         }
         return TakeableItem.EMPTY;
     }
@@ -1610,9 +1609,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private FluidStack consumeLiquid(Direction direction, Level srcWorld, BlockPos srcPos) {
         BlockEntity te = level.getBlockEntity(getBlockPos().relative(direction));
         if (te != null) {
-            LazyOptional<IFluidHandler> fluid = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite());
+            LazyOptional<IFluidHandler> fluid = te.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite());
             if (!fluid.isPresent()) {
-                fluid = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
+                fluid = te.getCapability(ForgeCapabilities.FLUID_HANDLER);
             }
             if (fluid.isPresent()) {
                 return fluid.map(h -> findAndConsumeLiquid(h, srcWorld, srcPos)).orElse(FluidStack.EMPTY);
