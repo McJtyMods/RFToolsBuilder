@@ -1,4 +1,4 @@
-Upcoming:
+1.19-5.2.6:
 - Fixed a potential crash with the mover
 
 1.19-5.2.5:
