@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem with the mover when there are platforms with no name
+
 1.19-5.2.6:
 - Fixed a potential crash with the mover
 
