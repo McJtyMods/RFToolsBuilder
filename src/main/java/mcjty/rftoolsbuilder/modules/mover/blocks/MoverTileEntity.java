@@ -162,7 +162,7 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
     public String getName() {
-        return name;
+        return name == null ? "" : name;
     }
 
     @Override

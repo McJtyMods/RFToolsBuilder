@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem with the mover when there are platforms with no name
+
 1.18-4.1.1:
 - Server side problem
 
