@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem with the builder crashing in case of redstone mode
+
 1.19-5.2.7:
 - Fixed a problem with the mover when there are platforms with no name
 
