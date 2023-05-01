@@ -624,7 +624,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         boolean n = isMachineEnabled();
         if (o != n) {
             if (loopMode || (n && scan == null)) {
-                restartScan();
+                if (!level.isClientSide()) {
+                    restartScan();
+                }
             }
         }
     }
