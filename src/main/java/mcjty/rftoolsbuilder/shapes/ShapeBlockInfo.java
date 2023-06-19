@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.common.Tags;
 
 import javax.annotation.Nonnull;
@@ -179,11 +179,11 @@ public class ShapeBlockInfo {
         Col col;
         Block block = state.getBlock();
         // The given world and pos are wrong but they help to avoid crashes for some code
-        MaterialColor mapColor = null;
+        MapColor mapColor = null;
         try {
             mapColor = state.getMapColor(Minecraft.getInstance().level, new BlockPos(0, 0, 0));
         } catch (Exception e) {
-            mapColor = MaterialColor.COLOR_RED;
+            mapColor = MapColor.COLOR_RED;
         }
         if (block == Blocks.LAVA) {
             col = COL_LAVA;

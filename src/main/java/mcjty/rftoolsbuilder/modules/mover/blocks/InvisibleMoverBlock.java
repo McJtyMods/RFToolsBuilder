@@ -16,11 +16,9 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +38,7 @@ public class InvisibleMoverBlock extends Block implements EntityBlock {
     private final Map<BlockPos, List<MoverData>> dataByMover = new HashMap<>();
 
     public InvisibleMoverBlock() {
-        super(Properties.of(Material.STONE).noLootTable().strength(-1.0F, 3600000.0F).noOcclusion().randomTicks());
+        super(Properties.of().noLootTable().strength(-1.0F, 3600000.0F).noOcclusion().randomTicks());
     }
 
     @Nullable

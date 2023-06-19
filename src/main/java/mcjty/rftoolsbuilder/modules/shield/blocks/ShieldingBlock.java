@@ -15,13 +15,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -50,9 +50,11 @@ public class ShieldingBlock extends Block implements EntityBlock {
     public static final VoxelShape COLLISION_SHAPE = Shapes.box(0.002, 0.002, 0.002, 0.998, 0.998, 0.998);
 
     public ShieldingBlock() {
-        super(BlockBehaviour.Properties.of(Material.GLASS)
+        super(BlockBehaviour.Properties.of()
+                .sound(SoundType.GLASS)
                 .noOcclusion()
                 .isRedstoneConductor((state, world, pos) -> false)
+                .pushReaction(PushReaction.BLOCK)
                 .strength(-1.0F, 3600000.0F)
                 .noLootTable());
         registerDefaultState(defaultBlockState()
@@ -101,12 +103,6 @@ public class ShieldingBlock extends Block implements EntityBlock {
     @Override
     public boolean canEntityDestroy(BlockState state, BlockGetter world, BlockPos pos, Entity entity) {
         return false;
-    }
-
-    @Nonnull
-    @Override
-    public PushReaction getPistonPushReaction(@Nonnull BlockState state) {
-        return PushReaction.BLOCK;
     }
 
     @Nonnull

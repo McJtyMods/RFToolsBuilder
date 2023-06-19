@@ -18,6 +18,7 @@ import mcjty.rftoolsbuilder.modules.shield.*;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.resources.ResourceLocation;
 
@@ -381,11 +382,11 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     @Override
-    protected void renderBg(@Nonnull PoseStack matrixStack, float v, int i, int i2) {
+    protected void renderBg(@Nonnull GuiGraphics graphics, float v, int i, int i2) {
         requestListsIfNeeded();
         populateFilters();
         enableButtons();
-        drawWindow(matrixStack);
+        drawWindow(graphics);
         colorSelector.currentColor(tileEntity.getShieldColor());
         updateEnergyBar(energyBar);
     }

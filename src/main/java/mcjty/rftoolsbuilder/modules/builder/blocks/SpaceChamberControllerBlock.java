@@ -6,21 +6,18 @@ import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.varia.SoundTools;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
-import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nonnull;
 
@@ -30,7 +27,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
 
     public SpaceChamberControllerBlock() {
         super(new BlockBuilder()
-                .properties(BlockBehaviour.Properties.of(Material.METAL)
+                .properties(BlockBehaviour.Properties.of()
                         .strength(2.0f)
                         .sound(SoundType.METAL)
                         .noOcclusion())

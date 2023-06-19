@@ -11,6 +11,7 @@ import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -51,8 +52,9 @@ public class MoverRenderer {
         return Minecraft.getInstance().getFrameTime();
     }
 
-    public static void actualRender(MoverTileEntity mover, @NotNull PoseStack matrixStack, Vec3 cameraPos, ItemStack card, Vec3 current, Vec3 offset,
+    public static void actualRender(MoverTileEntity mover, @NotNull GuiGraphics graphics, Vec3 cameraPos, ItemStack card, Vec3 current, Vec3 offset,
                                     RenderType renderType) {
+        PoseStack matrixStack = graphics.pose();
         matrixStack.pushPose();
         Level level = mover.getLevel();
         matrixStack.translate(current.x - cameraPos.x - offset.x, current.y - cameraPos.y - offset.y, current.z - cameraPos.z - offset.z);
@@ -90,11 +92,11 @@ public class MoverRenderer {
                     MoverModule.INVISIBLE_MOVER_BLOCK.get().registerData(mover.getBlockPos(), realPos,
                             state.getValue(MoverControlBlock.HORIZ_FACING), state.getValue(BlockStateProperties.FACING));
                     int lightColor = LevelRenderer.getLightColor(level, realPos);
-                    setupTransform(matrixStack, state);
+                    setupTransform(graphics, state);
                     if (state.getBlock() instanceof MoverControlBlock moverControl) {
-                        renderMoverControl(matrixStack, buffer, mover, lightColor, Objects.equals(realPos, mover.getCursorBlock()), getCorrectedPage(moverControl.getPage(), pagers), totalPagers.get());
+                        renderMoverControl(graphics, buffer, mover, lightColor, Objects.equals(realPos, mover.getCursorBlock()), getCorrectedPage(moverControl.getPage(), pagers), totalPagers.get());
                     } else {
-                        renderMoverStatus(matrixStack, buffer, mover, lightColor);
+                        renderMoverStatus(graphics, buffer, mover, lightColor);
                     }
                     matrixStack.popPose();
                 });
@@ -115,19 +117,19 @@ public class MoverRenderer {
         return 0;
     }
 
-    private static void renderMoverStatus(@NotNull PoseStack matrixStack, @NotNull MultiBufferSource buffer,
+    private static void renderMoverStatus(@NotNull GuiGraphics graphics, @NotNull MultiBufferSource buffer,
                                           MoverTileEntity mover, int lightColor) {
-        renderScreenBoard(matrixStack, buffer, 1.0f, lightColor);
-        renderStatus(matrixStack, buffer, Minecraft.getInstance().font, lightColor, mover);
+        renderScreenBoard(graphics, buffer, 1.0f, lightColor);
+        renderStatus(graphics, buffer, Minecraft.getInstance().font, lightColor, mover);
     }
 
-    private static void renderMoverControl(@NotNull PoseStack matrixStack, @NotNull MultiBufferSource buffer,
+    private static void renderMoverControl(@NotNull GuiGraphics graphics, @NotNull MultiBufferSource buffer,
                                            MoverTileEntity mover, int lightColor, boolean doCursor, int page, int totalPagers) {
-        renderScreenBoard(matrixStack, buffer, 1.0f, lightColor);
-        renderMovers(matrixStack, buffer, Minecraft.getInstance().font, lightColor, mover, doCursor, page, totalPagers);
+        renderScreenBoard(graphics, buffer, 1.0f, lightColor);
+        renderMovers(graphics, buffer, Minecraft.getInstance().font, lightColor, mover, doCursor, page, totalPagers);
     }
 
-    private static void setupTransform(@NotNull PoseStack matrixStack, BlockState state) {
+    private static void setupTransform(@NotNull GuiGraphics graphics, BlockState state) {
         Direction facing = state.getValue(BlockStateProperties.FACING);
         Direction horizontalFacing = state.getValue(MoverControlBlock.HORIZ_FACING);
         float yRotation = switch (horizontalFacing) {
@@ -142,14 +144,16 @@ public class MoverRenderer {
             default -> 0;
         };
 
+        PoseStack matrixStack = graphics.pose();
         matrixStack.translate(0.5F, 0.5F, 0.5F);
         RenderHelper.rotateYP(matrixStack, yRotation);
         RenderHelper.rotateXP(matrixStack, xRotation);
         matrixStack.translate(0.0F, 0.0F, -0.4375F);
     }
 
-    private static void renderScreenBoard(PoseStack matrixStack, @Nullable MultiBufferSource buffer,
+    private static void renderScreenBoard(GuiGraphics graphics, @Nullable MultiBufferSource buffer,
                                           float renderOffset, int packedLight) {
+        PoseStack matrixStack = graphics.pose();
         matrixStack.pushPose();
         matrixStack.scale(1, -1, -1);
 
@@ -161,7 +165,7 @@ public class MoverRenderer {
         matrixStack.popPose();
     }
 
-    private static void renderMovers(PoseStack matrixStack, MultiBufferSource buffer, Font fontrenderer, int lightmapValue,
+    private static void renderMovers(GuiGraphics graphics, MultiBufferSource buffer, Font fontrenderer, int lightmapValue,
                                      MoverTileEntity mover, boolean doCursor, int page, int totalPagers) {
         boolean bright = true;  // @todo
         int textcolor = 0x999999;
@@ -172,6 +176,7 @@ public class MoverRenderer {
 
         float f = 0.005F;
 
+        PoseStack matrixStack = graphics.pose();
         matrixStack.pushPose();
         matrixStack.translate(-0.5F, 0.5F, 1 -.03);  // @todo tileEntity.getRenderOffset());
         matrixStack.scale(f * factor, -1.0f * f * factor, f);
@@ -206,7 +211,7 @@ public class MoverRenderer {
                 int color = line.equals(currentPlatform) ? currentcolor : textcolor;
 
                 if (doCursor) {
-                    renderCursor(matrixStack, buffer, mover, currenty, light, cursorY, currenty, currenty + 10, 5, 95, line);
+                    renderCursor(graphics, buffer, mover, currenty, light, cursorY, currenty, currenty + 10, 5, 95, line);
                 }
                 RenderHelper.renderText(fontrenderer, line, 10, currenty, 0xff000000 | color, matrixStack, buffer, light);
                 currenty += 10;
@@ -219,9 +224,9 @@ public class MoverRenderer {
             if (platforms.size() > totalSupportedMovers && showNavigator) {
                 currenty = 12 + 10 * LINES_SUPPORTED;
                 if (doCursor && currenty / 100.0 <= cursorY && cursorY <= (currenty + 10) / 100.0) {
-                    renderCursor(matrixStack, buffer, mover, currenty, light, cursorX, 68, 78, 68, 78, "___<___");
-                    renderCursor(matrixStack, buffer, mover, currenty, light, cursorX, 78, 88, 78, 88, "");
-                    renderCursor(matrixStack, buffer, mover, currenty, light, cursorX, 88, 98, 88, 98, "___>___");
+                    renderCursor(graphics, buffer, mover, currenty, light, cursorX, 68, 78, 68, 78, "___<___");
+                    renderCursor(graphics, buffer, mover, currenty, light, cursorX, 78, 88, 78, 88, "");
+                    renderCursor(graphics, buffer, mover, currenty, light, cursorX, 88, 98, 88, 98, "___>___");
                 }
                 RenderHelper.renderText(fontrenderer, "<", 70, currenty, 0xff0033dd, matrixStack, buffer, light);
                 RenderHelper.renderText(fontrenderer, "" + (mover.getCurrentPage() + 1), 80, currenty, 0xff0033dd, matrixStack, buffer, light);
@@ -231,16 +236,17 @@ public class MoverRenderer {
         matrixStack.popPose();
     }
 
-    private static void renderCursor(PoseStack matrixStack, MultiBufferSource buffer, MoverTileEntity mover, int currenty, int light, double cursor, int cursor1, int cursor2, int x1, int x2, String s) {
+    private static void renderCursor(GuiGraphics graphics, MultiBufferSource buffer, MoverTileEntity mover, int currenty, int light, double cursor, int cursor1, int cursor2, int x1, int x2, String s) {
         if (cursor1 / 100.0 <= cursor && cursor <= cursor2 / 100.0) {
+            PoseStack matrixStack = graphics.pose();
             matrixStack.translate(0, 0, -0.01);
-            RenderHelper.drawHorizontalGradientRect(matrixStack, buffer, x1, currenty - 1, x2, currenty + 9, 0xff333333, 0xff333333, light);
+            RenderHelper.drawHorizontalGradientRect(graphics, buffer, x1, currenty - 1, x2, currenty + 9, 0xff333333, 0xff333333, light);
             matrixStack.translate(0, 0, 0.01);
             mover.setHighlightedMover(s);
         }
     }
 
-    private static void renderStatus(PoseStack matrixStack, MultiBufferSource buffer, Font fontrenderer, int lightmapValue,
+    private static void renderStatus(GuiGraphics graphics, MultiBufferSource buffer, Font fontrenderer, int lightmapValue,
                                      MoverTileEntity mover) {
         boolean bright = true;  // @todo
         int textcolor = 0xff999999;
@@ -251,6 +257,7 @@ public class MoverRenderer {
 
         float f = 0.005F;
 
+        PoseStack matrixStack = graphics.pose();
         matrixStack.pushPose();
         matrixStack.translate(-0.5F, 0.5F, 1 -.03);  // @todo tileEntity.getRenderOffset());
         matrixStack.scale(f * factor, -1.0f * f * factor, f);
@@ -304,5 +311,25 @@ public class MoverRenderer {
      */
     public static void onCameraSetup(ViewportEvent.ComputeCameraAngles event) {
         preRender();
+    }
+
+    public static void delayedRenderer(MoverTileEntity mover, ItemStack vehicle, PoseStack poseStack, Vec3 cameraVec, RenderType renderType) {
+        float partialTicks = getPartialTicks();
+        Vec3 offset = mover.getLogic().tryMoveVehicleThisPlayer(partialTicks);
+        Vec3 current;
+        if (mover.getCard().isEmpty()) {
+            // Render at the last known destination
+            if (mover.getLastDestination() == null) {
+                return;
+            }
+            current = new Vec3(mover.getLastDestination().getX(), mover.getLastDestination().getY(), mover.getLastDestination().getZ());
+        } else {
+            current = mover.getLogic().getMovingPosition(partialTicks, mover.getLevel().getGameTime());
+            mover.setLastDestination(mover.getLogic().getDestination());
+        }
+        GuiGraphics graphics = new GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource());
+        graphics.pose().last().pose().set(poseStack.last().pose());
+        graphics.pose().last().normal().set(poseStack.last().normal());
+        actualRender(mover, graphics, cameraVec, vehicle, current, offset, renderType);
     }
 }

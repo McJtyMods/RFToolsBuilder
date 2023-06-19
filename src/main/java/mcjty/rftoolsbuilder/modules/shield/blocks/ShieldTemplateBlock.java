@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
@@ -31,7 +31,7 @@ public class ShieldTemplateBlock extends Block implements ITooltipSettings {
     private final TemplateColor color;
 
     public ShieldTemplateBlock(TemplateColor color) {
-        super(Properties.of(Material.GLASS).noOcclusion());
+        super(Properties.of().noOcclusion().sound(SoundType.GLASS));
         this.color = color;
     }
 

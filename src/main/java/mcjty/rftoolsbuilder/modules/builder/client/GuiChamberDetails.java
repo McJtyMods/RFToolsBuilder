@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.RenderHelper;
 import mcjty.lib.gui.GuiItemScreen;
@@ -10,6 +9,7 @@ import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.widgets.*;
 import mcjty.rftoolsbuilder.setup.CommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
@@ -18,7 +18,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
-import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -184,10 +183,10 @@ public class GuiChamberDetails extends GuiItemScreen {
     }
 
     @Override
-    protected void renderInternal(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    protected void renderInternal(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         populateLists();
 
-        drawWindow(pPoseStack);
+        drawWindow(graphics);
     }
 
     public static void open() {

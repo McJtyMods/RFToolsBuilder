@@ -33,7 +33,7 @@ public class PacketClickMover {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            if (ctx.getSender().level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
+            if (ctx.getSender().level().getBlockEntity(pos) instanceof MoverTileEntity mover) {
                 mover.startMove(this.mover);
             }
         });

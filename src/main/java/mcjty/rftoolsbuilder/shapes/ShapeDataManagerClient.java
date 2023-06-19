@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import net.minecraftforge.client.event.RenderLevelLastEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,7 +31,8 @@ public class ShapeDataManagerClient {
         return data;
     }
 
-    public static void cleanupOldRenderers(RenderLevelLastEvent event) {
+    // @todo 1.20 correct?
+    public static void cleanupOldRenderers(RenderLevelStageEvent event) {
         // @todo 1.15 is this still the correct way?
         cleanupCounter--;
         if (cleanupCounter >= 0) {

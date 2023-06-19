@@ -26,7 +26,7 @@ public class PacketNotifyServerClientReady {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            if (ctx.getSender().level.getBlockEntity(pos) instanceof ShieldProjectorTileEntity projector) {
+            if (ctx.getSender().level().getBlockEntity(pos) instanceof ShieldProjectorTileEntity projector) {
                 projector.clientIsReady();
             }
         });

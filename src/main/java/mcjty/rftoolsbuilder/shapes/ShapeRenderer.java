@@ -13,6 +13,7 @@ import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -156,7 +157,8 @@ public class ShapeRenderer {
         return false;
     }
 
-    public void renderShape(PoseStack matrixStack, IShapeParentGui gui, ItemStack stack, int x, int y, boolean showAxis, boolean showOuter, boolean showScan, boolean showGuidelines) {
+    public void renderShape(GuiGraphics graphics, IShapeParentGui gui, ItemStack stack, int x, int y, boolean showAxis, boolean showOuter, boolean showScan, boolean showGuidelines) {
+        PoseStack matrixStack = graphics.pose();
         setupScissor(gui);
 
         matrixStack.pushPose();
@@ -201,7 +203,7 @@ public class ShapeRenderer {
 
         RenderData data = ShapeDataManagerClient.getRenderData(shapeID);
         if (data != null && !data.previewMessage.isEmpty()) {
-            Minecraft.getInstance().font.draw(matrixStack, data.previewMessage, gui.getPreviewLeft()+84, gui.getPreviewTop()+50, 0xffff0000);
+            graphics.drawString(Minecraft.getInstance().font, data.previewMessage, gui.getPreviewLeft()+84, gui.getPreviewTop()+50, 0xffff0000);
         }
 
     }

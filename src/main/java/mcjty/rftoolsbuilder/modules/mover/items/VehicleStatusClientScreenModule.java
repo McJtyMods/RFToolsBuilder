@@ -1,10 +1,10 @@
 package mcjty.rftoolsbuilder.modules.mover.items;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.rftoolsbase.api.screens.*;
 import mcjty.rftoolsbase.api.screens.data.IModuleDataString;
 import mcjty.rftoolsbase.tools.ScreenTextHelper;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -32,12 +32,12 @@ public class VehicleStatusClientScreenModule implements IClientScreenModule<IMod
     }
 
     @Override
-    public void render(PoseStack matrixStack, MultiBufferSource buffer, IModuleRenderHelper renderHelper, Font fontRenderer, int currenty, IModuleDataString screenData, ModuleRenderInfo renderInfo) {
+    public void render(GuiGraphics graphics, MultiBufferSource buffer, IModuleRenderHelper renderHelper, Font fontRenderer, int currenty, IModuleDataString screenData, ModuleRenderInfo renderInfo) {
         int xoffset;
         int buttonWidth;
         if (!label.isEmpty()) {
             labelCache.setup(label, 316, renderInfo);
-            labelCache.renderText(matrixStack, buffer, 0, currenty + 2, labelColor, renderInfo);
+            labelCache.renderText(graphics, buffer, 0, currenty + 2, labelColor, renderInfo);
             xoffset = 7 + 40;
             buttonWidth = 300;
         } else {
@@ -49,7 +49,7 @@ public class VehicleStatusClientScreenModule implements IClientScreenModule<IMod
         if (line != null) {
             cache.setup(line, buttonWidth, renderInfo);
             cache.setDirty();
-            cache.renderText(matrixStack, buffer, xoffset -10, currenty + 2, color, renderInfo);
+            cache.renderText(graphics, buffer, xoffset -10, currenty + 2, color, renderInfo);
         }
     }
 

@@ -44,7 +44,7 @@ public class PacketRequestShapeData {
 
             IFormula formula = shape.getFormulaFactory().get();
             formula = formula.correctFormula(solid);
-            formula.setup(ctx.getSender().getLevel(), new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), copy.getTag());
+            formula.setup(ctx.getSender().level(), new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), copy.getTag());
 
             for (int y = 0 ; y < dy ; y++) {
                 ShapeDataManagerServer.pushWork(id, copy, y, formula, ctx.getSender());

@@ -38,7 +38,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -60,7 +59,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -490,7 +488,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         } else {
             rf = ShieldConfiguration.rfDamagePlayer.get();
             ServerPlayer killer = fakePlayer.get();
-            killer.setLevel((ServerLevel) level);
+//            killer.setLevel((ServerLevel) level);
             killer.setPos(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
             new FakePlayerConnection(level.getServer(), killer);
             ItemStack shards = items.getStackInSlot(SLOT_SHARD);
@@ -763,7 +761,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         BlockPos pp = new BlockPos(xCoord + c.dx(), yCoord + c.dy(), zCoord + c.dz());
         BlockState oldState = getLevel().getBlockState(pp);
         if (!(oldState.getBlock() instanceof ShieldingBlock)) {
-            if ((!oldState.getMaterial().isReplaceable()) && !(oldState.getBlock() instanceof ShieldTemplateBlock)) {
+            if ((!oldState.canBeReplaced()) && !(oldState.getBlock() instanceof ShieldTemplateBlock)) {
                 return;
             }
         }
@@ -797,7 +795,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             Block block = getLevel().getBlockState(pp).getBlock();
             if (getLevel().isEmptyBlock(pp) || block instanceof ShieldingBlock) {
                 getLevel().setBlock(new BlockPos(pp), templateState, Block.UPDATE_CLIENTS);
-            } else if (templateState.getMaterial() != Material.AIR) {
+            } else if (!templateState.isAir()) {
                 if (!isShapedShield()) {
                     // No room, just spawn the block
                     Containers.dropItemStack(getLevel(), cx, cy, cz, templateState.getBlock().getCloneItemStack(getLevel(), new BlockPos(cx, cy, cz), templateState));
@@ -960,7 +958,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         tagCompound.putBoolean("composed", shieldComposed);
         tagCompound.putBoolean("active", shieldActive);
         tagCompound.putInt("powerTimeout", powerTimeout);
-        if (templateState.getMaterial() != Material.AIR) {
+        if (!templateState.isAir()) {
             tagCompound.putInt("templateColor", ((ShieldTemplateBlock) templateState.getBlock()).getColor().ordinal());
         }
 
@@ -1075,7 +1073,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         tagCompound.putBoolean("composed", shieldComposed);
         tagCompound.putBoolean("active", shieldActive);
         tagCompound.putInt("powerTimeout", powerTimeout);
-        if (templateState.getMaterial() != Material.AIR) {
+        if (!templateState.isAir()) {
             tagCompound.putInt("templateColor", ((ShieldTemplateBlock) templateState.getBlock()).getColor().ordinal());
         }
         byte[] blocks = new byte[shieldBlocks.size() * 8];

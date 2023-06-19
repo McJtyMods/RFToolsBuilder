@@ -31,7 +31,7 @@ public class PacketCloseContainerAndOpenCardGui {
         ctx.enqueueWork(() -> {
             ctx.getSender().doCloseContainer();
             RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.PLAYER.with(ctx::getSender), new PacketOpenCardGuiFromBuilder());
-            BlockEntity te = ctx.getSender().getLevel().getBlockEntity(builderPos);
+            BlockEntity te = ctx.getSender().level().getBlockEntity(builderPos);
             if (te instanceof BuilderTileEntity) {
                 ((BuilderTileEntity) te).setSupportMode(false);
             }

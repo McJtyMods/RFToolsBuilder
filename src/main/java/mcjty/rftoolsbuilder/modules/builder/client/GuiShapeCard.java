@@ -29,6 +29,7 @@ import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.locale.Language;
 import net.minecraft.nbt.CompoundTag;
@@ -43,7 +44,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import org.lwjgl.opengl.GL11;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -507,7 +507,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     private static int updateCounter = 20;
 
     @Override
-    protected void renderInternal(PoseStack matrixStack, int pMouseX, int pMouseY, float pPartialTick) {
+    protected void renderInternal(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         // If not initialized yet we do nothing
         if (window == null) {
             return;
@@ -526,20 +526,20 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
             }
         }
 
-        window.draw(matrixStack);
+        window.draw(graphics);
 
         if (isQuarryCard) {
             // @@@ Hacky code!
             int x = (int) (window.getToplevel().getBounds().getX() + voidPanel.getBounds().getX()) + 1;
             int y = (int) (window.getToplevel().getBounds().getY() + voidPanel.getBounds().getY() + stone.getBounds().getY()) + 1;
 
-            renderVoidBlock(matrixStack, x, y, stone, Blocks.STONE);
-            renderVoidBlock(matrixStack, x, y, cobble, Blocks.COBBLESTONE);
-            renderVoidBlock(matrixStack, x, y, dirt, Blocks.DIRT);
-            renderVoidBlock(matrixStack, x, y, gravel, Blocks.GRAVEL);
-            renderVoidBlock(matrixStack, x, y, sand, Blocks.SAND);
-            renderVoidBlock(matrixStack, x, y, netherrack, Blocks.NETHERRACK);
-            renderVoidBlock(matrixStack, x, y, endstone, Blocks.END_STONE);
+            renderVoidBlock(graphics, x, y, stone, Blocks.STONE);
+            renderVoidBlock(graphics, x, y, cobble, Blocks.COBBLESTONE);
+            renderVoidBlock(graphics, x, y, dirt, Blocks.DIRT);
+            renderVoidBlock(graphics, x, y, gravel, Blocks.GRAVEL);
+            renderVoidBlock(graphics, x, y, sand, Blocks.SAND);
+            renderVoidBlock(graphics, x, y, netherrack, Blocks.NETHERRACK);
+            renderVoidBlock(graphics, x, y, endstone, Blocks.END_STONE);
         }
 
         ItemStack stack = getStackToEdit();
@@ -557,13 +557,13 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
             // @todo check on 1.16
             List<FormattedText> properties = tooltips.stream().map(ComponentFactory::literal).collect(Collectors.toList());
             List<FormattedCharSequence> processors = Language.getInstance().getVisualOrder(properties);
-            renderTooltip(matrixStack, processors, x - guiLeft, y - guiTop);
+            graphics.renderTooltip(Minecraft.getInstance().font, processors, x - guiLeft, y - guiTop);
         }
     }
 
-    private void renderVoidBlock(PoseStack matrixStack, int x, int y, ToggleButton button, Block block) {
+    private void renderVoidBlock(GuiGraphics graphics, int x, int y, ToggleButton button, Block block) {
         x += (int) button.getBounds().getX();
-        RenderHelper.renderObject(matrixStack, x, y, new ItemStack(block), button.isPressed());
+        RenderHelper.renderObject(graphics, x, y, new ItemStack(block), button.isPressed());
         if (button.isPressed()) {
             drawLine(x - 1, y - 1, x + 18, y + 18, 0xffff0000);
             drawLine(x + 18, y - 1, x - 1, y + 18, 0xffff0000);

@@ -17,6 +17,7 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenCardGui;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -119,8 +120,8 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     }
 
     @Override
-    protected void renderBg(@Nonnull PoseStack matrixStack, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
         updateFields();
-        drawWindow(matrixStack);
+        drawWindow(graphics);
     }
 }

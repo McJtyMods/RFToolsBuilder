@@ -9,6 +9,7 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.VehicleBuilderTileEntity;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -48,8 +49,8 @@ public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEnt
     }
 
     @Override
-    protected void renderBg(@Nonnull PoseStack matrixStack, float partialTicks, int x, int y) {
+    protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int x, int y) {
         updateFields();
-        drawWindow(matrixStack);
+        drawWindow(graphics);
     }
 }

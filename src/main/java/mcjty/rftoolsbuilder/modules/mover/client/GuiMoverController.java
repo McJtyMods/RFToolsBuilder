@@ -16,6 +16,7 @@ import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -165,9 +166,9 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
 
     @Override
-    protected void renderBg(@Nonnull PoseStack matrixStack, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
         updateFields();
 
-        drawWindow(matrixStack);
+        drawWindow(graphics);
     }
 }

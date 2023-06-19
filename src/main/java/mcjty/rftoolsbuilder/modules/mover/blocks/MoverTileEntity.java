@@ -153,6 +153,14 @@ public class MoverTileEntity extends TickingTileEntity {
         super(MoverModule.TYPE_MOVER.get(), pos, state);
     }
 
+    public BlockPos getLastDestination() {
+        return lastDestination;
+    }
+
+    public void setLastDestination(BlockPos lastDestination) {
+        this.lastDestination = lastDestination;
+    }
+
     public Map<Direction, BlockPos> getNetwork() {
         return network;
     }
@@ -323,20 +331,7 @@ public class MoverTileEntity extends TickingTileEntity {
 
             }, this::isMoverThere);
             DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec, renderType) -> {
-                float partialTicks = MoverRenderer.getPartialTicks();
-                Vec3 offset = logic.tryMoveVehicleThisPlayer(partialTicks);
-                Vec3 current;
-                if (getCard().isEmpty()) {
-                    // Render at the last known destination
-                    if (lastDestination == null) {
-                        return;
-                    }
-                    current = new Vec3(lastDestination.getX(), lastDestination.getY(), lastDestination.getZ());
-                } else {
-                    current = logic.getMovingPosition(partialTicks, level.getGameTime());
-                    lastDestination = logic.getDestination();
-                }
-                MoverRenderer.actualRender(this, poseStack, cameraVec, vehicle, current, offset, renderType);
+                MoverRenderer.delayedRenderer(this, vehicle, poseStack, cameraVec, renderType);
             }, this::isMoverThere);
         } else if (renderCopyTimer > 0) {
             renderCopyTimer--;
@@ -519,7 +514,7 @@ public class MoverTileEntity extends TickingTileEntity {
                 BlockState invisibleState = MoverModule.INVISIBLE_MOVER_BLOCK.get().defaultBlockState();
                 invisibleMoverBlocks.forEach((p, originalState) -> {
                     BlockState state = level.getBlockState(p);
-                    if (state != invisibleState && state.getMaterial().isReplaceable()) {
+                    if (state != invisibleState && state.canBeReplaced()) {
                         level.setBlock(p, invisibleState, Block.UPDATE_ALL);
                         if (level.getBlockEntity(p) instanceof InvisibleMoverBE invisibleMover) {
                             invisibleMover.setOriginalState(originalState);

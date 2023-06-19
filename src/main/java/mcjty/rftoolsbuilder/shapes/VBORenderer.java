@@ -12,7 +12,7 @@ public class VBORenderer implements Closeable {
     private static final BufferBuilder BUILDER = new BufferBuilder(BUFFER_SIZE);
 
     public static VBORenderer of(int glMode, VertexFormat fmt, BiConsumer<BufferBuilder, VertexFormat> vertexProducer) {
-        VertexBuffer vbo = new VertexBuffer();
+        VertexBuffer vbo = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
 
         // @todo 1.18
 //        BUILDER.begin(glMode, fmt);

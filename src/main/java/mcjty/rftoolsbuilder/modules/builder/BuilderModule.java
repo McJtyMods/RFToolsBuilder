@@ -3,12 +3,10 @@ package mcjty.rftoolsbuilder.modules.builder;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.GenericContainer;
-import mcjty.lib.crafting.CopyNBTRecipeBuilder;
 import mcjty.lib.datagen.DataGen;
 import mcjty.lib.datagen.Dob;
 import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbase.modules.various.VariousModule;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerBlock;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
@@ -21,8 +19,6 @@ import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -30,7 +26,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.Material;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -45,7 +40,7 @@ public class BuilderModule implements IModule {
     public static final RegistryObject<SupportBlock> SUPPORT = BLOCKS.register("support_block", SupportBlock::new);
 
     public static final RegistryObject<BaseBlock> SPACE_CHAMBER = BLOCKS.register("space_chamber", () -> new BaseBlock(new BlockBuilder()
-        .properties(BlockBehaviour.Properties.of(Material.METAL)
+        .properties(BlockBehaviour.Properties.of()
                 .strength(2.0f)
                 .sound(SoundType.METAL)
                 .noOcclusion())));

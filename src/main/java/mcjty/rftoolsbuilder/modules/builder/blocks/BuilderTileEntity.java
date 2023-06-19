@@ -67,8 +67,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -1222,8 +1222,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                     }
 
                     int fortune = getCardType().isFortune() ? 3 : 0;
-                    LootContext.Builder builder = new LootContext.Builder((ServerLevel) level)
-                            .withRandom(level.random)
+                    LootParams.Builder builder = new LootParams.Builder((ServerLevel) level)
+//                            .withRandom(level.random)
                             .withParameter(LootContextParams.ORIGIN, new Vec3(srcPos.getX(), srcPos.getY(), srcPos.getZ()))
                             .withParameter(LootContextParams.TOOL, getHarvesterTool(silk, fortune))
                             .withOptionalParameter(LootContextParams.BLOCK_ENTITY, level.getBlockEntity(srcPos));
@@ -1435,7 +1435,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             if (isPlacable(srcItem)) {
                 for (int i = 0; i < inventory.getSlots(); i++) {
                     ItemStack stack = inventory.getStackInSlot(i);
-                    if (!stack.isEmpty() && stack.sameItem(srcItem)) {
+                    if (!stack.isEmpty() && ItemStack.isSameItem(stack, srcItem)) {
                         return new TakeableItem(inventory, i);
                     }
                 }
@@ -1687,7 +1687,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     public static boolean isEmptyOrReplacable(Level world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
-        if (state.getMaterial().isReplaceable()) {
+        if (state.canBeReplaced()) {
             return true;
         }
         return isEmpty(state, block);
@@ -1698,7 +1698,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (block == null) {
             return true;
         }
-        if (state.getMaterial() == Material.AIR) {
+        if (state.isAir()) {
             return true;
         }
         if (block == BuilderModule.SUPPORT.get()) {
