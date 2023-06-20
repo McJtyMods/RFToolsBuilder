@@ -1,3 +1,6 @@
+1.20-6.0.0:
+- Port to 1.20
+
 1.19-5.2.8:
 - Fixed a problem with the builder crashing in case of redstone mode
 
