@@ -203,7 +203,7 @@ public class ShapeRenderer {
 
         RenderData data = ShapeDataManagerClient.getRenderData(shapeID);
         if (data != null && !data.previewMessage.isEmpty()) {
-            graphics.drawString(Minecraft.getInstance().font, data.previewMessage, gui.getPreviewLeft()+84, gui.getPreviewTop()+50, 0xffff0000);
+            graphics.drawString(Minecraft.getInstance().font, data.previewMessage, gui.getPreviewLeft()+84, gui.getPreviewTop()+50, 0xffff0000, false);
         }
 
     }
