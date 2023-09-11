@@ -3,7 +3,7 @@
   "rftoolsbuilder.page.shield_advanced0": "",
   "name": "Advanced",
   "icon": "minecraft:nether_star",
-  "category": "rftoolsbuilder:category_rftoolsbuilder_shield",
+  "category": "rftoolsbase:category_rftoolsbuilder_shield",
   "sortnum": 20,
   "pages": [
     {

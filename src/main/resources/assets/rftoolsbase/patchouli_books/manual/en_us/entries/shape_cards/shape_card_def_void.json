@@ -1,7 +1,7 @@
 {
   "name": "Void Card",
   "icon": "rftoolsbuilder:shape_card_void",
-  "category": "rftoolsbuilder:category_rftoolsbuilder_shape_cards",
+  "category": "rftoolsbase:category_rftoolsbuilder_shape_cards",
   "sortnum": 30,
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "name": "Default Shape Card",
   "icon": "rftoolsbuilder:shape_card_def",
-  "category": "rftoolsbuilder:category_rftoolsbuilder_shape_cards",
+  "category": "rftoolsbase:category_rftoolsbuilder_shape_cards",
   "sortnum": 10,
   "pages": [
     {

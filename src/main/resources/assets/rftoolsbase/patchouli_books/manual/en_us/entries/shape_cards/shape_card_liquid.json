@@ -1,7 +1,7 @@
 {
   "name": "Liquid Card",
   "icon": "rftoolsbuilder:shape_card_liquid",
-  "category": "rftoolsbuilder:category_rftoolsbuilder_shape_cards",
+  "category": "rftoolsbase:category_rftoolsbuilder_shape_cards",
   "sortnum": 40,
   "pages": [
     {
