@@ -1749,7 +1749,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 // This block can't be placed
                 return;
             }
-            if (!destWorld.getBlockState(destPos).isAir()) {
+            if (destWorld.getBlockState(destPos).is(newState.getBlock())) {
                 destWorld.setBlock(destPos, newState, Block.UPDATE_ALL);  // placeBlockAt can reset the orientation. Restore it here
             }
 

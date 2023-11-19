@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a serious dupe bug with the builder and a space chamber
+
 1.20-6.0.1:
 - Fixed patchouli integration
 
