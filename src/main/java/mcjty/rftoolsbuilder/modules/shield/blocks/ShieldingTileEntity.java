@@ -113,9 +113,11 @@ public class ShieldingTileEntity extends BlockEntity {
 
     @Override
     public void saveAdditional(CompoundTag tag) {
-        tag.putInt("sx", shieldProjector.getX());
-        tag.putInt("sy", shieldProjector.getY());
-        tag.putInt("sz", shieldProjector.getZ());
+        if (shieldProjector != null) {
+            tag.putInt("sx", shieldProjector.getX());
+            tag.putInt("sy", shieldProjector.getY());
+            tag.putInt("sz", shieldProjector.getZ());
+        }
         if (mimic != null) {
             CompoundTag camoNbt = NbtUtils.writeBlockState(mimic);
             tag.put("mimic", camoNbt);

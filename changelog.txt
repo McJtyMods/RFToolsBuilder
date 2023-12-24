@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem with the shield projector crashing in some situations
+
 1.20-6.0.2:
 - Fixed a serious dupe bug with the builder and a space chamber
 
