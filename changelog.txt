@@ -1,3 +1,6 @@
+Upcoming:
+- Lennyservant added a fix so that the builder's fake player gets used correctly in all cases
+
 1.20-6.0.3:
 - Fixed a problem with the shield projector crashing in some situations
 
