@@ -1,3 +1,6 @@
+Upcoming:
+- Lennyservant added a fix so that the builder's fake player gets used correctly in all cases
+
 1.19-5.2.8:
 - Fixed a problem with the builder crashing in case of redstone mode
 
