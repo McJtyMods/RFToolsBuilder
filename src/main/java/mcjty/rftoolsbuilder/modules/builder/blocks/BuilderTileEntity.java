@@ -1228,6 +1228,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                             .withRandom(level.random)
                             .withParameter(LootContextParams.ORIGIN, new Vec3(srcPos.getX(), srcPos.getY(), srcPos.getZ()))
                             .withParameter(LootContextParams.TOOL, getHarvesterTool(silk, fortune))
+                            .withParameter(LootContextParams.THIS_ENTITY, fakePlayer)
                             .withOptionalParameter(LootContextParams.BLOCK_ENTITY, level.getBlockEntity(srcPos));
                     if (fortune > 0) {
                         builder.withLuck(fortune);
