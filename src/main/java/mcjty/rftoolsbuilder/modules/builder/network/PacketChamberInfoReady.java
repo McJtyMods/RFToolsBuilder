@@ -1,36 +1,38 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
+import mcjty.lib.network.CustomPacketPayload;
 import mcjty.lib.network.NetworkTools;
+import mcjty.lib.network.PlayPayloadContext;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.SafeClientTools;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiChamberDetails;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
-public class PacketChamberInfoReady {
-    private Map<BlockState,Integer> blocks;
-    private Map<BlockState,Integer> costs;
-    private Map<BlockState,ItemStack> stacks;
-    private Map<String,Integer> entities;
-    private Map<String,Integer> entityCosts;
-    private Map<String,Entity> realEntities;
-    private Map<String,String> playerNames;
+public record PacketChamberInfoReady(Map<BlockState, Integer> blocks, Map<BlockState, Integer> costs,
+                                     Map<BlockState, ItemStack> stacks,
+                                     Map<String, Integer> entities, Map<String, Integer> entityCosts,
+                                     Map<String, Entity> realEntities,
+                                     Map<String, String> playerNames) implements CustomPacketPayload {
+
+    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "chamberinfoready");
 
     private static final byte ENTITY_NONE = 0;
     private static final byte ENTITY_NORMAL = 1;
     private static final byte ENTITY_PLAYER = 2;
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void write(FriendlyByteBuf buf) {
         buf.writeInt(blocks.size());
         for (Map.Entry<BlockState, Integer> entry : blocks.entrySet()) {
             BlockState bm = entry.getKey();
@@ -68,8 +70,9 @@ public class PacketChamberInfoReady {
         }
     }
 
-    private static CompoundTag readNBT(FriendlyByteBuf buf) {
-        return buf.readNbt();
+    @Override
+    public ResourceLocation id() {
+        return ID;
     }
 
     private static void writeNBT(FriendlyByteBuf dataOut, CompoundTag nbt) {
@@ -82,15 +85,12 @@ public class PacketChamberInfoReady {
     }
 
 
-    public PacketChamberInfoReady() {
-    }
-
-    public PacketChamberInfoReady(FriendlyByteBuf buf) {
+    public static PacketChamberInfoReady create(FriendlyByteBuf buf) {
         int size = buf.readInt();
-        blocks = new HashMap<>(size);
-        costs = new HashMap<>(size);
-        stacks = new HashMap<>();
-        for (int i = 0 ; i < size ; i++) {
+        Map<BlockState, Integer> blocks = new HashMap<>(size);
+        Map<BlockState, Integer> costs = new HashMap<>(size);
+        Map<BlockState, ItemStack> stacks = new HashMap<>();
+        for (int i = 0; i < size; i++) {
             BlockState bm = Block.stateById(buf.readInt());
             int count = buf.readInt();
             int cost = buf.readInt();
@@ -103,11 +103,11 @@ public class PacketChamberInfoReady {
         }
 
         size = buf.readInt();
-        entities = new HashMap<>(size);
-        entityCosts = new HashMap<>(size);
-        realEntities = new HashMap<>();
-        playerNames = new HashMap<>();
-        for (int i = 0 ; i < size ; i++) {
+        Map<String, Integer> entities = new HashMap<>(size);
+        Map<String, Integer> entityCosts = new HashMap<>(size);
+        Map<String, Entity> realEntities = new HashMap<>();
+        Map<String, String> playerNames = new HashMap<>();
+        for (int i = 0; i < size; i++) {
             String className = buf.readUtf(32767);
             int count = buf.readInt();
             int cost = buf.readInt();
@@ -116,7 +116,7 @@ public class PacketChamberInfoReady {
 
             byte how = buf.readByte();
             if (how == ENTITY_NORMAL) {
-                CompoundTag nbt = readNBT(buf);
+                CompoundTag nbt = buf.readNbt();
                 // @todo 1.14
 //                EntityType<?> value = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(fixed));
 //
@@ -134,26 +134,22 @@ public class PacketChamberInfoReady {
                 playerNames.put(className, entityName);
             }
         }
+        return new PacketChamberInfoReady(blocks, costs, stacks, entities, entityCosts, realEntities, playerNames);
     }
 
-    public PacketChamberInfoReady(Map<BlockState,Integer> blocks, Map<BlockState,Integer> costs,
-                                  Map<BlockState,ItemStack> stacks,
-                                  Map<String,Integer> entities, Map<String,Integer> entityCosts,
-                                  Map<String,Entity> realEntities) {
-        this.blocks = new HashMap<>(blocks);
-        this.costs = new HashMap<>(costs);
-        this.stacks = new HashMap<>(stacks);
-        this.entities = new HashMap<>(entities);
-        this.entityCosts = new HashMap<>(entityCosts);
-        this.realEntities = new HashMap<>(realEntities);
+    public static PacketChamberInfoReady create(Map<BlockState, Integer> blocks, Map<BlockState, Integer> costs,
+                                                Map<BlockState, ItemStack> stacks,
+                                                Map<String, Integer> entities, Map<String, Integer> entityCosts,
+                                                Map<String, Entity> realEntities) {
+        return new PacketChamberInfoReady(
+                new HashMap<>(blocks), new HashMap<>(costs), new HashMap<>(stacks),
+                new HashMap<>(entities), new HashMap<>(entityCosts), new HashMap<>(realEntities), new HashMap<>());
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
+    public void handle(PlayPayloadContext ctx) {
+        ctx.workHandler().submitAsync(() -> {
             GuiChamberDetails.setItemsWithCount(blocks, costs, stacks,
                     entities, entityCosts, realEntities, playerNames);
         });
-        ctx.setPacketHandled(true);
     }
 }

@@ -1,8 +1,11 @@
 package mcjty.rftoolsbuilder.modules.scanner.network;
 
+import mcjty.lib.network.CustomPacketPayload;
 import mcjty.lib.network.NetworkTools;
+import mcjty.lib.network.PlayPayloadContext;
 import mcjty.lib.varia.RLE;
 import mcjty.lib.varia.Tools;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.shapes.RenderData;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
@@ -14,22 +17,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.function.Supplier;
+public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette statePalette, BlockPos dimension,
+                                    int count, int offsetY, String msg) implements CustomPacketPayload {
 
-public class PacketReturnShapeData {
-    private final ShapeID id;
-    private final RLE positions;
-    private final StatePalette statePalette;
-    private final int count;
-    private final int offsetY;
-    private final String msg;
-    private final BlockPos dimension;
+    public static ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "returnshapedata");
 
-    public void toBytes(FriendlyByteBuf buf) {
-        id.toBytes(buf);
+    @Override
+    public void write(FriendlyByteBuf buf) {
+        shapeID.toBytes(buf);
         buf.writeInt(count);
         buf.writeInt(offsetY);
         NetworkTools.writeStringUTF8(buf, msg);
@@ -57,12 +54,19 @@ public class PacketReturnShapeData {
         }
     }
 
-    public PacketReturnShapeData(FriendlyByteBuf buf) {
-        id = new ShapeID(buf);
-        count = buf.readInt();
-        offsetY = buf.readInt();
-        msg = NetworkTools.readStringUTF8(buf);
-        dimension = buf.readBlockPos();
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
+
+    public static PacketReturnShapeData create(FriendlyByteBuf buf) {
+        ShapeID shapeID = new ShapeID(buf);
+        int count = buf.readInt();
+        int offsetY = buf.readInt();
+        String msg = NetworkTools.readStringUTF8(buf);
+        BlockPos dimension = buf.readBlockPos();
+        StatePalette statePalette;
+        RLE positions;
 
         int size = buf.readInt();
         if (size == 0) {
@@ -88,21 +92,15 @@ public class PacketReturnShapeData {
             buf.readBytes(data);
             positions.setData(data);
         }
+        return new PacketReturnShapeData(shapeID, positions, statePalette, dimension, count, offsetY, msg);
     }
 
-    public PacketReturnShapeData(ShapeID id, RLE positions, StatePalette statePalette, BlockPos dimension, int count, int offsetY, String msg) {
-        this.id = id;
-        this.positions = positions;
-        this.statePalette = statePalette;
-        this.dimension = dimension;
-        this.count = count;
-        this.offsetY = offsetY;
-        this.msg = msg;
+    public static PacketReturnShapeData create(ShapeID id, RLE positions, StatePalette statePalette, BlockPos dimension, int count, int offsetY, String msg) {
+        return new PacketReturnShapeData(id, positions, statePalette, dimension, count, offsetY, msg);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
+    public void handle(PlayPayloadContext ctx) {
+        ctx.workHandler().submitAsync(() -> {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
@@ -143,8 +141,7 @@ public class PacketReturnShapeData {
                     plane = new RenderData.RenderPlane(strips, y, oy, -dz / 2, count);
                 }
             }
-            ShapeRenderer.setRenderData(id, plane, offsetY, dy, msg);
+            ShapeRenderer.setRenderData(shapeID, plane, offsetY, dy, msg);
         });
-        ctx.setPacketHandled(true);
     }
 }

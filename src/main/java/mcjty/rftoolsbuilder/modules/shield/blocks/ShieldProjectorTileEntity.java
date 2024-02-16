@@ -949,7 +949,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 
         // We got our render data on the client. Notify the server so that the
         // server can make sure the shield blocks know this
-        RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketNotifyServerClientReady(worldPosition));
+        RFToolsBuilderMessages.sendToServer(PacketNotifyServerClientReady.create(worldPosition));
     }
 
     @Override

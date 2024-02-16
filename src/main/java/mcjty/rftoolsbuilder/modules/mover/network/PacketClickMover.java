@@ -1,42 +1,46 @@
 package mcjty.rftoolsbuilder.modules.mover.network;
 
+import mcjty.lib.network.CustomPacketPayload;
+import mcjty.lib.network.PlayPayloadContext;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Packet from client to sent to indicate that the player clicked on a mover button inside the platform
  */
-public class PacketClickMover {
+public record PacketClickMover(BlockPos pos, String mover) implements CustomPacketPayload {
 
-    private final BlockPos pos;
-    private final String mover;
+    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "click_mover");
 
-    public PacketClickMover(BlockPos pos, String mover) {
-        this.pos = pos;
-        this.mover = mover;
+    public static PacketClickMover create(FriendlyByteBuf buf) {
+        return new PacketClickMover(buf.readBlockPos(), buf.readUtf());
     }
 
-    public PacketClickMover(FriendlyByteBuf buf) {
-        pos = buf.readBlockPos();
-        mover = buf.readUtf(32767);
+    public static PacketClickMover create(BlockPos worldPosition, String highlightedMover) {
+        return new PacketClickMover(worldPosition, highlightedMover);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void write(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeUtf(mover);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
-            if (ctx.getSender().level().getBlockEntity(pos) instanceof MoverTileEntity mover) {
-                mover.startMove(this.mover);
-            }
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
+
+    public void handle(PlayPayloadContext ctx) {
+        ctx.workHandler().submitAsync(() -> {
+            ctx.player().ifPresent(player -> {
+                if (player.level().getBlockEntity(pos) instanceof MoverTileEntity mover) {
+                    mover.startMove(this.mover);
+                }
+            });
         });
-        ctx.setPacketHandled(true);
     }
 }

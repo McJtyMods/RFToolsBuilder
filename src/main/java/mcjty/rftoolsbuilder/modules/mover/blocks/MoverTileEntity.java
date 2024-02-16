@@ -296,7 +296,7 @@ public class MoverTileEntity extends TickingTileEntity {
                     platforms = Collections.emptyList();
                 }
                 RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(worldPosition)),
-                        new PacketSyncVehicleInformationToClient(worldPosition, platforms, getName(), valid, hasEnoughPower()));
+                        PacketSyncVehicleInformationToClient.create(worldPosition, platforms, getName(), valid, hasEnoughPower()));
             }
         }
     }
@@ -658,7 +658,7 @@ public class MoverTileEntity extends TickingTileEntity {
                         currentPage = pages-1;
                     }
                 } else {
-                    RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketClickMover(worldPosition, highlightedMover));
+                    RFToolsBuilderMessages.sendToServer(PacketClickMover.create(worldPosition, highlightedMover));
                 }
             }
         }

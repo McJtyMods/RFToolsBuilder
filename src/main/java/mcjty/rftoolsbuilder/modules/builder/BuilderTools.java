@@ -6,19 +6,17 @@ import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkDirection;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -49,8 +47,8 @@ public class BuilderTools {
         Map<String,Entity> firstEntity = new HashMap<>();
         findEntities(world, minCorner, maxCorner, entitiesWithCount, entitiesWithCost, firstEntity);
 
-        RFToolsBuilderMessages.INSTANCE.sendTo(new PacketChamberInfoReady(blocks, costs, stacks,
-                entitiesWithCount, entitiesWithCost, firstEntity), ((ServerPlayer) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+        RFToolsBuilderMessages.sendToPlayer(PacketChamberInfoReady.create(blocks, costs, stacks,
+                entitiesWithCount, entitiesWithCost, firstEntity), player);
     }
 
     @Nullable

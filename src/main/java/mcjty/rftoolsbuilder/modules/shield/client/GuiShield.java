@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.shield.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
@@ -186,7 +185,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     private void requestFilters() {
-        RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetListFromServer(tileEntity.getBlockPos(), CMD_GETFILTERS.name()));
+        RFToolsBuilderMessages.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETFILTERS.name()));
     }
 
     private void requestListsIfNeeded() {

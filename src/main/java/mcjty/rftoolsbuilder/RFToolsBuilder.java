@@ -17,6 +17,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.util.function.Supplier;
 
@@ -31,6 +32,9 @@ public class RFToolsBuilder {
     public static RFToolsBuilder instance;
 
     public RFToolsBuilder() {
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        Dist dist = FMLEnvironment.dist;
+
         instance = this;
         setupModules();
 
@@ -38,16 +42,15 @@ public class RFToolsBuilder {
 
         Registration.register();
 
-        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.addListener(setup::init);
         bus.addListener(modules::init);
         bus.addListener(this::onDataGen);
 
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+        if (dist.isClient()) {
             bus.addListener(ClientSetup::init);
             bus.addListener(ClientSetup::registerKeyBinds);
             bus.addListener(modules::initClient);
-        });
+        }
     }
 
     public static <T extends Item> Supplier<T> tab(Supplier<T> supplier) {

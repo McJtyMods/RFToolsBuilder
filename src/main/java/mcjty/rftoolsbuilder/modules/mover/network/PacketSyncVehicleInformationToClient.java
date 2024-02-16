@@ -1,48 +1,45 @@
 package mcjty.rftoolsbuilder.modules.mover.network;
 
+import mcjty.lib.network.CustomPacketPayload;
+import mcjty.lib.network.PlayPayloadContext;
 import mcjty.lib.varia.SafeClientTools;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
-public class PacketSyncVehicleInformationToClient {
+public record PacketSyncVehicleInformationToClient(BlockPos pos, List<String> platforms, String currentPlatform, Boolean valid, Boolean enoughPower) implements CustomPacketPayload {
 
-    private final BlockPos pos;
-    private final List<String> platforms;
-    private final String currentPlatform;
-    private final boolean valid;
-    private final boolean enoughPower;
+    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "sync_vehicle_information_to_client");
 
-    public PacketSyncVehicleInformationToClient(BlockPos pos, List<String> platforms, String currentPlatform, boolean valid, boolean enoughPower) {
-        this.pos = pos;
-        this.platforms = platforms;
-        this.currentPlatform = currentPlatform;
-        this.valid = valid;
-        this.enoughPower = enoughPower;
+    public static PacketSyncVehicleInformationToClient create(BlockPos pos, List<String> platforms, String currentPlatform, boolean valid, boolean enoughPower) {
+        return new PacketSyncVehicleInformationToClient(pos, platforms, currentPlatform, valid, enoughPower);
     }
 
-    public PacketSyncVehicleInformationToClient(FriendlyByteBuf buf) {
-        pos = buf.readBlockPos();
+    public static PacketSyncVehicleInformationToClient create(FriendlyByteBuf buf) {
+        BlockPos pos = buf.readBlockPos();
         int size = buf.readInt();
-        platforms = new ArrayList<>(size);
+        List<String> platforms = new ArrayList<>(size);
         for (int i = 0 ; i < size ; i++) {
             platforms.add(buf.readUtf(32767));
         }
+        String currentPlatform;
         if (buf.readBoolean()) {
             currentPlatform = buf.readUtf(32767);
         } else {
             currentPlatform = null;
         }
-        valid = buf.readBoolean();
-        enoughPower = buf.readBoolean();
+        boolean valid = buf.readBoolean();
+        boolean enoughPower = buf.readBoolean();
+        return new PacketSyncVehicleInformationToClient(pos, platforms, currentPlatform, valid, enoughPower);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void write(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeInt(platforms.size());
         for (String s : platforms) {
@@ -58,13 +55,16 @@ public class PacketSyncVehicleInformationToClient {
         buf.writeBoolean(enoughPower);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
+
+    public void handle(PlayPayloadContext ctx) {
+        ctx.workHandler().submitAsync(() -> {
             if (SafeClientTools.getClientWorld().getBlockEntity(pos) instanceof MoverTileEntity mover) {
                 mover.setClientRenderInfo(platforms, currentPlatform, valid, enoughPower);
             }
         });
-        ctx.setPacketHandled(true);
     }
 }

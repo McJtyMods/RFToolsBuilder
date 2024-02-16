@@ -106,7 +106,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     public void removed() {
         super.removed();
         if (fromTE) {
-            RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketOpenBuilderGui(fromTEPos));
+            RFToolsBuilderMessages.sendToServer(PacketOpenBuilderGui.create(fromTEPos));
         }
     }
 
@@ -338,11 +338,11 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
                 ShapeCardItem.setShape(stack, getCurrentShape(), isSolid());
                 ShapeCardItem.setDimension(stack, dx, dy, dz);
                 ShapeCardItem.setOffset(stack, parseInt(offsetX.getText()), parseInt(offsetY.getText()), parseInt(offsetZ.getText()));
-                RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketUpdateNBTItemInventoryShape(
+                RFToolsBuilderMessages.sendToServer(PacketUpdateNBTItemInventoryShape.create(
                         fromTEPos, fromTEStackSlot, tag));
             }
         } else {
-            RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketUpdateNBTShapeCard(
+            RFToolsBuilderMessages.sendToServer(PacketUpdateNBTShapeCard.create(
                     TypedMap.builder()
                             .put(new Key<>("shape", Type.STRING), getCurrentShape().getDescription())
                             .put(new Key<>("solid", Type.BOOLEAN), isSolid())
@@ -372,11 +372,11 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
                 tag.putBoolean("voidnetherrack", netherrack.isPressed());
                 tag.putBoolean("voidendstone", endstone.isPressed());
                 tag.putBoolean("tagMatching", tagMatching.isPressed());
-                RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketUpdateNBTItemInventoryShape(
+                RFToolsBuilderMessages.sendToServer(PacketUpdateNBTItemInventoryShape.create(
                         fromTEPos, fromTEStackSlot, tag));
             }
         } else {
-            RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketUpdateNBTShapeCard(
+            RFToolsBuilderMessages.sendToServer(PacketUpdateNBTShapeCard.create(
                     TypedMap.builder()
                             .put(new Key<>("voidstone", Type.BOOLEAN), stone.isPressed())
                             .put(new Key<>("voidcobble", Type.BOOLEAN), cobble.isPressed())

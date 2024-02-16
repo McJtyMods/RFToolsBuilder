@@ -1,6 +1,8 @@
 package mcjty.rftoolsbuilder.setup;
 
 
+import mcjty.lib.setup.DeferredBlocks;
+import mcjty.lib.setup.DeferredItems;
 import mcjty.rftoolsbase.RFToolsBase;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
@@ -24,8 +26,8 @@ import static mcjty.rftoolsbuilder.RFToolsBuilder.MODID;
 
 public class Registration {
 
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+    public static final DeferredBlocks BLOCKS = DeferredBlocks.create(MODID);
+    public static final DeferredItems ITEMS = DeferredItems.create(MODID);
     public static final DeferredRegister<BlockEntityType<?>> TILES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MODID);
     public static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, MODID);
     public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MODID);

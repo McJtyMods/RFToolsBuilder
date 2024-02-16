@@ -98,8 +98,7 @@ public class ShapeDataManagerServer {
                 int cnt = ShapeCardItem.getRenderPositions(card, solid, positions, statePalette, unit.getFormula(), unit.getOffsetY());
 
                 for (ServerPlayer player : unit.getPlayers()) {
-                    RFToolsBuilderMessages.INSTANCE.sendTo(new PacketReturnShapeData(shapeID, positions, statePalette, dimension, cnt, unit.getOffsetY(), ""),
-                            player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+                    RFToolsBuilderMessages.sendToPlayer(PacketReturnShapeData.create(shapeID, positions, statePalette, dimension, cnt, unit.getOffsetY(), ""), player);
                 }
                 if (cnt > 0) {
                     pertick -= dimension.getX() * dimension.getZ();

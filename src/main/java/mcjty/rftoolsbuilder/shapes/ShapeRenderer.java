@@ -378,7 +378,7 @@ public class ShapeRenderer {
         if (data.isWantData() || waitForNewRequest > 0) {
             if (waitForNewRequest <= 0) {
                 // No positions, send a new request
-                RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketRequestShapeData(stack, shapeID));
+                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID));
                 waitForNewRequest = 20;
                 data.setWantData(false);
             } else {
@@ -451,7 +451,7 @@ public class ShapeRenderer {
         if (data.isWantData() || waitForNewRequest > 0) {
             if (waitForNewRequest <= 0) {
                 // No positions, send a new request
-                RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketRequestShapeData(stack, shapeID));
+                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID));
                 waitForNewRequest = 20;
                 data.setWantData(false);
             } else {

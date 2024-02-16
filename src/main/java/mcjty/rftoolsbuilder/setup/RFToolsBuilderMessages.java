@@ -1,6 +1,9 @@
 package mcjty.rftoolsbuilder.setup;
 
-import mcjty.lib.network.*;
+import mcjty.lib.network.PacketHandler;
+import mcjty.lib.network.PacketRequestDataFromServer;
+import mcjty.lib.network.PacketSendClientCommand;
+import mcjty.lib.network.PacketSendServerCommand;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.network.*;
@@ -20,6 +23,8 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 import javax.annotation.Nonnull;
 
+import static mcjty.lib.network.PlayPayloadContext.wrap;
+
 public class RFToolsBuilderMessages {
     public static SimpleChannel INSTANCE;
 
@@ -38,21 +43,21 @@ public class RFToolsBuilderMessages {
 
         INSTANCE = net;
 
-        net.registerMessage(id(), PacketUpdateNBTShapeCard.class, PacketUpdateNBTShapeCard::toBytes, PacketUpdateNBTShapeCard::new, PacketUpdateNBTShapeCard::handle);
-        net.registerMessage(id(), PacketUpdateNBTItemInventoryShape.class, PacketUpdateNBTItemInventoryShape::toBytes, PacketUpdateNBTItemInventoryShape::new, PacketUpdateNBTItemInventoryShape::handle);
-        net.registerMessage(id(), PacketRequestShapeData.class, PacketRequestShapeData::toBytes, PacketRequestShapeData::new, PacketRequestShapeData::handle);
-        net.registerMessage(id(), PacketChamberInfoReady.class, PacketChamberInfoReady::toBytes, PacketChamberInfoReady::new, PacketChamberInfoReady::handle);
-        net.registerMessage(id(), PacketReturnShapeData.class, PacketReturnShapeData::toBytes, PacketReturnShapeData::new, PacketReturnShapeData::handle);
-        net.registerMessage(id(), PacketReturnExtraData.class, PacketReturnExtraData::toBytes, PacketReturnExtraData::new, PacketReturnExtraData::handle);
-        net.registerMessage(id(), PacketCloseContainerAndOpenCardGui.class, PacketCloseContainerAndOpenCardGui::toBytes, PacketCloseContainerAndOpenCardGui::new, PacketCloseContainerAndOpenCardGui::handle);
-        net.registerMessage(id(), PacketOpenCardGuiFromBuilder.class, PacketOpenCardGuiFromBuilder::toBytes, PacketOpenCardGuiFromBuilder::new, PacketOpenCardGuiFromBuilder::handle);
-        net.registerMessage(id(), PacketOpenBuilderGui.class, PacketOpenBuilderGui::toBytes, PacketOpenBuilderGui::new, PacketOpenBuilderGui::handle);
-        net.registerMessage(id(), PacketGrabbedEntitiesToClient.class, PacketGrabbedEntitiesToClient::toBytes, PacketGrabbedEntitiesToClient::new, PacketGrabbedEntitiesToClient::handle);
-        net.registerMessage(id(), PacketSyncVehicleInformationToClient.class, PacketSyncVehicleInformationToClient::toBytes, PacketSyncVehicleInformationToClient::new, PacketSyncVehicleInformationToClient::handle);
-        net.registerMessage(id(), PacketNotifyServerClientReady.class, PacketNotifyServerClientReady::toBytes, PacketNotifyServerClientReady::new, PacketNotifyServerClientReady::handle);
-        net.registerMessage(id(), PacketClickMover.class, PacketClickMover::toBytes, PacketClickMover::new, PacketClickMover::handle);
+        net.registerMessage(id(), PacketUpdateNBTShapeCard.class, PacketUpdateNBTShapeCard::write, PacketUpdateNBTShapeCard::create, wrap(PacketUpdateNBTShapeCard::handle));
+        net.registerMessage(id(), PacketUpdateNBTItemInventoryShape.class, PacketUpdateNBTItemInventoryShape::write, PacketUpdateNBTItemInventoryShape::create, wrap(PacketUpdateNBTItemInventoryShape::handle));
+        net.registerMessage(id(), PacketRequestShapeData.class, PacketRequestShapeData::write, PacketRequestShapeData::create, wrap(PacketRequestShapeData::handle));
+        net.registerMessage(id(), PacketChamberInfoReady.class, PacketChamberInfoReady::write, PacketChamberInfoReady::create, wrap(PacketChamberInfoReady::handle));
+        net.registerMessage(id(), PacketReturnShapeData.class, PacketReturnShapeData::write, PacketReturnShapeData::create, wrap(PacketReturnShapeData::handle));
+        net.registerMessage(id(), PacketReturnExtraData.class, PacketReturnExtraData::write, PacketReturnExtraData::create, wrap(PacketReturnExtraData::handle));
+        net.registerMessage(id(), PacketCloseContainerAndOpenCardGui.class, PacketCloseContainerAndOpenCardGui::write, PacketCloseContainerAndOpenCardGui::create, wrap(PacketCloseContainerAndOpenCardGui::handle));
+        net.registerMessage(id(), PacketOpenCardGuiFromBuilder.class, PacketOpenCardGuiFromBuilder::write, PacketOpenCardGuiFromBuilder::create, wrap(PacketOpenCardGuiFromBuilder::handle));
+        net.registerMessage(id(), PacketOpenBuilderGui.class, PacketOpenBuilderGui::write, PacketOpenBuilderGui::create, wrap(PacketOpenBuilderGui::handle));
+        net.registerMessage(id(), PacketGrabbedEntitiesToClient.class, PacketGrabbedEntitiesToClient::write, PacketGrabbedEntitiesToClient::create, wrap(PacketGrabbedEntitiesToClient::handle));
+        net.registerMessage(id(), PacketSyncVehicleInformationToClient.class, PacketSyncVehicleInformationToClient::write, PacketSyncVehicleInformationToClient::create, wrap(PacketSyncVehicleInformationToClient::handle));
+        net.registerMessage(id(), PacketNotifyServerClientReady.class, PacketNotifyServerClientReady::write, PacketNotifyServerClientReady::create, wrap(PacketNotifyServerClientReady::handle));
+        net.registerMessage(id(), PacketClickMover.class, PacketClickMover::write, PacketClickMover::create, wrap(PacketClickMover::handle));
 
-        net.registerMessage(id(), PacketRequestDataFromServer.class, PacketRequestDataFromServer::toBytes, PacketRequestDataFromServer::new, new ChannelBoundHandler<>(net, PacketRequestDataFromServer::handle));
+        PacketRequestDataFromServer.register(net, id());
 
         PacketHandler.registerStandardMessages(id(), net);
     }
@@ -71,5 +76,13 @@ public class RFToolsBuilderMessages {
 
     public static void sendToClient(Player player, String command) {
         INSTANCE.sendTo(new PacketSendClientCommand(RFToolsBuilder.MODID, command, TypedMap.EMPTY), ((ServerPlayer) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+    }
+
+    public static <T> void sendToPlayer(T packet, Player player) {
+        INSTANCE.sendTo(packet, ((ServerPlayer)player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+    }
+
+    public static <T> void sendToServer(T packet) {
+        INSTANCE.sendToServer(packet);
     }
 }

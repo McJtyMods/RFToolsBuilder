@@ -6,6 +6,8 @@ import mcjty.lib.crafting.CopyNBTRecipeBuilder;
 import mcjty.lib.datagen.DataGen;
 import mcjty.lib.datagen.Dob;
 import mcjty.lib.modules.IModule;
+import mcjty.lib.setup.DeferredBlock;
+import mcjty.lib.setup.DeferredItem;
 import mcjty.rftoolsbase.modules.various.VariousModule;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.*;
@@ -32,6 +34,8 @@ import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
 
+import java.util.function.Supplier;
+
 import static mcjty.lib.datagen.DataGen.has;
 import static mcjty.rftoolsbuilder.RFToolsBuilder.tab;
 import static mcjty.rftoolsbuilder.setup.Registration.*;
@@ -39,34 +43,34 @@ import static mcjty.rftoolsbuilder.setup.Registration.*;
 
 public class ShieldModule implements IModule {
 
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK1 = BLOCKS.register("shield_block1", () -> new ShieldProjectorBlock(ShieldModule::createProjector1, ShieldConfiguration.maxShieldSize));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK2 = BLOCKS.register("shield_block2", () -> new ShieldProjectorBlock(ShieldModule::createProjector2, () -> ShieldConfiguration.maxShieldSize.get() * 4));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK3 = BLOCKS.register("shield_block3", () -> new ShieldProjectorBlock(ShieldModule::createProjector3, () -> ShieldConfiguration.maxShieldSize.get() * 16));
-    public static final RegistryObject<BaseBlock> SHIELD_BLOCK4 = BLOCKS.register("shield_block4", () -> new ShieldProjectorBlock(ShieldModule::createProjector4, () -> ShieldConfiguration.maxShieldSize.get() * 128));
-    public static final RegistryObject<Item> SHIELD_BLOCK1_ITEM = ITEMS.register("shield_block1", tab(() -> new BlockItem(SHIELD_BLOCK1.get(), Registration.createStandardProperties())));
-    public static final RegistryObject<Item> SHIELD_BLOCK2_ITEM = ITEMS.register("shield_block2", tab(() -> new BlockItem(SHIELD_BLOCK2.get(), Registration.createStandardProperties())));
-    public static final RegistryObject<Item> SHIELD_BLOCK3_ITEM = ITEMS.register("shield_block3", tab(() -> new BlockItem(SHIELD_BLOCK3.get(), Registration.createStandardProperties())));
-    public static final RegistryObject<Item> SHIELD_BLOCK4_ITEM = ITEMS.register("shield_block4", tab(() -> new BlockItem(SHIELD_BLOCK4.get(), Registration.createStandardProperties())));
-    public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELD_BLOCK1 = TILES.register("shield_block1", () -> BlockEntityType.Builder.of(ShieldModule::createProjector1, SHIELD_BLOCK1.get()).build(null));
-    public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELD_BLOCK2 = TILES.register("shield_block2", () -> BlockEntityType.Builder.of(ShieldModule::createProjector2, SHIELD_BLOCK2.get()).build(null));
-    public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELD_BLOCK3 = TILES.register("shield_block3", () -> BlockEntityType.Builder.of(ShieldModule::createProjector3, SHIELD_BLOCK3.get()).build(null));
-    public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELD_BLOCK4 = TILES.register("shield_block4", () -> BlockEntityType.Builder.of(ShieldModule::createProjector4, SHIELD_BLOCK4.get()).build(null));
-    public static final RegistryObject<MenuType<GenericContainer>> CONTAINER_SHIELD = CONTAINERS.register("shield", GenericContainer::createContainerType);
+    public static final DeferredBlock<BaseBlock> SHIELD_BLOCK1 = BLOCKS.register("shield_block1", () -> new ShieldProjectorBlock(ShieldModule::createProjector1, ShieldConfiguration.maxShieldSize));
+    public static final DeferredBlock<BaseBlock> SHIELD_BLOCK2 = BLOCKS.register("shield_block2", () -> new ShieldProjectorBlock(ShieldModule::createProjector2, () -> ShieldConfiguration.maxShieldSize.get() * 4));
+    public static final DeferredBlock<BaseBlock> SHIELD_BLOCK3 = BLOCKS.register("shield_block3", () -> new ShieldProjectorBlock(ShieldModule::createProjector3, () -> ShieldConfiguration.maxShieldSize.get() * 16));
+    public static final DeferredBlock<BaseBlock> SHIELD_BLOCK4 = BLOCKS.register("shield_block4", () -> new ShieldProjectorBlock(ShieldModule::createProjector4, () -> ShieldConfiguration.maxShieldSize.get() * 128));
+    public static final DeferredItem<Item> SHIELD_BLOCK1_ITEM = ITEMS.register("shield_block1", tab(() -> new BlockItem(SHIELD_BLOCK1.get(), Registration.createStandardProperties())));
+    public static final DeferredItem<Item> SHIELD_BLOCK2_ITEM = ITEMS.register("shield_block2", tab(() -> new BlockItem(SHIELD_BLOCK2.get(), Registration.createStandardProperties())));
+    public static final DeferredItem<Item> SHIELD_BLOCK3_ITEM = ITEMS.register("shield_block3", tab(() -> new BlockItem(SHIELD_BLOCK3.get(), Registration.createStandardProperties())));
+    public static final DeferredItem<Item> SHIELD_BLOCK4_ITEM = ITEMS.register("shield_block4", tab(() -> new BlockItem(SHIELD_BLOCK4.get(), Registration.createStandardProperties())));
+    public static final Supplier<BlockEntityType<?>> TYPE_SHIELD_BLOCK1 = TILES.register("shield_block1", () -> BlockEntityType.Builder.of(ShieldModule::createProjector1, SHIELD_BLOCK1.get()).build(null));
+    public static final Supplier<BlockEntityType<?>> TYPE_SHIELD_BLOCK2 = TILES.register("shield_block2", () -> BlockEntityType.Builder.of(ShieldModule::createProjector2, SHIELD_BLOCK2.get()).build(null));
+    public static final Supplier<BlockEntityType<?>> TYPE_SHIELD_BLOCK3 = TILES.register("shield_block3", () -> BlockEntityType.Builder.of(ShieldModule::createProjector3, SHIELD_BLOCK3.get()).build(null));
+    public static final Supplier<BlockEntityType<?>> TYPE_SHIELD_BLOCK4 = TILES.register("shield_block4", () -> BlockEntityType.Builder.of(ShieldModule::createProjector4, SHIELD_BLOCK4.get()).build(null));
+    public static final Supplier<MenuType<GenericContainer>> CONTAINER_SHIELD = CONTAINERS.register("shield", GenericContainer::createContainerType);
 
-    public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_BLUE = BLOCKS.register("blue_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.BLUE));
-    public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_RED = BLOCKS.register("red_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.RED));
-    public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_GREEN = BLOCKS.register("green_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.GREEN));
-    public static final RegistryObject<ShieldTemplateBlock> TEMPLATE_YELLOW = BLOCKS.register("yellow_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.YELLOW));
+    public static final DeferredBlock<ShieldTemplateBlock> TEMPLATE_BLUE = BLOCKS.register("blue_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.BLUE));
+    public static final DeferredBlock<ShieldTemplateBlock> TEMPLATE_RED = BLOCKS.register("red_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.RED));
+    public static final DeferredBlock<ShieldTemplateBlock> TEMPLATE_GREEN = BLOCKS.register("green_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.GREEN));
+    public static final DeferredBlock<ShieldTemplateBlock> TEMPLATE_YELLOW = BLOCKS.register("yellow_shield_template_block", () -> new ShieldTemplateBlock(ShieldTemplateBlock.TemplateColor.YELLOW));
 
-    public static final RegistryObject<Item> TEMPLATE_BLUE_ITEM = ITEMS.register("blue_shield_template_block", tab(() -> new BlockItem(TEMPLATE_BLUE.get(), Registration.createStandardProperties())));
-    public static final RegistryObject<Item> TEMPLATE_RED_ITEM = ITEMS.register("red_shield_template_block", tab(() -> new BlockItem(TEMPLATE_RED.get(), Registration.createStandardProperties())));
-    public static final RegistryObject<Item> TEMPLATE_GREEN_ITEM = ITEMS.register("green_shield_template_block", tab(() -> new BlockItem(TEMPLATE_GREEN.get(), Registration.createStandardProperties())));
-    public static final RegistryObject<Item> TEMPLATE_YELLOW_ITEM = ITEMS.register("yellow_shield_template_block", tab(() -> new BlockItem(TEMPLATE_YELLOW.get(), Registration.createStandardProperties())));
+    public static final DeferredItem<Item> TEMPLATE_BLUE_ITEM = ITEMS.register("blue_shield_template_block", tab(() -> new BlockItem(TEMPLATE_BLUE.get(), Registration.createStandardProperties())));
+    public static final DeferredItem<Item> TEMPLATE_RED_ITEM = ITEMS.register("red_shield_template_block", tab(() -> new BlockItem(TEMPLATE_RED.get(), Registration.createStandardProperties())));
+    public static final DeferredItem<Item> TEMPLATE_GREEN_ITEM = ITEMS.register("green_shield_template_block", tab(() -> new BlockItem(TEMPLATE_GREEN.get(), Registration.createStandardProperties())));
+    public static final DeferredItem<Item> TEMPLATE_YELLOW_ITEM = ITEMS.register("yellow_shield_template_block", tab(() -> new BlockItem(TEMPLATE_YELLOW.get(), Registration.createStandardProperties())));
 
-    public static final RegistryObject<ShieldingBlock> SHIELDING_SOLID = BLOCKS.register("shielding_solid", ShieldingBlock::new);
-    public static final RegistryObject<ShieldingBlock> SHIELDING_TRANSLUCENT = BLOCKS.register("shielding_translucent", ShieldingBlock::new);
-    public static final RegistryObject<ShieldingBlock> SHIELDING_CUTOUT = BLOCKS.register("shielding_cutout", ShieldingBlock::new);
-    public static final RegistryObject<BlockEntityType<?>> TYPE_SHIELDING = TILES.register("shielding", () -> BlockEntityType.Builder.of(ShieldingTileEntity::new,
+    public static final DeferredBlock<ShieldingBlock> SHIELDING_SOLID = BLOCKS.register("shielding_solid", ShieldingBlock::new);
+    public static final DeferredBlock<ShieldingBlock> SHIELDING_TRANSLUCENT = BLOCKS.register("shielding_translucent", ShieldingBlock::new);
+    public static final DeferredBlock<ShieldingBlock> SHIELDING_CUTOUT = BLOCKS.register("shielding_cutout", ShieldingBlock::new);
+    public static final Supplier<BlockEntityType<?>> TYPE_SHIELDING = TILES.register("shielding", () -> BlockEntityType.Builder.of(ShieldingTileEntity::new,
             SHIELDING_SOLID.get(), SHIELDING_TRANSLUCENT.get(), SHIELDING_CUTOUT.get()).build(null));
 
     @Nonnull

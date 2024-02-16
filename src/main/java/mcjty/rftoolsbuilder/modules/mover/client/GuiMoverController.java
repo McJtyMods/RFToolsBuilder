@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.mover.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.GuiPopupTools;
@@ -145,11 +144,11 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
 
     private void requestVehicles() {
-        RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetListFromServer(tileEntity.getBlockPos(), CMD_GETVEHICLES.name()));
+        RFToolsBuilderMessages.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETVEHICLES.name()));
     }
 
     private void requestNodes() {
-        RFToolsBuilderMessages.INSTANCE.sendToServer(new PacketGetListFromServer(tileEntity.getBlockPos(), CMD_GETNODES.name()));
+        RFToolsBuilderMessages.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETNODES.name()));
     }
 
     private Panel makeVehicleLine(String vehicle) {

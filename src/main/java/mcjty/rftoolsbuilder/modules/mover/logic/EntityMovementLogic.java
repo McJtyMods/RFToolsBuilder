@@ -230,7 +230,7 @@ public class EntityMovementLogic {
     public void syncGrabbedToClient() {
         Level level = mover.getLevel();
         BlockPos worldPosition = mover.getBlockPos();
-        PacketGrabbedEntitiesToClient packet = new PacketGrabbedEntitiesToClient(worldPosition, grabbedEntities.keySet());
+        PacketGrabbedEntitiesToClient packet = PacketGrabbedEntitiesToClient.create(worldPosition, grabbedEntities.keySet());
         ChunkPos cp = new ChunkPos(worldPosition);
         RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunk(cp.x, cp.z)), packet);
     }

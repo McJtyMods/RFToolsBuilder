@@ -1,21 +1,23 @@
 package mcjty.rftoolsbuilder.modules.scanner.network;
 
+import mcjty.lib.network.CustomPacketPayload;
+import mcjty.lib.network.PlayPayloadContext;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.shapes.BeaconType;
 import mcjty.rftoolsbuilder.shapes.ScanDataManagerClient;
 import mcjty.rftoolsbuilder.shapes.ScanExtraData;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
-import java.util.function.Supplier;
 
-public class PacketReturnExtraData {
+public record PacketReturnExtraData(int scanId, ScanExtraData data) implements CustomPacketPayload {
 
-    private final int scanId;
-    private final ScanExtraData data;
+    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "returnextradata");
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void write(FriendlyByteBuf buf) {
         buf.writeInt(scanId);
         if (data == null) {
             buf.writeInt(-1);
@@ -30,8 +32,14 @@ public class PacketReturnExtraData {
         }
     }
 
-    public PacketReturnExtraData(FriendlyByteBuf buf) {
-        scanId = buf.readInt();
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
+
+    public static PacketReturnExtraData create(FriendlyByteBuf buf) {
+        int scanId = buf.readInt();
+        ScanExtraData data;
         int size = buf.readInt();
         if (size == -1) {
             data = null;
@@ -44,18 +52,16 @@ public class PacketReturnExtraData {
                 data.addBeacon(pos, type, doBeacon);
             }
         }
+        return new PacketReturnExtraData(scanId, data);
     }
 
-    public PacketReturnExtraData(int scanId, ScanExtraData extraData) {
-        this.scanId = scanId;
-        this.data = extraData;
+    public static PacketReturnExtraData create(int scanId, ScanExtraData extraData) {
+        return new PacketReturnExtraData(scanId, extraData);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
+    public void handle(PlayPayloadContext ctx) {
+        ctx.workHandler().submitAsync(() -> {
             ScanDataManagerClient.getScansClient().registerExtraDataFromServer(scanId, data);
         });
-        ctx.setPacketHandled(true);
     }
 }

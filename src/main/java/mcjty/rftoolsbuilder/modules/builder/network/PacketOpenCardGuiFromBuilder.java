@@ -1,27 +1,32 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
+import mcjty.lib.network.CustomPacketPayload;
+import mcjty.lib.network.PlayPayloadContext;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiShapeCard;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
 
-import java.util.function.Supplier;
+public record PacketOpenCardGuiFromBuilder() implements CustomPacketPayload {
 
-public class PacketOpenCardGuiFromBuilder {
+    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "opencardguifrombuilder");
 
-    public void toBytes(FriendlyByteBuf buf) {
+    @Override
+    public void write(FriendlyByteBuf buf) {
     }
 
-    public PacketOpenCardGuiFromBuilder() {
+    @Override
+    public ResourceLocation id() {
+        return ID;
     }
 
-    public PacketOpenCardGuiFromBuilder(FriendlyByteBuf buf) {
+    public static PacketOpenCardGuiFromBuilder create(FriendlyByteBuf buf) {
+        return new PacketOpenCardGuiFromBuilder();
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
+    public void handle(PlayPayloadContext ctx) {
+        ctx.workHandler().submitAsync(() -> {
             GuiShapeCard.open(true);
         });
-        ctx.setPacketHandled(true);
     }
 }

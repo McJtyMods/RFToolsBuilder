@@ -4,18 +4,16 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnExtraData;
 import mcjty.rftoolsbuilder.setup.ClientCommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkDirection;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class ShaperTools {
 
     public static void requestExtraShapeData(Player player, int scanId) {
         ScanExtraData extraData = ScanDataManager.get(player.getCommandSenderWorld()).getExtraData(scanId);
-        RFToolsBuilderMessages.INSTANCE.sendTo(new PacketReturnExtraData(scanId, extraData), ((ServerPlayer) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+        RFToolsBuilderMessages.sendToPlayer(PacketReturnExtraData.create(scanId, extraData), player);
     }
 
     public static void requestLocatorEnergyConsumption(Player player, BlockPos pos) {
