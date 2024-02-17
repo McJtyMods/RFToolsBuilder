@@ -2,7 +2,6 @@ package mcjty.rftoolsbuilder.modules.shield;
 
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.container.GenericContainer;
-import mcjty.lib.crafting.CopyNBTRecipeBuilder;
 import mcjty.lib.datagen.DataGen;
 import mcjty.lib.datagen.Dob;
 import mcjty.lib.modules.IModule;
@@ -16,7 +15,6 @@ import mcjty.rftoolsbuilder.modules.shield.client.ShieldModelLoader;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.MenuType;
@@ -25,15 +23,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
-
 import java.util.function.Supplier;
 
 import static mcjty.lib.datagen.DataGen.has;
@@ -119,8 +116,8 @@ public class ShieldModule implements IModule {
 //    }
 
 
-    public ShieldModule() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(ShieldModelLoader::register);
+    public ShieldModule(IEventBus bus, Dist dist) {
+        bus.addListener(ShieldModelLoader::register);
     }
 
     @Override
@@ -136,7 +133,7 @@ public class ShieldModule implements IModule {
     }
 
     @Override
-    public void initConfig() {
+    public void initConfig(IEventBus bus) {
         ShieldConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
     }
 

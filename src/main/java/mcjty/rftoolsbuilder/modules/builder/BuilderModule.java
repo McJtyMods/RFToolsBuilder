@@ -29,12 +29,11 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.registries.RegistryObject;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Supplier;
 
 import static mcjty.lib.datagen.DataGen.has;
@@ -91,7 +90,7 @@ public class BuilderModule implements IModule {
     }
 
     @Override
-    public void initConfig() {
+    public void initConfig(IEventBus bus) {
         BuilderConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
     }
 

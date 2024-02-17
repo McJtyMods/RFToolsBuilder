@@ -4,6 +4,7 @@ import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
@@ -20,7 +21,7 @@ public class ScannerModule implements IModule {
     }
 
     @Override
-    public void initConfig() {
+    public void initConfig(IEventBus bus) {
         ScannerConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
     }
 }

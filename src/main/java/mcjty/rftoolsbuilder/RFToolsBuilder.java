@@ -14,7 +14,6 @@ import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -36,11 +35,11 @@ public class RFToolsBuilder {
         Dist dist = FMLEnvironment.dist;
 
         instance = this;
-        setupModules();
+        setupModules(bus, dist);
 
-        Config.register(modules);
+        Config.register(bus, modules);
 
-        Registration.register();
+        Registration.register(bus);
 
         bus.addListener(setup::init);
         bus.addListener(modules::init);
@@ -63,10 +62,10 @@ public class RFToolsBuilder {
         datagen.generate();
     }
 
-    private void setupModules() {
+    private void setupModules(IEventBus bus, Dist dist) {
         modules.register(new BuilderModule());
-        modules.register(new ShieldModule());
+        modules.register(new ShieldModule(bus, dist));
         modules.register(new ScannerModule());
-        modules.register(new MoverModule());
+        modules.register(new MoverModule(bus, dist));
     }
 }
