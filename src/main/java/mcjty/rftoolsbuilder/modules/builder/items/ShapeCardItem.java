@@ -37,7 +37,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -878,7 +877,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             StatePalette statePalette = new StatePalette();
             while (!"DATA".equals(s)) {
                 String[] split = StringUtils.split(s, '@');
-                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(split[0]));
+                Block block = Tools.getBlock(new ResourceLocation(split[0]));
                 int meta = Integer.parseInt(split[1]);
                 if (block == null) {
                     player.displayClientMessage(ComponentFactory.literal(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);

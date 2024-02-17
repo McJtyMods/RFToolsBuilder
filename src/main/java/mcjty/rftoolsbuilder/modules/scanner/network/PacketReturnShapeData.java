@@ -17,7 +17,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette statePalette, BlockPos dimension,
                                     int count, int offsetY, String msg) implements CustomPacketPayload {
@@ -77,7 +76,7 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
                 String r = buf.readUtf(32767);
 //                int m = buf.readInt();    // @todo 1.14 no meta!
 //                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));
-                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));
+                Block block = Tools.getBlock(new ResourceLocation(r));
                 statePalette.add(block.defaultBlockState());
                 size--;
             }

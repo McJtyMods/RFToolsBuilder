@@ -1,11 +1,11 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
 import com.google.common.collect.Lists;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.Blocks;
+import mcjty.lib.varia.Tools;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
@@ -173,7 +173,7 @@ public class BuilderConfiguration {
         if (quarryReplaceBlock == null) {
             int index = quarryReplace.get().indexOf(' ');
             if(index == -1) {
-                quarryReplaceBlock = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(quarryReplace.get())).defaultBlockState();
+                quarryReplaceBlock = Tools.getBlock(new ResourceLocation(quarryReplace.get())).defaultBlockState();
             } else {
                 // @todo 1.14
 //                try {

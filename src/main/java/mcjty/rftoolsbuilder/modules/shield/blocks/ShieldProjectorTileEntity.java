@@ -64,7 +64,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -1017,7 +1016,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 CompoundTag tc = (CompoundTag) inbt;
                 String b = tc.getString("b");
                 int m = tc.getInt("m");
-                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(b));
+                Block block = Tools.getBlock(new ResourceLocation(b));
                 if (block == null) {
                     block = Blocks.STONE;
                     m = 0;

@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.lib.varia.Check32;
+import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import net.minecraft.core.BlockPos;
@@ -11,7 +12,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -233,7 +233,7 @@ public class Formulas {
 
                 BlockState state = null;
                 if (childTag.contains("ghost_block")) {
-                    Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(childTag.getString("ghost_block")));
+                    Block block = Tools.getBlock(new ResourceLocation(childTag.getString("ghost_block")));
                     if (block != null) {
                         state = block.defaultBlockState();
                     }
@@ -262,7 +262,7 @@ public class Formulas {
 
                 if (childTag.contains("ghost_block")) {
                     BlockState state = null;
-                    Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(childTag.getString("ghost_block")));
+                    Block block = Tools.getBlock(new ResourceLocation(childTag.getString("ghost_block")));
                     if (block != null) {
                         crc.add(Block.getId(block.defaultBlockState()));
                     }
