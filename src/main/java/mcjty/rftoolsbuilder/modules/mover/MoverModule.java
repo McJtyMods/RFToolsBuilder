@@ -8,7 +8,6 @@ import mcjty.lib.datagen.Dob;
 import mcjty.lib.modules.IModule;
 import mcjty.lib.setup.DeferredBlock;
 import mcjty.lib.setup.DeferredItem;
-import mcjty.lib.varia.ClientTools;
 import mcjty.rftoolsbase.modules.various.VariousModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.*;
 import mcjty.rftoolsbuilder.modules.mover.client.ClientSetup;
@@ -77,9 +76,6 @@ public class MoverModule implements IModule {
     public static final DeferredItem<VehicleStatusModuleItem> VEHICLE_STATUS_MODULE = ITEMS.register("vehicle_status_module", tab(VehicleStatusModuleItem::new));
 
     public MoverModule(IEventBus bus, Dist dist) {
-        if (dist.isClient()) {
-            ClientTools.onTextureStitch(bus, ClientSetup::onTextureStitch);
-        }
         Sounds.init();
     }
 
