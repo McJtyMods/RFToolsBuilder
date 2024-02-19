@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.mover.client;
 
+import mcjty.lib.McJtyLib;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.GuiPopupTools;
@@ -13,7 +14,6 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
-import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -46,7 +46,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
     @Override
     public void init() {
-        window = new Window(this, tileEntity, RFToolsBuilderMessages.INSTANCE, new ResourceLocation(RFToolsBuilder.MODID, "gui/mover_controller.gui"));
+        window = new Window(this, tileEntity, new ResourceLocation(RFToolsBuilder.MODID, "gui/mover_controller.gui"));
         super.init();
 
         initializeFields();
@@ -80,7 +80,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
             GuiPopupTools.showMessage(minecraft, this, getWindowManager(), 100, 100, "Please select a vehicle!");
             return;
         }
-        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_MOVE, TypedMap.builder()
+        sendServerCommandTyped(MoverControllerTileEntity.CMD_MOVE, TypedMap.builder()
                 .put(MoverControllerTileEntity.SELECTED_NODE, nodeList.getSelected().getLeft())
                 .put(MoverControllerTileEntity.SELECTED_VEHICLE, vehicleList.getSelected())
                 .put(MoverControllerTileEntity.SELECTED_DESTINATION, nodeList.getSelected().getRight())
@@ -90,7 +90,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
     }
 
     private void doScan() {
-        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_SCAN, TypedMap.EMPTY);
+        sendServerCommandTyped(MoverControllerTileEntity.CMD_SCAN, TypedMap.EMPTY);
         vehicleList.refresh();
         nodeList.refresh();
     }
@@ -98,7 +98,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
     private void selectNode() {
         Pair<BlockPos, String> selected = nodeList.getSelected();
         if (selected != null) {
-            sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, MoverControllerTileEntity.CMD_SELECTNODE, TypedMap.builder()
+            sendServerCommandTyped(MoverControllerTileEntity.CMD_SELECTNODE, TypedMap.builder()
                     .put(MoverControllerTileEntity.SELECTED_NODE, selected.getLeft())
                     .build());
         }
@@ -144,11 +144,11 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
 
     private void requestVehicles() {
-        RFToolsBuilderMessages.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETVEHICLES.name()));
+        McJtyLib.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETVEHICLES.name()));
     }
 
     private void requestNodes() {
-        RFToolsBuilderMessages.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETNODES.name()));
+        McJtyLib.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETNODES.name()));
     }
 
     private Panel makeVehicleLine(String vehicle) {

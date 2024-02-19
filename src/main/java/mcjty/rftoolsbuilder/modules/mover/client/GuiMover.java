@@ -1,13 +1,11 @@
 package mcjty.rftoolsbuilder.modules.mover.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
-import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -26,7 +24,7 @@ public class GuiMover extends GenericGuiContainer<MoverTileEntity, GenericContai
 
     @Override
     public void init() {
-        window = new Window(this, tileEntity, RFToolsBuilderMessages.INSTANCE, new ResourceLocation(RFToolsBuilder.MODID, "gui/mover.gui"));
+        window = new Window(this, tileEntity, new ResourceLocation(RFToolsBuilder.MODID, "gui/mover.gui"));
         super.init();
 
         initializeFields();

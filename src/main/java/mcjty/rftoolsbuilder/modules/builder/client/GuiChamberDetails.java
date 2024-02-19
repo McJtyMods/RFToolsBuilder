@@ -9,14 +9,14 @@ import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.widgets.*;
 import mcjty.rftoolsbuilder.setup.CommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -42,7 +42,7 @@ public class GuiChamberDetails extends GuiItemScreen {
     private Label info2Label;
 
     public GuiChamberDetails() {
-        super(RFToolsBuilderMessages.INSTANCE, CHAMBER_XSIZE, CHAMBER_YSIZE,  /* @todo 1.14 GuiProxy.GUI_MANUAL_SHAPE*/ ManualEntry.EMPTY);
+        super(CHAMBER_XSIZE, CHAMBER_YSIZE,  /* @todo 1.14 GuiProxy.GUI_MANUAL_SHAPE*/ ManualEntry.EMPTY);
         requestChamberInfoFromServer();
     }
 

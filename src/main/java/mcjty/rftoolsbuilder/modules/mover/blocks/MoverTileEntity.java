@@ -41,7 +41,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.network.PacketDistributor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -295,8 +294,8 @@ public class MoverTileEntity extends TickingTileEntity {
                 } else {
                     platforms = Collections.emptyList();
                 }
-                RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(worldPosition)),
-                        PacketSyncVehicleInformationToClient.create(worldPosition, platforms, getName(), valid, hasEnoughPower()));
+                RFToolsBuilderMessages.sendToChunk(
+                        PacketSyncVehicleInformationToClient.create(worldPosition, platforms, getName(), valid, hasEnoughPower()), level, worldPosition);
             }
         }
     }

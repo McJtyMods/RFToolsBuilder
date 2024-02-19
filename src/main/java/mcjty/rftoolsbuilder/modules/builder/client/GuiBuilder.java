@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
@@ -43,7 +42,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
 
     @Override
     public void init() {
-        window = new Window(this, tileEntity, RFToolsBuilderMessages.INSTANCE, new ResourceLocation(RFToolsBuilder.MODID, "gui/builder.gui"));
+        window = new Window(this, tileEntity, new ResourceLocation(RFToolsBuilder.MODID, "gui/builder.gui"));
         super.init();
 
         initializeFields();
@@ -98,7 +97,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private void selectAnchor(String name) {
         int index = name.charAt(name.length()-1)-48;
         updateAnchorSettings(AnchorMode.values()[index]);
-        sendServerCommandTyped(RFToolsBuilderMessages.INSTANCE, Minecraft.getInstance().level.dimension(), GenericTileEntity.COMMAND_SYNC_BINDING.name(),
+        sendServerCommandTyped(Minecraft.getInstance().level.dimension(), GenericTileEntity.COMMAND_SYNC_BINDING.name(),
                 TypedMap.builder()
                         .put(VALUE_ANCHOR.key(), AnchorMode.values()[index].getName())
                         .build());

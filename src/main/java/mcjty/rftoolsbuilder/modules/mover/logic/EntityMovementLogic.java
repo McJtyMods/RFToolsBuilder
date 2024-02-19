@@ -232,7 +232,7 @@ public class EntityMovementLogic {
         BlockPos worldPosition = mover.getBlockPos();
         PacketGrabbedEntitiesToClient packet = PacketGrabbedEntitiesToClient.create(worldPosition, grabbedEntities.keySet());
         ChunkPos cp = new ChunkPos(worldPosition);
-        RFToolsBuilderMessages.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunk(cp.x, cp.z)), packet);
+        RFToolsBuilderMessages.sendToChunk(packet, level.getChunk(cp.x, cp.z));
     }
 
     private AABB getVehicleAABB() {
