@@ -32,7 +32,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.common.util.Lazy;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -50,7 +50,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     private final GenericEnergyStorage energyStorage = new GenericEnergyStorage(this, true, MoverConfiguration.MAXENERGY.get(), MoverConfiguration.RECEIVEPERTICK.get());
 
     @Cap(type = CapType.CONTAINER)
-    private final LazyOptional<MenuProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Mover")
+    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Mover")
             .containerSupplier(empty(MoverModule.CONTAINER_MOVER_CONTROLLER, this))
             .energyHandler(() -> energyStorage)
             .setupSync(this));

@@ -76,7 +76,7 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
             .build();
 
     @Cap(type = CapType.CONTAINER)
-    private final LazyOptional<MenuProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Vehicle Builder")
+    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Vehicle Builder")
             .containerSupplier(container(MoverModule.CONTAINER_VEHICLE_BUILDER, CONTAINER_FACTORY,this))
             .itemHandler(() -> items)
             .setupSync(this));

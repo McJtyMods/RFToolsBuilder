@@ -169,7 +169,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(this::getEnergyStorage);
 
     @Cap(type = CapType.CONTAINER)
-    private final LazyOptional<MenuProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Shield")
+    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Shield")
             .containerSupplier(container(ShieldModule.CONTAINER_SHIELD, CONTAINER_FACTORY, this))
             .energyHandler(this::getEnergyStorage)
             .itemHandler(() -> items)

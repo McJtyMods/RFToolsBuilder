@@ -70,7 +70,7 @@ public class MoverTileEntity extends TickingTileEntity {
             .build();
 
     @Cap(type = CapType.CONTAINER)
-    private final LazyOptional<MenuProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Mover")
+    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Mover")
             .containerSupplier(container(MoverModule.CONTAINER_MOVER, CONTAINER_FACTORY,this))
             .itemHandler(() -> items)
             .setupSync(this));

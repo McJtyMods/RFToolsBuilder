@@ -179,7 +179,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get());
 
     @Cap(type = CapType.CONTAINER)
-    private final LazyOptional<MenuProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
+    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
             .containerSupplier(container(BuilderModule.CONTAINER_BUILDER, CONTAINER_FACTORY,this))
             .itemHandler(() -> items)
             .energyHandler(() -> energyStorage)
