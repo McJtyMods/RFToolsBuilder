@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.mover.client;
 
-import mcjty.lib.McJtyLib;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.GuiPopupTools;
@@ -9,6 +8,7 @@ import mcjty.lib.gui.events.SelectionEvent;
 import mcjty.lib.gui.widgets.Button;
 import mcjty.lib.gui.widgets.EnergyBar;
 import mcjty.lib.gui.widgets.Panel;
+import mcjty.lib.network.Networking;
 import mcjty.lib.network.PacketGetListFromServer;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
@@ -144,11 +144,11 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
 
     private void requestVehicles() {
-        McJtyLib.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETVEHICLES.name()));
+        Networking.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETVEHICLES.name()));
     }
 
     private void requestNodes() {
-        McJtyLib.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETNODES.name()));
+        Networking.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETNODES.name()));
     }
 
     private Panel makeVehicleLine(String vehicle) {

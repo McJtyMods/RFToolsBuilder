@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.setup;
 
-import mcjty.lib.McJtyLib;
+import mcjty.lib.network.IPayloadRegistrar;
+import mcjty.lib.network.Networking;
 import mcjty.lib.network.PacketSendClientCommand;
 import mcjty.lib.network.PacketSendServerCommand;
 import mcjty.lib.typed.TypedMap;
@@ -14,83 +15,69 @@ import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnExtraData;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnShapeData;
 import mcjty.rftoolsbuilder.modules.shield.network.PacketNotifyServerClientReady;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.simple.SimpleChannel;
 
 import javax.annotation.Nonnull;
 
-import static mcjty.lib.network.PlayPayloadContext.wrap;
-
 public class RFToolsBuilderMessages {
-    private static SimpleChannel INSTANCE;
 
-    private static int packetId = 0;
-    private static int id() {
-        return packetId++;
+    private static IPayloadRegistrar registrar;
+
+    public static void registerMessages() {
+        registrar = Networking.registrar(RFToolsBuilder.MODID)
+                .versioned("1.0")
+                .optional();
+
+        registrar.play(PacketUpdateNBTShapeCard.class, PacketUpdateNBTShapeCard::create, handler -> handler.server(PacketUpdateNBTShapeCard::handle));
+        registrar.play(PacketUpdateNBTItemInventoryShape.class, PacketUpdateNBTItemInventoryShape::create, handler -> handler.server(PacketUpdateNBTItemInventoryShape::handle));
+        registrar.play(PacketRequestShapeData.class, PacketRequestShapeData::create, handler -> handler.server(PacketRequestShapeData::handle));
+        registrar.play(PacketCloseContainerAndOpenCardGui.class, PacketCloseContainerAndOpenCardGui::create, handler -> handler.server(PacketCloseContainerAndOpenCardGui::handle));
+        registrar.play(PacketOpenCardGuiFromBuilder.class, PacketOpenCardGuiFromBuilder::create, handler -> handler.server(PacketOpenCardGuiFromBuilder::handle));
+        registrar.play(PacketOpenBuilderGui.class, PacketOpenBuilderGui::create, handler -> handler.server(PacketOpenBuilderGui::handle));
+        registrar.play(PacketNotifyServerClientReady.class, PacketNotifyServerClientReady::create, handler -> handler.server(PacketNotifyServerClientReady::handle));
+        registrar.play(PacketClickMover.class, PacketClickMover::create, handler -> handler.server(PacketClickMover::handle));
+
+        registrar.play(PacketGrabbedEntitiesToClient.class, PacketGrabbedEntitiesToClient::create, handler -> handler.client(PacketGrabbedEntitiesToClient::handle));
+        registrar.play(PacketReturnShapeData.class, PacketReturnShapeData::create, handler -> handler.client(PacketReturnShapeData::handle));
+        registrar.play(PacketChamberInfoReady.class, PacketChamberInfoReady::create, handler -> handler.client(PacketChamberInfoReady::handle));
+        registrar.play(PacketReturnExtraData.class, PacketReturnExtraData::create, handler -> handler.client(PacketReturnExtraData::handle));
+        registrar.play(PacketSyncVehicleInformationToClient.class, PacketSyncVehicleInformationToClient::create, handler -> handler.client(PacketSyncVehicleInformationToClient::handle));
     }
 
-    public static void registerMessages(String name) {
-        SimpleChannel net = NetworkRegistry.ChannelBuilder
-                .named(new ResourceLocation(RFToolsBuilder.MODID, name))
-                .networkProtocolVersion(() -> "1.0")
-                .clientAcceptedVersions(s -> true)
-                .serverAcceptedVersions(s -> true)
-                .simpleChannel();
-
-        INSTANCE = net;
-
-        net.registerMessage(id(), PacketUpdateNBTShapeCard.class, PacketUpdateNBTShapeCard::write, PacketUpdateNBTShapeCard::create, wrap(PacketUpdateNBTShapeCard::handle));
-        net.registerMessage(id(), PacketUpdateNBTItemInventoryShape.class, PacketUpdateNBTItemInventoryShape::write, PacketUpdateNBTItemInventoryShape::create, wrap(PacketUpdateNBTItemInventoryShape::handle));
-        net.registerMessage(id(), PacketRequestShapeData.class, PacketRequestShapeData::write, PacketRequestShapeData::create, wrap(PacketRequestShapeData::handle));
-        net.registerMessage(id(), PacketChamberInfoReady.class, PacketChamberInfoReady::write, PacketChamberInfoReady::create, wrap(PacketChamberInfoReady::handle));
-        net.registerMessage(id(), PacketReturnShapeData.class, PacketReturnShapeData::write, PacketReturnShapeData::create, wrap(PacketReturnShapeData::handle));
-        net.registerMessage(id(), PacketReturnExtraData.class, PacketReturnExtraData::write, PacketReturnExtraData::create, wrap(PacketReturnExtraData::handle));
-        net.registerMessage(id(), PacketCloseContainerAndOpenCardGui.class, PacketCloseContainerAndOpenCardGui::write, PacketCloseContainerAndOpenCardGui::create, wrap(PacketCloseContainerAndOpenCardGui::handle));
-        net.registerMessage(id(), PacketOpenCardGuiFromBuilder.class, PacketOpenCardGuiFromBuilder::write, PacketOpenCardGuiFromBuilder::create, wrap(PacketOpenCardGuiFromBuilder::handle));
-        net.registerMessage(id(), PacketOpenBuilderGui.class, PacketOpenBuilderGui::write, PacketOpenBuilderGui::create, wrap(PacketOpenBuilderGui::handle));
-        net.registerMessage(id(), PacketGrabbedEntitiesToClient.class, PacketGrabbedEntitiesToClient::write, PacketGrabbedEntitiesToClient::create, wrap(PacketGrabbedEntitiesToClient::handle));
-        net.registerMessage(id(), PacketSyncVehicleInformationToClient.class, PacketSyncVehicleInformationToClient::write, PacketSyncVehicleInformationToClient::create, wrap(PacketSyncVehicleInformationToClient::handle));
-        net.registerMessage(id(), PacketNotifyServerClientReady.class, PacketNotifyServerClientReady::write, PacketNotifyServerClientReady::create, wrap(PacketNotifyServerClientReady::handle));
-        net.registerMessage(id(), PacketClickMover.class, PacketClickMover::write, PacketClickMover::create, wrap(PacketClickMover::handle));
-    }
-
-    // @TODO MOVE TO McJtyLib
     public static void sendToServer(String command, @Nonnull TypedMap.Builder argumentBuilder) {
-        McJtyLib.sendToServer(new PacketSendServerCommand(RFToolsBuilder.MODID, command, argumentBuilder.build()));
+        Networking.sendToServer(new PacketSendServerCommand(RFToolsBuilder.MODID, command, argumentBuilder.build()));
     }
 
     public static void sendToServer(String command) {
-        McJtyLib.sendToServer(new PacketSendServerCommand(RFToolsBuilder.MODID, command, TypedMap.EMPTY));
+        Networking.sendToServer(new PacketSendServerCommand(RFToolsBuilder.MODID, command, TypedMap.EMPTY));
     }
 
     public static void sendToClient(Player player, String command, @Nonnull TypedMap.Builder argumentBuilder) {
-        McJtyLib.sendToPlayer(new PacketSendClientCommand(RFToolsBuilder.MODID, command, argumentBuilder.build()), player);
+        Networking.sendToPlayer(new PacketSendClientCommand(RFToolsBuilder.MODID, command, argumentBuilder.build()), player);
     }
 
     public static void sendToClient(Player player, String command) {
-        McJtyLib.sendToPlayer(new PacketSendClientCommand(RFToolsBuilder.MODID, command, TypedMap.EMPTY), player);
+        Networking.sendToPlayer(new PacketSendClientCommand(RFToolsBuilder.MODID, command, TypedMap.EMPTY), player);
     }
 
     public static <T> void sendToPlayer(T packet, Player player) {
-        INSTANCE.sendTo(packet, ((ServerPlayer)player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+        registrar.getChannel().sendTo(packet, ((ServerPlayer)player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
     }
 
     public static <T> void sendToServer(T packet) {
-        INSTANCE.sendToServer(packet);
+        registrar.getChannel().sendToServer(packet);
     }
 
     public static <T> void sendToChunk(T packet, Level level, BlockPos pos) {
-        INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(pos)), packet);
+        registrar.getChannel().send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(pos)), packet);
     }
 
     public static <T> void sendToChunk(T packet, LevelChunk chunk) {
-        INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> chunk), packet);
+        registrar.getChannel().send(PacketDistributor.TRACKING_CHUNK.with(() -> chunk), packet);
     }
 }
