@@ -67,7 +67,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
@@ -187,15 +186,15 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             .setupSync(this));
 
     @Cap(type = CapType.INFUSABLE)
-    private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(BuilderTileEntity.this));
+    private final IInfusable infusableHandler = new DefaultInfusable(BuilderTileEntity.this);
 
     @Cap(type = CapType.MODULE)
-    private final LazyOptional<IModuleSupport> moduleSupportHandler = LazyOptional.of(() -> new DefaultModuleSupport(SLOT_TAB) {
+    private final IModuleSupport moduleSupportHandler = new DefaultModuleSupport(SLOT_TAB) {
         @Override
         public boolean isModule(ItemStack itemStack) {
             return (itemStack.getItem() instanceof ShapeCardItem || itemStack.getItem() == BuilderModule.SPACE_CHAMBER_CARD.get());
         }
-    });
+    };
 
     public BuilderTileEntity(BlockPos pos, BlockState state) {
         super(BuilderModule.TYPE_BUILDER.get(), pos, state);
@@ -695,7 +694,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void checkStateServerShaped() {
-        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        float factor = infusableHandler.getInfusedFactor();
         for (int i = 0; i < BuilderConfiguration.quarryBaseSpeed.get() + (factor * BuilderConfiguration.quarryInfusionSpeedFactor.get()); i++) {
             if (scan != null) {
                 handleBlockShaped();
@@ -748,7 +747,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (mode == MODE_COLLECT) {
             collectItems(world);
         } else {
-            float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+            float factor = infusableHandler.getInfusedFactor();
             for (int i = 0; i < 2 + (factor * 40); i++) {
                 if (scan != null) {
                     handleBlock(world);
@@ -790,7 +789,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             scan = null;
         }
 
-        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        float factor = infusableHandler.getInfusedFactor();
 
         long rf = energyStorage.getEnergyStored();
         float area = (maxBox.getX() - minBox.getX() + 1) * (maxBox.getY() - minBox.getY() + 1) * (maxBox.getZ() - minBox.getZ() + 1);
@@ -1014,7 +1013,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
         }
 
-        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        float factor = infusableHandler.getInfusedFactor();
         rfNeeded = (int) (rfNeeded * (3.0f - factor) / 3.0f);
 
         if (rfNeeded > energyStorage.getMaxEnergyStored()) {
@@ -1726,7 +1725,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     private void copyBlock(Level srcWorld, BlockPos srcPos, Level destWorld, BlockPos destPos) {
         long rf = energyStorage.getEnergy();
-        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        float factor = infusableHandler.getInfusedFactor();
         int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * (4.0f - factor) / 4.0f);
         if (rfNeeded > rf) {
             // Not enough energy.
@@ -1799,7 +1798,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void moveEntities(Level world, int x, int y, int z, Level destWorld, int destX, int destY, int destZ) {
-        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        float factor = infusableHandler.getInfusedFactor();
         int rfNeeded = (int) (BuilderConfiguration.builderRfPerEntity.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
         int rfNeededPlayer = (int) (BuilderConfiguration.builderRfPerPlayer.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
 
@@ -1820,7 +1819,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void swapEntities(Level world, int x, int y, int z, Level destWorld, int destX, int destY, int destZ) {
-        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        float factor = infusableHandler.getInfusedFactor();
         int rfNeeded = (int) (BuilderConfiguration.builderRfPerEntity.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
         int rfNeededPlayer = (int) (BuilderConfiguration.builderRfPerPlayer.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
 
@@ -1885,7 +1884,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
 
             long rf = energyStorage.getEnergy();
-            float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+            float factor = infusableHandler.getInfusedFactor();
             int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * srcInformation.getCostFactor() * (4.0f - factor) / 4.0f);
             if (rfNeeded > rf) {
                 // Not enough energy.
@@ -1950,7 +1949,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
 
         long rf = energyStorage.getEnergy();
-        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        float factor = infusableHandler.getInfusedFactor();
         int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * srcInformation.getCostFactor() * (4.0f - factor) / 4.0f);
         rfNeeded += (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * dstInformation.getCostFactor() * (4.0f - factor) / 4.0f);
         if (rfNeeded > rf) {

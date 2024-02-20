@@ -176,10 +176,10 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             .setupSync(this));
 
     @Cap(type = CapType.INFUSABLE)
-    private final LazyOptional<IInfusable> infusableHandler = LazyOptional.of(() -> new DefaultInfusable(ShieldProjectorTileEntity.this));
+    private final IInfusable infusableHandler = new DefaultInfusable(ShieldProjectorTileEntity.this);
 
     @Cap(type = CapType.POWER_INFO)
-    private final LazyOptional<IPowerInformation> powerInfoHandler = LazyOptional.of(this::createPowerInfo);
+    private final IPowerInformation powerInfoHandler = createPowerInfo();
 
     private final int maxEnergy;
     private final int rfPerTick;
@@ -504,7 +504,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             source = DamageTools.getPlayerAttackDamageSource(killer, killer);
         }
 
-        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        float factor = infusableHandler.getInfusedFactor();
         rf = (int) (rf * costFactor * (4.0f - factor) / 4.0f);
         if (energyStorage.getEnergyStored() < rf) {
             // Not enough RF to do damage.
@@ -590,7 +590,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 
     private int getRfPerTick() {
         int rf = calculateRfPerTick();
-        float factor = infusableHandler.map(IInfusable::getInfusedFactor).orElse(0.0f);
+        float factor = infusableHandler.getInfusedFactor();
         rf = (int) (rf * (2.0f - factor) / 2.0f);
         return rf;
     }
