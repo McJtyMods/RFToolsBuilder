@@ -63,7 +63,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -164,9 +163,8 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             .build();
 
 
-    private final GenericEnergyStorage energyStorage;
     @Cap(type = CapType.ENERGY)
-    private final LazyOptional<GenericEnergyStorage> energyHandler = LazyOptional.of(this::getEnergyStorage);
+    private final GenericEnergyStorage energyHandler;
 
     @Cap(type = CapType.CONTAINER)
     private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Shield")
@@ -189,12 +187,11 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         this.supportedBlocks = supportedBlocks;
         this.maxEnergy = maxEnergy;
         this.rfPerTick = rfPerTick;
-        energyStorage = new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick());
-    }
+        energyHandler = new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick());    }
 
     @Nonnull
     public GenericEnergyStorage getEnergyStorage() {
-        return energyStorage;
+        return energyHandler;
     }
 
     private int getConfigMaxEnergy() {
@@ -506,11 +503,11 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 
         float factor = infusableHandler.getInfusedFactor();
         rf = (int) (rf * costFactor * (4.0f - factor) / 4.0f);
-        if (energyStorage.getEnergyStored() < rf) {
+        if (energyHandler.getEnergyStored() < rf) {
             // Not enough RF to do damage.
             return;
         }
-        energyStorage.consumeEnergy(rf);
+        energyHandler.consumeEnergy(rf);
 
         float damage = (float) (double) ShieldConfiguration.damage.get();
         damage *= damageFactor;
@@ -561,14 +558,14 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         int rf = getRfPerTick();
 
         if (rf > 0) {
-            if (energyStorage.getEnergyStored() < rf) {
+            if (energyHandler.getEnergyStored() < rf) {
                 powerTimeout = 100;     // Wait 5 seconds before trying again.
                 needsUpdate = true;
             } else {
                 if (checkPower) {
                     needsUpdate = true;
                 }
-                energyStorage.consumeEnergy(rf);
+                energyHandler.consumeEnergy(rf);
             }
         }
 
