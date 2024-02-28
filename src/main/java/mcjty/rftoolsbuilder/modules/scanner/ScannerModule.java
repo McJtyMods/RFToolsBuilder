@@ -3,10 +3,10 @@ package mcjty.rftoolsbuilder.modules.scanner;
 import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.eventbus.api.IEventBus;
+import net.neoforged.neoforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public class ScannerModule implements IModule {
 

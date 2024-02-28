@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

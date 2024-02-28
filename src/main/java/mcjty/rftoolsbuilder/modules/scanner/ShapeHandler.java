@@ -2,8 +2,8 @@ package mcjty.rftoolsbuilder.modules.scanner;
 
 import mcjty.rftoolsbuilder.shapes.ShapeDataManagerServer;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.eventbus.api.SubscribeEvent;
 
 public class ShapeHandler {
 

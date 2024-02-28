@@ -8,7 +8,7 @@ import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.BlockPos;
-import net.minecraftforge.network.NetworkDirection;
+import net.neoforged.neoforge.network.NetworkDirection;
 
 import java.util.*;
 

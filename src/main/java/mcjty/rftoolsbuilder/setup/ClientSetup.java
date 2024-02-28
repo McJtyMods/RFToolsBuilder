@@ -3,9 +3,9 @@ package mcjty.rftoolsbuilder.setup;
 
 import mcjty.rftoolsbuilder.keys.KeyBindings;
 import mcjty.rftoolsbuilder.keys.KeyInputHandler;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 public class ClientSetup {
 

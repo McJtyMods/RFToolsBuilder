@@ -2,8 +2,8 @@ package mcjty.rftoolsbuilder.modules.builder;
 
 import mcjty.lib.datagen.BaseBlockStateProvider;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
-import net.minecraftforge.client.model.generators.BlockModelBuilder;
-import net.minecraftforge.client.model.generators.VariantBlockStateBuilder;
+import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
+import net.neoforged.neoforge.client.model.generators.VariantBlockStateBuilder;
 
 public class DataGenHelper {
 

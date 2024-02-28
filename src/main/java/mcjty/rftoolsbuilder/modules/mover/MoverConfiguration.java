@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.modules.mover;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ForgeConfigSpec;
 
 public class MoverConfiguration {
 

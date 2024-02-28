@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.modules.scanner;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ForgeConfigSpec;
 
 public class ScannerConfiguration {
     public static final String CATEGORY_SCANNER = "scanner";
