@@ -5,61 +5,61 @@ import mcjty.lib.varia.Tools;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.List;
 
 public class BuilderConfiguration {
     public static final String CATEGORY_BUILDER = "builder";
 
-    public static ForgeConfigSpec.IntValue BUILDER_MAXENERGY;// = 1000000;
-    public static ForgeConfigSpec.IntValue BUILDER_RECEIVEPERTICK;// = 20000;
+    public static ModConfigSpec.IntValue BUILDER_MAXENERGY;// = 1000000;
+    public static ModConfigSpec.IntValue BUILDER_RECEIVEPERTICK;// = 20000;
 
-    public static ForgeConfigSpec.IntValue builderRfPerOperation;// = 500;
-    public static ForgeConfigSpec.IntValue builderRfPerLiquid;// = 300;
-    public static ForgeConfigSpec.IntValue builderRfPerQuarry;// = 300;
-    public static ForgeConfigSpec.IntValue builderRfPerSkipped;// = 50;
-    public static ForgeConfigSpec.IntValue builderRfPerEntity;// = 5000;
-    public static ForgeConfigSpec.IntValue builderRfPerPlayer;// = 40000;
-    public static ForgeConfigSpec.DoubleValue dimensionCostFactor;
+    public static ModConfigSpec.IntValue builderRfPerOperation;// = 500;
+    public static ModConfigSpec.IntValue builderRfPerLiquid;// = 300;
+    public static ModConfigSpec.IntValue builderRfPerQuarry;// = 300;
+    public static ModConfigSpec.IntValue builderRfPerSkipped;// = 50;
+    public static ModConfigSpec.IntValue builderRfPerEntity;// = 5000;
+    public static ModConfigSpec.IntValue builderRfPerPlayer;// = 40000;
+    public static ModConfigSpec.DoubleValue dimensionCostFactor;
 
-    public static ForgeConfigSpec.ConfigValue<BuilderTileEntityMode> teMode;
+    public static ModConfigSpec.ConfigValue<BuilderTileEntityMode> teMode;
 
     private static String[] blackWhiteListedBlocksAr = new String[] {
     };
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> blackWhiteListedBlocks;
+    public static ModConfigSpec.ConfigValue<List<? extends String>> blackWhiteListedBlocks;
 
-    public static ForgeConfigSpec.BooleanValue showProgressHud;
+    public static ModConfigSpec.BooleanValue showProgressHud;
 
-    public static ForgeConfigSpec.IntValue maxSpaceChamberDimension;
+    public static ModConfigSpec.IntValue maxSpaceChamberDimension;
 
-    public static ForgeConfigSpec.DoubleValue voidShapeCardFactor;
-    public static ForgeConfigSpec.DoubleValue silkquarryShapeCardFactor;
-    public static ForgeConfigSpec.DoubleValue fortunequarryShapeCardFactor;
+    public static ModConfigSpec.DoubleValue voidShapeCardFactor;
+    public static ModConfigSpec.DoubleValue silkquarryShapeCardFactor;
+    public static ModConfigSpec.DoubleValue fortunequarryShapeCardFactor;
 
-    public static ForgeConfigSpec.ConfigValue<String> quarryReplace;
+    public static ModConfigSpec.ConfigValue<String> quarryReplace;
     private static BlockState quarryReplaceBlock = null;
 
-    public static ForgeConfigSpec.BooleanValue quarryChunkloads;
-    public static ForgeConfigSpec.BooleanValue shapeCardAllowed;
-    public static ForgeConfigSpec.BooleanValue quarryAllowed;
-    public static ForgeConfigSpec.BooleanValue clearingQuarryAllowed;
+    public static ModConfigSpec.BooleanValue quarryChunkloads;
+    public static ModConfigSpec.BooleanValue shapeCardAllowed;
+    public static ModConfigSpec.BooleanValue quarryAllowed;
+    public static ModConfigSpec.BooleanValue clearingQuarryAllowed;
 
-    public static ForgeConfigSpec.IntValue quarryBaseSpeed;
-    public static ForgeConfigSpec.IntValue quarryInfusionSpeedFactor;
-    public static ForgeConfigSpec.BooleanValue quarryTileEntities;
+    public static ModConfigSpec.IntValue quarryBaseSpeed;
+    public static ModConfigSpec.IntValue quarryInfusionSpeedFactor;
+    public static ModConfigSpec.BooleanValue quarryTileEntities;
 
-    public static ForgeConfigSpec.IntValue maxBuilderOffset;
-    public static ForgeConfigSpec.IntValue maxBuilderDimension;
+    public static ModConfigSpec.IntValue maxBuilderOffset;
+    public static ModConfigSpec.IntValue maxBuilderDimension;
 
-    public static ForgeConfigSpec.BooleanValue oldSphereCylinderShape;
+    public static ModConfigSpec.BooleanValue oldSphereCylinderShape;
 
-    public static ForgeConfigSpec.IntValue collectTimer;
-    public static ForgeConfigSpec.IntValue collectRFPerItem;
-    public static ForgeConfigSpec.DoubleValue collectRFPerXP;
-    public static ForgeConfigSpec.DoubleValue collectRFPerTickPerArea;
+    public static ModConfigSpec.IntValue collectTimer;
+    public static ModConfigSpec.IntValue collectRFPerItem;
+    public static ModConfigSpec.DoubleValue collectRFPerXP;
+    public static ModConfigSpec.DoubleValue collectRFPerTickPerArea;
 
-    public static void init(ForgeConfigSpec.Builder SERVER_BUILDER, ForgeConfigSpec.Builder CLIENT_BUILDER) {
+    public static void init(ModConfigSpec.Builder SERVER_BUILDER, ModConfigSpec.Builder CLIENT_BUILDER) {
         SERVER_BUILDER.comment("Settings for the builder").push(CATEGORY_BUILDER);
         CLIENT_BUILDER.comment("Settings for the builder").push(CATEGORY_BUILDER);
 

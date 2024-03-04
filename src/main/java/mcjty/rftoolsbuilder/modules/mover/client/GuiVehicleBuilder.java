@@ -49,6 +49,6 @@ public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEnt
     @Override
     protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int x, int y) {
         updateFields();
-        drawWindow(graphics);
+        drawWindow(graphics, xxx, xxx, yyy);
     }
 }

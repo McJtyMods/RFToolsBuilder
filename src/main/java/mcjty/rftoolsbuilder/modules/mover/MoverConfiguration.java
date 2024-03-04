@@ -1,19 +1,19 @@
 package mcjty.rftoolsbuilder.modules.mover;
 
-import net.neoforged.neoforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class MoverConfiguration {
 
     public static final String CATEGORY_MOVER = "mover";
 
-    public static ForgeConfigSpec.IntValue MAXENERGY;
-    public static ForgeConfigSpec.IntValue RECEIVEPERTICK;
-    public static ForgeConfigSpec.IntValue RF_PER_MOVE;
+    public static ModConfigSpec.IntValue MAXENERGY;
+    public static ModConfigSpec.IntValue RECEIVEPERTICK;
+    public static ModConfigSpec.IntValue RF_PER_MOVE;
 
-    public static ForgeConfigSpec.IntValue VEHICLE_CONTROL_RFPERTICK;
-    public static ForgeConfigSpec.IntValue VEHICLE_STATUS_RFPERTICK;
+    public static ModConfigSpec.IntValue VEHICLE_CONTROL_RFPERTICK;
+    public static ModConfigSpec.IntValue VEHICLE_STATUS_RFPERTICK;
 
-    public static void init(ForgeConfigSpec.Builder SERVER_BUILDER, ForgeConfigSpec.Builder CLIENT_BUILDER) {
+    public static void init(ModConfigSpec.Builder SERVER_BUILDER, ModConfigSpec.Builder CLIENT_BUILDER) {
         SERVER_BUILDER.comment("Settings for the mover system").push(CATEGORY_MOVER);
         CLIENT_BUILDER.comment("Settings for the mover system").push(CATEGORY_MOVER);
 

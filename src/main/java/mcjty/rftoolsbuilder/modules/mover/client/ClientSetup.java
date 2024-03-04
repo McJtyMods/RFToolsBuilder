@@ -1,7 +1,7 @@
 package mcjty.rftoolsbuilder.modules.mover.client;
 
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.Collections;
 import java.util.List;

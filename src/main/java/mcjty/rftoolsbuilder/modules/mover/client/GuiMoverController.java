@@ -168,6 +168,6 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
     protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
         updateFields();
 
-        drawWindow(graphics);
+        drawWindow(graphics, xxx, xxx, yyy);
     }
 }

@@ -4,7 +4,7 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.setup.CommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 public class KeyInputHandler {
 

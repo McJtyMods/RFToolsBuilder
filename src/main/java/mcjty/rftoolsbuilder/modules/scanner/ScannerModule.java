@@ -3,16 +3,16 @@ package mcjty.rftoolsbuilder.modules.scanner;
 import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.neoforge.eventbus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public class ScannerModule implements IModule {
 
     @Override
     public void init(FMLCommonSetupEvent event) {
-        MinecraftForge.EVENT_BUS.register(new ShapeHandler());
+        NeoForge.EVENT_BUS.register(new ShapeHandler());
     }
 
     @Override
