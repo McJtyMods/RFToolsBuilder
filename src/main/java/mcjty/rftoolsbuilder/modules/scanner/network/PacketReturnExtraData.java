@@ -1,7 +1,5 @@
 package mcjty.rftoolsbuilder.modules.scanner.network;
 
-import mcjty.lib.network.CustomPacketPayload;
-import mcjty.lib.network.PlayPayloadContext;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.shapes.BeaconType;
 import mcjty.rftoolsbuilder.shapes.ScanDataManagerClient;

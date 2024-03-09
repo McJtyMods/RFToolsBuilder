@@ -1,7 +1,5 @@
 package mcjty.rftoolsbuilder.modules.mover.network;
 
-import mcjty.lib.network.CustomPacketPayload;
-import mcjty.lib.network.PlayPayloadContext;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import net.minecraft.core.BlockPos;

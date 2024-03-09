@@ -1,7 +1,5 @@
 package mcjty.rftoolsbuilder.modules.shield.network;
 
-import mcjty.lib.network.CustomPacketPayload;
-import mcjty.lib.network.PlayPayloadContext;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity;
 import net.minecraft.core.BlockPos;

@@ -1,8 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
 import mcjty.lib.api.container.CapabilityContainerProvider;
-import mcjty.lib.network.CustomPacketPayload;
-import mcjty.lib.network.PlayPayloadContext;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -12,8 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.NetworkEvent;
 import net.neoforged.neoforge.network.NetworkHooks;
-
-import java.util.function.Supplier;
 
 public record PacketOpenBuilderGui(BlockPos pos) implements CustomPacketPayload {
 

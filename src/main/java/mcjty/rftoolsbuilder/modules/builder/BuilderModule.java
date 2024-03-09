@@ -36,7 +36,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
-import static mcjty.lib.datagen.DataGen.has;
+import static mcjty.lib.datagen.Dob.has;
 import static mcjty.rftoolsbuilder.RFToolsBuilder.tab;
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
