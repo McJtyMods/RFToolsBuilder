@@ -118,7 +118,7 @@ public record PacketChamberInfoReady(Map<BlockState, Integer> blocks, Map<BlockS
             if (how == ENTITY_NORMAL) {
                 CompoundTag nbt = buf.readNbt();
                 // @todo 1.14
-//                EntityType<?> value = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(fixed));
+//                EntityType<?> value = BuiltInRegistries.ENTITY_TYPE.getValue(new ResourceLocation(fixed));
 //
 //                entity = value.create(SafeClientTools.getClientWorld(), nbt, null, null, new BlockPos(0, 0, 0), SpawnReason.COMMAND, false, false);
 //

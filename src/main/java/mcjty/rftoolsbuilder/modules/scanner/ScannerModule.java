@@ -5,7 +5,7 @@ import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public class ScannerModule implements IModule {
