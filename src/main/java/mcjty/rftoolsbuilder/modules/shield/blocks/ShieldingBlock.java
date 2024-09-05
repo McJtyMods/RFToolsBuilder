@@ -51,6 +51,7 @@ public class ShieldingBlock extends Block implements EntityBlock {
 
     public ShieldingBlock() {
         super(BlockBehaviour.Properties.of()
+                .forceSolidOn()
                 .sound(SoundType.GLASS)
                 .noOcclusion()
                 .isRedstoneConductor((state, world, pos) -> false)
