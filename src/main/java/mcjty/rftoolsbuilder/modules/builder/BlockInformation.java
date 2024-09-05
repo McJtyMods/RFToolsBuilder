@@ -13,7 +13,7 @@ import java.util.Map;
 public class BlockInformation {
 
     private static Map<ResourceLocation,BlockInformation> blockInformationMap = null;
-
+    private static Map<ResourceLocation,Boolean> blackWhiteListedNBTBlocksMap = null;
     private final ResourceLocation blockName;
     private final SupportBlock.SupportStatus blockLevel;
     private final double costFactor;
@@ -34,6 +34,23 @@ public class BlockInformation {
             return ROTATE_mfff;
         } else {
             return ROTATE_invalid;
+        }
+    }
+
+    private static void initBlackWhiteListedNBTBlocksMap() {
+        if (blackWhiteListedNBTBlocksMap == null) {
+            blackWhiteListedNBTBlocksMap = new HashMap<>();
+            List<? extends String> blocks = BuilderConfiguration.blackWhiteListedNBTBlocks.get();
+            Boolean whitelist = false;
+            for (String block : blocks) {
+                if (block.contains("=")) {
+                    String[] split = block.split("=");
+                    block = split[0];
+                    whitelist = Boolean.valueOf(split[1]);
+                }
+                ResourceLocation id = new ResourceLocation(block);
+                blackWhiteListedNBTBlocksMap.put(id,whitelist);
+            }
         }
     }
 
@@ -85,6 +102,11 @@ public class BlockInformation {
     public static BlockInformation getBlockInformation(Block block) {
         initMap();
         return blockInformationMap.get(Tools.getId(block));
+    }
+
+    public static boolean shouldTransferNBT(Block block) {
+        initBlackWhiteListedNBTBlocksMap();
+        return blackWhiteListedNBTBlocksMap.getOrDefault(Tools.getId(block), false);
     }
 
     public SupportBlock.SupportStatus getBlockLevel() {

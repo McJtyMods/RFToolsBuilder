@@ -1,3 +1,6 @@
+1.19-5.2.11:
+- PHOBOSS added a block blacklist/whitelist configuration option to allow NBT transfer of selected blocks
+
 1.19-5.2.10:
 - Fix for new McJtyLib
 
