@@ -10,20 +10,21 @@ import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 
 public class ProjectorTileEntity extends TickingTileEntity {
 
-    public ProjectorTileEntity(BlockPos pos, BlockState state) {
-        super(ScannerModule.TYPE_PROJECTOR.get(), pos, state);
+    public ProjectorTileEntity(BlockEntityType type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
         setRSMode(RedstoneMode.REDSTONE_ONREQUIRED);
     }
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
-                .tileEntitySupplier(ProjectorTileEntity::new)
+//                .tileEntitySupplier(ProjectorTileEntity::new)
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
                 .manualEntry(ManualHelper.create("rftoolsbuilder:projector/projector_intro"))

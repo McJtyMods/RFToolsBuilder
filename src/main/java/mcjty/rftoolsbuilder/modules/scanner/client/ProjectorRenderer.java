@@ -29,6 +29,6 @@ public class ProjectorRenderer implements BlockEntityRenderer<ProjectorTileEntit
     }
 
     public static void register() {
-        BlockEntityRenderers.register(ScannerModule.TYPE_PROJECTOR.get(), ProjectorRenderer::new);
+//        BlockEntityRenderers.register(ScannerModule.TYPE_PROJECTOR.get(), ProjectorRenderer::new);
     }
 }

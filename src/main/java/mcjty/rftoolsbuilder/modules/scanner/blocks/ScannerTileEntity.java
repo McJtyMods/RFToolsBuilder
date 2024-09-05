@@ -18,13 +18,13 @@ import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
-import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.Lazy;
 
@@ -71,14 +71,14 @@ public class ScannerTileEntity extends TickingTileEntity {
 
     private final Cached<Predicate<ItemStack>> filterCache = Cached.of(this::createFilterCache);
 
-    public ScannerTileEntity(BlockPos pos, BlockState state) {
-        super(ScannerModule.TYPE_SCANNER.get(), pos, state);
+    public ScannerTileEntity(BlockEntityType type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
         setRSMode(RedstoneMode.REDSTONE_ONREQUIRED);
     }
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
-                .tileEntitySupplier(ScannerTileEntity::new)
+//                .tileEntitySupplier(ScannerTileEntity::new)
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
                 .manualEntry(ManualHelper.create("rftoolsbuilder:projector/scanner"))
@@ -180,27 +180,28 @@ public class ScannerTileEntity extends TickingTileEntity {
             for (int y = tl.getY() ; y < tl.getY() + dimY ; y++) {
                 mpos.set(progress.x, y, z);
                 int c;
-                if (world.isAirBlock(mpos)) {
-                    c = 0;
-                } else {
-                    IBlockState state = world.getBlockState(mpos);
-                    getFilterCache();
-                    if (filterCache != null) {
-                        ItemStack item = state.getBlock().getItem(world, mpos, state);
-                        if (!filterCache.match(item)) {
-                            state = null;
-                        }
-                    }
-                    if (state != null && state != Blocks.AIR.getDefaultState()) {
-                        state = mapState(progress.modifiers, progress.modifierMapping, mpos, state);
-                    }
-                    if (state != null && state != Blocks.AIR.getDefaultState()) {
-                        c = progress.materialPalette.alloc(state, 0) + 1;
-                    } else {
-                        c = 0;
-                    }
-                }
-                progress.rle.add(c);
+                // @todo
+//                if (world.isAirBlock(mpos)) {
+//                    c = 0;
+//                } else {
+//                    IBlockState state = world.getBlockState(mpos);
+//                    getFilterCache();
+//                    if (filterCache != null) {
+//                        ItemStack item = state.getBlock().getItem(world, mpos, state);
+//                        if (!filterCache.match(item)) {
+//                            state = null;
+//                        }
+//                    }
+//                    if (state != null && state != Blocks.AIR.getDefaultState()) {
+//                        state = mapState(progress.modifiers, progress.modifierMapping, mpos, state);
+//                    }
+//                    if (state != null && state != Blocks.AIR.getDefaultState()) {
+//                        c = progress.materialPalette.alloc(state, 0) + 1;
+//                    } else {
+//                        c = 0;
+//                    }
+//                }
+//                progress.rle.add(c);
             }
         }
         progress.x++;
@@ -230,14 +231,15 @@ public class ScannerTileEntity extends TickingTileEntity {
 
     private void stopScanArea() {
         this.dataDim = new BlockPos(progress.dimX, progress.dimY, progress.dimZ);
-        ScanDataManager scan = ScanDataManager.getScans();
-        scan.getOrCreateScan(getScanId()).setData(progress.rle.getData(), progress.materialPalette.getPalette(), dataDim, dataOffset);
-        scan.save(getScanId());
-        if (renderStack.isEmpty()) {
-            renderStack = new ItemStack(BuilderSetup.shapeCardItem);
-        }
-        updateScanCard(renderStack);
-        markDirtyClient();
+        // @todo
+//        ScanDataManager scan = ScanDataManager.getScans();
+//        scan.getOrCreateScan(getScanId()).setData(progress.rle.getData(), progress.materialPalette.getPalette(), dataDim, dataOffset);
+//        scan.save(getScanId());
+//        if (renderStack.isEmpty()) {
+//            renderStack = new ItemStack(BuilderSetup.shapeCardItem);
+//        }
+//        updateScanCard(renderStack);
+//        markDirtyClient();
         progress = null;
     }
 
