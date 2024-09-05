@@ -1,4 +1,7 @@
 1.18-4.1.4:
+- PHOBOSS added a block blacklist/whitelist configuration option to allow NBT transfer of selected blocks
+
+1.18-4.1.4:
 - Lennyservant added a fix so that the builder's fake player gets used correctly in all cases
 
 1.18-4.1.3:

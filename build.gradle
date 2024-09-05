@@ -46,12 +46,34 @@ sourceSets.main.resources {
     srcDir 'src/generated/resources'
 }
 
+repositories {
+    maven {
+        url = "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
 dependencies {
     mc()
     top()
     jei()
     mcjtylib()
     rftoolsbase()
+    runtimeOnly(fg.deobf("curse.maven:rftools-utility-342466:4938941"))
+    runtimeOnly(fg.deobf("curse.maven:rftools-power-290209:4087998"))
 }
 
 cfdeps(['the-one-probe'], ['mcjtylib', 'rftools-base'], [])

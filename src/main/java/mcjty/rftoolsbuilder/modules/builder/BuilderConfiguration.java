@@ -29,6 +29,11 @@ public class BuilderConfiguration {
     };
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> blackWhiteListedBlocks;
 
+    private static String[] blackWhiteListedNBTBlocksAr = new String[] {
+            "minecraft:chest=false"
+    };
+    public static ForgeConfigSpec.ConfigValue<List<? extends String>> blackWhiteListedNBTBlocks;
+
     public static ForgeConfigSpec.BooleanValue showProgressHud;
 
     public static ForgeConfigSpec.IntValue maxSpaceChamberDimension;
@@ -93,6 +98,9 @@ public class BuilderConfiguration {
         blackWhiteListedBlocks = SERVER_BUILDER
                 .comment("This is a list of blocks that are either blacklisted or whitelisted from the Builder when it tries to move tile entities (format <id>=<cost>)")
                 .defineList("blackWhiteListedBlocks", Lists.newArrayList(blackWhiteListedBlocksAr), s -> s instanceof String);
+        blackWhiteListedNBTBlocks = SERVER_BUILDER
+                .comment("Whitelist or blacklist block NBT data from being transferred over, set `true` to whitelist block, set `false` to blacklist block, every block not included in the list is blacklisted by default (format <id>=<boolean>)")
+                .defineList("blackWhiteListedNBTBlocks", Lists.newArrayList(blackWhiteListedNBTBlocksAr), s -> s instanceof String);
         maxSpaceChamberDimension = SERVER_BUILDER
                 .comment("Maximum dimension for the space chamber")
                 .defineInRange("maxSpaceChamberDimension", 128, 0, 100000);
