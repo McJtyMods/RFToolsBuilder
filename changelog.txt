@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem where all loottables didn't generate which caused (for example) the Builder to not drop when mined
+
 1.20-6.0.6:
 - PHOBOSS fixed liquids (tested on lava and water) melting shield projections
 - PHOBOSS added a block blacklist/whitelist configuration option to allow NBT transfer of selected blocks
