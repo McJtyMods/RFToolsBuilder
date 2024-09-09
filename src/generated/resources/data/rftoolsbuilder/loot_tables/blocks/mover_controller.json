@@ -33,7 +33,7 @@
               "source": "block_entity"
             },
             {
-              "type": "rftoolsbuilder:shield_block1",
+              "type": "rftoolsbuilder:mover_controller",
               "entries": [
                 {
                   "type": "minecraft:dynamic",
@@ -43,12 +43,12 @@
               "function": "minecraft:set_contents"
             }
           ],
-          "name": "rftoolsbuilder:shield_block1"
+          "name": "rftoolsbuilder:mover_controller"
         }
       ],
-      "name": "shield_block1",
+      "name": "mover_controller",
       "rolls": 1.0
     }
   ],
-  "random_sequence": "rftoolsbuilder:shield_block1"
+  "random_sequence": "rftoolsbuilder:blocks/mover_controller"
 }

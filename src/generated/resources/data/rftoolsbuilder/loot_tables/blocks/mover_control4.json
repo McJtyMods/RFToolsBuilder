@@ -6,12 +6,12 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "rftoolsbuilder:red_shield_template_block"
+          "name": "rftoolsbuilder:mover_control4"
         }
       ],
-      "name": "red_shield_template_block",
+      "name": "mover_control4",
       "rolls": 1.0
     }
   ],
-  "random_sequence": "rftoolsbuilder:red_shield_template_block"
+  "random_sequence": "rftoolsbuilder:blocks/mover_control4"
 }

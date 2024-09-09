@@ -6,12 +6,12 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "rftoolsbuilder:mover_control4"
+          "name": "rftoolsbuilder:mover_control2"
         }
       ],
-      "name": "mover_control4",
+      "name": "mover_control2",
       "rolls": 1.0
     }
   ],
-  "random_sequence": "rftoolsbuilder:mover_control4"
+  "random_sequence": "rftoolsbuilder:blocks/mover_control2"
 }

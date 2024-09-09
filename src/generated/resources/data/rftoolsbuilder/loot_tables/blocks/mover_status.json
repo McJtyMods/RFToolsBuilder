@@ -6,12 +6,12 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "rftoolsbuilder:blue_shield_template_block"
+          "name": "rftoolsbuilder:mover_status"
         }
       ],
-      "name": "blue_shield_template_block",
+      "name": "mover_status",
       "rolls": 1.0
     }
   ],
-  "random_sequence": "rftoolsbuilder:blue_shield_template_block"
+  "random_sequence": "rftoolsbuilder:blocks/mover_status"
 }

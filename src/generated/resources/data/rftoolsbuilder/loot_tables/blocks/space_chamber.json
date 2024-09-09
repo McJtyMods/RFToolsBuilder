@@ -6,12 +6,12 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "rftoolsbuilder:mover_control3"
+          "name": "rftoolsbuilder:space_chamber"
         }
       ],
-      "name": "mover_control3",
+      "name": "space_chamber",
       "rolls": 1.0
     }
   ],
-  "random_sequence": "rftoolsbuilder:mover_control3"
+  "random_sequence": "rftoolsbuilder:blocks/space_chamber"
 }

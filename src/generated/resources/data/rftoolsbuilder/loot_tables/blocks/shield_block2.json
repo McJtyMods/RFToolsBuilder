@@ -33,7 +33,7 @@
               "source": "block_entity"
             },
             {
-              "type": "rftoolsbuilder:vehicle_builder",
+              "type": "rftoolsbuilder:shield_block2",
               "entries": [
                 {
                   "type": "minecraft:dynamic",
@@ -43,12 +43,12 @@
               "function": "minecraft:set_contents"
             }
           ],
-          "name": "rftoolsbuilder:vehicle_builder"
+          "name": "rftoolsbuilder:shield_block2"
         }
       ],
-      "name": "vehicle_builder",
+      "name": "shield_block2",
       "rolls": 1.0
     }
   ],
-  "random_sequence": "rftoolsbuilder:vehicle_builder"
+  "random_sequence": "rftoolsbuilder:blocks/shield_block2"
 }

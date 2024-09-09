@@ -33,7 +33,7 @@
               "source": "block_entity"
             },
             {
-              "type": "rftoolsbuilder:space_chamber_controller",
+              "type": "rftoolsbuilder:builder",
               "entries": [
                 {
                   "type": "minecraft:dynamic",
@@ -43,12 +43,12 @@
               "function": "minecraft:set_contents"
             }
           ],
-          "name": "rftoolsbuilder:space_chamber_controller"
+          "name": "rftoolsbuilder:builder"
         }
       ],
-      "name": "space_chamber_controller",
+      "name": "builder",
       "rolls": 1.0
     }
   ],
-  "random_sequence": "rftoolsbuilder:space_chamber_controller"
+  "random_sequence": "rftoolsbuilder:blocks/builder"
 }

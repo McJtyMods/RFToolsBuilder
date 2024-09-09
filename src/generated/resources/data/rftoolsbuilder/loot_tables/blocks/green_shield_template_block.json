@@ -6,12 +6,12 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "rftoolsbuilder:mover_control2"
+          "name": "rftoolsbuilder:green_shield_template_block"
         }
       ],
-      "name": "mover_control2",
+      "name": "green_shield_template_block",
       "rolls": 1.0
     }
   ],
-  "random_sequence": "rftoolsbuilder:mover_control2"
+  "random_sequence": "rftoolsbuilder:blocks/green_shield_template_block"
 }

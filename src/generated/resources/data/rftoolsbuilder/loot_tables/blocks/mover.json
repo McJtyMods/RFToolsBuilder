@@ -33,7 +33,7 @@
               "source": "block_entity"
             },
             {
-              "type": "rftoolsbuilder:mover_controller",
+              "type": "rftoolsbuilder:mover",
               "entries": [
                 {
                   "type": "minecraft:dynamic",
@@ -43,12 +43,12 @@
               "function": "minecraft:set_contents"
             }
           ],
-          "name": "rftoolsbuilder:mover_controller"
+          "name": "rftoolsbuilder:mover"
         }
       ],
-      "name": "mover_controller",
+      "name": "mover",
       "rolls": 1.0
     }
   ],
-  "random_sequence": "rftoolsbuilder:mover_controller"
+  "random_sequence": "rftoolsbuilder:blocks/mover"
 }
