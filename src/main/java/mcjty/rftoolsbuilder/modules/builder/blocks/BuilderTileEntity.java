@@ -104,7 +104,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     public static final int SLOT_TAB = 0;
     public static final int SLOT_FILTER = 1;
 
-    public static final ResourceLocation DONT_REMOVE_ME = new ResourceLocation(RFToolsBuilder.MODID, "dontremoveme");
+    public static final ResourceLocation DONT_REMOVE_ME = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "dontremoveme");
     public static final TagKey<Block> DONT_REMOVE_ME_TAG = TagTools.createBlockTagKey(DONT_REMOVE_ME);
 
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(2)

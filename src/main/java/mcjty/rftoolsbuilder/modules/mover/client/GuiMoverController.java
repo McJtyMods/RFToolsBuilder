@@ -46,7 +46,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
     @Override
     public void init() {
-        window = new Window(this, tileEntity, new ResourceLocation(RFToolsBuilder.MODID, "gui/mover_controller.gui"));
+        window = new Window(this, tileEntity, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/mover_controller.gui"));
         super.init();
 
         initializeFields();

@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
  */
 public record PacketClickMover(BlockPos pos, String mover) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "click_mover");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "click_mover");
 
     public static PacketClickMover create(FriendlyByteBuf buf) {
         return new PacketClickMover(buf.readBlockPos(), buf.readUtf());

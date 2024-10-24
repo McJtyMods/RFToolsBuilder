@@ -12,7 +12,7 @@ import java.util.List;
 
 public record PacketReturnExtraData(int scanId, ScanExtraData data) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "returnextradata");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "returnextradata");
 
     @Override
     public void write(FriendlyByteBuf buf) {

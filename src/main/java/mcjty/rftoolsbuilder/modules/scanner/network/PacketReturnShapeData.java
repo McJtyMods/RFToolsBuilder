@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette statePalette, BlockPos dimension,
                                     int count, int offsetY, String msg) implements CustomPacketPayload {
 
-    public static ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "returnshapedata");
+    public static ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "returnshapedata");
 
     @Override
     public void write(FriendlyByteBuf buf) {
@@ -73,8 +73,8 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
             while (size > 0) {
                 String r = buf.readUtf(32767);
 //                int m = buf.readInt();    // @todo 1.14 no meta!
-//                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));
-                Block block = Tools.getBlock(new ResourceLocation(r));
+//                Block block = ForgeRegistries.BLOCKS.getValue(ResourceLocation.fromNamespaceAndPath(r));
+                Block block = Tools.getBlock(ResourceLocation.fromNamespaceAndPath(r));
                 statePalette.add(block.defaultBlockState());
                 size--;
             }

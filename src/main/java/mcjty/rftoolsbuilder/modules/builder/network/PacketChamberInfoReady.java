@@ -23,7 +23,7 @@ public record PacketChamberInfoReady(Map<BlockState, Integer> blocks, Map<BlockS
                                      Map<String, Entity> realEntities,
                                      Map<String, String> playerNames) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "chamberinfoready");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "chamberinfoready");
 
     private static final byte ENTITY_NONE = 0;
     private static final byte ENTITY_NORMAL = 1;
@@ -116,7 +116,7 @@ public record PacketChamberInfoReady(Map<BlockState, Integer> blocks, Map<BlockS
             if (how == ENTITY_NORMAL) {
                 CompoundTag nbt = buf.readNbt();
                 // @todo 1.14
-//                EntityType<?> value = BuiltInRegistries.ENTITY_TYPE.getValue(new ResourceLocation(fixed));
+//                EntityType<?> value = BuiltInRegistries.ENTITY_TYPE.getValue(ResourceLocation.fromNamespaceAndPath(fixed));
 //
 //                entity = value.create(SafeClientTools.getClientWorld(), nbt, null, null, new BlockPos(0, 0, 0), SpawnReason.COMMAND, false, false);
 //

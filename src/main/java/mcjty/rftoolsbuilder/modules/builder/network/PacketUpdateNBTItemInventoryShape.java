@@ -13,7 +13,7 @@ import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
 
 public record PacketUpdateNBTItemInventoryShape(BlockPos pos, int slotIndex, CompoundTag tagCompound) implements CustomPacketPayload {
 
-    public static ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "updatenbtiteminventoryshape");
+    public static ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "updatenbtiteminventoryshape");
 
     public static PacketUpdateNBTItemInventoryShape create(FriendlyByteBuf buf) {
         return new PacketUpdateNBTItemInventoryShape(buf.readBlockPos(), buf.readInt(), buf.readNbt());

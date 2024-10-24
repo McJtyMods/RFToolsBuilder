@@ -11,12 +11,11 @@ import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.ModSetup;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.api.distmarker.Dist;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.fml.common.Mod;
-import net.neoforged.neoforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.neoforged.neoforge.fml.loading.FMLEnvironment;
 
 import java.util.function.Supplier;
 
@@ -30,14 +29,11 @@ public class RFToolsBuilder {
     private final Modules modules = new Modules();
     public static RFToolsBuilder instance;
 
-    public RFToolsBuilder() {
-        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        Dist dist = FMLEnvironment.dist;
-
+    public RFToolsBuilder(ModContainer mod, IEventBus bus, Dist dist) {
         instance = this;
         setupModules(bus, dist);
 
-        Config.register(bus, modules);
+        Config.register(mod, bus, modules);
 
         Registration.register(bus);
 
@@ -58,7 +54,7 @@ public class RFToolsBuilder {
 
     private void onDataGen(GatherDataEvent event) {
         DataGen datagen = new DataGen(MODID, event);
-        modules.datagen(datagen);
+        modules.datagen(datagen, event.getLookupProvider());
         datagen.generate();
     }
 

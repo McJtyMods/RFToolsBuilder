@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 
 public class Sounds {
 
-    public static final Supplier<SoundEvent> MOVER_LOOP = Registration.SOUNDS.register("mover_loop", () -> SoundTools.createSoundEvent(new ResourceLocation(RFToolsBuilder.MODID, "mover_loop")));
+    public static final Supplier<SoundEvent> MOVER_LOOP = Registration.SOUNDS.register("mover_loop", () -> SoundTools.createSoundEvent(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "mover_loop")));
 
     public static void init() {
     }

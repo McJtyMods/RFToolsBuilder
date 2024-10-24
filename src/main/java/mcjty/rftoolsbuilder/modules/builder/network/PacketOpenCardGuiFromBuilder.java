@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public record PacketOpenCardGuiFromBuilder() implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "opencardguifrombuilder");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "opencardguifrombuilder");
 
     @Override
     public void write(FriendlyByteBuf buf) {

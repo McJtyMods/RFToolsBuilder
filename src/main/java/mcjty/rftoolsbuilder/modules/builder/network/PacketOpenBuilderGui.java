@@ -13,7 +13,7 @@ import net.neoforged.neoforge.network.NetworkHooks;
 
 public record PacketOpenBuilderGui(BlockPos pos) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "open_builder_gui");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "open_builder_gui");
 
     @Override
     public void write(FriendlyByteBuf buf) {

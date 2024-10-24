@@ -12,7 +12,7 @@ import java.util.List;
 
 public record PacketSyncVehicleInformationToClient(BlockPos pos, List<String> platforms, String currentPlatform, Boolean valid, Boolean enoughPower) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "sync_vehicle_information_to_client");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "sync_vehicle_information_to_client");
 
     public static PacketSyncVehicleInformationToClient create(BlockPos pos, List<String> platforms, String currentPlatform, boolean valid, boolean enoughPower) {
         return new PacketSyncVehicleInformationToClient(pos, platforms, currentPlatform, valid, enoughPower);

@@ -4,6 +4,7 @@ import mcjty.lib.network.Networking;
 import mcjty.lib.network.PacketSendClientCommand;
 import mcjty.lib.network.PacketSendServerCommand;
 import mcjty.lib.typed.TypedMap;
+import mcjty.rftoolsbase.RFToolsBase;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.network.*;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketClickMover;
@@ -18,17 +19,16 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.neoforged.neoforge.network.NetworkDirection;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import javax.annotation.Nonnull;
 
 public class RFToolsBuilderMessages {
 
-    private static IPayloadRegistrar registrar;
-
-    public static void registerMessages() {
-        registrar = Networking.registrar(RFToolsBuilder.MODID)
+    public static void registerMessages(RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar(RFToolsBuilder.MODID)
                 .versioned("1.0")
                 .optional();
 

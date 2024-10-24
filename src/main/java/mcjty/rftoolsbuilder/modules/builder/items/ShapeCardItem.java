@@ -324,7 +324,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     public void appendHoverText(@Nonnull ItemStack itemStack, Level world, @Nonnull List<Component> list, @Nonnull TooltipFlag flag) {
         super.appendHoverText(itemStack, world, list, flag);
         // Use custom RL so that we don't have to duplicate the translation for every shape card
-        tooltipBuilder.get().makeTooltip(new ResourceLocation(RFToolsBuilder.MODID, "shape_card"), itemStack, list, flag);
+        tooltipBuilder.get().makeTooltip(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "shape_card"), itemStack, list, flag);
     }
 
     /**
@@ -877,7 +877,7 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             StatePalette statePalette = new StatePalette();
             while (!"DATA".equals(s)) {
                 String[] split = StringUtils.split(s, '@');
-                Block block = Tools.getBlock(new ResourceLocation(split[0]));
+                Block block = Tools.getBlock(ResourceLocation.fromNamespaceAndPath(split[0]));
                 int meta = Integer.parseInt(split[1]);
                 if (block == null) {
                     player.displayClientMessage(ComponentFactory.literal(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);

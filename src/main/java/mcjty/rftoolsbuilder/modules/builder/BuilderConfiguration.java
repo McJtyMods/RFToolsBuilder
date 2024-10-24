@@ -173,11 +173,11 @@ public class BuilderConfiguration {
         if (quarryReplaceBlock == null) {
             int index = quarryReplace.get().indexOf(' ');
             if(index == -1) {
-                quarryReplaceBlock = Tools.getBlock(new ResourceLocation(quarryReplace.get())).defaultBlockState();
+                quarryReplaceBlock = Tools.getBlock(ResourceLocation.fromNamespaceAndPath(quarryReplace.get())).defaultBlockState();
             } else {
                 // @todo 1.14
 //                try {
-//                    quarryReplaceBlock = CommandBase.convertArgToBlockState(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(quarryReplace.get().substring(0, index))), quarryReplace.get().substring(index + 1));
+//                    quarryReplaceBlock = CommandBase.convertArgToBlockState(ForgeRegistries.BLOCKS.getValue(ResourceLocation.fromNamespaceAndPath(quarryReplace.get().substring(0, index))), quarryReplace.get().substring(index + 1));
 //                } catch (NumberInvalidException | InvalidBlockStateException e) {
 //                    Logging.logError("Invalid builder quarry replace block: " + quarryReplace, e);
 //                }

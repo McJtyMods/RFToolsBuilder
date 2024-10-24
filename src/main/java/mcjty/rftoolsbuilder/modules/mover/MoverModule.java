@@ -17,6 +17,7 @@ import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlModuleItem;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleStatusModuleItem;
 import mcjty.rftoolsbuilder.modules.mover.sound.Sounds;
 import mcjty.rftoolsbuilder.setup.Config;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -24,10 +25,12 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.neoforge.api.distmarker.Dist;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredItem;
 
 import java.util.function.Supplier;
 
@@ -97,12 +100,12 @@ public class MoverModule implements IModule {
     }
 
     @Override
-    public void initDatagen(DataGen dataGen) {
+    public void initDatagen(DataGen dataGen, HolderLookup.Provider provider) {
         dataGen.add(
                 Dob.blockBuilder(MOVER)
                         .ironPickaxeTags()
                         .parentedItem("block/mover")
-                        .standardLoot(TYPE_MOVER)
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
                         .blockState(p -> p.simpleBlock(MOVER.get(), p.frontBasedModel("mover", p.modLoc("block/machinemover"), p.modLoc("block/machinemover"), RFTOOLSBASE_TOP, RFTOOLSBASE_BOTTOM)))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
@@ -112,7 +115,7 @@ public class MoverModule implements IModule {
                 Dob.blockBuilder(MOVER_CONTROLLER)
                         .ironPickaxeTags()
                         .parentedItem("block/mover_controller")
-                        .standardLoot(TYPE_MOVER_CONTROLLER)
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get())
                         .blockState(p -> p.orientedBlock(MOVER_CONTROLLER.get(), p.frontBasedModel("mover_controller", p.modLoc("block/machinemovercontroller"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
@@ -122,7 +125,7 @@ public class MoverModule implements IModule {
                 Dob.blockBuilder(VEHICLE_BUILDER)
                         .ironPickaxeTags()
                         .parentedItem("block/vehicle_builder")
-                        .standardLoot(TYPE_VEHICLE_BUILDER)
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
                         .blockState(p -> p.orientedBlock(VEHICLE_BUILDER.get(), p.frontBasedModel("vehicle_builder", p.modLoc("block/machinevehiclebuilder"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())

@@ -13,6 +13,7 @@ import mcjty.rftoolsbuilder.modules.shield.client.ShieldModelLoader;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.MenuType;
@@ -21,12 +22,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.api.distmarker.Dist;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredItem;
 
 import javax.annotation.Nonnull;
 import java.util.function.Supplier;
@@ -136,7 +139,7 @@ public class ShieldModule implements IModule {
     }
 
     @Override
-    public void initDatagen(DataGen dataGen) {
+    public void initDatagen(DataGen dataGen, HolderLookup.Provider provider) {
         dataGen.add(
                 Dob.blockBuilder(TEMPLATE_BLUE)
                         .parentedItem("block/blue_shield_template")
@@ -181,7 +184,7 @@ public class ShieldModule implements IModule {
                 Dob.blockBuilder(SHIELD_BLOCK1)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(TYPE_SHIELD_BLOCK1)
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK1.get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
@@ -191,18 +194,18 @@ public class ShieldModule implements IModule {
                 Dob.blockBuilder(SHIELD_BLOCK2)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(TYPE_SHIELD_BLOCK2)
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK2.get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('M', SHIELD_BLOCK1.get())
                                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
                                 "ROR", "OMO", "ROR"),
                 Dob.blockBuilder(SHIELD_BLOCK3)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(TYPE_SHIELD_BLOCK3)
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK3.get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('s', VariousModule.DIMENSIONALSHARD.get())
                                         .define('M', SHIELD_BLOCK2.get())
                                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
@@ -210,9 +213,9 @@ public class ShieldModule implements IModule {
                 Dob.blockBuilder(SHIELD_BLOCK4)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(TYPE_SHIELD_BLOCK4)
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK4.get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('s', VariousModule.DIMENSIONALSHARD.get())
                                         .define('M', SHIELD_BLOCK3.get())
                                         .define('n', Items.NETHER_STAR)
@@ -220,13 +223,13 @@ public class ShieldModule implements IModule {
                                 "nOs", "OMO", "sOn"),
                 Dob.blockBuilder(SHIELDING_SOLID)
                         .ironPickaxeTags()
-                        .blockState(p -> p.simpleBlock(SHIELDING_SOLID.get(), new ModelFile.UncheckedModelFile(new ResourceLocation(RFToolsBuilder.MODID, "block/shielding")))),
+                        .blockState(p -> p.simpleBlock(SHIELDING_SOLID.get(), new ModelFile.UncheckedModelFile(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shielding")))),
                 Dob.blockBuilder(SHIELDING_TRANSLUCENT)
                         .ironPickaxeTags()
-                        .blockState(p -> p.simpleBlock(SHIELDING_TRANSLUCENT.get(), new ModelFile.UncheckedModelFile(new ResourceLocation(RFToolsBuilder.MODID, "block/shielding")))),
+                        .blockState(p -> p.simpleBlock(SHIELDING_TRANSLUCENT.get(), new ModelFile.UncheckedModelFile(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shielding")))),
                 Dob.blockBuilder(SHIELDING_CUTOUT)
                         .ironPickaxeTags()
-                        .blockState(p -> p.simpleBlock(SHIELDING_CUTOUT.get(), new ModelFile.UncheckedModelFile(new ResourceLocation(RFToolsBuilder.MODID, "block/shielding"))))
+                        .blockState(p -> p.simpleBlock(SHIELDING_CUTOUT.get(), new ModelFile.UncheckedModelFile(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shielding"))))
         );
     }
 }

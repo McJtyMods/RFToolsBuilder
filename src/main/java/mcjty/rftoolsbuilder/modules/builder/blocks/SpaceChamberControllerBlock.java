@@ -62,7 +62,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     @Override
     protected boolean wrenchUse(Level level, BlockPos pos, Direction side, Player player) {
         if (level.isClientSide) {
-            SoundEvent pling = SoundTools.findSound(new ResourceLocation("minecraft", "block.note_block.bell"));
+            SoundEvent pling = SoundTools.findSound(ResourceLocation.fromNamespaceAndPath("minecraft", "block.note_block.bell"));
             level.playSound(player, pos, pling, SoundSource.BLOCKS, 1.0f, 1.0f);
         } else {
             SpaceChamberControllerTileEntity chamberControllerTileEntity = (SpaceChamberControllerTileEntity) level.getBlockEntity(pos);

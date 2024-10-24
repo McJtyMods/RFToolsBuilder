@@ -28,7 +28,7 @@ public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEnt
 
     @Override
     public void init() {
-        window = new Window(this, tileEntity, new ResourceLocation(RFToolsBuilder.MODID, "gui/vehicle_builder.gui"));
+        window = new Window(this, tileEntity, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/vehicle_builder.gui"));
         super.init();
         initializeFields();
     }

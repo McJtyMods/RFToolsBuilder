@@ -26,8 +26,8 @@ import java.util.*;
 
 public class ShieldBakedModel extends AbstractDynamicBakedModel {
 
-    public static final ResourceLocation TEXTURE_TRANSPARENT = new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldtransparent");
-    public static final ResourceLocation TEXTURE_FULL = new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldfull");
+    public static final ResourceLocation TEXTURE_TRANSPARENT = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shield/shieldtransparent");
+    public static final ResourceLocation TEXTURE_FULL = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shield/shieldfull");
 
     private static Map<ShieldTexture, TextureAtlasSprite[]> shields;
     private static TextureAtlasSprite shieldtransparent;
@@ -38,10 +38,10 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
             shields = new HashMap<>();
             for (ShieldTexture texture : ShieldTexture.values()) {
                 TextureAtlasSprite[] sprites = new TextureAtlasSprite[4];
-                sprites[0] = getTexture(new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield0"));
-                sprites[1] = getTexture(new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield1"));
-                sprites[2] = getTexture(new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield2"));
-                sprites[3] = getTexture(new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield3"));
+                sprites[0] = getTexture(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield0"));
+                sprites[1] = getTexture(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield1"));
+                sprites[2] = getTexture(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield2"));
+                sprites[3] = getTexture(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield3"));
                 shields.put(texture, sprites);
             }
             shieldtransparent = getTexture(TEXTURE_TRANSPARENT);

@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 
 public record PacketRequestShapeData(ItemStack card, ShapeID shapeID) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "requestshapedata");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "requestshapedata");
 
     @Override
     public void write(FriendlyByteBuf buf) {

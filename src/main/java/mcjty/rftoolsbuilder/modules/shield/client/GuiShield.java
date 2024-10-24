@@ -64,8 +64,8 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
         fromServer_filters = new ArrayList<>(filters);
     }
 
-    private static final ResourceLocation iconLocation = new ResourceLocation(RFToolsBuilder.MODID, "textures/gui/shieldprojector.png");
-    private static final ResourceLocation iconGuiElements = new ResourceLocation(RFToolsBase.MODID, "textures/gui/guielements.png");
+    private static final ResourceLocation iconLocation = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "textures/gui/shieldprojector.png");
+    private static final ResourceLocation iconGuiElements = ResourceLocation.fromNamespaceAndPath(RFToolsBase.MODID, "textures/gui/guielements.png");
 
     public GuiShield(ShieldProjectorTileEntity shieldTileEntity, GenericContainer container, Inventory inventory) {
         super(shieldTileEntity, container, inventory, ShieldModule.SHIELD_BLOCK1.get().getManualEntry());

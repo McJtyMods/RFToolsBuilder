@@ -1013,7 +1013,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 CompoundTag tc = (CompoundTag) inbt;
                 String b = tc.getString("b");
                 int m = tc.getInt("m");
-                Block block = Tools.getBlock(new ResourceLocation(b));
+                Block block = Tools.getBlock(ResourceLocation.fromNamespaceAndPath(b));
                 if (block == null) {
                     block = Blocks.STONE;
                     m = 0;

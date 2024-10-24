@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public record PacketNotifyServerClientReady(BlockPos pos) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "notify_server_client_ready");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "notify_server_client_ready");
 
     @Override
     public void write(FriendlyByteBuf buf) {

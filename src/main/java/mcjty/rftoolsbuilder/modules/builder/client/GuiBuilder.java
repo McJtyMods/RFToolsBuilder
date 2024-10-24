@@ -42,7 +42,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
 
     @Override
     public void init() {
-        window = new Window(this, tileEntity, new ResourceLocation(RFToolsBuilder.MODID, "gui/builder.gui"));
+        window = new Window(this, tileEntity, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/builder.gui"));
         super.init();
 
         initializeFields();

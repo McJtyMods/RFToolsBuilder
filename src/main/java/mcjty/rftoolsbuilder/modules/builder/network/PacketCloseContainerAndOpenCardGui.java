@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 public record PacketCloseContainerAndOpenCardGui(BlockPos builderPos) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "closecontainerandopencardgui");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "closecontainerandopencardgui");
 
     @Override
     public void write(FriendlyByteBuf buf) {

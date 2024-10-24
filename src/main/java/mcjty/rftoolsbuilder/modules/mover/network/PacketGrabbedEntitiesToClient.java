@@ -12,7 +12,7 @@ import java.util.Set;
 
 public record PacketGrabbedEntitiesToClient(BlockPos pos, Set<Integer> grabbedEntities) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "grabbed_entities_to_client");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "grabbed_entities_to_client");
 
     public PacketGrabbedEntitiesToClient(BlockPos pos, Set<Integer> grabbedEntities) {
         this.pos = pos;

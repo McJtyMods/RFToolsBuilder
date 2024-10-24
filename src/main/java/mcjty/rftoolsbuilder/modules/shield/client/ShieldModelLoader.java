@@ -39,13 +39,13 @@ public class ShieldModelLoader implements IGeometryLoader<ShieldModelLoader.Tank
         public Collection<Material> getMaterials() {
             List<Material> materials = new ArrayList<>();
             for (ShieldTexture texture : ShieldTexture.values()) {
-                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield0")));
-                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield1")));
-                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield2")));
-                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield3")));
+                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield0")));
+                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield1")));
+                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield2")));
+                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield3")));
             }
-            materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldtransparent")));
-            materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(RFToolsBuilder.MODID, "block/shield/shieldfull")));
+            materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shield/shieldtransparent")));
+            materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shield/shieldfull")));
             return materials;
         }
     }

@@ -1,14 +1,10 @@
 package mcjty.rftoolsbuilder.setup;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import com.electronwill.nightconfig.core.io.WritingMode;
 import mcjty.lib.modules.Modules;
-import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.fml.ModLoadingContext;
-import net.neoforged.neoforge.fml.config.ModConfig;
-
-import java.nio.file.Path;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class Config {
 
@@ -20,15 +16,15 @@ public class Config {
     public static ModConfigSpec SERVER_CONFIG;
     public static ModConfigSpec CLIENT_CONFIG;
 
-    public static void register(IEventBus bus, Modules modules) {
+    public static void register(ModContainer mod, IEventBus bus, Modules modules) {
         setupGeneralConfig();
         modules.initConfig(bus);
 
         SERVER_CONFIG = SERVER_BUILDER.build();
         CLIENT_CONFIG = CLIENT_BUILDER.build();
 
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CLIENT_CONFIG);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SERVER_CONFIG);
+        mod.registerConfig(ModConfig.Type.CLIENT, CLIENT_CONFIG);
+        mod.registerConfig(ModConfig.Type.SERVER, SERVER_CONFIG);
     }
 
     private static void setupGeneralConfig() {
@@ -40,17 +36,5 @@ public class Config {
 
         SERVER_BUILDER.pop();
         CLIENT_BUILDER.pop();
-    }
-
-    public static void loadConfig(ModConfigSpec spec, Path path) {
-
-        final CommentedFileConfig configData = CommentedFileConfig.builder(path)
-                .sync()
-                .autosave()
-                .writingMode(WritingMode.REPLACE)
-                .build();
-
-        configData.load();
-        spec.setConfig(configData);
     }
 }
