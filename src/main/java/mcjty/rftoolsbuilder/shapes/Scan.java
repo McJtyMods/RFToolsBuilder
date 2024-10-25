@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import mcjty.lib.varia.NBTTools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -94,7 +93,7 @@ public class Scan {
         ListTag list = tagCompound.getList("scanpal", Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tc = list.getCompound(i);
-            BlockState state = NBTTools.readBlockState(tc);
+            BlockState state = null; // @todo 1.21 NBT NBTTools.readBlockState(tc);
             materialPalette.add(state);
         }
         rledata = tagCompound.getByteArray("data");

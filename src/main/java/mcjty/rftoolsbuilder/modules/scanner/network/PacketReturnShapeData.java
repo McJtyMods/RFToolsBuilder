@@ -11,6 +11,9 @@ import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -19,7 +22,18 @@ import net.minecraft.world.level.block.state.BlockState;
 public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette statePalette, BlockPos dimension,
                                     int count, int offsetY, String msg) implements CustomPacketPayload {
 
-    public static ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "returnshapedata");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "returnshapedata");
+    public static final CustomPacketPayload.Type<PacketReturnShapeData> TYPE = new Type<>(ID);
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, PacketReturnShapeData> CODEC = StreamCodec.composite(
+            ShapeID.STREAM_CODEC, PacketReturnShapeData::shapeID,
+            RLE.CODEC, PacketReturnShapeData::positions,
+            StatePalette.CODEC, PacketReturnShapeData::statePalette,
+            BlockPos.CODEC, PacketReturnShapeData::dimension,
+            Codec.INT.fieldOf("count").codec(), PacketReturnShapeData::count,
+            Codec.INT.fieldOf("offsetY").codec(), PacketReturnShapeData::offsetY,
+            Codec.STRING.fieldOf("msg").codec(), PacketReturnShapeData::msg,
+            PacketReturnShapeData::new);
 
     @Override
     public void write(FriendlyByteBuf buf) {

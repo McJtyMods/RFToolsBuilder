@@ -6,10 +6,7 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
-import mcjty.rftoolsbuilder.setup.ClientSetup;
-import mcjty.rftoolsbuilder.setup.Config;
-import mcjty.rftoolsbuilder.setup.ModSetup;
-import mcjty.rftoolsbuilder.setup.Registration;
+import mcjty.rftoolsbuilder.setup.*;
 import net.minecraft.world.item.Item;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModContainer;
@@ -40,6 +37,7 @@ public class RFToolsBuilder {
         bus.addListener(setup::init);
         bus.addListener(modules::init);
         bus.addListener(this::onDataGen);
+        bus.addListener(RFToolsBuilderMessages::registerMessages);
 
         if (dist.isClient()) {
             bus.addListener(ClientSetup::init);
