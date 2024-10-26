@@ -41,6 +41,8 @@ import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -58,6 +60,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -71,12 +74,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.IPlantable;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.common.util.LazyOptional;
-import net.neoforged.neoforge.common.world.ForgeChunkManager;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -221,7 +219,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 .tileEntitySupplier(BuilderTileEntity::new)
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
-                .manualEntry(ManualHelper.create("rftoolsbuilder:builder/builder_intro"))
+                .manualEntry(ManualHelper.create("rftoolsbase:builder/builder_intro"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(), gold())) {
             @Override
@@ -306,7 +304,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private CompoundTag hasCard() {
-        return items.getStackInSlot(SLOT_TAB).getTag();
+        // @todo 1.21 NBT
+//        return items.getStackInSlot(SLOT_TAB).getTag();
+        return null;
     }
 
     private void makeSupportBlocksShaped() {
@@ -1147,17 +1147,18 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return commonQuarryBlock(false, rfNeeded, srcPos, srcState);
     }
 
-    private static ItemStack getHarvesterTool(boolean silk, int fortune) {
+    private static ItemStack getHarvesterTool(Level level, boolean silk, int fortune) {
+        Registry<Enchantment> enchantments = level.registryAccess().registryOrThrow(Registries.ENCHANTMENT);
         if (silk) {
             if (TOOL_SILK == null || TOOL_SILK.isEmpty()) {
                 TOOL_SILK = new ItemStack(BuilderModule.SUPER_HARVESTING_TOOL.get());
-                TOOL_SILK.enchant(Enchantments.SILK_TOUCH, 1);
+                TOOL_SILK.enchant(enchantments.getHolderOrThrow(Enchantments.SILK_TOUCH), 1);
             }
             return TOOL_SILK;
         } else if (fortune > 0) {
             if (TOOL_FORTUNE == null || TOOL_FORTUNE.isEmpty()) {
                 TOOL_FORTUNE = new ItemStack(BuilderModule.SUPER_HARVESTING_TOOL.get());
-                TOOL_FORTUNE.enchant(Enchantments.BLOCK_FORTUNE, fortune);
+                TOOL_FORTUNE.enchant(enchantments.getHolderOrThrow(Enchantments.FORTUNE), fortune);
             }
             return TOOL_FORTUNE;
 
@@ -1449,7 +1450,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return false;
         }
         Item item = stack.getItem();
-        return item instanceof BlockItem || item instanceof IPlantable;
+        return item instanceof BlockItem; // @todo 1.21 || item instanceof IPlantable;
     }
 
     // the items that we try to insert.

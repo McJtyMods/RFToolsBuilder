@@ -19,6 +19,7 @@ import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -26,10 +27,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.common.Tags;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 
@@ -99,7 +100,7 @@ public class BuilderModule implements IModule {
     }
 
     @Override
-    public void initDatagen(DataGen dataGen) {
+    public void initDatagen(DataGen dataGen, HolderLookup.Provider provider) {
 
         ArrayList<Integer> a = new ArrayList<>();
         a.add(3);
@@ -109,7 +110,7 @@ public class BuilderModule implements IModule {
         dataGen.add(
                 Dob.blockBuilder(BUILDER)
                         .ironPickaxeTags()
-                        .standardLoot(TYPE_BUILDER)
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
                         .parentedItem("block/builder")
                         .blockState(p -> p.horizontalOrientedBlock(BUILDER.get(), p.frontBasedModel("builder", p.modLoc("block/machinebuilder"))))
                         .shaped(builder -> builder
@@ -128,7 +129,7 @@ public class BuilderModule implements IModule {
                                 "xGx", "GFG", "xGx"),
                 Dob.blockBuilder(SPACE_CHAMBER_CONTROLLER)
                         .ironPickaxeTags()
-                        .standardLoot(TYPE_SPACE_CHAMBER_CONTROLLER)
+                        .standardLoot()
                         .parentedItem("block/space_chamber_controller")
                         .blockState(p -> p.singleTextureBlock(SPACE_CHAMBER_CONTROLLER.get(), "space_chamber_controller", "block/machinespacechambercontroller"))
                         .shaped(builder -> builder
@@ -150,83 +151,83 @@ public class BuilderModule implements IModule {
                                 "pBp", "rir", "pBp"),
                 Dob.itemBuilder(SHAPE_CARD_LIQUID)
                         .generatedItem("item/shapecardliquiditem")
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_DEF.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "rWr", "iMi", "rLr"),
                 Dob.itemBuilder(SHAPE_CARD_PUMP)
                         .generatedItem("item/shapecardpumpitem")
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_DEF.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "rWr", "bMb", "rLr")
-                        .shapedNBT("shape_card_pump_dirt", builder -> builder
+                        .shapedComponentPreserve("shape_card_pump_dirt", builder -> builder
                                         .define('M', SHAPE_CARD_PUMP_CLEAR.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "DDD", "DMD", "DDD"),
                 Dob.itemBuilder(SHAPE_CARD_PUMP_CLEAR)
                         .generatedItem("item/shapecardpumpclearitem")
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_PUMP.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "GGG", "GMG", "GGG"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY)
                         .generatedItem("item/shapecardquarryitem")
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('P', Items.DIAMOND_PICKAXE)
                                         .define('S', Items.DIAMOND_SHOVEL)
                                         .define('M', SHAPE_CARD_DEF.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "rPr", "iMi", "rSr")
-                        .shapedNBT("shape_card_quarry_dirt", builder -> builder
+                        .shapedComponentPreserve("shape_card_quarry_dirt", builder -> builder
                                         .define('M', SHAPE_CARD_QUARRY_CLEAR.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "DDD", "DMD", "DDD"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY_CLEAR)
                         .generatedItem("item/shapecardcquarryitem")
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_QUARRY.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "GGG", "GMG", "GGG"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY_CLEAR_FORTUNE)
                         .generatedItem("item/shapecardcfortuneitem")
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_QUARRY_FORTUNE.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "GGG", "GMG", "GGG"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY_CLEAR_SILK)
                         .generatedItem("item/shapecardcsilkitem")
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_QUARRY_SILK.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "GGG", "GMG", "GGG"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY_FORTUNE)
                         .generatedItem("item/shapecardfortuneitem")
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('s', VariousModule.DIMENSIONALSHARD.get())
                                         .define('n', Items.GHAST_TEAR)
                                         .define('M', SHAPE_CARD_QUARRY.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "sns", "eMd", "srs")
-                        .shapedNBT("shape_card_quarry_fortune_dirt", builder -> builder
+                        .shapedComponentPreserve("shape_card_quarry_fortune_dirt", builder -> builder
                                         .define('M', SHAPE_CARD_QUARRY_CLEAR_FORTUNE.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "DDD", "DMD", "DDD"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY_SILK)
                         .generatedItem("item/shapecardsilkitem")
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('s', VariousModule.DIMENSIONALSHARD.get())
                                         .define('n', Items.NETHER_STAR)
                                         .define('M', SHAPE_CARD_QUARRY.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "sns", "dMd", "sds")
-                        .shapedNBT("shape_card_quarry_silk_dirt", builder -> builder
+                        .shapedComponentPreserve("shape_card_quarry_silk_dirt", builder -> builder
                                         .define('M', SHAPE_CARD_QUARRY_CLEAR_SILK.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "DDD", "DMD", "DDD"),
                 Dob.itemBuilder(SHAPE_CARD_VOID)
                         .generatedItem("item/shapecardvoiditem")
-                        .shapedNBT(builder -> builder
+                        .shapedComponentPreserve(builder -> builder
                                         .define('x', Tags.Items.DYES_BLACK)
                                         .define('M', SHAPE_CARD_DEF.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),

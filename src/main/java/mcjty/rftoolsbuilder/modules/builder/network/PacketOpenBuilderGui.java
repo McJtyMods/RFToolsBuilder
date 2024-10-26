@@ -2,49 +2,45 @@ package mcjty.rftoolsbuilder.modules.builder.network;
 
 import mcjty.lib.api.container.CapabilityContainerProvider;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.network.NetworkEvent;
-import net.neoforged.neoforge.network.NetworkHooks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record PacketOpenBuilderGui(BlockPos pos) implements CustomPacketPayload {
 
     public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "open_builder_gui");
+    public static final CustomPacketPayload.Type<PacketOpenBuilderGui> TYPE = new Type<>(ID);
+
+    public static final StreamCodec<FriendlyByteBuf, PacketOpenBuilderGui> CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, PacketOpenBuilderGui::pos,
+            PacketOpenBuilderGui::create);
 
     @Override
-    public void write(FriendlyByteBuf buf) {
-        buf.writeBlockPos(pos);
-    }
-
-    @Override
-    public ResourceLocation id() {
-        return ID;
-    }
-
-    public static PacketOpenBuilderGui create(FriendlyByteBuf buf) {
-        return new PacketOpenBuilderGui(buf.readBlockPos());
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
     public static PacketOpenBuilderGui create(BlockPos fromTEPos) {
         return new PacketOpenBuilderGui(fromTEPos);
     }
 
-    public void handle(PlayPayloadContext ctx) {
-        ctx.workHandler().submitAsync(() -> {
-            ctx.player().ifPresent(player -> {
-                Level world = player.getCommandSenderWorld();
-                BlockEntity te = world.getBlockEntity(pos);
-                if (te == null) {
-                    return;
-                }
-                te.getCapability(CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY).ifPresent(h -> {
-                    NetworkHooks.openScreen((ServerPlayer) player, h, pos);
-                });
-            });
+    public void handle(IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Player player = ctx.player();
+            Level world = player.getCommandSenderWorld();
+            BlockEntity te = world.getBlockEntity(pos);
+            if (te == null) {
+                return;
+            }
+            MenuProvider h = world.getCapability(CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY, te.getBlockPos(), null);
+            player.openMenu(h);
         });
     }
 }

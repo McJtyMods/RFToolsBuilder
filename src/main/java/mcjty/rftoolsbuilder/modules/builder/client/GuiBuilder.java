@@ -17,10 +17,11 @@ import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenC
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 import javax.annotation.Nonnull;
 
@@ -32,17 +33,17 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private Button currentLevel;
     private final ImageChoiceLabel[] anchor = new ImageChoiceLabel[4];
 
-    public GuiBuilder(BuilderTileEntity builderTileEntity, GenericContainer container, Inventory inventory) {
-        super(builderTileEntity, container, inventory, BuilderModule.BUILDER.get().getManualEntry());
+    public GuiBuilder(GenericContainer container, Inventory inventory, Component title) {
+        super(container, inventory, title, BuilderModule.BUILDER.get().getManualEntry());
     }
 
-    public static void register() {
-        register(BuilderModule.CONTAINER_BUILDER.get(), GuiBuilder::new);
+    public static void register(RegisterMenuScreensEvent event) {
+        event.register(BuilderModule.CONTAINER_BUILDER.get(), GuiBuilder::new);
     }
 
     @Override
     public void init() {
-        window = new Window(this, tileEntity, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/builder.gui"));
+        window = new Window(this, getBE(), ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/builder.gui"));
         super.init();
 
         initializeFields();

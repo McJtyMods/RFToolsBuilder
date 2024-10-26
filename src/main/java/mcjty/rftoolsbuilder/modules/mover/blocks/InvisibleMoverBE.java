@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.mover.blocks;
 
-import mcjty.lib.varia.NBTTools;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
