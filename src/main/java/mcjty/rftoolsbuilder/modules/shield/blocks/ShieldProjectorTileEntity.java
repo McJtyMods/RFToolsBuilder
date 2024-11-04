@@ -32,6 +32,7 @@ import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -61,7 +62,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
+import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
@@ -228,10 +229,10 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider provider) {
         int oldColor = shieldColor;
         ShieldTexture oldTexture = shieldTexture;
-        super.onDataPacket(net, packet);
+        super.onDataPacket(net, packet, provider);
         if (oldColor != shieldColor || oldTexture != shieldTexture) {
             renderData = null;
             // @todo this doesn't help to automatically update the color
@@ -354,15 +355,11 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         if (!ShieldRenderingMode.MIMIC.equals(shieldRenderingMode)) {
             return null;
         }
-        Optional<BlockState> map = getCapability(ForgeCapabilities.ITEM_HANDLER)
-                .map(h -> h.getStackInSlot(SLOT_BUFFER))
-                .filter(stack -> !stack.isEmpty())
-                .map(this::getStateFromItem);
-        if (map.isPresent()) {
-            return map.orElseThrow(RuntimeException::new);
-        } else {
+        ItemStack stackInSlot = items.getStackInSlot(SLOT_BUFFER);
+        if (stackInSlot.isEmpty()) {
             return null;
         }
+        return getStateFromItem(stackInSlot);
     }
 
     private BlockState calculateShieldBlock(BlockState mimic, boolean blockLight) {
@@ -486,12 +483,11 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             ServerPlayer killer = fakePlayer.get();
 //            killer.setLevel((ServerLevel) level);
             killer.setPos(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
-            new FakePlayerConnection(level.getServer(), killer);
             ItemStack shards = items.getStackInSlot(SLOT_SHARD);
             if (!shards.isEmpty() && shards.getCount() >= ShieldConfiguration.shardsPerLootingKill.get()) {
                 items.extractItem(SLOT_SHARD, ShieldConfiguration.shardsPerLootingKill.get(), false);
                 if (lootingSword.isEmpty()) {
-                    lootingSword = createEnchantedItem(Items.DIAMOND_SWORD, Enchantments.MOB_LOOTING, ShieldConfiguration.lootingKillBonus.get());
+                    lootingSword = createEnchantedItem(Items.DIAMOND_SWORD, Enchantments.LOOTING, ShieldConfiguration.lootingKillBonus.get());
                 }
                 lootingSword.setDamageValue(0);
                 killer.setItemInHand(InteractionHand.MAIN_HAND, lootingSword);
