@@ -3,7 +3,7 @@ package mcjty.rftoolsbuilder.modules.shield.blocks;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
-import mcjty.lib.crafting.INBTPreservingIngredient;
+import mcjty.lib.crafting.IComponentsToPreserve;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbase.modules.various.items.SmartWrenchItem;
 import mcjty.rftoolsbase.tools.ManualHelper;
@@ -12,6 +12,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -27,12 +28,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 
-public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIngredient {
+public class ShieldProjectorBlock extends BaseBlock implements IComponentsToPreserve {
 
     public ShieldProjectorBlock(BlockEntityType.BlockEntitySupplier<BlockEntity> te, Supplier<Integer> max) {
         super(new BlockBuilder()
@@ -50,8 +52,10 @@ public class ShieldProjectorBlock extends BaseBlock implements INBTPreservingIng
     }
 
     @Override
-    public Collection<String> getTagsToPreserve() {
-        return Collections.singleton("BlockEntityTag");
+    public Collection<DataComponentType<?>> getComponentsToPreserve() {
+        // @todo 1.21
+//        return Collections.singleton("BlockEntityTag");
+        return List.of();
     }
 
     // @todo 1.14

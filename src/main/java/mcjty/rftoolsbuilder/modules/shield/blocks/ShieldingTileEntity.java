@@ -1,10 +1,11 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
-import mcjty.lib.varia.NBTTools;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldRenderData;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.Connection;
@@ -36,21 +37,21 @@ public class ShieldingTileEntity extends BlockEntity {
     @Override
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag nbtTag = new CompoundTag();
-        this.saveAdditional(nbtTag);
-        return ClientboundBlockEntityDataPacket.create(this, blockEntity -> nbtTag);
+        this.saveClient(nbtTag);
+        return ClientboundBlockEntityDataPacket.create(this, (blockEntity, provider) -> nbtTag);
     }
 
     @Nonnull
     @Override
-    public CompoundTag getUpdateTag() {
+    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag);
+        saveAdditional(tag, provider);
         return tag;
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        load(pkt.getTag());
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider provider) {
+        loadAdditional(pkt.getTag(), provider); // @todo 1.21 good way?
         requestModelDataUpdate();
         BlockState state = level.getBlockState(worldPosition);
         level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_ALL);
@@ -101,18 +102,23 @@ public class ShieldingTileEntity extends BlockEntity {
     }
 
     @Override
-    public void load(@Nonnull CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
         shieldProjector = new BlockPos(tag.getInt("sx"), tag.getInt("sy"), tag.getInt("sz"));
         if (tag.contains("mimic")) {
-            mimic = NBTTools.readBlockState(level, tag.getCompound("mimic"));
+            mimic = NbtUtils.readBlockState(provider.lookupOrThrow(Registries.BLOCK), tag.getCompound("mimic"));
         } else {
             mimic = null;
         }
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        saveClient(tag);
+    }
+
+    // @todo 1.21 try to use the GenericTileEntity system
+    private void saveClient(CompoundTag tag) {
         if (shieldProjector != null) {
             tag.putInt("sx", shieldProjector.getX());
             tag.putInt("sy", shieldProjector.getY());
