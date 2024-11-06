@@ -7,10 +7,8 @@ import mcjty.lib.worlddata.AbstractWorldData;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -104,7 +102,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
             File file = new File(dataDir, "scan" + id);
             if (file.exists()) {
                 try(DataInputStream datainputstream = new DataInputStream(new FileInputStream(file))) {
-                    CompoundTag tag = NbtIo.readCompressed(datainputstream);
+                    CompoundTag tag = NbtIo.readCompressed(datainputstream, NbtAccounter.unlimitedHeap());
                     scan.readFromNBTExternal(tag);
                 } catch (IOException e) {
                     Logging.log("Error reading scan file for id: " + id);
@@ -143,7 +141,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
 
     @SuppressWarnings("NullableProblems")
     @Override
-    public CompoundTag save(CompoundTag tagCompound) {
+    public CompoundTag save(CompoundTag tagCompound, HolderLookup.Provider provider) {
         ListTag lst = new ListTag();
         for (Map.Entry<Integer, Scan> entry : scans.entrySet()) {
             CompoundTag tc = new CompoundTag();

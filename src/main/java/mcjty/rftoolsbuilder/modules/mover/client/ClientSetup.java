@@ -11,7 +11,7 @@ import static mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer.BLACK;
 public class ClientSetup {
 
     public static void initClient() {
-        MinecraftForge.EVENT_BUS.addListener(MoverRenderer::onCameraSetup);
+        NeoForge.EVENT_BUS.addListener(MoverRenderer::onCameraSetup);
     }
 
     public static List<ResourceLocation> onTextureStitch() {

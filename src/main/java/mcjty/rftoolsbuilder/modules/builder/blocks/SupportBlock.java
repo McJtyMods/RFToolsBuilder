@@ -2,7 +2,6 @@ package mcjty.rftoolsbuilder.modules.builder.blocks;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -57,16 +56,15 @@ public class SupportBlock extends Block {
         super(Properties.of().replaceable().noOcclusion().isRedstoneConductor((state, world, pos) -> false));
     }
 
-    @Nonnull
     @Override
-    public InteractionResult use(@Nonnull BlockState state, Level world, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
-        if (!world.isClientSide) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult result) {
+        if (!level.isClientSide) {
             // Find all connected blocks and remove them.
             Deque<BlockPos> todo = new ArrayDeque<>();
             todo.add(pos);
-            removeBlock(world, todo);
+            removeBlock(level, todo);
         }
-        return super.use(state, world, pos, player, handIn, hit);
+        return super.useWithoutItem(state, level, pos, player, result);
     }
 
     private void removeBlock(Level world, Deque<BlockPos> todo) {

@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
 import mcjty.lib.blockcommands.ISerializer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -15,12 +16,12 @@ public interface ShieldFilter {
 
     public static class Serializer implements ISerializer<ShieldFilter> {
         @Override
-        public Function<FriendlyByteBuf, ShieldFilter> getDeserializer() {
+        public Function<RegistryFriendlyByteBuf, ShieldFilter> getDeserializer() {
             return AbstractShieldFilter::createFilter;
         }
 
         @Override
-        public BiConsumer<FriendlyByteBuf, ShieldFilter> getSerializer() {
+        public BiConsumer<RegistryFriendlyByteBuf, ShieldFilter> getSerializer() {
             return (buf, info) -> info.toBytes(buf);
         }
     }

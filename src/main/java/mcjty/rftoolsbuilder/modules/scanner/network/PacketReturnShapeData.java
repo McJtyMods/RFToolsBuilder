@@ -1,8 +1,7 @@
 package mcjty.rftoolsbuilder.modules.scanner.network;
 
-import mcjty.lib.network.NetworkTools;
+import mcjty.lib.varia.CompositeStreamCodec;
 import mcjty.lib.varia.RLE;
-import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.shapes.RenderData;
@@ -10,14 +9,13 @@ import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette statePalette, BlockPos dimension,
                                     int count, int offsetY, String msg) implements CustomPacketPayload {
@@ -25,93 +23,27 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
     public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "returnshapedata");
     public static final CustomPacketPayload.Type<PacketReturnShapeData> TYPE = new Type<>(ID);
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, PacketReturnShapeData> CODEC = StreamCodec.composite(
+    public static final StreamCodec<RegistryFriendlyByteBuf, PacketReturnShapeData> CODEC = CompositeStreamCodec.composite(
             ShapeID.STREAM_CODEC, PacketReturnShapeData::shapeID,
-            RLE.CODEC, PacketReturnShapeData::positions,
-            StatePalette.CODEC, PacketReturnShapeData::statePalette,
-            BlockPos.CODEC, PacketReturnShapeData::dimension,
-            Codec.INT.fieldOf("count").codec(), PacketReturnShapeData::count,
-            Codec.INT.fieldOf("offsetY").codec(), PacketReturnShapeData::offsetY,
-            Codec.STRING.fieldOf("msg").codec(), PacketReturnShapeData::msg,
+            RLE.OPTIONAL_STREAM_CODEC, PacketReturnShapeData::positions,
+            StatePalette.OPTIONAL_STREAM_CODEC, PacketReturnShapeData::statePalette,
+            BlockPos.STREAM_CODEC, PacketReturnShapeData::dimension,
+            ByteBufCodecs.INT, PacketReturnShapeData::count,
+            ByteBufCodecs.INT, PacketReturnShapeData::offsetY,
+            ByteBufCodecs.STRING_UTF8, PacketReturnShapeData::msg,
             PacketReturnShapeData::new);
 
     @Override
-    public void write(FriendlyByteBuf buf) {
-        shapeID.toBytes(buf);
-        buf.writeInt(count);
-        buf.writeInt(offsetY);
-        NetworkTools.writeStringUTF8(buf, msg);
-        buf.writeBlockPos(dimension);
-
-        if (statePalette == null) {
-            buf.writeInt(0);
-        } else {
-            buf.writeInt(statePalette.getPalette().size());
-            for (BlockState state : statePalette.getPalette()) {
-                BlockState blockState = state;
-                if (Tools.getId(blockState) == null) {
-                    blockState = Blocks.STONE.defaultBlockState();
-                }
-                buf.writeUtf(Tools.getId(blockState).toString());
-                //                buf.writeInt(state.getBlock().getMetaFromState(state));   // @todo 1.14 persist blockstate here!
-            }
-        }
-
-        if (positions == null) {
-            buf.writeInt(0);
-        } else {
-            buf.writeInt(positions.getData().length);
-            buf.writeBytes(positions.getData());
-        }
-    }
-
-    @Override
-    public ResourceLocation id() {
-        return ID;
-    }
-
-    public static PacketReturnShapeData create(FriendlyByteBuf buf) {
-        ShapeID shapeID = new ShapeID(buf);
-        int count = buf.readInt();
-        int offsetY = buf.readInt();
-        String msg = NetworkTools.readStringUTF8(buf);
-        BlockPos dimension = buf.readBlockPos();
-        StatePalette statePalette;
-        RLE positions;
-
-        int size = buf.readInt();
-        if (size == 0) {
-            statePalette = null;
-        } else {
-            statePalette = new StatePalette();
-            while (size > 0) {
-                String r = buf.readUtf(32767);
-//                int m = buf.readInt();    // @todo 1.14 no meta!
-//                Block block = ForgeRegistries.BLOCKS.getValue(ResourceLocation.fromNamespaceAndPath(r));
-                Block block = Tools.getBlock(ResourceLocation.fromNamespaceAndPath(r));
-                statePalette.add(block.defaultBlockState());
-                size--;
-            }
-        }
-
-        size = buf.readInt();
-        if (size == 0) {
-            positions = null;
-        } else {
-            positions = new RLE();
-            byte[] data = new byte[size];
-            buf.readBytes(data);
-            positions.setData(data);
-        }
-        return new PacketReturnShapeData(shapeID, positions, statePalette, dimension, count, offsetY, msg);
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
     public static PacketReturnShapeData create(ShapeID id, RLE positions, StatePalette statePalette, BlockPos dimension, int count, int offsetY, String msg) {
         return new PacketReturnShapeData(id, positions, statePalette, dimension, count, offsetY, msg);
     }
 
-    public void handle(PlayPayloadContext ctx) {
-        ctx.workHandler().submitAsync(() -> {
+    public void handle(IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();

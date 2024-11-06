@@ -41,17 +41,19 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     }
 
     private static String getChannelDescription(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
-        int channel = -1;
-        CompoundTag info = tag == null ? null : tag.getCompound("BlockEntityTag").getCompound("Info");
-        if (info != null) {
-            channel = info.getInt("channel");
-        }
-        if (channel != -1) {
-            return "Channel: " + channel;
-        } else {
-            return "Channel is not set!";
-        }
+        // @todo 1.21 NBT
+        return "Channel is not set!";
+//        CompoundTag tag = stack.getTag();
+//        int channel = -1;
+//        CompoundTag info = tag == null ? null : tag.getCompound("BlockEntityTag").getCompound("Info");
+//        if (info != null) {
+//            channel = info.getInt("channel");
+//        }
+//        if (channel != -1) {
+//            return "Channel: " + channel;
+//        } else {
+//            return "Channel is not set!";
+//        }
     }
 
     @Override

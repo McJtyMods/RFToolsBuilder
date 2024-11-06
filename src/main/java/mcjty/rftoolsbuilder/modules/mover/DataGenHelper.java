@@ -13,7 +13,7 @@ import net.neoforged.neoforge.client.model.generators.ModelFile;
 
 import static mcjty.lib.datagen.BaseBlockStateProvider.RFTOOLSBASE_SIDE;
 import static mcjty.lib.datagen.BaseBlockStateProvider.RFTOOLSBASE_TOP;
-import static net.minecraftforge.client.model.generators.ModelProvider.BLOCK_FOLDER;
+import static net.neoforged.neoforge.client.model.generators.ModelProvider.BLOCK_FOLDER;
 
 public class DataGenHelper {
 

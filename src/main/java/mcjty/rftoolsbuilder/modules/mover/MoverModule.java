@@ -29,6 +29,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 
@@ -78,6 +79,7 @@ public class MoverModule implements IModule {
 
     public MoverModule(IEventBus bus, Dist dist) {
         Sounds.init();
+        bus.addListener(this::registerMenuScreens);
     }
 
     @Override
@@ -87,11 +89,12 @@ public class MoverModule implements IModule {
     @Override
     public void initClient(FMLClientSetupEvent event) {
         ClientSetup.initClient();
-        event.enqueueWork(() -> {
-            GuiMover.register();
-            GuiMoverController.register();
-            GuiVehicleBuilder.register();
-        });
+    }
+
+    public void registerMenuScreens(RegisterMenuScreensEvent event) {
+        GuiMover.register(event);
+        GuiMoverController.register(event);
+        GuiVehicleBuilder.register(event);
     }
 
     @Override

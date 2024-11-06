@@ -745,7 +745,8 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         int dz = clamped.getZ();
 
         formula = formula.correctFormula(solid);
-        formula.setup(world, new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), !stack.isEmpty() ? stack.getTag() : null);
+        // @todo 1.21 NBT
+//        formula.setup(world, new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), !stack.isEmpty() ? stack.getTag() : null);
 
         // For saving shape cards we need to do X/Z/Y (scanner order) instead of the usual Y/X/Z (render order)
         int cnt = 0;
@@ -783,7 +784,8 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         BlockPos tl = new BlockPos(xCoord - dx/2 + offset.getX(), yCoord - dy/2 + offset.getY(), zCoord - dz/2 + offset.getZ());
 
         formula = formula.correctFormula(solid);
-        formula.setup(worldObj, thisCoord, dimension, offset, shapeCard != null ? shapeCard.getTag() : null);
+        // @todo 1.21 NBT
+//        formula.setup(worldObj, thisCoord, dimension, offset, shapeCard != null ? shapeCard.getTag() : null);
 
         for (int ox = 0 ; ox < dx ; ox++) {
             int x = tl.getX() + ox;
@@ -886,7 +888,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
             return;
         }
 
-        CompoundTag compound = card.getOrCreateTag();
+        CompoundTag compound = new CompoundTag();// @todo 1.21 NBT card.getOrCreateTag();
         int scanId = compound.getInt("scanid");
         if (scanId == 0) {
             player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "This card is not linked to scan data!"), false);
@@ -919,7 +921,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
             StatePalette statePalette = new StatePalette();
             while (!"DATA".equals(s)) {
                 String[] split = StringUtils.split(s, '@');
-                Block block = Tools.getBlock(ResourceLocation.fromNamespaceAndPath(split[0]));
+                Block block = Tools.getBlock(ResourceLocation.parse(split[0]));
                 int meta = Integer.parseInt(split[1]);
                 if (block == null) {
                     player.displayClientMessage(ComponentFactory.literal(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);

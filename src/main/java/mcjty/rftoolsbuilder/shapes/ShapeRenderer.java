@@ -174,13 +174,12 @@ public class ShapeRenderer {
 //        RenderSystem.disableLighting();
 
         Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder buffer = tessellator.getBuilder();
 
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
 
-        renderFacesForGui(tessellator, buffer, stack, showScan, false, -1);
+        renderFacesForGui(tessellator, stack, showScan, false, -1);
         BlockPos dimension = ShapeCardItem.getDimension(stack);
-        renderHelpers(tessellator, buffer, dimension.getX(), dimension.getY(), dimension.getZ(), showAxis, showOuter);
+        renderHelpers(tessellator, dimension.getX(), dimension.getY(), dimension.getZ(), showAxis, showOuter);
 
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
 
@@ -188,14 +187,13 @@ public class ShapeRenderer {
 
         if (showGuidelines) {
             RenderSystem.lineWidth(3);
-            buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
-            buffer.vertex(x - 62, y + 180, 0).color(1f, 0f, 0f, 1f).endVertex();
-            buffer.vertex(x - 39, y + 180, 0).color(1f, 0f, 0f, 1f).endVertex();
-            buffer.vertex(x - 62, y + 195, 0).color(0f, 0.8f, 0f, 1f).endVertex();
-            buffer.vertex(x - 39, y + 195, 0).color(0f, 0.8f, 0f, 1f).endVertex();
-            buffer.vertex(x - 62, y + 210, 0).color(0f, 0f, 1f, 1f).endVertex();
-            buffer.vertex(x - 39, y + 210, 0).color(0f, 0f, 1f, 1f).endVertex();
-            tessellator.end();
+            BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+            buffer.addVertex(x - 62, y + 180, 0).setColor(1f, 0f, 0f, 1f);
+            buffer.addVertex(x - 39, y + 180, 0).setColor(1f, 0f, 0f, 1f);
+            buffer.addVertex(x - 62, y + 195, 0).setColor(0f, 0.8f, 0f, 1f);
+            buffer.addVertex(x - 39, y + 195, 0).setColor(0f, 0.8f, 0f, 1f);
+            buffer.addVertex(x - 62, y + 210, 0).setColor(0f, 0f, 1f, 1f);
+            buffer.addVertex(x - 39, y + 210, 0).setColor(0f, 0f, 1f, 1f);
         }
 
         RenderSystem.disableBlend();
@@ -208,26 +206,26 @@ public class ShapeRenderer {
 
     }
 
-    private void renderHelpers(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen, boolean showAxis, boolean showOuter) {
+    private void renderHelpers(Tesselator tessellator, int xlen, int ylen, int zlen, boolean showAxis, boolean showOuter) {
         // X, Y, Z axis
         if (showAxis) {
-            ShapeRenderer.renderAxis(tessellator, buffer, xlen/2, ylen/2, zlen/2);
+            ShapeRenderer.renderAxis(tessellator, xlen/2, ylen/2, zlen/2);
         }
 
         if (showOuter) {
-            ShapeRenderer.renderOuterBox(tessellator, buffer, xlen, ylen, zlen);
+            ShapeRenderer.renderOuterBox(tessellator, xlen, ylen, zlen);
         }
     }
 
 
-    private void renderHelpersInGui(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen, boolean showAxis, boolean showOuter) {
+    private void renderHelpersInGui(Tesselator tessellator, int xlen, int ylen, int zlen, boolean showAxis, boolean showOuter) {
         // X, Y, Z axis
         if (showAxis) {
-            ShapeRenderer.renderAxisInGui(tessellator, buffer, xlen/2, ylen/2, zlen/2);
+            ShapeRenderer.renderAxisInGui(tessellator, xlen/2, ylen/2, zlen/2);
         }
 
         if (showOuter) {
-            ShapeRenderer.renderOuterBoxInGui(tessellator, buffer, xlen, ylen, zlen);
+            ShapeRenderer.renderOuterBoxInGui(tessellator, xlen, ylen, zlen);
         }
     }
 
@@ -244,16 +242,16 @@ public class ShapeRenderer {
     }
 
     private static void add(BufferBuilder buffer, double x, double y, double z) {
-        buffer.vertex(x + offset.x, y + offset.y, z + offset.z).color(1f, 1f, 1f, 1f).endVertex();
+        buffer.addVertex((float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z)).setColor(1f, 1f, 1f, 1f);
     }
 
     private static void add(BufferBuilder buffer, double x, double y, double z, float r, float g, float b, float a) {
-        buffer.vertex(x + offset.x, y + offset.y, z + offset.z).color(r, g, b, a).endVertex();
+        buffer.addVertex((float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z)).setColor(r, g, b, a);
     }
 
-    static void renderOuterBox(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
+    static void renderOuterBox(Tesselator tessellator, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(1.0f);
-        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         Vec3 origOffset = setOffset(.5, .5, .5);
         int xleft = -xlen / 2;
         int xright = xlen / 2 + (xlen & 1);
@@ -288,12 +286,12 @@ public class ShapeRenderer {
         add(buffer, xright, ybot, znorth);
 
         restoreOffset(origOffset);
-        tessellator.end();
+//        tessellator.end();        // @todo 1.21
     }
 
-    static void renderOuterBoxInGui(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
+    static void renderOuterBoxInGui(Tesselator tessellator, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(1.0f);
-        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         Vec3 origOffset = setOffset(.5, .5, .5);
         int xleft = -xlen / 2;
         int xright = xlen / 2 + (xlen & 1);
@@ -328,12 +326,12 @@ public class ShapeRenderer {
         add(buffer, xright, ybot, znorth);
 
         restoreOffset(origOffset);
-        tessellator.end();
+//        tessellator.end();    // @todo 1.21
     }
 
-    static void renderAxisInGui(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
+    static void renderAxisInGui(Tesselator tessellator, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(2.5f);
-        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         Vec3 origOffset = setOffset(.5, .5, .5);
         add(buffer, 0, 0, 0, 1f, 0f, 0f, 1f);
         add(buffer, xlen, 0, 0, 1f, 0f, 0f, 1f);
@@ -342,12 +340,12 @@ public class ShapeRenderer {
         add(buffer, 0, 0, 0, 0f, 0f, 1f, 1f);
         add(buffer, 0, 0, zlen, 0f, 0f, 1f, 1f);
         restoreOffset(origOffset);
-        tessellator.end();
+//        tessellator.end();        // @todo 1.21 right?
     }
 
-    static void renderAxis(Tesselator tessellator, BufferBuilder buffer, int xlen, int ylen, int zlen) {
+    static void renderAxis(Tesselator tessellator, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(2.5f);
-        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         Vec3 origOffset = setOffset(.5, .5, .5);
         add(buffer, 0, 0, 0, 1f, 0f, 0f, 1f);
         add(buffer, xlen, 0, 0, 1f, 0f, 0f, 1f);
@@ -356,7 +354,7 @@ public class ShapeRenderer {
         add(buffer, 0, 0, 0, 0f, 0f, 1f, 1f);
         add(buffer, 0, 0, zlen, 0f, 0f, 1f, 1f);
         restoreOffset(origOffset);
-        tessellator.end();
+//        tessellator.end();    // @todo 1.21 right?
     }
 
     private int calculateChecksum(ItemStack stack) {
@@ -370,7 +368,7 @@ public class ShapeRenderer {
     private int extraDataCounter = 0;
 
     // @todo 1.15 in world version
-    private boolean renderFacesInWorld(final BufferBuilder buffer,
+    private boolean renderFacesInWorld(final Tesselator tesselator,
                                        ItemStack stack, boolean showScan, boolean grayscale, int scanId) {
 
         RenderData data = getRenderDataAndCreate(shapeID);
@@ -434,7 +432,7 @@ public class ShapeRenderer {
                 int z = beacon.getPos().getZ();
                 BeaconType type = beacon.getType();
 //                GlStateManager._translatef(x, y, z); // @todo 1.18
-                RenderData.RenderElement element = getBeaconElement(buffer, type, beacon.isDoBeacon());
+                RenderData.RenderElement element = getBeaconElement(tesselator, type, beacon.isDoBeacon());
                 element.render();
 //                GlStateManager._translatef(-x, -y, -z);
             }
@@ -443,7 +441,7 @@ public class ShapeRenderer {
         return needScanSound;
     }
 
-    private boolean renderFacesForGui(Tesselator tessellator, final BufferBuilder buffer,
+    private boolean renderFacesForGui(Tesselator tessellator,
                                       ItemStack stack, boolean showScan, boolean grayscale, int scanId) {
 
         RenderData data = getRenderDataAndCreate(shapeID);
@@ -505,7 +503,7 @@ public class ShapeRenderer {
                 int z = beacon.getPos().getZ();
                 BeaconType type = beacon.getType();
 //                RenderSystem.translatef(x, y, z); // @todo 1.18
-                RenderData.RenderElement element = getBeaconElement(buffer, type, beacon.isDoBeacon());
+                RenderData.RenderElement element = getBeaconElement(tessellator, type, beacon.isDoBeacon());
                 element.render();
 //                RenderSystem.translatef(-x, -y, -z);
             }
@@ -523,7 +521,8 @@ public class ShapeRenderer {
         int offsety = plane.getOffsety();
 
         data.createRenderList(offsety);
-        RenderData.vboBuffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        // @todo 1.21 VBO
+//        RenderData.vboBuffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         for (RenderData.RenderStrip strip : plane.getStrips()) {
             int z = plane.getStartz();
@@ -580,7 +579,7 @@ public class ShapeRenderer {
     private static RenderData.RenderElement beaconElement[] = null;
     private static RenderData.RenderElement beaconElementBeacon[] = null;
 
-    private static RenderData.RenderElement getBeaconElement(BufferBuilder buffer, BeaconType type, boolean doBeacon) {
+    private static RenderData.RenderElement getBeaconElement(Tesselator tesselator, BeaconType type, boolean doBeacon) {
         if (beaconElement == null) {
             beaconElement = new RenderData.RenderElement[BeaconType.VALUES.length];
             beaconElementBeacon = new RenderData.RenderElement[BeaconType.VALUES.length];
@@ -600,7 +599,7 @@ public class ShapeRenderer {
             elements[type.ordinal()] = new RenderData.RenderElement();
             elements[type.ordinal()].createRenderList();
             RenderSystem.lineWidth(3);
-            buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             float r = type.getR();
             float g = type.getG();
             float b = type.getB();
@@ -650,50 +649,50 @@ public class ShapeRenderer {
 
     public static void addSideFullTextureD(BufferBuilder buffer, int cnt, float r, float g, float b) {
         float a = 0.5f;
-        buffer.vertex(0, 0, 0).color(r, g, b, a).endVertex();
-        buffer.vertex(1, 0, 0).color(r, g, b, a).endVertex();
-        buffer.vertex(1, 0, cnt).color(r, g, b, a).endVertex();
-        buffer.vertex(0, 0, cnt).color(r, g, b, a).endVertex();
+        buffer.addVertex(0, 0, 0).setColor(r, g, b, a);
+        buffer.addVertex(1, 0, 0).setColor(r, g, b, a);
+        buffer.addVertex(1, 0, cnt).setColor(r, g, b, a);
+        buffer.addVertex(0, 0, cnt).setColor(r, g, b, a);
     }
 
     public static void addSideFullTextureU(BufferBuilder buffer, int cnt, float r, float g, float b) {
         float a = 0.5f;
-        buffer.vertex(0, 1, cnt).color(r, g, b, a).endVertex();
-        buffer.vertex(1, 1, cnt).color(r, g, b, a).endVertex();
-        buffer.vertex(1, 1, 0).color(r, g, b, a).endVertex();
-        buffer.vertex(0, 1, 0).color(r, g, b, a).endVertex();
+        buffer.addVertex(0, 1, cnt).setColor(r, g, b, a);
+        buffer.addVertex(1, 1, cnt).setColor(r, g, b, a);
+        buffer.addVertex(1, 1, 0).setColor(r, g, b, a);
+        buffer.addVertex(0, 1, 0).setColor(r, g, b, a);
     }
 
     public static void addSideFullTextureE(BufferBuilder buffer, int cnt, float r, float g, float b) {
         float a = 0.5f;
-        buffer.vertex(1, 0, 0).color(r, g, b, a).endVertex();
-        buffer.vertex(1, 1, 0).color(r, g, b, a).endVertex();
-        buffer.vertex(1, 1, cnt).color(r, g, b, a).endVertex();
-        buffer.vertex(1, 0, cnt).color(r, g, b, a).endVertex();
+        buffer.addVertex(1, 0, 0).setColor(r, g, b, a);
+        buffer.addVertex(1, 1, 0).setColor(r, g, b, a);
+        buffer.addVertex(1, 1, cnt).setColor(r, g, b, a);
+        buffer.addVertex(1, 0, cnt).setColor(r, g, b, a);
     }
 
     public static void addSideFullTextureW(BufferBuilder buffer, int cnt, float r, float g, float b) {
         float a = 0.5f;
-        buffer.vertex(0, 0, cnt).color(r, g, b, a).endVertex();
-        buffer.vertex(0, 1, cnt).color(r, g, b, a).endVertex();
-        buffer.vertex(0, 1, 0).color(r, g, b, a).endVertex();
-        buffer.vertex(0, 0, 0).color(r, g, b, a).endVertex();
+        buffer.addVertex(0, 0, cnt).setColor(r, g, b, a);
+        buffer.addVertex(0, 1, cnt).setColor(r, g, b, a);
+        buffer.addVertex(0, 1, 0).setColor(r, g, b, a);
+        buffer.addVertex(0, 0, 0).setColor(r, g, b, a);
     }
 
     public static void addSideFullTextureN(BufferBuilder buffer, int cnt, float r, float g, float b) {
         float a = 0.5f;
-        buffer.vertex(1, 1, 0).color(r, g, b, a).endVertex();
-        buffer.vertex(1, 0, 0).color(r, g, b, a).endVertex();
-        buffer.vertex(0, 0, 0).color(r, g, b, a).endVertex();
-        buffer.vertex(0, 1, 0).color(r, g, b, a).endVertex();
+        buffer.addVertex(1, 1, 0).setColor(r, g, b, a);
+        buffer.addVertex(1, 0, 0).setColor(r, g, b, a);
+        buffer.addVertex(0, 0, 0).setColor(r, g, b, a);
+        buffer.addVertex(0, 1, 0).setColor(r, g, b, a);
     }
 
     public static void addSideFullTextureS(BufferBuilder buffer, int cnt, float r, float g, float b) {
         float a = 0.5f;
-        buffer.vertex(1, 0, cnt).color(r, g, b, a).endVertex();
-        buffer.vertex(1, 1, cnt).color(r, g, b, a).endVertex();
-        buffer.vertex(0, 1, cnt).color(r, g, b, a).endVertex();
-        buffer.vertex(0, 0, cnt).color(r, g, b, a).endVertex();
+        buffer.addVertex(1, 0, cnt).setColor(r, g, b, a);
+        buffer.addVertex(1, 1, cnt).setColor(r, g, b, a);
+        buffer.addVertex(0, 1, cnt).setColor(r, g, b, a);
+        buffer.addVertex(0, 0, cnt).setColor(r, g, b, a);
     }
 
 
@@ -703,60 +702,60 @@ public class ShapeRenderer {
         float a = 0.5f;
         float l = -size;
         float h = size;
-        buffer.vertex(l, l, l).color(r, g, b, a).endVertex();
-        buffer.vertex(h, l, l).color(r, g, b, a).endVertex();
-        buffer.vertex(h, l, h).color(r, g, b, a).endVertex();
-        buffer.vertex(l, l, h).color(r, g, b, a).endVertex();
+        buffer.addVertex(l, l, l).setColor(r, g, b, a);
+        buffer.addVertex(h, l, l).setColor(r, g, b, a);
+        buffer.addVertex(h, l, h).setColor(r, g, b, a);
+        buffer.addVertex(l, l, h).setColor(r, g, b, a);
     }
 
     public static void addSideU(BufferBuilder buffer, float r, float g, float b, float size) {
         float a = 0.5f;
         float l = -size;
         float h = size;
-        buffer.vertex(l, h, h).color(r, g, b, a).endVertex();
-        buffer.vertex(h, h, h).color(r, g, b, a).endVertex();
-        buffer.vertex(h, h, l).color(r, g, b, a).endVertex();
-        buffer.vertex(l, h, l).color(r, g, b, a).endVertex();
+        buffer.addVertex(l, h, h).setColor(r, g, b, a);
+        buffer.addVertex(h, h, h).setColor(r, g, b, a);
+        buffer.addVertex(h, h, l).setColor(r, g, b, a);
+        buffer.addVertex(l, h, l).setColor(r, g, b, a);
     }
 
     public static void addSideE(BufferBuilder buffer, float r, float g, float b, float size) {
         float a = 0.5f;
         float l = -size;
         float h = size;
-        buffer.vertex(h, l, l).color(r, g, b, a).endVertex();
-        buffer.vertex(h, h, l).color(r, g, b, a).endVertex();
-        buffer.vertex(h, h, h).color(r, g, b, a).endVertex();
-        buffer.vertex(h, l, h).color(r, g, b, a).endVertex();
+        buffer.addVertex(h, l, l).setColor(r, g, b, a);
+        buffer.addVertex(h, h, l).setColor(r, g, b, a);
+        buffer.addVertex(h, h, h).setColor(r, g, b, a);
+        buffer.addVertex(h, l, h).setColor(r, g, b, a);
     }
 
     public static void addSideW(BufferBuilder buffer, float r, float g, float b, float size) {
         float a = 0.5f;
         float l = -size;
         float h = size;
-        buffer.vertex(l, l, h).color(r, g, b, a).endVertex();
-        buffer.vertex(l, h, h).color(r, g, b, a).endVertex();
-        buffer.vertex(l, h, l).color(r, g, b, a).endVertex();
-        buffer.vertex(l, l, l).color(r, g, b, a).endVertex();
+        buffer.addVertex(l, l, h).setColor(r, g, b, a);
+        buffer.addVertex(l, h, h).setColor(r, g, b, a);
+        buffer.addVertex(l, h, l).setColor(r, g, b, a);
+        buffer.addVertex(l, l, l).setColor(r, g, b, a);
     }
 
     public static void addSideN(BufferBuilder buffer, float r, float g, float b, float size) {
         float a = 0.5f;
         float l = -size;
         float h = size;
-        buffer.vertex(h, h, l).color(r, g, b, a).endVertex();
-        buffer.vertex(h, l, l).color(r, g, b, a).endVertex();
-        buffer.vertex(l, l, l).color(r, g, b, a).endVertex();
-        buffer.vertex(l, h, l).color(r, g, b, a).endVertex();
+        buffer.addVertex(h, h, l).setColor(r, g, b, a);
+        buffer.addVertex(h, l, l).setColor(r, g, b, a);
+        buffer.addVertex(l, l, l).setColor(r, g, b, a);
+        buffer.addVertex(l, h, l).setColor(r, g, b, a);
     }
 
     public static void addSideS(BufferBuilder buffer, float r, float g, float b, float size) {
         float a = 0.5f;
         float l = -size;
         float h = size;
-        buffer.vertex(h, l, h).color(r, g, b, a).endVertex();
-        buffer.vertex(h, h, h).color(r, g, b, a).endVertex();
-        buffer.vertex(l, h, h).color(r, g, b, a).endVertex();
-        buffer.vertex(l, l, h).color(r, g, b, a).endVertex();
+        buffer.addVertex(h, l, h).setColor(r, g, b, a);
+        buffer.addVertex(h, h, h).setColor(r, g, b, a);
+        buffer.addVertex(l, h, h).setColor(r, g, b, a);
+        buffer.addVertex(l, l, h).setColor(r, g, b, a);
     }
 
 
@@ -767,40 +766,40 @@ public class ShapeRenderer {
         float a = 0.5f;
         float l = -size;
         float h = size;
-        buffer.vertex(h, 0, l).color(r, g, b, a).endVertex();
-        buffer.vertex(h, height, l).color(r, g, b, a).endVertex();
-        buffer.vertex(h, height, h).color(r, g, b, a).endVertex();
-        buffer.vertex(h, 0, h).color(r, g, b, a).endVertex();
+        buffer.addVertex(h, 0, l).setColor(r, g, b, a);
+        buffer.addVertex(h, height, l).setColor(r, g, b, a);
+        buffer.addVertex(h, height, h).setColor(r, g, b, a);
+        buffer.addVertex(h, 0, h).setColor(r, g, b, a);
     }
 
     public static void addSideW(BufferBuilder buffer, float r, float g, float b, float size, float height) {
         float a = 0.5f;
         float l = -size;
         float h = size;
-        buffer.vertex(l, 0, h).color(r, g, b, a).endVertex();
-        buffer.vertex(l, height, h).color(r, g, b, a).endVertex();
-        buffer.vertex(l, height, l).color(r, g, b, a).endVertex();
-        buffer.vertex(l, 0, l).color(r, g, b, a).endVertex();
+        buffer.addVertex(l, 0, h).setColor(r, g, b, a);
+        buffer.addVertex(l, height, h).setColor(r, g, b, a);
+        buffer.addVertex(l, height, l).setColor(r, g, b, a);
+        buffer.addVertex(l, 0, l).setColor(r, g, b, a);
     }
 
     public static void addSideN(BufferBuilder buffer, float r, float g, float b, float size, float height) {
         float a = 0.5f;
         float l = -size;
         float h = size;
-        buffer.vertex(h, height, l).color(r, g, b, a).endVertex();
-        buffer.vertex(h, 0, l).color(r, g, b, a).endVertex();
-        buffer.vertex(l, 0, l).color(r, g, b, a).endVertex();
-        buffer.vertex(l, height, l).color(r, g, b, a).endVertex();
+        buffer.addVertex(h, height, l).setColor(r, g, b, a);
+        buffer.addVertex(h, 0, l).setColor(r, g, b, a);
+        buffer.addVertex(l, 0, l).setColor(r, g, b, a);
+        buffer.addVertex(l, height, l).setColor(r, g, b, a);
     }
 
     public static void addSideS(BufferBuilder buffer, float r, float g, float b, float size, float height) {
         float a = 0.5f;
         float l = -size;
         float h = size;
-        buffer.vertex(h, 0, h).color(r, g, b, a).endVertex();
-        buffer.vertex(h, height, h).color(r, g, b, a).endVertex();
-        buffer.vertex(l, height, h).color(r, g, b, a).endVertex();
-        buffer.vertex(l, 0, h).color(r, g, b, a).endVertex();
+        buffer.addVertex(h, 0, h).setColor(r, g, b, a);
+        buffer.addVertex(h, height, h).setColor(r, g, b, a);
+        buffer.addVertex(l, height, h).setColor(r, g, b, a);
+        buffer.addVertex(l, 0, h).setColor(r, g, b, a);
     }
 
 }

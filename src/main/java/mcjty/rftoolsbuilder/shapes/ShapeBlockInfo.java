@@ -144,7 +144,7 @@ public class ShapeBlockInfo {
                 block == Blocks.WHEAT || block == Blocks.CARROTS ||
                 block == Blocks.POTATOES || block == Blocks.BEETROOTS) {
             render = BD_FLOWER;
-        } else if (block == Blocks.GRASS) { // Tall grass
+        } else if (block == Blocks.TALL_GRASS) { // Tall grass
             render = BD_GRASS;
         } else if (tags.contains(BlockTags.RAILS)) {
             render = BD_RAIL;
@@ -277,40 +277,40 @@ public class ShapeBlockInfo {
         public void render(BufferBuilder buffer, int z, float r, float g, float b) {
             float a = 0.5f;
             // Up
-            buffer.vertex(offset, height, 1 - offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - offset, height, 1 - offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - offset, height, offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(offset, height, offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
+            buffer.addVertex(offset, height, 1 - offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - offset, height, 1 - offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - offset, height, offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(offset, height, offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
 
             // Down
-            buffer.vertex(offset, 0, offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - offset, 0, offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - offset, 0, 1 - offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(offset, 0, 1 - offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
+            buffer.addVertex(offset, 0, offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - offset, 0, offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - offset, 0, 1 - offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(offset, 0, 1 - offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
 
             // North
-            buffer.vertex(1 - offset, height, offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(1 - offset, 0, offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(offset, 0, offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(offset, height, offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
+            buffer.addVertex(1 - offset, height, offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(1 - offset, 0, offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(offset, 0, offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(offset, height, offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
 
             // South
-            buffer.vertex(1 - offset, 0, 1 - offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(1 - offset, height, 1 - offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(offset, height, 1 - offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(offset, 0, 1 - offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
+            buffer.addVertex(1 - offset, 0, 1 - offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(1 - offset, height, 1 - offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(offset, height, 1 - offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(offset, 0, 1 - offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
 
             // West
-            buffer.vertex(offset, 0, 1 - offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(offset, height, 1 - offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(offset, height, offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(offset, 0, offset + z).color(r, g, b, a).endVertex();
+            buffer.addVertex(offset, 0, 1 - offset + z).setColor(r, g, b, a);
+            buffer.addVertex(offset, height, 1 - offset + z).setColor(r, g, b, a);
+            buffer.addVertex(offset, height, offset + z).setColor(r, g, b, a);
+            buffer.addVertex(offset, 0, offset + z).setColor(r, g, b, a);
 
             // East
-            buffer.vertex(1 - offset, 0, offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(1 - offset, height, offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(1 - offset, height, 1 - offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(1 - offset, 0, 1 - offset + z).color(r, g, b, a).endVertex();
+            buffer.addVertex(1 - offset, 0, offset + z).setColor(r, g, b, a);
+            buffer.addVertex(1 - offset, height, offset + z).setColor(r, g, b, a);
+            buffer.addVertex(1 - offset, height, 1 - offset + z).setColor(r, g, b, a);
+            buffer.addVertex(1 - offset, 0, 1 - offset + z).setColor(r, g, b, a);
         }
     }
 
@@ -329,40 +329,40 @@ public class ShapeBlockInfo {
         public void render(BufferBuilder buffer, int z, float r, float g, float b) {
             float a = 0.5f;
             // Up
-            buffer.vertex(xoffset, height, 1 - zoffset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - xoffset, height, 1 - zoffset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - xoffset, height, zoffset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(xoffset, height, zoffset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
+            buffer.addVertex(xoffset, height, 1 - zoffset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - xoffset, height, 1 - zoffset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - xoffset, height, zoffset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(xoffset, height, zoffset + z).setColor(r * .8f, g * .8f, b * .8f, a);
 
             // Down
-            buffer.vertex(xoffset, 0, zoffset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - xoffset, 0, zoffset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - xoffset, 0, 1 - zoffset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(xoffset, 0, 1 - zoffset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
+            buffer.addVertex(xoffset, 0, zoffset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - xoffset, 0, zoffset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - xoffset, 0, 1 - zoffset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(xoffset, 0, 1 - zoffset + z).setColor(r * .8f, g * .8f, b * .8f, a);
 
             // North
-            buffer.vertex(1 - xoffset, height, zoffset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(1 - xoffset, 0, zoffset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(xoffset, 0, zoffset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(xoffset, height, zoffset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
+            buffer.addVertex(1 - xoffset, height, zoffset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(1 - xoffset, 0, zoffset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(xoffset, 0, zoffset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(xoffset, height, zoffset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
 
             // South
-            buffer.vertex(1 - xoffset, 0, 1 - zoffset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(1 - xoffset, height, 1 - zoffset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(xoffset, height, 1 - zoffset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(xoffset, 0, 1 - zoffset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
+            buffer.addVertex(1 - xoffset, 0, 1 - zoffset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(1 - xoffset, height, 1 - zoffset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(xoffset, height, 1 - zoffset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(xoffset, 0, 1 - zoffset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
 
             // West
-            buffer.vertex(xoffset, 0, 1 - zoffset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(xoffset, height, 1 - zoffset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(xoffset, height, zoffset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(xoffset, 0, zoffset + z).color(r, g, b, a).endVertex();
+            buffer.addVertex(xoffset, 0, 1 - zoffset + z).setColor(r, g, b, a);
+            buffer.addVertex(xoffset, height, 1 - zoffset + z).setColor(r, g, b, a);
+            buffer.addVertex(xoffset, height, zoffset + z).setColor(r, g, b, a);
+            buffer.addVertex(xoffset, 0, zoffset + z).setColor(r, g, b, a);
 
             // East
-            buffer.vertex(1 - xoffset, 0, zoffset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(1 - xoffset, height, zoffset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(1 - xoffset, height, 1 - zoffset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(1 - xoffset, 0, 1 - zoffset + z).color(r, g, b, a).endVertex();
+            buffer.addVertex(1 - xoffset, 0, zoffset + z).setColor(r, g, b, a);
+            buffer.addVertex(1 - xoffset, height, zoffset + z).setColor(r, g, b, a);
+            buffer.addVertex(1 - xoffset, height, 1 - zoffset + z).setColor(r, g, b, a);
+            buffer.addVertex(1 - xoffset, 0, 1 - zoffset + z).setColor(r, g, b, a);
         }
     }
 
@@ -379,40 +379,40 @@ public class ShapeBlockInfo {
         public void render(BufferBuilder buffer, int z, float r, float g, float b) {
             float a = 0.5f;
             // Up
-            buffer.vertex(offset, height + .5, 1 - offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - offset, height + .5, 1 - offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - offset, height + .5, offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(offset, height + .5, offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
+            buffer.addVertex(offset, height + .5f, 1 - offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - offset, height + .5f, 1 - offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - offset, height + .5f, offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(offset, height + .5f, offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
 
             // Down
-            buffer.vertex(offset, .5, offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - offset, .5, offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(1 - offset, .5, 1 - offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
-            buffer.vertex(offset, .5, 1 - offset + z).color(r * .8f, g * .8f, b * .8f, a).endVertex();
+            buffer.addVertex(offset, .5f, offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - offset, .5f, offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(1 - offset, .5f, 1 - offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
+            buffer.addVertex(offset, .5f, 1 - offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
 
             // North
-            buffer.vertex(1 - offset, height + .5, offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(1 - offset, .5, offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(offset, .5, offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(offset, height + .5, offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
+            buffer.addVertex(1 - offset, height + .5f, offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(1 - offset, .5f, offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(offset, .5f, offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(offset, height + .5f, offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
 
             // South
-            buffer.vertex(1 - offset, .5, 1 - offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(1 - offset, height + .5, 1 - offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(offset, height + .5, 1 - offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
-            buffer.vertex(offset, .5, 1 - offset + z).color(r * 1.2f, g * 1.2f, b * 1.2f, a).endVertex();
+            buffer.addVertex(1 - offset, .5f, 1 - offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(1 - offset, height + .5f, 1 - offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(offset, height + .5f, 1 - offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
+            buffer.addVertex(offset, .5f, 1 - offset + z).setColor(r * 1.2f, g * 1.2f, b * 1.2f, a);
 
             // West
-            buffer.vertex(offset, .5, 1 - offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(offset, height + .5, 1 - offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(offset, height + .5, offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(offset, .5, offset + z).color(r, g, b, a).endVertex();
+            buffer.addVertex(offset, .5f, 1 - offset + z).setColor(r, g, b, a);
+            buffer.addVertex(offset, height + .5f, 1 - offset + z).setColor(r, g, b, a);
+            buffer.addVertex(offset, height + .5f, offset + z).setColor(r, g, b, a);
+            buffer.addVertex(offset, .5f, offset + z).setColor(r, g, b, a);
 
             // East
-            buffer.vertex(1 - offset, .5, offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(1 - offset, height + .5, offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(1 - offset, height + .5, 1 - offset + z).color(r, g, b, a).endVertex();
-            buffer.vertex(1 - offset, .5, 1 - offset + z).color(r, g, b, a).endVertex();
+            buffer.addVertex(1 - offset, .5f, offset + z).setColor(r, g, b, a);
+            buffer.addVertex(1 - offset, height + .5f, offset + z).setColor(r, g, b, a);
+            buffer.addVertex(1 - offset, height + .5f, 1 - offset + z).setColor(r, g, b, a);
+            buffer.addVertex(1 - offset, .5f, 1 - offset + z).setColor(r, g, b, a);
         }
     }
 }

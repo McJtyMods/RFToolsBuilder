@@ -9,7 +9,8 @@ import java.util.function.BiConsumer;
 
 public class VBORenderer implements Closeable {
     private static final int BUFFER_SIZE = 2 * 1024 * 1024;
-    private static final BufferBuilder BUILDER = new BufferBuilder(BUFFER_SIZE);
+    // @todo 1.21
+//    private static final BufferBuilder BUILDER = new BufferBuilder(BUFFER_SIZE);
 
     public static VBORenderer of(int glMode, VertexFormat fmt, BiConsumer<BufferBuilder, VertexFormat> vertexProducer) {
         VertexBuffer vbo = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);

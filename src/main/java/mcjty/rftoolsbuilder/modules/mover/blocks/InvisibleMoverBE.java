@@ -2,6 +2,8 @@ package mcjty.rftoolsbuilder.modules.mover.blocks;
 
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.Connection;
@@ -21,20 +23,20 @@ public class InvisibleMoverBE extends BlockEntity {
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider provider) {
         loadInt(pkt.getTag());
     }
 
     @Nullable
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
-        CompoundTag tag = getUpdateTag();
-        return ClientboundBlockEntityDataPacket.create(this, (BlockEntity entity) -> tag);
+        CompoundTag tag = getUpdateTag(level.registryAccess());
+        return ClientboundBlockEntityDataPacket.create(this, (BlockEntity entity, RegistryAccess access) -> tag);
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        return saveInt(super.getUpdateTag());
+    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+        return saveInt(super.getUpdateTag(provider));
     }
 
     public BlockState getOriginalState() {
@@ -47,18 +49,19 @@ public class InvisibleMoverBE extends BlockEntity {
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
         loadInt(tag);
     }
 
     private void loadInt(CompoundTag tag) {
-        originalState = NBTTools.readBlockState(level, tag.getCompound("originalState"));
+        // @todo 1.21 NBT
+//        originalState = NBTTools.readBlockState(level, tag.getCompound("originalState"));
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
         saveInt(tag);
     }
 

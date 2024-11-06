@@ -2,29 +2,24 @@ package mcjty.rftoolsbuilder.modules.mover.items;
 
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.tooltips.ITooltipSettings;
-import mcjty.lib.varia.NBTTools;
 import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static mcjty.lib.builder.TooltipBuilder.parameter;
 
@@ -37,18 +32,20 @@ import static mcjty.lib.builder.TooltipBuilder.parameter;
  */
 public class VehicleCard extends Item implements ITooltipSettings {
 
-    private final Lazy<TooltipBuilder> tooltipBuilder = () -> new TooltipBuilder()
+    private final Lazy<TooltipBuilder> tooltipBuilder = Lazy.of(() -> new TooltipBuilder()
             .info(
                     parameter("name", VehicleCard::getVehicleName),
                     parameter("destination", VehicleCard::isMoving, VehicleCard::getDesiredDestinationName),
-                    parameter("contents", VehicleCard::getContentsDescription));
+                    parameter("contents", VehicleCard::getContentsDescription)));
 
     public VehicleCard() {
         super(Registration.createStandardProperties().stacksTo(1));
     }
 
     public static String getVehicleName(ItemStack stack) {
-        return NBTTools.getString(stack, "vehicleName", "<unknown>");
+        // @todo 1.21 NBT
+//        return NBTTools.getString(stack, "vehicleName", "<unknown>");
+        return "";
     }
 
     private static String getContentsDescription(ItemStack stack) {
@@ -61,8 +58,8 @@ public class VehicleCard extends Item implements ITooltipSettings {
     }
 
     @Override
-    public void appendHoverText(@Nonnull ItemStack itemStack, Level world, @Nonnull List<Component> list, @Nonnull TooltipFlag flag) {
-        super.appendHoverText(itemStack, world, list, flag);
+    public void appendHoverText(@Nonnull ItemStack itemStack, TooltipContext context, @Nonnull List<Component> list, @Nonnull TooltipFlag flag) {
+        super.appendHoverText(itemStack, context, list, flag);
         tooltipBuilder.get().makeTooltip(Tools.getId(this), itemStack, list, flag);
     }
 
@@ -74,68 +71,76 @@ public class VehicleCard extends Item implements ITooltipSettings {
             tag.putIntArray("blocks", positions);
             list.add(tag);
         });
-        vehicleCard.getOrCreateTag().put("blocks", list);
-        vehicleCard.getOrCreateTag().putString("vehicleName", vehicleName);
+        // @todo 1.21 NBT
+//        vehicleCard.getOrCreateTag().put("blocks", list);
+//        vehicleCard.getOrCreateTag().putString("vehicleName", vehicleName);
     }
 
     public static void setDesiredDestination(ItemStack vehicleCard, BlockPos pos, String name) {
-        vehicleCard.getOrCreateTag().putIntArray("desiredPos", new int[] { pos.getX(), pos.getY(), pos.getZ()});
-        vehicleCard.getOrCreateTag().putString("desiredPosName", name);
+        // @todo 1.21 NBT
+//        vehicleCard.getOrCreateTag().putIntArray("desiredPos", new int[] { pos.getX(), pos.getY(), pos.getZ()});
+//        vehicleCard.getOrCreateTag().putString("desiredPosName", name);
     }
 
     public static void clearDesiredDestination(ItemStack vehicleCard) {
-        vehicleCard.getOrCreateTag().remove("desiredPos");
-        vehicleCard.getOrCreateTag().remove("desiredPosName");
+        // @todo 1.21 NBT
+//        vehicleCard.getOrCreateTag().remove("desiredPos");
+//        vehicleCard.getOrCreateTag().remove("desiredPosName");
     }
 
 
     @Nullable
     public static BlockPos getDesiredDestination(ItemStack vehicleCard) {
-        CompoundTag tag = vehicleCard.getTag();
-        if (tag == null ) {
-            return null;
-        }
-        if (tag.contains("desiredPos")) {
-            int[] desiredPos = tag.getIntArray("desiredPos");
-            return new BlockPos(desiredPos[0], desiredPos[1], desiredPos[2]);
-        }
+        // @todo 1.21 NBT
+//        CompoundTag tag = vehicleCard.getTag();
+//        if (tag == null ) {
+//            return null;
+//        }
+//        if (tag.contains("desiredPos")) {
+//            int[] desiredPos = tag.getIntArray("desiredPos");
+//            return new BlockPos(desiredPos[0], desiredPos[1], desiredPos[2]);
+//        }
         return null;
     }
 
     private static boolean isMoving(ItemStack vehicleCard) {
-        CompoundTag tag = vehicleCard.getTag();
-        if (tag == null ) {
-            return false;
-        }
-        return tag.contains("desiredPosName");
+        // @todo 1.21 NBT
+//        CompoundTag tag = vehicleCard.getTag();
+//        if (tag == null ) {
+//            return false;
+//        }
+//        return tag.contains("desiredPosName");
+        return false;
     }
 
     @Nullable
     public static String getDesiredDestinationName(ItemStack vehicleCard) {
-        CompoundTag tag = vehicleCard.getTag();
-        if (tag == null ) {
-            return null;
-        }
-        if (tag.contains("desiredPosName")) {
-            return tag.getString("desiredPosName");
-        }
+        // @todo 1.21 NBT
+//        CompoundTag tag = vehicleCard.getTag();
+//        if (tag == null ) {
+//            return null;
+//        }
+//        if (tag.contains("desiredPosName")) {
+//            return tag.getString("desiredPosName");
+//        }
         return null;
     }
 
     public static Map<BlockState, List<BlockPos>> getBlocks(ItemStack vehicleCard, BlockPos minPos) {
         Map<BlockState, List<BlockPos>> result = new HashMap<>();
-        CompoundTag compoundTag = vehicleCard.getTag();
-        if (compoundTag != null) {
-            ListTag list = compoundTag.getList("blocks", Tag.TAG_COMPOUND);
-            for (Tag tag : list) {
-                CompoundTag c = (CompoundTag) tag;
-                BlockState state = NBTTools.readBlockState(c.getCompound("state"));
-                int[] blocks = c.getIntArray("blocks");
-                List<BlockPos> blockPosList = Arrays.stream(blocks).mapToObj(i -> convertIntToPos(minPos, i)).collect(Collectors.toList());
-                result.put(state, blockPosList);
-            }
-
-        }
+        // @todo 1.21 NBT
+//        CompoundTag compoundTag = vehicleCard.getTag();
+//        if (compoundTag != null) {
+//            ListTag list = compoundTag.getList("blocks", Tag.TAG_COMPOUND);
+//            for (Tag tag : list) {
+//                CompoundTag c = (CompoundTag) tag;
+//                BlockState state = NBTTools.readBlockState(c.getCompound("state"));
+//                int[] blocks = c.getIntArray("blocks");
+//                List<BlockPos> blockPosList = Arrays.stream(blocks).mapToObj(i -> convertIntToPos(minPos, i)).collect(Collectors.toList());
+//                result.put(state, blockPosList);
+//            }
+//
+//        }
         return result;
     }
 

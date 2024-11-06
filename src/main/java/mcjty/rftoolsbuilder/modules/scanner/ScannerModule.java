@@ -17,7 +17,7 @@ public class ScannerModule implements IModule {
 
     @Override
     public void initClient(FMLClientSetupEvent event) {
-        MinecraftForge.EVENT_BUS.addListener(ShapeDataManagerClient::cleanupOldRenderers);
+        NeoForge.EVENT_BUS.addListener(ShapeDataManagerClient::cleanupOldRenderers);
     }
 
     @Override

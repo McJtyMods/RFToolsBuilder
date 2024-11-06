@@ -341,12 +341,12 @@ public class EntityMovementLogic {
 
     public void load(CompoundTag tagCompound) {
         if (tagCompound.contains("source")) {
-            source = NbtUtils.readBlockPos(tagCompound.getCompound("source"));
+            source = NbtUtils.readBlockPos(tagCompound, "source").orElse(null);
         } else {
             source = null;
         }
         if (tagCompound.contains("destination")) {
-            destination = NbtUtils.readBlockPos(tagCompound.getCompound("destination"));
+            destination = NbtUtils.readBlockPos(tagCompound, "destination").orElse(null);
         } else {
             destination = null;
         }
@@ -356,7 +356,7 @@ public class EntityMovementLogic {
 
     public void loadClientDataFromNBT(CompoundTag tagCompound) {
         if (tagCompound.contains("destination")) {
-            destination = NbtUtils.readBlockPos(tagCompound.getCompound("destination"));
+            destination = NbtUtils.readBlockPos(tagCompound, "destination").orElse(null);
         } else {
             destination = null;
         }

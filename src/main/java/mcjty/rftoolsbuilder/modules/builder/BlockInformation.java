@@ -49,7 +49,7 @@ public class BlockInformation {
                     costS = split[1];
                 }
                 double cost = Double.parseDouble(costS);
-                ResourceLocation id = ResourceLocation.fromNamespaceAndPath(block);
+                ResourceLocation id = ResourceLocation.parse(block);
                 if (BuilderConfiguration.teMode.get() == BuilderTileEntityMode.MOVE_BLACKLIST) {
                     blockInformationMap.put(id, new BlockInformation(id, SupportBlock.SupportStatus.STATUS_ERROR, cost));
                 } else if (BuilderConfiguration.teMode.get() == BuilderTileEntityMode.MOVE_WHITELIST) {

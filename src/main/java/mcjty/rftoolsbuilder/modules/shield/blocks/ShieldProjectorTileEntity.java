@@ -32,12 +32,15 @@ import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
@@ -55,6 +58,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -62,7 +67,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
@@ -487,7 +491,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             if (!shards.isEmpty() && shards.getCount() >= ShieldConfiguration.shardsPerLootingKill.get()) {
                 items.extractItem(SLOT_SHARD, ShieldConfiguration.shardsPerLootingKill.get(), false);
                 if (lootingSword.isEmpty()) {
-                    lootingSword = createEnchantedItem(Items.DIAMOND_SWORD, Enchantments.LOOTING, ShieldConfiguration.lootingKillBonus.get());
+                    lootingSword = createEnchantedItem(entity.level(), Items.DIAMOND_SWORD, Enchantments.LOOTING, ShieldConfiguration.lootingKillBonus.get());
                 }
                 lootingSword.setDamageValue(0);
                 killer.setItemInHand(InteractionHand.MAIN_HAND, lootingSword);
@@ -512,11 +516,12 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         entity.hurt(source, damage);
     }
 
-    public static ItemStack createEnchantedItem(Item item, Enchantment effectId, int amount) {
+    public static ItemStack createEnchantedItem(Level level, Item item, ResourceKey<Enchantment> effectId, int amount) {
         ItemStack stack = new ItemStack(item);
-        Map<Enchantment, Integer> enchant = new HashMap<>();
-        enchant.put(effectId, amount);
-        EnchantmentHelper.setEnchantments(enchant, stack);
+        ItemEnchantments.Mutable enchant = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+        Optional<Holder.Reference<Enchantment>> holder = level.registryAccess().registryOrThrow(Registries.ENCHANTMENT).getHolder(effectId);
+        enchant.set(holder.get(), amount);
+        EnchantmentHelper.setEnchantments(stack, enchant.toImmutable());
         return stack;
     }
 
@@ -901,7 +906,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 //
 
     @Override
-    public void loadClientDataFromNBT(CompoundTag tagCompound) {
+    public void loadClientDataFromNBT(CompoundTag tagCompound, HolderLookup.Provider provider) {
         powerLevel = tagCompound.getByte("powered");
         shieldComposed = tagCompound.getBoolean("composed");
         shieldActive = tagCompound.getBoolean("active");
@@ -919,13 +924,14 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             templateState = Blocks.AIR.defaultBlockState();
         }
 
-        loadEnergyCap(tagCompound);
+        // @todo 1.21 NBT
+//        loadEnergyCap(tagCompound);
 
         if (tagCompound.contains("Info")) {
             CompoundTag info = tagCompound.getCompound("Info");
             shieldRenderingMode = ShieldRenderingMode.values()[info.getInt("visMode")];
             shieldTexture = ShieldTexture.values()[info.getInt("shieldTexture")];
-            rsMode = RedstoneMode.values()[(info.getByte("rsMode"))];
+//            rsMode = RedstoneMode.values()[(info.getByte("rsMode"))]; @todo 1.21
             damageMode = DamageTypeMode.values()[(info.getByte("damageMode"))];
             blockLight = info.getBoolean("blocklight");
 
@@ -945,7 +951,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     @Override
-    public void saveClientDataToNBT(CompoundTag tagCompound) {
+    public void saveClientDataToNBT(CompoundTag tagCompound, HolderLookup.Provider provider) {
         tagCompound.putByte("powered", (byte) powerLevel);
         tagCompound.putBoolean("composed", shieldComposed);
         tagCompound.putBoolean("active", shieldActive);
@@ -954,22 +960,23 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             tagCompound.putInt("templateColor", ((ShieldTemplateBlock) templateState.getBlock()).getColor().ordinal());
         }
 
-        CompoundTag info = getOrCreateInfo(tagCompound);
-        info.putInt("visMode", shieldRenderingMode.ordinal());
-        info.putInt("shieldTexture", shieldTexture.ordinal());
-        info.putByte("rsMode", (byte) rsMode.ordinal());
-        info.putByte("damageMode", (byte) damageMode.ordinal());
-
-        info.putBoolean("blocklight", blockLight);
-        info.putInt("shieldColor", shieldColor);
-
-        writeFiltersToNBT(info);
-        saveEnergyCap(tagCompound);
+        // @todo 1.21 NBT
+//        CompoundTag info = getOrCreateInfo(tagCompound);
+//        info.putInt("visMode", shieldRenderingMode.ordinal());
+//        info.putInt("shieldTexture", shieldTexture.ordinal());
+//        info.putByte("rsMode", (byte) rsMode.ordinal());
+//        info.putByte("damageMode", (byte) damageMode.ordinal());
+//
+//        info.putBoolean("blocklight", blockLight);
+//        info.putInt("shieldColor", shieldColor);
+//
+//        writeFiltersToNBT(info);
+//        saveEnergyCap(tagCompound);
     }
 
     @Override
-    public void load(CompoundTag tagCompound) {
-        super.load(tagCompound);
+    public void loadAdditional(CompoundTag tagCompound, HolderLookup.Provider provider) {
+        super.loadAdditional(tagCompound, provider);
         shieldComposed = tagCompound.getBoolean("composed");
         shieldActive = tagCompound.getBoolean("active");
         powerTimeout = tagCompound.getInt("powerTimeout");
@@ -1009,7 +1016,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 CompoundTag tc = (CompoundTag) inbt;
                 String b = tc.getString("b");
                 int m = tc.getInt("m");
-                Block block = Tools.getBlock(ResourceLocation.fromNamespaceAndPath(b));
+                Block block = Tools.getBlock(ResourceLocation.parse(b));
                 if (block == null) {
                     block = Blocks.STONE;
                     m = 0;
@@ -1030,25 +1037,26 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         }
     }
 
-    @Override
-    protected void loadInfo(CompoundTag tagCompound) {
-        super.loadInfo(tagCompound);
-        if (tagCompound.contains("Info")) {
-            CompoundTag info = tagCompound.getCompound("Info");
-            shieldRenderingMode = ShieldRenderingMode.values()[info.getInt("visMode")];
-            shieldTexture = ShieldTexture.values()[info.getInt("shieldTexture")];
-            damageMode = DamageTypeMode.values()[(info.getByte("damageMode"))];
-            blockLight = info.getBoolean("blocklight");
-
-            if (info.contains("shieldColor")) {
-                shieldColor = info.getInt("shieldColor");
-            } else {
-                shieldColor = 0x96ffc8;
-            }
-
-            readFiltersFromNBT(info);
-        }
-    }
+    // @todo 1.21 NBT
+//    @Override
+//    protected void loadInfo(CompoundTag tagCompound) {
+//        super.loadInfo(tagCompound);
+//        if (tagCompound.contains("Info")) {
+//            CompoundTag info = tagCompound.getCompound("Info");
+//            shieldRenderingMode = ShieldRenderingMode.values()[info.getInt("visMode")];
+//            shieldTexture = ShieldTexture.values()[info.getInt("shieldTexture")];
+//            damageMode = DamageTypeMode.values()[(info.getByte("damageMode"))];
+//            blockLight = info.getBoolean("blocklight");
+//
+//            if (info.contains("shieldColor")) {
+//                shieldColor = info.getInt("shieldColor");
+//            } else {
+//                shieldColor = 0x96ffc8;
+//            }
+//
+//            readFiltersFromNBT(info);
+//        }
+//    }
 
     private void readFiltersFromNBT(CompoundTag tagCompound) {
         filters.clear();
@@ -1060,8 +1068,8 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag tagCompound) {
-        super.saveAdditional(tagCompound);
+    public void saveAdditional(@Nonnull CompoundTag tagCompound, HolderLookup.Provider provider) {
+        super.saveAdditional(tagCompound, provider);
         tagCompound.putBoolean("composed", shieldComposed);
         tagCompound.putBoolean("active", shieldActive);
         tagCompound.putInt("powerTimeout", powerTimeout);
@@ -1092,19 +1100,20 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         tagCompound.put("gstates", list);
     }
 
-    @Override
-    protected void saveInfo(CompoundTag tagCompound) {
-        super.saveInfo(tagCompound);
-        CompoundTag info = getOrCreateInfo(tagCompound);
-        info.putInt("visMode", shieldRenderingMode.ordinal());
-        info.putInt("shieldTexture", shieldTexture.ordinal());
-        info.putByte("damageMode", (byte) damageMode.ordinal());
-
-        info.putBoolean("blocklight", blockLight);
-        info.putInt("shieldColor", shieldColor);
-
-        writeFiltersToNBT(info);
-    }
+    // @todo 1.21 NBT
+//    @Override
+//    protected void saveInfo(CompoundTag tagCompound) {
+//        super.saveInfo(tagCompound);
+//        CompoundTag info = getOrCreateInfo(tagCompound);
+//        info.putInt("visMode", shieldRenderingMode.ordinal());
+//        info.putInt("shieldTexture", shieldTexture.ordinal());
+//        info.putByte("damageMode", (byte) damageMode.ordinal());
+//
+//        info.putBoolean("blocklight", blockLight);
+//        info.putInt("shieldColor", shieldColor);
+//
+//        writeFiltersToNBT(info);
+//    }
 
     private void writeFiltersToNBT(CompoundTag tagCompound) {
         ListTag filterList = new ListTag();

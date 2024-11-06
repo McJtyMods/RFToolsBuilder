@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.world.phys.AABB;
 
 import javax.annotation.Nonnull;
 
@@ -27,5 +28,10 @@ public class BuilderRenderer implements BlockEntityRenderer<BuilderTileEntity> {
 
     public static void register() {
         BlockEntityRenderers.register(BuilderModule.TYPE_BUILDER.get(), BuilderRenderer::new);
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(BuilderTileEntity blockEntity) {
+        return new AABB(blockEntity.getBlockPos().getCenter(), blockEntity.getBlockPos().offset(1, 2, 1).getCenter());
     }
 }

@@ -173,7 +173,7 @@ public class BuilderConfiguration {
         if (quarryReplaceBlock == null) {
             int index = quarryReplace.get().indexOf(' ');
             if(index == -1) {
-                quarryReplaceBlock = Tools.getBlock(ResourceLocation.fromNamespaceAndPath(quarryReplace.get())).defaultBlockState();
+                quarryReplaceBlock = Tools.getBlock(ResourceLocation.parse(quarryReplace.get())).defaultBlockState();
             } else {
                 // @todo 1.14
 //                try {

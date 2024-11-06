@@ -1,16 +1,16 @@
 package mcjty.rftoolsbuilder.modules.mover.items;
 
-import mcjty.lib.crafting.INBTPreservingIngredient;
+import mcjty.lib.crafting.IComponentsToPreserve;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.ModuleTools;
 import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbase.api.screens.IModuleGuiBuilder;
 import mcjty.rftoolsbase.tools.GenericModuleItem;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -22,9 +22,9 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
-public class VehicleControlModuleItem extends GenericModuleItem implements INBTPreservingIngredient {
+public class VehicleControlModuleItem extends GenericModuleItem implements IComponentsToPreserve {
 
     @Override
     protected int getUses(ItemStack stack) {
@@ -98,9 +98,9 @@ public class VehicleControlModuleItem extends GenericModuleItem implements INBTP
                 .choices("align", "Label alignment", "Left", "Center", "Right").nl();
     }
 
-    // @todo 1.14 implement!
+    // @todo 1.14 implement! / 1.21 TODO
     @Override
-    public Collection<String> getTagsToPreserve() {
-        return Collections.emptyList();
+    public Collection<DataComponentType<?>> getComponentsToPreserve() {
+        return List.of();
     }
 }

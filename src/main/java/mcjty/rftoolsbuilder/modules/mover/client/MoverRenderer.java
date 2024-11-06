@@ -49,7 +49,7 @@ public class MoverRenderer {
     public static final int LINES_SUPPORTED = 7;
 
     public static float getPartialTicks() {
-        return Minecraft.getInstance().getFrameTime();
+        return Minecraft.getInstance().getFrameTimeNs(); // @todo 1.21 is this right? getFrameTime();
     }
 
     public static void actualRender(MoverTileEntity mover, @NotNull GuiGraphics graphics, Vec3 cameraPos, ItemStack card, Vec3 current, Vec3 offset,

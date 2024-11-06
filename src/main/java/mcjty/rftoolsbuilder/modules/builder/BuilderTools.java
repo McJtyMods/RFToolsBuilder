@@ -70,15 +70,17 @@ public class BuilderTools {
 
     @Nullable
     public static Integer getChannel(ItemStack cardItem) {
-        if (cardItem.isEmpty() || cardItem.getTag() == null) {
-            return null;
-        }
-
-        int channel = cardItem.getTag().getInt("channel");
-        if (channel == -1) {
-            return null;
-        }
-        return channel;
+        // @todo 1.21 NBT
+        return null;
+//        if (cardItem.isEmpty() || cardItem.getTag() == null) {
+//            return null;
+//        }
+//
+//        int channel = cardItem.getTag().getInt("channel");
+//        if (channel == -1) {
+//            return null;
+//        }
+//        return channel;
     }
 
     private static void findEntities(Level world, BlockPos minCorner, BlockPos maxCorner,

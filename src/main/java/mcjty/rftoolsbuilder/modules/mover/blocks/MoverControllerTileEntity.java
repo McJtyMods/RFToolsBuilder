@@ -27,8 +27,7 @@ import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -301,26 +300,27 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         return nodeNames;
     }
 
-    @Override
-    protected void saveInfo(CompoundTag tagCompound) {
-        super.saveInfo(tagCompound);
-        getOrCreateInfo(tagCompound).putInt("offsetX", offsetX);
-        getOrCreateInfo(tagCompound).putInt("offsetY", offsetY);
-        getOrCreateInfo(tagCompound).putInt("offsetZ", offsetZ);
-    }
-
-    @Override
-    protected void loadInfo(CompoundTag tagCompound) {
-        super.loadInfo(tagCompound);
-        if (tagCompound.contains("Info")) {
-            CompoundTag info = tagCompound.getCompound("Info");
-            offsetX = info.getInt("offsetX");
-            offsetY = info.getInt("offsetY");
-            offsetZ = info.getInt("offsetZ");
-        } else {
-            offsetX = offsetY = offsetZ = 1;
-        }
-    }
+    // @todo 1.21
+//    @Override
+//    protected void saveInfo(CompoundTag tagCompound) {
+//        super.saveInfo(tagCompound);
+//        getOrCreateInfo(tagCompound).putInt("offsetX", offsetX);
+//        getOrCreateInfo(tagCompound).putInt("offsetY", offsetY);
+//        getOrCreateInfo(tagCompound).putInt("offsetZ", offsetZ);
+//    }
+//
+//    @Override
+//    protected void loadInfo(CompoundTag tagCompound) {
+//        super.loadInfo(tagCompound);
+//        if (tagCompound.contains("Info")) {
+//            CompoundTag info = tagCompound.getCompound("Info");
+//            offsetX = info.getInt("offsetX");
+//            offsetY = info.getInt("offsetY");
+//            offsetZ = info.getInt("offsetZ");
+//        } else {
+//            offsetX = offsetY = offsetZ = 1;
+//        }
+//    }
 
     public static final Key<BlockPos> SELECTED_NODE = new Key<>("node", Type.BLOCKPOS);
     public static final Key<String> SELECTED_VEHICLE = new Key<>("vehicle", Type.STRING);
@@ -347,12 +347,12 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     public static class NodePairSerializer implements ISerializer<Pair<BlockPos, String>> {
     @Override
-    public Function<FriendlyByteBuf, Pair<BlockPos, String>> getDeserializer() {
+    public Function<RegistryFriendlyByteBuf, Pair<BlockPos, String>> getDeserializer() {
         return buf -> Pair.of(buf.readBlockPos(), buf.readUtf(32767));
     }
 
     @Override
-    public BiConsumer<FriendlyByteBuf, Pair<BlockPos, String>> getSerializer() {
+    public BiConsumer<RegistryFriendlyByteBuf, Pair<BlockPos, String>> getSerializer() {
         return (buf, pair) -> {
             buf.writeBlockPos(pair.getLeft());
             buf.writeUtf(pair.getRight());

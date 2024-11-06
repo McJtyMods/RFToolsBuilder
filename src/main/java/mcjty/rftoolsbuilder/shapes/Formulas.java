@@ -233,7 +233,7 @@ public class Formulas {
 
                 BlockState state = null;
                 if (childTag.contains("ghost_block")) {
-                    Block block = Tools.getBlock(ResourceLocation.fromNamespaceAndPath(childTag.getString("ghost_block")));
+                    Block block = Tools.getBlock(ResourceLocation.parse(childTag.getString("ghost_block")));
                     if (block != null) {
                         state = block.defaultBlockState();
                     }
@@ -262,7 +262,7 @@ public class Formulas {
 
                 if (childTag.contains("ghost_block")) {
                     BlockState state = null;
-                    Block block = Tools.getBlock(ResourceLocation.fromNamespaceAndPath(childTag.getString("ghost_block")));
+                    Block block = Tools.getBlock(ResourceLocation.parse(childTag.getString("ghost_block")));
                     if (block != null) {
                         crc.add(Block.getId(block.defaultBlockState()));
                     }

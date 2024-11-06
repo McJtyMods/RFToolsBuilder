@@ -41,6 +41,7 @@ import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -74,6 +75,8 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -1127,7 +1130,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return skip("Cannot destroy!\nAre fake players\nallowed?");
         }
         BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
-        MinecraftForge.EVENT_BUS.post(event);
+        NeoForge.EVENT_BUS.post(event);
         if (event.isCanceled()) {
             return skip("Break was canceled!");
         }
@@ -1139,7 +1142,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return false;
         }
         BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
-        MinecraftForge.EVENT_BUS.post(event);
+        NeoForge.EVENT_BUS.post(event);
         return !event.isCanceled();
     }
 
@@ -1225,7 +1228,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                     LootParams.Builder builder = new LootParams.Builder((ServerLevel) level)
 //                            .withRandom(level.random)
                             .withParameter(LootContextParams.ORIGIN, new Vec3(srcPos.getX(), srcPos.getY(), srcPos.getZ()))
-                            .withParameter(LootContextParams.TOOL, getHarvesterTool(silk, fortune))
+                            .withParameter(LootContextParams.TOOL, getHarvesterTool(level, silk, fortune))
                             .withParameter(LootContextParams.THIS_ENTITY, fakePlayer)
                             .withOptionalParameter(LootContextParams.BLOCK_ENTITY, level.getBlockEntity(srcPos));
                     if (fortune > 0) {
@@ -1480,14 +1483,15 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private boolean checkFluidTank(FluidStack fluidStack, BlockPos up, Direction side) {
         BlockEntity te = level.getBlockEntity(up);
         if (te != null) {
-            return te.getCapability(ForgeCapabilities.FLUID_HANDLER, side).map(h -> {
+            IFluidHandler h = level.getCapability(Capabilities.FluidHandler.BLOCK, up, side);
+            if (h != null) {
                 int amount = h.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
                 if (amount == 1000) {
                     h.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
                     return true;
                 }
                 return false;
-            }).orElse(false);
+            }
         }
         return false;
     }
@@ -1503,20 +1507,21 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             couldntHandle.copyList(items);
             return;
         }
-        LazyOptional<IItemHandler> capability = te.getCapability(ForgeCapabilities.ITEM_HANDLER, direction);
-        if (!capability.isPresent()) {
+        IItemHandler capability = te.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, te.getBlockPos(), direction);
+        if (capability == null) {
             couldntHandle.copyList(items);
             return;
         }
         couldntHandle.clear();
-        te.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN).ifPresent(h -> {
+        capability = te.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, te.getBlockPos(), Direction.DOWN);
+        if (capability != null) {
             for (ItemStack item : items) {
-                ItemStack overflow = ItemHandlerHelper.insertItem(h, item, false);
+                ItemStack overflow = ItemHandlerHelper.insertItem(capability, item, false);
                 if (!overflow.isEmpty()) {
                     couldntHandle.add(overflow);
                 }
             }
-        });
+        }
     }
 
     private boolean insertItems(List<ItemStack> items) {
@@ -1594,7 +1599,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private TakeableItem createTakeableItem(Direction direction, Level srcWorld, BlockPos srcPos, BlockState state) {
         BlockEntity te = level.getBlockEntity(getBlockPos().relative(direction));
         if (te != null) {
-            return te.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite()).map(h -> findBlockTakeableItem(h, srcWorld, srcPos, state)).orElse(TakeableItem.EMPTY);
+            IItemHandler h = level.getCapability(Capabilities.ItemHandler.BLOCK, te.getBlockPos(), direction.getOpposite());
+            if (h != null) {
+                return findBlockTakeableItem(h, srcWorld, srcPos, state);
+            }
         }
         return TakeableItem.EMPTY;
     }
@@ -1612,12 +1620,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private FluidStack consumeLiquid(Direction direction, Level srcWorld, BlockPos srcPos) {
         BlockEntity te = level.getBlockEntity(getBlockPos().relative(direction));
         if (te != null) {
-            LazyOptional<IFluidHandler> fluid = te.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite());
-            if (!fluid.isPresent()) {
-                fluid = te.getCapability(ForgeCapabilities.FLUID_HANDLER);
+            IFluidHandler fluid = level.getCapability(Capabilities.FluidHandler.BLOCK, te.getBlockPos(), direction.getOpposite());
+            if (fluid != null) {
+                fluid = level.getCapability(Capabilities.FluidHandler.BLOCK, te.getBlockPos(), null);
             }
-            if (fluid.isPresent()) {
-                return fluid.map(h -> findAndConsumeLiquid(h, srcWorld, srcPos)).orElse(FluidStack.EMPTY);
+            if (fluid == null) {
+                return findAndConsumeLiquid(fluid, srcWorld, srcPos);
             }
         }
         return FluidStack.EMPTY;
@@ -1630,7 +1638,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             if (!contents.isEmpty()) {
                 if (contents.getFluid() != null) {
                     if (contents.getAmount() >= 1000) {
-                        return tank.drain(new FluidStack(contents.getFluid(), 1000, contents.getTag()), IFluidHandler.FluidAction.EXECUTE);
+                        // @todo 1.21 NBT
+//                        return tank.drain(new FluidStack(contents.getFluid(), 1000, contents.getTag()), IFluidHandler.FluidAction.EXECUTE);
                     }
                 }
             }
@@ -1896,7 +1905,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
             CompoundTag tc = null;
             if (srcTileEntity != null) {
-                tc = srcTileEntity.saveWithoutMetadata();
+                tc = srcTileEntity.saveWithoutMetadata(level.registryAccess());
                 srcWorld.removeBlockEntity(srcPos);
             }
             clearBlock(srcWorld, srcPos);
@@ -1918,7 +1927,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         tc.putInt("x", destpos.getX());
         tc.putInt("y", destpos.getY());
         tc.putInt("z", destpos.getZ());
-        BlockEntity tileEntity = BlockEntity.loadStatic(destpos, newDestState, tc);
+        BlockEntity tileEntity = BlockEntity.loadStatic(destpos, newDestState, tc, destWorld.registryAccess());
         if (tileEntity != null) {
             destWorld.getChunk(destpos).setBlockEntity(tileEntity);
             tileEntity.setChanged();
@@ -2064,7 +2073,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private void chunkUnload() {
         if (forcedChunk != null) {
             if (getOwnerUUID() != null) {
-                ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
+                // @todo 1.21 ForgeChunkManager
+//                ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
             }
             forcedChunk = null;
         }
@@ -2085,12 +2095,14 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
             if (forcedChunk != null) {
                 if (getOwnerUUID() != null) {
-                    ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
+                    // @todo 1.21 ForgeChunkManager
+//                    ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
                 }
             }
             forcedChunk = pair;
             if (getOwnerUUID() != null) {
-                ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, true, false);
+                // @todo 1.21 ForgeChunkManager
+//                ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, true, false);
             }
             return true;
         }
@@ -2192,63 +2204,65 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     @Override
-    public void load(CompoundTag tagCompound) {
-        super.load(tagCompound);
+    public void loadAdditional(CompoundTag tagCompound, HolderLookup.Provider provider) {
+        super.loadAdditional(tagCompound, provider);
         if (tagCompound.contains("overflowItems")) {
             ListTag overflowItemsNbt = tagCompound.getList("overflowItems", Tag.TAG_COMPOUND);
             overflowItems.clear();
             for (Tag overflowNbt : overflowItemsNbt) {
-                overflowItems.add(ItemStack.of((CompoundTag) overflowNbt));
+                overflowItems.add(ItemStack.parseOptional(provider, (CompoundTag) overflowNbt)); // @todo 1.21 check, is this the same as ItemStack.of()?
             }
         }
     }
 
+    // @todo 1.21
+//    @Override
+//    protected void loadInfo(CompoundTag tagCompound) {
+//        super.loadInfo(tagCompound);
+//        CompoundTag info = tagCompound.getCompound("Info");
+//
+//        // Workaround to get the redstone mode for old builders to default to 'on'
+//        if (!info.contains("rsMode")) {
+//            rsMode = RedstoneMode.REDSTONE_ONREQUIRED;
+//        }
+//
+//        if (info.contains("lastError")) {
+//            lastError = info.getString("lastError");
+//        } else {
+//            lastError = null;
+//        }
+//        if (info.contains("mode")) {
+//            mode = BuilderMode.values()[info.getInt("mode")];
+//        }
+//        if (info.contains("anchor")) {
+//            anchor = AnchorMode.values()[info.getInt("anchor")];
+//        }
+//        if (info.contains("rotate")) {
+//            rotate = RotateMode.values()[info.getInt("rotate")];
+//        }
+//        silent = info.getBoolean("silent");
+//        supportMode = info.getBoolean("support");
+//        entityMode = info.getBoolean("entityMode");
+//        loopMode = info.getBoolean("loopMode");
+//        if (info.contains("waitMode")) {
+//            waitMode = info.getBoolean("waitMode");
+//        } else {
+//            waitMode = true;
+//        }
+//        hilightMode = info.getBoolean("hilightMode");
+//        scan = BlockPosTools.read(info, "scan");
+//        minBox = BlockPosTools.read(info, "minBox");
+//        maxBox = BlockPosTools.read(info, "maxBox");
+//    }
+
     @Override
-    protected void loadInfo(CompoundTag tagCompound) {
-        super.loadInfo(tagCompound);
-        CompoundTag info = tagCompound.getCompound("Info");
-
-        // Workaround to get the redstone mode for old builders to default to 'on'
-        if (!info.contains("rsMode")) {
-            rsMode = RedstoneMode.REDSTONE_ONREQUIRED;
-        }
-
-        if (info.contains("lastError")) {
-            lastError = info.getString("lastError");
-        } else {
-            lastError = null;
-        }
-        if (info.contains("mode")) {
-            mode = BuilderMode.values()[info.getInt("mode")];
-        }
-        if (info.contains("anchor")) {
-            anchor = AnchorMode.values()[info.getInt("anchor")];
-        }
-        if (info.contains("rotate")) {
-            rotate = RotateMode.values()[info.getInt("rotate")];
-        }
-        silent = info.getBoolean("silent");
-        supportMode = info.getBoolean("support");
-        entityMode = info.getBoolean("entityMode");
-        loopMode = info.getBoolean("loopMode");
-        if (info.contains("waitMode")) {
-            waitMode = info.getBoolean("waitMode");
-        } else {
-            waitMode = true;
-        }
-        hilightMode = info.getBoolean("hilightMode");
-        scan = BlockPosTools.read(info, "scan");
-        minBox = BlockPosTools.read(info, "minBox");
-        maxBox = BlockPosTools.read(info, "maxBox");
-    }
-
-    @Override
-    public void saveAdditional(@Nonnull CompoundTag tagCompound) {
-        super.saveAdditional(tagCompound);
+    public void saveAdditional(@Nonnull CompoundTag tagCompound, HolderLookup.Provider provider) {
+        // @todo 1.21 NBT
+        super.saveAdditional(tagCompound, provider);
         if (!overflowItems.isEmpty()) {
             ListTag overflowItemsNbt = new ListTag();
             for (ItemStack overflow : overflowItems.getList()) {
-                overflowItemsNbt.add(overflow.save(new CompoundTag()));
+                overflowItemsNbt.add(overflow.save(provider, new CompoundTag()));
             }
             tagCompound.put("overflowItems", overflowItemsNbt);
         }
@@ -2269,26 +2283,27 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         BlockPosTools.write(tagCompound, "maxBox", maxBox);
     }
 
-    @Override
-    protected void saveInfo(CompoundTag tagCompound) {
-        super.saveInfo(tagCompound);
-        CompoundTag infoTag = getOrCreateInfo(tagCompound);
-        if (lastError != null) {
-            infoTag.putString("lastError", lastError);
-        }
-        infoTag.putInt("mode", mode.ordinal());
-        infoTag.putInt("anchor", anchor.ordinal());
-        infoTag.putInt("rotate", rotate.ordinal());
-        infoTag.putBoolean("silent", silent);
-        infoTag.putBoolean("support", supportMode);
-        infoTag.putBoolean("entityMode", entityMode);
-        infoTag.putBoolean("loopMode", loopMode);
-        infoTag.putBoolean("waitMode", waitMode);
-        infoTag.putBoolean("hilightMode", hilightMode);
-        BlockPosTools.write(infoTag, "scan", scan);
-        BlockPosTools.write(infoTag, "minBox", minBox);
-        BlockPosTools.write(infoTag, "maxBox", maxBox);
-    }
+    // @todo 1.21
+//    @Override
+//    protected void saveInfo(CompoundTag tagCompound) {
+//        super.saveInfo(tagCompound);
+//        CompoundTag infoTag = getOrCreateInfo(tagCompound);
+//        if (lastError != null) {
+//            infoTag.putString("lastError", lastError);
+//        }
+//        infoTag.putInt("mode", mode.ordinal());
+//        infoTag.putInt("anchor", anchor.ordinal());
+//        infoTag.putInt("rotate", rotate.ordinal());
+//        infoTag.putBoolean("silent", silent);
+//        infoTag.putBoolean("support", supportMode);
+//        infoTag.putBoolean("entityMode", entityMode);
+//        infoTag.putBoolean("loopMode", loopMode);
+//        infoTag.putBoolean("waitMode", waitMode);
+//        infoTag.putBoolean("hilightMode", hilightMode);
+//        BlockPosTools.write(infoTag, "scan", scan);
+//        BlockPosTools.write(infoTag, "minBox", minBox);
+//        BlockPosTools.write(infoTag, "maxBox", maxBox);
+//    }
 
     public static int getCurrentLevelClientSide() {
         return currentLevel;
@@ -2315,11 +2330,6 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (hasSupportMode()) {
             clearSupportBlocks();
         }
-    }
-
-    @Override
-    public AABB getRenderBoundingBox() {
-        return new AABB(worldPosition, worldPosition.offset(1, 2, 1));
     }
 
     @Override

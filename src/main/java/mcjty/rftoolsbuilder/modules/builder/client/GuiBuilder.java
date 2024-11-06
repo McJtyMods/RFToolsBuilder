@@ -21,7 +21,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 
@@ -74,7 +76,9 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         int cury = getCurrentLevelClientSide();
         currentLevel.text("Y: " + (cury == -1 ? "stop" : cury));
 
-        ItemStack card = tileEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY);
+        BuilderTileEntity tileEntity = getBE();
+        IItemHandler capability = this.minecraft.level.getCapability(Capabilities.ItemHandler.BLOCK, tileEntity.getBlockPos(), null);
+        ItemStack card = capability == null ? ItemStack.EMPTY : capability.getStackInSlot(SLOT_TAB);
         if (card.isEmpty()) {
             window.setFlag("!validcard");
         } else if (card.getItem() instanceof ShapeCardItem) {
@@ -89,6 +93,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private void openCardGui() {
         ItemStack cardStack = menu.getSlot(SLOT_TAB).getItem();
         if (!cardStack.isEmpty()) {
+            BuilderTileEntity tileEntity = getBE();
             GuiShapeCard.fromTEPos = tileEntity.getBlockPos();
             GuiShapeCard.fromTEStackSlot = SLOT_TAB;
             RFToolsBuilderMessages.sendToServer(PacketCloseContainerAndOpenCardGui.create(tileEntity.getBlockPos()));
@@ -115,13 +120,15 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     }
 
     private boolean isShapeCard() {
-        ItemStack card = tileEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).map(h -> h.getStackInSlot(SLOT_TAB)).orElse(ItemStack.EMPTY);
+        BuilderTileEntity tileEntity = getBE();
+        IItemHandler capability = tileEntity.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, tileEntity.getBlockPos(), null);
+        ItemStack card = capability == null ? ItemStack.EMPTY : capability.getStackInSlot(SLOT_TAB);
         return !card.isEmpty() && card.getItem() instanceof ShapeCardItem;
     }
 
     @Override
     protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
         updateFields();
-        drawWindow(graphics, xxx, xxx, yyy);
+        drawWindow(graphics, partialTicks, mouseX, mouseY);
     }
 }

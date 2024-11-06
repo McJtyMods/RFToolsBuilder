@@ -31,38 +31,40 @@ import static mcjty.lib.builder.TooltipBuilder.*;
 
 public class SpaceChamberCardItem extends Item implements ITooltipSettings {
 
-    private final Lazy<TooltipBuilder> tooltipBuilder = () -> new TooltipBuilder()
+    private final Lazy<TooltipBuilder> tooltipBuilder = Lazy.of(() -> new TooltipBuilder()
             .info(key("message.rftoolsbuilder.shiftmessage"))
             .infoShift(header(), gold(),
                     parameter("cost", this::getCostDescription),
                     parameter("channel", this::getChannelDescription),
                     general("extra", ChatFormatting.GRAY)
-                    );
+                    ));
 
     private String getCostDescription(ItemStack stack) {
         return BuilderConfiguration.builderRfPerOperation.get() + " RF/t per block";
     }
 
     private String getChannelDescription(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
-        int channel = -1;
-        if (tag != null) {
-            channel = tag.getInt("channel");
-        }
-        if (channel != -1) {
-            return "Channel: " + channel;
-        } else {
-            return "Channel is not set!";
-        }
+        // @todo 1.21 NBT
+        return "Channel is not set!";
+//        CompoundTag tag = stack.getTag();
+//        int channel = -1;
+//        if (tag != null) {
+//            channel = tag.getInt("channel");
+//        }
+//        if (channel != -1) {
+//            return "Channel: " + channel;
+//        } else {
+//            return "Channel is not set!";
+//        }
     }
 
     public SpaceChamberCardItem() {
-        super(RFToolsBuilder.setup.defaultProperties().stacksTo(1).defaultDurability(0));
+        super(RFToolsBuilder.setup.defaultProperties().stacksTo(1).durability(0));
     }
 
     @Override
-    public void appendHoverText(@Nonnull ItemStack itemStack, Level world, @Nonnull List<Component> list, @Nonnull TooltipFlag flag) {
-        super.appendHoverText(itemStack, world, list, flag);
+    public void appendHoverText(@Nonnull ItemStack itemStack, TooltipContext context, @Nonnull List<Component> list, @Nonnull TooltipFlag flag) {
+        super.appendHoverText(itemStack, context, list, flag);
         tooltipBuilder.get().makeTooltip(Tools.getId(this), itemStack, list, flag);
     }
 
@@ -84,7 +86,7 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         BlockEntity te = level.getBlockEntity(pos);
-        CompoundTag tagCompound = stack.getOrCreateTag();
+        CompoundTag tagCompound = new CompoundTag(); // @todo 1.21 NBT stack.getOrCreateTag();
 
         int channel = -1;
         if (te instanceof SpaceChamberControllerTileEntity) {
@@ -103,14 +105,15 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
     }
 
     private void showDetails(Level world, Player player, ItemStack stack) {
-        if (stack.getTag() != null && stack.getTag().contains("channel")) {
-            int channel = stack.getTag().getInt("channel");
-            if (channel != -1) {
-                showDetailsGui(world, player);
-            } else {
-                Logging.message(player, ChatFormatting.YELLOW + "Card is not linked!");
-            }
-        }
+        // @todo 1.21 NBT
+//        if (stack.getTag() != null && stack.getTag().contains("channel")) {
+//            int channel = stack.getTag().getInt("channel");
+//            if (channel != -1) {
+//                showDetailsGui(world, player);
+//            } else {
+//                Logging.message(player, ChatFormatting.YELLOW + "Card is not linked!");
+//            }
+//        }
     }
 
     private void showDetailsGui(Level world, Player player) {

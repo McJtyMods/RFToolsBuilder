@@ -18,8 +18,10 @@ import mcjty.rftoolsbuilder.modules.shield.*;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -67,15 +69,15 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     private static final ResourceLocation iconLocation = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "textures/gui/shieldprojector.png");
     private static final ResourceLocation iconGuiElements = ResourceLocation.fromNamespaceAndPath(RFToolsBase.MODID, "textures/gui/guielements.png");
 
-    public GuiShield(ShieldProjectorTileEntity shieldTileEntity, GenericContainer container, Inventory inventory) {
-        super(shieldTileEntity, container, inventory, ShieldModule.SHIELD_BLOCK1.get().getManualEntry());
+    public GuiShield(GenericContainer container, Inventory inventory, Component title) {
+        super(container, inventory, title, ShieldModule.SHIELD_BLOCK1.get().getManualEntry());
 
         imageWidth = SHIELD_WIDTH;
         imageHeight = SHIELD_HEIGHT;
     }
 
-    public static void register() {
-        register(ShieldModule.CONTAINER_SHIELD.get(), GuiShield::new);
+    public static void register(RegisterMenuScreensEvent event) {
+        event.register(ShieldModule.CONTAINER_SHIELD.get(), GuiShield::new);
     }
 
     @Override
@@ -134,6 +136,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
 
         window = new Window(this, toplevel);
 
+        ShieldProjectorTileEntity tileEntity = getBE();
         window.bind("redstone", tileEntity, GenericTileEntity.VALUE_RSMODE.name());
         window.bind("visibility", tileEntity, ShieldProjectorTileEntity.VALUE_SHIELDVISMODE.key().name());
         window.bind("shieldtextures", tileEntity, ShieldProjectorTileEntity.VALUE_SHIELDTEXTURE.key().name());
@@ -185,7 +188,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     private void requestFilters() {
-        Networking.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETFILTERS.name()));
+        Networking.sendToServer(PacketGetListFromServer.create(getBE().getBlockPos(), CMD_GETFILTERS.name()));
     }
 
     private void requestListsIfNeeded() {
@@ -306,7 +309,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
                 choice(RedstoneMode.REDSTONE_OFFREQUIRED.getDescription(), "Redstone mode:\nOff to activate", iconGuiElements, 16, 0).
                 choice(RedstoneMode.REDSTONE_ONREQUIRED.getDescription(), "Redstone mode:\nOn to activate", iconGuiElements, 32, 0);
         redstoneMode.hint(62, 200, 16, 16);
-        redstoneMode.setCurrentChoice(tileEntity.getRSMode().ordinal());
+        redstoneMode.setCurrentChoice(getBE().getRSMode().ordinal());
         return redstoneMode;
     }
 
@@ -381,11 +384,12 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics graphics, float v, int i, int i2) {
+    protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
         requestListsIfNeeded();
         populateFilters();
         enableButtons();
-        drawWindow(graphics, xxx, xxx, yyy);
+        drawWindow(graphics, partialTicks, mouseX, mouseY);
+        ShieldProjectorTileEntity tileEntity = getBE();
         colorSelector.currentColor(tileEntity.getShieldColor());
         updateEnergyBar(energyBar);
     }

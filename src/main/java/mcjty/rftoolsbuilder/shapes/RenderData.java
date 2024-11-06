@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class RenderData {
 
-    public static BufferBuilder vboBuffer = new BufferBuilder(2097152);
+    public static BufferBuilder vboBuffer = null;// @todo 1.21 new BufferBuilder(2097152);
 
     private RenderPlane[] planes = null;
     public String previewMessage = "";
@@ -148,11 +148,11 @@ public class RenderData {
         }
 
         public void performRenderToList() {
-            vboBuffer.end();
+//            vboBuffer.end();
 //            vboBuffer.reset();
             // @todo 1.19
 //            vbo.upload(vboBuffer);
-            vboBuffer.clear();
+//            vboBuffer.clear();
         }
     }
 

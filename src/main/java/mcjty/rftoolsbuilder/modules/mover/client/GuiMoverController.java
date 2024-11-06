@@ -17,8 +17,10 @@ import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
@@ -36,17 +38,17 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
     private SyncedList<String> vehicleList;
     private SyncedList<Pair<BlockPos, String>> nodeList;
 
-    public GuiMoverController(MoverControllerTileEntity builderTileEntity, GenericContainer container, Inventory inventory) {
-        super(builderTileEntity, container, inventory, MoverModule.MOVER_CONTROLLER.get().getManualEntry());
+    public GuiMoverController(GenericContainer container, Inventory inventory, Component title) {
+        super(container, inventory, title, MoverModule.MOVER_CONTROLLER.get().getManualEntry());
     }
 
-    public static void register() {
-        register(MoverModule.CONTAINER_MOVER_CONTROLLER.get(), GuiMoverController::new);
+    public static void register(RegisterMenuScreensEvent event) {
+        event.register(MoverModule.CONTAINER_MOVER_CONTROLLER.get(), GuiMoverController::new);
     }
 
     @Override
     public void init() {
-        window = new Window(this, tileEntity, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/mover_controller.gui"));
+        window = new Window(this, getBE(), ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/mover_controller.gui"));
         super.init();
 
         initializeFields();
@@ -144,11 +146,11 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
 
 
     private void requestVehicles() {
-        Networking.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETVEHICLES.name()));
+        Networking.sendToServer(PacketGetListFromServer.create(getBE().getBlockPos(), CMD_GETVEHICLES.name()));
     }
 
     private void requestNodes() {
-        Networking.sendToServer(PacketGetListFromServer.create(tileEntity.getBlockPos(), CMD_GETNODES.name()));
+        Networking.sendToServer(PacketGetListFromServer.create(getBE().getBlockPos(), CMD_GETNODES.name()));
     }
 
     private Panel makeVehicleLine(String vehicle) {
@@ -168,6 +170,6 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
     protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
         updateFields();
 
-        drawWindow(graphics, xxx, xxx, yyy);
+        drawWindow(graphics, partialTicks, mouseX, mouseY);
     }
 }

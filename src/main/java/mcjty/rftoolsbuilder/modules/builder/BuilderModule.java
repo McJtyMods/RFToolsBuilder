@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -77,6 +78,10 @@ public class BuilderModule implements IModule {
     public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_SILK = ITEMS.register("shape_card_quarry_silk", tab(() -> new ShapeCardItem(ShapeCardType.CARD_QUARRY_SILK)));
     public static final DeferredItem<ShapeCardItem> SHAPE_CARD_VOID = ITEMS.register("shape_card_void", tab(() -> new ShapeCardItem(ShapeCardType.CARD_VOID)));
 
+    public BuilderModule(IEventBus bus) {
+        bus.addListener(this::registerMenuScreens);
+    }
+
     @Override
     public void init(FMLCommonSetupEvent event) {
 
@@ -84,29 +89,21 @@ public class BuilderModule implements IModule {
 
     @Override
     public void initClient(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            GuiBuilder.register();
-        });
         BuilderRenderer.register();
     }
+
+    public void registerMenuScreens(RegisterMenuScreensEvent event) {
+        GuiBuilder.register(event);
+    }
+
 
     @Override
     public void initConfig(IEventBus bus) {
         BuilderConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
     }
 
-    public static void x(Integer... b) {
-
-    }
-
     @Override
     public void initDatagen(DataGen dataGen, HolderLookup.Provider provider) {
-
-        ArrayList<Integer> a = new ArrayList<>();
-        a.add(3);
-        a.add(5);
-        x(a.toArray(new Integer[0]));
-
         dataGen.add(
                 Dob.blockBuilder(BUILDER)
                         .ironPickaxeTags()

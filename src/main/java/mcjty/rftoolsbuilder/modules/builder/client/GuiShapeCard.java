@@ -1,7 +1,10 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.GuiTools;
 import mcjty.lib.client.RenderHelper;
@@ -20,7 +23,6 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketOpenBuilderGui;
-import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTItemInventoryShape;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTShapeCard;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
@@ -32,7 +34,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.locale.Language;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.InteractionHand;
@@ -41,6 +42,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -136,7 +139,12 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     private ItemStack getStackToEdit() {
         if (fromTE) {
             BlockEntity te = minecraft.level.getBlockEntity(fromTEPos);
-            return te.getCapability(ForgeCapabilities.ITEM_HANDLER).map(h -> h.getStackInSlot(fromTEStackSlot)).orElse(ItemStack.EMPTY);
+            IItemHandler capability = te.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, fromTEPos, null);
+            if (capability == null) {
+                return ItemStack.EMPTY;
+            } else {
+                return capability.getStackInSlot(fromTEStackSlot);
+            }
         } else {
             return minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
         }
@@ -330,15 +338,16 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         if (fromTE) {
             ItemStack stack = getStackToEdit();
             if (!stack.isEmpty()) {
-                CompoundTag tag = stack.getTag();
-                if (tag == null) {
-                    tag = new CompoundTag();
-                }
-                ShapeCardItem.setShape(stack, getCurrentShape(), isSolid());
-                ShapeCardItem.setDimension(stack, dx, dy, dz);
-                ShapeCardItem.setOffset(stack, parseInt(offsetX.getText()), parseInt(offsetY.getText()), parseInt(offsetZ.getText()));
-                RFToolsBuilderMessages.sendToServer(PacketUpdateNBTItemInventoryShape.create(
-                        fromTEPos, fromTEStackSlot, tag));
+                // @todo 1.21 NBT
+//                CompoundTag tag = stack.getTag();
+//                if (tag == null) {
+//                    tag = new CompoundTag();
+//                }
+//                ShapeCardItem.setShape(stack, getCurrentShape(), isSolid());
+//                ShapeCardItem.setDimension(stack, dx, dy, dz);
+//                ShapeCardItem.setOffset(stack, parseInt(offsetX.getText()), parseInt(offsetY.getText()), parseInt(offsetZ.getText()));
+//                RFToolsBuilderMessages.sendToServer(PacketUpdateNBTItemInventoryShape.create(
+//                        fromTEPos, fromTEStackSlot, tag));
             }
         } else {
             RFToolsBuilderMessages.sendToServer(PacketUpdateNBTShapeCard.create(
@@ -359,20 +368,21 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         if (fromTE) {
             ItemStack stack = getStackToEdit();
             if (!stack.isEmpty()) {
-                CompoundTag tag = stack.getTag();
-                if (tag == null) {
-                    tag = new CompoundTag();
-                }
-                tag.putBoolean("voidstone", stone.isPressed());
-                tag.putBoolean("voidcobble", cobble.isPressed());
-                tag.putBoolean("voiddirt", dirt.isPressed());
-                tag.putBoolean("voidgravel", gravel.isPressed());
-                tag.putBoolean("voidsand", sand.isPressed());
-                tag.putBoolean("voidnetherrack", netherrack.isPressed());
-                tag.putBoolean("voidendstone", endstone.isPressed());
-                tag.putBoolean("tagMatching", tagMatching.isPressed());
-                RFToolsBuilderMessages.sendToServer(PacketUpdateNBTItemInventoryShape.create(
-                        fromTEPos, fromTEStackSlot, tag));
+                // @todo 1.21 NBT
+//                CompoundTag tag = stack.getTag();
+//                if (tag == null) {
+//                    tag = new CompoundTag();
+//                }
+//                tag.putBoolean("voidstone", stone.isPressed());
+//                tag.putBoolean("voidcobble", cobble.isPressed());
+//                tag.putBoolean("voiddirt", dirt.isPressed());
+//                tag.putBoolean("voidgravel", gravel.isPressed());
+//                tag.putBoolean("voidsand", sand.isPressed());
+//                tag.putBoolean("voidnetherrack", netherrack.isPressed());
+//                tag.putBoolean("voidendstone", endstone.isPressed());
+//                tag.putBoolean("tagMatching", tagMatching.isPressed());
+//                RFToolsBuilderMessages.sendToServer(PacketUpdateNBTItemInventoryShape.create(
+//                        fromTEPos, fromTEStackSlot, tag));
             }
         } else {
             RFToolsBuilderMessages.sendToServer(PacketUpdateNBTShapeCard.create(
@@ -489,18 +499,18 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     @Override
     public boolean mouseScrolledFromEvent(double x, double y, double dx, double dy) {
         WindowManager manager = getWindow().getWindowManager();
-        manager.mouseScrolled(x, y, dx);
+        manager.mouseScrolled(x, y, dx, dy);
         return true;
     }
 
     @Override
-    public boolean mouseScrolled(double x, double y, double wheel) {
+    public boolean mouseScrolled(double x, double y, double wheelX, double wheelY) {
         // If not initialized yet we do nothing
         if (window == null) {
             return false;
         }
-        getShapeRenderer().handleMouseWheel(wheel);
-        return super.mouseScrolled(x, y, wheel);
+        getShapeRenderer().handleMouseWheel(wheelX);    // @todo 1.21 mouse wheel
+        return super.mouseScrolled(x, y, wheelX, wheelY);
     }
 
     private static int updateCounter = 20;
@@ -575,17 +585,17 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         float f1 = (color >> 8 & 255) / 255.0F;
         float f2 = (color & 255) / 255.0F;
         Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder buffer = tessellator.getBuilder();
+//        BufferBuilder buffer = tessellator.getBuilder();
 
-        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION);
         GlStateManager._enableBlend();
         GlStateManager._disableDepthTest();
         GL11.glLineWidth(2.0f);
         GlStateManager._blendFuncSeparate(770, 771, 1, 0);
 //        GlStateManager._color4f(f, f1, f2, f3);// @todo 1.18
-        buffer.vertex(x1, y1, 0.0D).endVertex();
-        buffer.vertex(x2, y2, 0.0D).endVertex();
-        tessellator.end();
+        buffer.addVertex(x1, y1, 0.0f);
+        buffer.addVertex(x2, y2, 0.0f);
+//        tessellator.end();    // @todo 1.21 what else?
         GlStateManager._enableDepthTest();
         GlStateManager._disableBlend();
     }

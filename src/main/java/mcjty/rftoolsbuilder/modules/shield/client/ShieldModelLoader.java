@@ -19,8 +19,10 @@ import java.util.List;
 
 public class ShieldModelLoader implements IGeometryLoader<ShieldModelLoader.TankModelGeometry> {
 
+    public static final ResourceLocation LOCATION = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "shieldloader");
+
     public static void register(ModelEvent.RegisterGeometryLoaders event) {
-        event.register("shieldloader", new ShieldModelLoader());
+        event.register(LOCATION, new ShieldModelLoader());
     }
 
     @Override

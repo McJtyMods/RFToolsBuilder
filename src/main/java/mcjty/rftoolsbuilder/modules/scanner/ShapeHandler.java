@@ -2,14 +2,14 @@ package mcjty.rftoolsbuilder.modules.scanner;
 
 import mcjty.rftoolsbuilder.shapes.ShapeDataManagerServer;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 public class ShapeHandler {
 
     @SubscribeEvent
-    public void onWorldTick(TickEvent.LevelTickEvent event) {
-        if (event.phase == TickEvent.Phase.START && event.level.dimension().equals(Level.OVERWORLD)) {
+    public void onWorldTick(LevelTickEvent.Pre event) {
+        if (event.getLevel().dimension().equals(Level.OVERWORLD)) {
             ShapeDataManagerServer.handleWork();
         }
     }

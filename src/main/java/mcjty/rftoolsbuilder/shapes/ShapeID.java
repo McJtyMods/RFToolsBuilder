@@ -1,12 +1,16 @@
 package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.lib.varia.LevelTools;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /// ID to identify a shape for a player/projector/scanner/...
 public final class ShapeID {
@@ -15,6 +19,15 @@ public final class ShapeID {
     private final int scanId;
     private final boolean grayscale;
     private final boolean solid;
+
+    public static final StreamCodec<FriendlyByteBuf, ShapeID> STREAM_CODEC = StreamCodec.composite(
+            ResourceKey.streamCodec(Registries.DIMENSION), s -> s.dimension,
+            ByteBufCodecs.optional(BlockPos.STREAM_CODEC), s -> Optional.ofNullable(s.pos),
+            ByteBufCodecs.INT, s -> s.scanId,
+            ByteBufCodecs.BOOL, s -> s.grayscale,
+            ByteBufCodecs.BOOL, s -> s.solid,
+            (dimension, pos, scanId, grayscale, solid) -> new ShapeID(dimension, pos.orElse(null), scanId, grayscale, solid)
+    );
 
     public ShapeID(ResourceKey<Level> dimension, @Nullable BlockPos pos, int scanId, boolean grayscale, boolean solid) {
         this.dimension = dimension;

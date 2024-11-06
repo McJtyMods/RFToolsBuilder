@@ -24,7 +24,6 @@ import mcjty.rftoolsbuilder.modules.builder.blocks.RotateMode;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
@@ -34,7 +33,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -233,22 +231,24 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
         return true;
     }
 
-    @Override
-    protected void saveInfo(CompoundTag tagCompound) {
-        super.saveInfo(tagCompound);
-        getOrCreateInfo(tagCompound).putInt("rotate", rotate.ordinal());
-    }
+    // @todo 1.21
+//    @Override
+//    protected void saveInfo(CompoundTag tagCompound) {
+//        super.saveInfo(tagCompound);
+//        getOrCreateInfo(tagCompound).putInt("rotate", rotate.ordinal());
+//    }
 
-    @Override
-    protected void loadInfo(CompoundTag tagCompound) {
-        super.loadInfo(tagCompound);
-        if (tagCompound.contains("Info")) {
-            CompoundTag info = tagCompound.getCompound("Info");
-            if (info.contains("rotate")) {
-                rotate = RotateMode.values()[info.getInt("rotate")];
-            }
-        }
-    }
+    // @todo 1.21
+//    @Override
+//    protected void loadInfo(CompoundTag tagCompound) {
+//        super.loadInfo(tagCompound);
+//        if (tagCompound.contains("Info")) {
+//            CompoundTag info = tagCompound.getCompound("Info");
+//            if (info.contains("rotate")) {
+//                rotate = RotateMode.values()[info.getInt("rotate")];
+//            }
+//        }
+//    }
 
     @ServerCommand
     public static final Command<?> CMD_CREATE = Command.<VehicleBuilderTileEntity>create("create", (te, player, params) -> te.copyVehicle(player));

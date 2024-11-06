@@ -28,8 +28,10 @@ import mcjty.rftoolsbuilder.modules.mover.sound.MoverSoundController;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -40,7 +42,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.common.util.LazyOptional;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -295,7 +296,7 @@ public class MoverTileEntity extends TickingTileEntity {
                     platforms = Collections.emptyList();
                 }
                 RFToolsBuilderMessages.sendToChunk(
-                        PacketSyncVehicleInformationToClient.create(worldPosition, platforms, getName(), valid, hasEnoughPower()), level, worldPosition);
+                        PacketSyncVehicleInformationToClient.create(worldPosition, platforms, getName(), valid, hasEnoughPower()), (ServerLevel) level, worldPosition);
             }
         }
     }
@@ -722,11 +723,13 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
     @Override
-    public void load(CompoundTag tagCompound) {
-        super.load(tagCompound);
+    public void loadAdditional(CompoundTag tagCompound, HolderLookup.Provider provider) {
+        super.loadAdditional(tagCompound, provider);
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             if (tagCompound.contains(direction.name())) {
-                addConnection(direction, NbtUtils.readBlockPos(tagCompound.getCompound(direction.name())));
+                NbtUtils.readBlockPos(tagCompound, direction.name()).ifPresent(p -> {
+                    addConnection(direction, p);
+                });
             }
         }
         logic.load(tagCompound);
@@ -739,22 +742,23 @@ public class MoverTileEntity extends TickingTileEntity {
         offset = new BlockPos(tagCompound.getInt("offsetX"), tagCompound.getInt("offsetY"), tagCompound.getInt("offsetZ"));
     }
 
-    @Override
-    public void loadInfo(CompoundTag tagCompound) {
-        super.loadInfo(tagCompound);
-        CompoundTag info = tagCompound.getCompound("Info");
-        name = info.getString("name");
-        down = info.getBoolean("down");
-        up = info.getBoolean("up");
-        north = info.getBoolean("north");
-        south = info.getBoolean("south");
-        west = info.getBoolean("west");
-        east = info.getBoolean("east");
-    }
+    // @todo 1.21 NBT
+//    @Override
+//    public void loadInfo(CompoundTag tagCompound) {
+//        super.loadInfo(tagCompound);
+//        CompoundTag info = tagCompound.getCompound("Info");
+//        name = info.getString("name");
+//        down = info.getBoolean("down");
+//        up = info.getBoolean("up");
+//        north = info.getBoolean("north");
+//        south = info.getBoolean("south");
+//        west = info.getBoolean("west");
+//        east = info.getBoolean("east");
+//    }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag tagCompound) {
-        super.saveAdditional(tagCompound);
+    public void saveAdditional(@Nonnull CompoundTag tagCompound, HolderLookup.Provider provider) {
+        super.saveAdditional(tagCompound, provider);
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             if (network.containsKey(direction)) {
                 tagCompound.put(direction.name(), NbtUtils.writeBlockPos(network.get(direction)));
@@ -769,32 +773,33 @@ public class MoverTileEntity extends TickingTileEntity {
         tagCompound.putInt("offsetZ", offset.getZ());
     }
 
+    // @todo 1.21 NBT
+//    @Override
+//    public void saveInfo(CompoundTag tagCompound) {
+//        super.saveInfo(tagCompound);
+//        CompoundTag info = getOrCreateInfo(tagCompound);
+//        if (name != null) {
+//            info.putString("name", name);
+//        }
+//        info.putBoolean("down", down);
+//        info.putBoolean("up", up);
+//        info.putBoolean("north", north);
+//        info.putBoolean("south", south);
+//        info.putBoolean("west", west);
+//        info.putBoolean("east", east);
+//    }
+
     @Override
-    public void saveInfo(CompoundTag tagCompound) {
-        super.saveInfo(tagCompound);
-        CompoundTag info = getOrCreateInfo(tagCompound);
-        if (name != null) {
-            info.putString("name", name);
-        }
-        info.putBoolean("down", down);
-        info.putBoolean("up", up);
-        info.putBoolean("north", north);
-        info.putBoolean("south", south);
-        info.putBoolean("west", west);
-        info.putBoolean("east", east);
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider provider) {
+        super.handleUpdateTag(tag, provider);
+        loadClientDataFromNBT(tag, provider);
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        super.handleUpdateTag(tag);
-        loadClientDataFromNBT(tag);
-    }
-
-    @Override
-    public void saveClientDataToNBT(CompoundTag tagCompound) {
+    public void saveClientDataToNBT(CompoundTag tagCompound, HolderLookup.Provider provider) {
         ItemStack card = items.getStackInSlot(SLOT_VEHICLE_CARD);
         CompoundTag tag = new CompoundTag();
-        card.save(tag);
+        card.save(provider, tag);
         tagCompound.put("card", tag);
         logic.saveClientDataToNBT(tagCompound);
         if (controller != null) {
@@ -806,9 +811,9 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
     @Override
-    public void loadClientDataFromNBT(CompoundTag tagCompound) {
+    public void loadClientDataFromNBT(CompoundTag tagCompound, HolderLookup.Provider provider) {
         CompoundTag tag = tagCompound.getCompound("card");
-        items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.of(tag));
+        items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.parseOptional(provider, tag));    // @todo 1.21 is this correct instead of ItemStack.of()?
         logic.loadClientDataFromNBT(tagCompound);
         int[] controller = tagCompound.getIntArray("controller");
         if (controller.length >= 3) {
