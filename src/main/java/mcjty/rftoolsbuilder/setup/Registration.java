@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.setup;
 
 
+import mcjty.lib.blocks.RBlockRegistry;
 import mcjty.lib.setup.DeferredBlocks;
 import mcjty.lib.setup.DeferredItems;
 import mcjty.rftoolsbase.RFToolsBase;
@@ -26,6 +27,7 @@ import static mcjty.rftoolsbuilder.RFToolsBuilder.MODID;
 
 public class Registration {
 
+    public static final RBlockRegistry RBLOCKS = new RBlockRegistry(MODID, RFToolsBuilder.setup::addTabItem);
     public static final DeferredBlocks BLOCKS = DeferredBlocks.create(MODID);
     public static final DeferredItems ITEMS = DeferredItems.create(MODID);
     public static final DeferredRegister<BlockEntityType<?>> TILES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, MODID);
@@ -35,6 +37,7 @@ public class Registration {
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, RFToolsBase.MODID);
 
     public static void register(IEventBus bus) {
+        RBLOCKS.register(bus);
         BLOCKS.register(bus);
         ITEMS.register(bus);
         TILES.register(bus);
@@ -49,9 +52,9 @@ public class Registration {
         return RFToolsBuilder.setup.defaultProperties();
     }
 
-    public static Supplier<CreativeModeTab> TAB = TABS.register("rftoolsbuilder", () -> CreativeModeTab.builder()
+    public static Supplier<CreativeModeTab> TAB = TABS.register(MODID, () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup." + MODID))
-            .icon(() -> new ItemStack(BuilderModule.BUILDER.get()))
+            .icon(() -> new ItemStack(BuilderModule.BUILDER.block().get()))
             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
             .displayItems((featureFlags, output) -> {
                 RFToolsBuilder.setup.populateTab(output);

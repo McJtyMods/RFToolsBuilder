@@ -4,6 +4,7 @@ import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.Connection;
@@ -24,7 +25,7 @@ public class InvisibleMoverBE extends BlockEntity {
 
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider provider) {
-        loadInt(pkt.getTag());
+        loadInt(pkt.getTag(), provider);
     }
 
     @Nullable
@@ -51,12 +52,11 @@ public class InvisibleMoverBE extends BlockEntity {
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
-        loadInt(tag);
+        loadInt(tag, provider);
     }
 
-    private void loadInt(CompoundTag tag) {
-        // @todo 1.21 NBT
-//        originalState = NBTTools.readBlockState(level, tag.getCompound("originalState"));
+    private void loadInt(CompoundTag tag, HolderLookup.Provider provider) {
+        originalState = NbtUtils.readBlockState(provider.lookup(Registries.BLOCK).get(), tag.getCompound("originalState"));
     }
 
     @Override

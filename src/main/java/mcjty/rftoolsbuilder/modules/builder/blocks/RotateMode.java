@@ -23,4 +23,10 @@ public enum RotateMode implements NamedEnum<RotateMode> {
     public String[] getDescription() {
         return new String[] { name };
     }
+
+
+    @Override
+    public String getSerializedName() {
+        return name();
+    }
 }

@@ -12,6 +12,7 @@ import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.GenericContainer;
+import mcjty.lib.setup.Registration;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
@@ -27,6 +28,9 @@ import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
@@ -45,18 +49,20 @@ import static mcjty.lib.builder.TooltipBuilder.*;
 
 public class MoverControllerTileEntity extends GenericTileEntity {
 
-    @Cap(type = CapType.ENERGY)
     private final GenericEnergyStorage energyStorage = new GenericEnergyStorage(this, true, MoverConfiguration.MAXENERGY.get(), MoverConfiguration.RECEIVEPERTICK.get());
+    @Cap(type = CapType.ENERGY)
+    private static final Function<MoverControllerTileEntity, GenericEnergyStorage> ENERGY_CAP = tile -> tile.energyStorage;
 
     @Cap(type = CapType.CONTAINER)
-    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Mover")
-            .containerSupplier(empty(MoverModule.CONTAINER_MOVER_CONTROLLER, this))
-            .energyHandler(() -> energyStorage)
-            .setupSync(this));
+    private static final Function<MoverControllerTileEntity, MenuProvider> SCREEN_CAP = tile -> new DefaultContainerProvider<GenericContainer>("Mover")
+            .containerSupplier(empty(MoverModule.CONTAINER_MOVER_CONTROLLER, tile))
+            .energyHandler(() -> tile.energyStorage)
+            .setupSync(tile);
 
 
+    private final DefaultInfusable infusable = new DefaultInfusable(MoverControllerTileEntity.this);
     @Cap(type = CapType.INFUSABLE)
-    private final IInfusable infusable = new DefaultInfusable(MoverControllerTileEntity.this);
+    private static final Function<MoverControllerTileEntity, DefaultInfusable> INFUSABLE_CAP = tile -> tile.infusable;
 
     public static final int MAXSCAN = 128;  //@todo configurable
 
@@ -86,7 +92,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
 
     public MoverControllerTileEntity(BlockPos pos, BlockState state) {
-        super(MoverModule.TYPE_MOVER_CONTROLLER.get(), pos, state);
+        super(MoverModule.MOVER_CONTROLLER.be().get(), pos, state);
     }
 
     private void selectNode(BlockPos pos) {
@@ -299,6 +305,35 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         });
         return nodeNames;
     }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
+        energyStorage.save(tag, "energy", provider);
+        infusable.save(tag, "infusable");
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
+        energyStorage.load(tag, "energy", provider);
+        infusable.load(tag, "infusable");
+    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentInput input) {
+        super.applyImplicitComponents(input);
+        energyStorage.applyImplicitComponents(input.get(Registration.ITEM_ENERGY));
+        infusable.applyImplicitComponents(input.get(Registration.ITEM_INFUSABLE));
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+        super.collectImplicitComponents(builder);
+        energyStorage.collectImplicitComponents(builder);
+        infusable.collectImplicitComponents(builder);
+    }
+
 
     // @todo 1.21
 //    @Override

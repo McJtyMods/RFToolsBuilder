@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 public class GuiMover extends GenericGuiContainer<MoverTileEntity, GenericContainer> {
 
     public GuiMover(GenericContainer container, Inventory inventory, Component title) {
-        super(container, inventory, title, MoverModule.MOVER.get().getManualEntry());
+        super(container, inventory, title, MoverModule.MOVER.block().get().getManualEntry());
     }
 
     public static void register(RegisterMenuScreensEvent event) {

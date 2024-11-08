@@ -36,7 +36,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private final ImageChoiceLabel[] anchor = new ImageChoiceLabel[4];
 
     public GuiBuilder(GenericContainer container, Inventory inventory, Component title) {
-        super(container, inventory, title, BuilderModule.BUILDER.get().getManualEntry());
+        super(container, inventory, title, BuilderModule.BUILDER.block().get().getManualEntry());
     }
 
     public static void register(RegisterMenuScreensEvent event) {

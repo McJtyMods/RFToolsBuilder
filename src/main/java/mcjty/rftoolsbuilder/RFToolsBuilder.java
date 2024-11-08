@@ -38,6 +38,7 @@ public class RFToolsBuilder {
         bus.addListener(modules::init);
         bus.addListener(this::onDataGen);
         bus.addListener(RFToolsBuilderMessages::registerMessages);
+        bus.addListener(setup.getBlockCapabilityRegistrar(Registration.RBLOCKS));
 
         if (dist.isClient()) {
             bus.addListener(ClientSetup::init);

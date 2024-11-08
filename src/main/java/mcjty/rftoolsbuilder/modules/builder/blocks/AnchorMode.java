@@ -23,4 +23,10 @@ public enum AnchorMode implements NamedEnum<AnchorMode> {
     public String[] getDescription() {
         return new String[] { name };
     }
+
+
+    @Override
+    public String getSerializedName() {
+        return name();
+    }
 }

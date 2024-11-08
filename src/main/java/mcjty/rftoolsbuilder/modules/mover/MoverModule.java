@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.modules.mover;
 
 
 import mcjty.lib.blocks.BaseBlock;
+import mcjty.lib.blocks.RBlock;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.datagen.DataGen;
 import mcjty.lib.datagen.Dob;
@@ -43,14 +44,20 @@ import static mcjty.rftoolsbuilder.setup.Registration.*;
 
 public class MoverModule implements IModule {
 
-    public static final DeferredBlock<BaseBlock> MOVER = BLOCKS.register("mover", MoverTileEntity::createBlock);
-    public static final DeferredItem<Item> MOVER_ITEM = ITEMS.register("mover", tab(() -> new BlockItem(MOVER.get(), createStandardProperties())));
-    public static final Supplier<BlockEntityType<MoverTileEntity>> TYPE_MOVER = TILES.register("mover", () -> BlockEntityType.Builder.of(MoverTileEntity::new, MOVER.get()).build(null));
+    public static final RBlock<BaseBlock, BlockItem, MoverTileEntity> MOVER = RBLOCKS.registerBlock("mover",
+            MoverTileEntity.class,
+            MoverTileEntity::createBlock,
+            block -> new BlockItem(block.get(), createStandardProperties()),
+            MoverTileEntity::new
+    );
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_MOVER = CONTAINERS.register("mover", GenericContainer::createContainerType);
 
-    public static final DeferredBlock<BaseBlock> MOVER_CONTROLLER = BLOCKS.register("mover_controller", MoverControllerTileEntity::createBlock);
-    public static final DeferredItem<Item> MOVER_CONTROLLER_ITEM = ITEMS.register("mover_controller", tab(() -> new BlockItem(MOVER_CONTROLLER.get(), createStandardProperties())));
-    public static final Supplier<BlockEntityType<MoverControllerTileEntity>> TYPE_MOVER_CONTROLLER = TILES.register("mover_controller", () -> BlockEntityType.Builder.of(MoverControllerTileEntity::new, MOVER_CONTROLLER.get()).build(null));
+    public static final RBlock<BaseBlock, BlockItem, MoverControllerTileEntity> MOVER_CONTROLLER = RBLOCKS.registerBlock("mover_controller",
+            MoverControllerTileEntity.class,
+            MoverControllerTileEntity::createBlock,
+            block -> new BlockItem(block.get(), createStandardProperties()),
+            MoverControllerTileEntity::new
+    );
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_MOVER_CONTROLLER = CONTAINERS.register("mover_controller", GenericContainer::createContainerType);
 
     public static final DeferredBlock<BaseBlock> VEHICLE_BUILDER = BLOCKS.register("vehicle_builder", VehicleBuilderTileEntity::createBlock);
@@ -109,7 +116,7 @@ public class MoverModule implements IModule {
                         .ironPickaxeTags()
                         .parentedItem("block/mover")
                         .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
-                        .blockState(p -> p.simpleBlock(MOVER.get(), p.frontBasedModel("mover", p.modLoc("block/machinemover"), p.modLoc("block/machinemover"), RFTOOLSBASE_TOP, RFTOOLSBASE_BOTTOM)))
+                        .blockState(p -> p.simpleBlock(MOVER.block().get(), p.frontBasedModel("mover", p.modLoc("block/machinemover"), p.modLoc("block/machinemover"), RFTOOLSBASE_TOP, RFTOOLSBASE_BOTTOM)))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
                                         .define('C', Blocks.RAIL)
@@ -118,8 +125,8 @@ public class MoverModule implements IModule {
                 Dob.blockBuilder(MOVER_CONTROLLER)
                         .ironPickaxeTags()
                         .parentedItem("block/mover_controller")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get())
-                        .blockState(p -> p.orientedBlock(MOVER_CONTROLLER.get(), p.frontBasedModel("mover_controller", p.modLoc("block/machinemovercontroller"))))
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get())
+                        .blockState(p -> p.orientedBlock(MOVER_CONTROLLER.block().get(), p.frontBasedModel("mover_controller", p.modLoc("block/machinemovercontroller"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
                                         .define('C', Blocks.ACTIVATOR_RAIL)
@@ -137,7 +144,7 @@ public class MoverModule implements IModule {
                                 "iCi", "rFr", "iTi"),
                 Dob.blockBuilder(MOVER_CONTROL_BLOCK)
                         .ironPickaxeTags()
-                        .simpleLoot()
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get())
                         .parentedItem("block/mover_control_0")
                         .blockState(p -> DataGenHelper.create24Model(p, MOVER_CONTROL_BLOCK.get(), "mover_control_", "block/movercontrol"))
                         .shaped(builder -> builder

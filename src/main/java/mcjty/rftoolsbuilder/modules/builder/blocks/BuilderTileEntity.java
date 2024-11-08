@@ -16,6 +16,7 @@ import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
+import mcjty.lib.setup.Registration;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
@@ -43,6 +44,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -91,6 +93,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
@@ -171,26 +174,29 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     private final FakePlayerGetter harvester = new FakePlayerGetter(this, "rftools_builder");
 
-    @Cap(type = CapType.ITEMS_AUTOMATION)
     private final GenericItemHandler items = createItemHandler();
+    @Cap(type = CapType.ITEMS_AUTOMATION)
+    private static final Function<BuilderTileEntity, GenericItemHandler> ITEM_CAP = tile -> tile.items;
 
-    @Cap(type = CapType.ENERGY)
     private final GenericEnergyStorage energyStorage = new GenericEnergyStorage(
             this, true, BuilderConfiguration.BUILDER_MAXENERGY.get(), BuilderConfiguration.BUILDER_RECEIVEPERTICK.get());
+    @Cap(type = CapType.ENERGY)
+    private static final Function<BuilderTileEntity, GenericEnergyStorage> ENERGY_CAP = tile -> tile.energyStorage;
 
     @Cap(type = CapType.CONTAINER)
-    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
-            .containerSupplier(container(BuilderModule.CONTAINER_BUILDER, CONTAINER_FACTORY,this))
-            .itemHandler(() -> items)
-            .energyHandler(() -> energyStorage)
-            .shortListener(Sync.integer(() -> scan == null ? -1 : scan.getY(), v -> currentLevel = v))
-            .setupSync(this));
+    private static final Function<BuilderTileEntity, MenuProvider> SCREEN_CAP = tile -> new DefaultContainerProvider<GenericContainer>("Builder")
+            .containerSupplier(container(BuilderModule.CONTAINER_BUILDER, CONTAINER_FACTORY, tile))
+            .itemHandler(() -> tile.items)
+            .energyHandler(() -> tile.energyStorage)
+            .shortListener(Sync.integer(() -> tile.scan == null ? -1 : tile.scan.getY(), v -> currentLevel = v))
+            .setupSync(tile);
 
+    private final DefaultInfusable infusable = new DefaultInfusable(BuilderTileEntity.this);
     @Cap(type = CapType.INFUSABLE)
-    private final IInfusable infusableHandler = new DefaultInfusable(BuilderTileEntity.this);
+    private static final Function<BuilderTileEntity, IInfusable> INFUSABLE_CAP = tile -> tile.infusable;
 
     @Cap(type = CapType.MODULE)
-    private final IModuleSupport moduleSupportHandler = new DefaultModuleSupport(SLOT_TAB) {
+    private static final Function<BuilderTileEntity, IModuleSupport> MODULE_CAP = tile -> new DefaultModuleSupport(SLOT_TAB) {
         @Override
         public boolean isModule(ItemStack itemStack) {
             return (itemStack.getItem() instanceof ShapeCardItem || itemStack.getItem() == BuilderModule.SPACE_CHAMBER_CARD.get());
@@ -198,7 +204,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     };
 
     public BuilderTileEntity(BlockPos pos, BlockState state) {
-        super(BuilderModule.TYPE_BUILDER.get(), pos, state);
+        super(BuilderModule.BUILDER.be().get(), pos, state);
         setRSMode(RedstoneMode.REDSTONE_ONREQUIRED);
     }
 
@@ -240,7 +246,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     @Override
     public Direction getBlockOrientation() {
         BlockState state = level.getBlockState(worldPosition);
-        if (state.getBlock() == BuilderModule.BUILDER.get()) {
+        if (state.getBlock() == BuilderModule.BUILDER.block().get()) {
             return OrientationTools.getOrientationHoriz(state);
         } else {
             return null;
@@ -697,7 +703,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void checkStateServerShaped() {
-        float factor = infusableHandler.getInfusedFactor();
+        float factor = infusable.getInfusedFactor();
         for (int i = 0; i < BuilderConfiguration.quarryBaseSpeed.get() + (factor * BuilderConfiguration.quarryInfusionSpeedFactor.get()); i++) {
             if (scan != null) {
                 handleBlockShaped();
@@ -750,7 +756,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (mode == MODE_COLLECT) {
             collectItems(world);
         } else {
-            float factor = infusableHandler.getInfusedFactor();
+            float factor = infusable.getInfusedFactor();
             for (int i = 0; i < 2 + (factor * 40); i++) {
                 if (scan != null) {
                     handleBlock(world);
@@ -792,7 +798,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             scan = null;
         }
 
-        float factor = infusableHandler.getInfusedFactor();
+        float factor = infusable.getInfusedFactor();
 
         long rf = energyStorage.getEnergyStored();
         float area = (maxBox.getX() - minBox.getX() + 1) * (maxBox.getY() - minBox.getY() + 1) * (maxBox.getZ() - minBox.getZ() + 1);
@@ -1016,7 +1022,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
         }
 
-        float factor = infusableHandler.getInfusedFactor();
+        float factor = infusable.getInfusedFactor();
         rfNeeded = (int) (rfNeeded * (3.0f - factor) / 3.0f);
 
         if (rfNeeded > energyStorage.getMaxEnergyStored()) {
@@ -1735,7 +1741,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     private void copyBlock(Level srcWorld, BlockPos srcPos, Level destWorld, BlockPos destPos) {
         long rf = energyStorage.getEnergy();
-        float factor = infusableHandler.getInfusedFactor();
+        float factor = infusable.getInfusedFactor();
         int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * (4.0f - factor) / 4.0f);
         if (rfNeeded > rf) {
             // Not enough energy.
@@ -1808,7 +1814,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void moveEntities(Level world, int x, int y, int z, Level destWorld, int destX, int destY, int destZ) {
-        float factor = infusableHandler.getInfusedFactor();
+        float factor = infusable.getInfusedFactor();
         int rfNeeded = (int) (BuilderConfiguration.builderRfPerEntity.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
         int rfNeededPlayer = (int) (BuilderConfiguration.builderRfPerPlayer.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
 
@@ -1829,7 +1835,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void swapEntities(Level world, int x, int y, int z, Level destWorld, int destX, int destY, int destZ) {
-        float factor = infusableHandler.getInfusedFactor();
+        float factor = infusable.getInfusedFactor();
         int rfNeeded = (int) (BuilderConfiguration.builderRfPerEntity.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
         int rfNeededPlayer = (int) (BuilderConfiguration.builderRfPerPlayer.get() * getDimensionCostFactor(world, destWorld) * (4.0f - factor) / 4.0f);
 
@@ -1894,7 +1900,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
 
             long rf = energyStorage.getEnergy();
-            float factor = infusableHandler.getInfusedFactor();
+            float factor = infusable.getInfusedFactor();
             int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * srcInformation.getCostFactor() * (4.0f - factor) / 4.0f);
             if (rfNeeded > rf) {
                 // Not enough energy.
@@ -1959,7 +1965,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
 
         long rf = energyStorage.getEnergy();
-        float factor = infusableHandler.getInfusedFactor();
+        float factor = infusable.getInfusedFactor();
         int rfNeeded = (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * srcInformation.getCostFactor() * (4.0f - factor) / 4.0f);
         rfNeeded += (int) (BuilderConfiguration.builderRfPerOperation.get() * getDimensionCostFactor(srcWorld, destWorld) * dstInformation.getCostFactor() * (4.0f - factor) / 4.0f);
         if (rfNeeded > rf) {
@@ -2204,10 +2210,14 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     @Override
-    public void loadAdditional(CompoundTag tagCompound, HolderLookup.Provider provider) {
-        super.loadAdditional(tagCompound, provider);
-        if (tagCompound.contains("overflowItems")) {
-            ListTag overflowItemsNbt = tagCompound.getList("overflowItems", Tag.TAG_COMPOUND);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
+        energyStorage.load(tag, "energy", provider);
+        items.load(tag, "items", provider);
+        infusable.load(tag, "infusable");
+
+        if (tag.contains("overflowItems")) {
+            ListTag overflowItemsNbt = tag.getList("overflowItems", Tag.TAG_COMPOUND);
             overflowItems.clear();
             for (Tag overflowNbt : overflowItemsNbt) {
                 overflowItems.add(ItemStack.parseOptional(provider, (CompoundTag) overflowNbt)); // @todo 1.21 check, is this the same as ItemStack.of()?
@@ -2256,31 +2266,37 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 //    }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag tagCompound, HolderLookup.Provider provider) {
+    public void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
+        energyStorage.save(tag, "energy", provider);
+        items.save(tag, "items", provider);
+        infusable.save(tag, "infusable");
+
+
         // @todo 1.21 NBT
-        super.saveAdditional(tagCompound, provider);
+
         if (!overflowItems.isEmpty()) {
             ListTag overflowItemsNbt = new ListTag();
             for (ItemStack overflow : overflowItems.getList()) {
                 overflowItemsNbt.add(overflow.save(provider, new CompoundTag()));
             }
-            tagCompound.put("overflowItems", overflowItemsNbt);
+            tag.put("overflowItems", overflowItemsNbt);
         }
         if (lastError != null) {
-            tagCompound.putString("lastError", lastError);
+            tag.putString("lastError", lastError);
         }
-        tagCompound.putInt("mode", mode.ordinal());
-        tagCompound.putInt("anchor", anchor.ordinal());
-        tagCompound.putInt("rotate", rotate.ordinal());
-        tagCompound.putBoolean("silent", silent);
-        tagCompound.putBoolean("support", supportMode);
-        tagCompound.putBoolean("entityMode", entityMode);
-        tagCompound.putBoolean("loopMode", loopMode);
-        tagCompound.putBoolean("waitMode", waitMode);
-        tagCompound.putBoolean("hilightMode", hilightMode);
-        BlockPosTools.write(tagCompound, "scan", scan);
-        BlockPosTools.write(tagCompound, "minBox", minBox);
-        BlockPosTools.write(tagCompound, "maxBox", maxBox);
+        tag.putInt("mode", mode.ordinal());
+        tag.putInt("anchor", anchor.ordinal());
+        tag.putInt("rotate", rotate.ordinal());
+        tag.putBoolean("silent", silent);
+        tag.putBoolean("support", supportMode);
+        tag.putBoolean("entityMode", entityMode);
+        tag.putBoolean("loopMode", loopMode);
+        tag.putBoolean("waitMode", waitMode);
+        tag.putBoolean("hilightMode", hilightMode);
+        BlockPosTools.write(tag, "scan", scan);
+        BlockPosTools.write(tag, "minBox", minBox);
+        BlockPosTools.write(tag, "maxBox", maxBox);
     }
 
     // @todo 1.21
@@ -2304,6 +2320,22 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 //        BlockPosTools.write(infoTag, "minBox", minBox);
 //        BlockPosTools.write(infoTag, "maxBox", maxBox);
 //    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentInput input) {
+        super.applyImplicitComponents(input);
+        energyStorage.applyImplicitComponents(input.get(Registration.ITEM_ENERGY));
+        items.applyImplicitComponents(input.get(Registration.ITEM_INVENTORY));
+        infusable.applyImplicitComponents(input.get(Registration.ITEM_INFUSABLE));
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+        super.collectImplicitComponents(builder);
+        energyStorage.collectImplicitComponents(builder);
+        items.collectImplicitComponents(builder);
+        infusable.collectImplicitComponents(builder);
+    }
 
     public static int getCurrentLevelClientSide() {
         return currentLevel;

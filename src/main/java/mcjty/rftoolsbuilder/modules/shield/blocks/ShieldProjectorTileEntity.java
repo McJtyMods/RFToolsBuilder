@@ -13,6 +13,7 @@ import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
+import mcjty.lib.setup.Registration;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
@@ -34,6 +35,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -72,6 +74,7 @@ import net.neoforged.neoforge.common.util.Lazy;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
@@ -148,7 +151,6 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             .slot(specific(s -> s.getItem() == VariousModule.DIMENSIONALSHARD.get()).in().out(), SLOT_SHARD, 229, 118)
             .playerSlots(85, 142));
 
-    @Cap(type = CapType.ITEMS_AUTOMATION)
     private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
             .itemValid((slot, stack) -> {
                 if (slot == SLOT_SHAPE) {
@@ -166,23 +168,27 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 }
             })
             .build();
+    @Cap(type = CapType.ITEMS_AUTOMATION)
+    private final static Function<ShieldProjectorTileEntity, GenericItemHandler> ITEM_CAP = te -> te.items;
 
-
+    private final GenericEnergyStorage energyStorage;
     @Cap(type = CapType.ENERGY)
-    private final GenericEnergyStorage energyHandler;
+    private final static Function<ShieldProjectorTileEntity, GenericEnergyStorage> ENERGY_CAP = te -> te.energyStorage;
 
     @Cap(type = CapType.CONTAINER)
-    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Shield")
-            .containerSupplier(container(ShieldModule.CONTAINER_SHIELD, CONTAINER_FACTORY, this))
-            .energyHandler(this::getEnergyStorage)
-            .itemHandler(() -> items)
-            .setupSync(this));
+    private static final Function<ShieldProjectorTileEntity, MenuProvider> SCREEN_CAP = tile -> new DefaultContainerProvider<GenericContainer>("Shield")
+            .containerSupplier(container(ShieldModule.CONTAINER_SHIELD, CONTAINER_FACTORY, tile))
+            .energyHandler(()-> tile.getEnergyStorage())
+            .itemHandler(() -> tile.items)
+            .setupSync(tile);
 
+    private final DefaultInfusable infusable = new DefaultInfusable(ShieldProjectorTileEntity.this);
     @Cap(type = CapType.INFUSABLE)
-    private final IInfusable infusableHandler = new DefaultInfusable(ShieldProjectorTileEntity.this);
+    private final static Function<ShieldProjectorTileEntity, IInfusable> INFUSABLE_CAP = te -> te.infusable;
 
-    @Cap(type = CapType.POWER_INFO)
     private final IPowerInformation powerInfoHandler = createPowerInfo();
+    @Cap(type = CapType.POWER_INFO)
+    private final static Function<ShieldProjectorTileEntity, IPowerInformation> POWER_INFO_CAP = te -> te.powerInfoHandler;
 
     private final int maxEnergy;
     private final int rfPerTick;
@@ -192,11 +198,11 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         this.supportedBlocks = supportedBlocks;
         this.maxEnergy = maxEnergy;
         this.rfPerTick = rfPerTick;
-        energyHandler = new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick());    }
+        energyStorage = new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick());    }
 
     @Nonnull
     public GenericEnergyStorage getEnergyStorage() {
-        return energyHandler;
+        return energyStorage;
     }
 
     private int getConfigMaxEnergy() {
@@ -501,13 +507,13 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             source = DamageTools.getPlayerAttackDamageSource(killer, killer);
         }
 
-        float factor = infusableHandler.getInfusedFactor();
+        float factor = infusable.getInfusedFactor();
         rf = (int) (rf * costFactor * (4.0f - factor) / 4.0f);
-        if (energyHandler.getEnergyStored() < rf) {
+        if (energyStorage.getEnergyStored() < rf) {
             // Not enough RF to do damage.
             return;
         }
-        energyHandler.consumeEnergy(rf);
+        energyStorage.consumeEnergy(rf);
 
         float damage = (float) (double) ShieldConfiguration.damage.get();
         damage *= damageFactor;
@@ -559,14 +565,14 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         int rf = getRfPerTick();
 
         if (rf > 0) {
-            if (energyHandler.getEnergyStored() < rf) {
+            if (energyStorage.getEnergyStored() < rf) {
                 powerTimeout = 100;     // Wait 5 seconds before trying again.
                 needsUpdate = true;
             } else {
                 if (checkPower) {
                     needsUpdate = true;
                 }
-                energyHandler.consumeEnergy(rf);
+                energyStorage.consumeEnergy(rf);
             }
         }
 
@@ -588,7 +594,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 
     private int getRfPerTick() {
         int rf = calculateRfPerTick();
-        float factor = infusableHandler.getInfusedFactor();
+        float factor = infusable.getInfusedFactor();
         rf = (int) (rf * (2.0f - factor) / 2.0f);
         return rf;
     }
@@ -975,14 +981,19 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     @Override
-    public void loadAdditional(CompoundTag tagCompound, HolderLookup.Provider provider) {
-        super.loadAdditional(tagCompound, provider);
-        shieldComposed = tagCompound.getBoolean("composed");
-        shieldActive = tagCompound.getBoolean("active");
-        powerTimeout = tagCompound.getInt("powerTimeout");
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
+        energyStorage.load(tag, "energy", provider);
+        items.load(tag, "items", provider);
+        infusable.load(tag, "infusable");
+
+        // @todo 1.21 NBT
+        shieldComposed = tag.getBoolean("composed");
+        shieldActive = tag.getBoolean("active");
+        powerTimeout = tag.getInt("powerTimeout");
         if (!isShapedShield()) {
-            if (tagCompound.contains("templateColor")) {
-                int templateColor = tagCompound.getInt("templateColor");
+            if (tag.contains("templateColor")) {
+                int templateColor = tag.getInt("templateColor");
                 ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
                 switch (color) {
                     case BLUE -> templateState = ShieldModule.TEMPLATE_BLUE.get().defaultBlockState();
@@ -999,8 +1010,8 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 
         shieldBlocks.clear();
         blockStateTable.clear();
-        if (tagCompound.contains("relcoordsNew")) {
-            byte[] byteArray = tagCompound.getByteArray("relcoordsNew");
+        if (tag.contains("relcoordsNew")) {
+            byte[] byteArray = tag.getByteArray("relcoordsNew");
             int j = 0;
             for (int i = 0; i < byteArray.length / 8; i++) {
                 short dx = bytesToShort(byteArray[j + 0], byteArray[j + 1]);
@@ -1011,7 +1022,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 shieldBlocks.add(new RelCoordinateShield(dx, dy, dz, st));
             }
 
-            ListTag list = tagCompound.getList("gstates", Tag.TAG_COMPOUND);
+            ListTag list = tag.getList("gstates", Tag.TAG_COMPOUND);
             for (Tag inbt : list) {
                 CompoundTag tc = (CompoundTag) inbt;
                 String b = tc.getString("b");
@@ -1025,7 +1036,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 blockStateTable.add(state);
             }
         } else {
-            byte[] byteArray = tagCompound.getByteArray("relcoords");
+            byte[] byteArray = tag.getByteArray("relcoords");
             int j = 0;
             for (int i = 0; i < byteArray.length / 6; i++) {
                 short dx = bytesToShort(byteArray[j + 0], byteArray[j + 1]);
@@ -1058,6 +1069,22 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 //        }
 //    }
 
+    @Override
+    protected void applyImplicitComponents(DataComponentInput input) {
+        super.applyImplicitComponents(input);
+        energyStorage.applyImplicitComponents(input.get(Registration.ITEM_ENERGY));
+        items.applyImplicitComponents(input.get(Registration.ITEM_INVENTORY));
+        infusable.applyImplicitComponents(input.get(Registration.ITEM_INFUSABLE));
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+        super.collectImplicitComponents(builder);
+        energyStorage.collectImplicitComponents(builder);
+        items.collectImplicitComponents(builder);
+        infusable.collectImplicitComponents(builder);
+    }
+
     private void readFiltersFromNBT(CompoundTag tagCompound) {
         filters.clear();
         ListTag filterList = tagCompound.getList("filters", Tag.TAG_COMPOUND);
@@ -1068,13 +1095,17 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag tagCompound, HolderLookup.Provider provider) {
-        super.saveAdditional(tagCompound, provider);
-        tagCompound.putBoolean("composed", shieldComposed);
-        tagCompound.putBoolean("active", shieldActive);
-        tagCompound.putInt("powerTimeout", powerTimeout);
+    public void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
+        energyStorage.save(tag, "energy", provider);
+        items.save(tag, "items", provider);
+        infusable.save(tag, "infusable");
+
+        tag.putBoolean("composed", shieldComposed);
+        tag.putBoolean("active", shieldActive);
+        tag.putInt("powerTimeout", powerTimeout);
         if (!templateState.isAir()) {
-            tagCompound.putInt("templateColor", ((ShieldTemplateBlock) templateState.getBlock()).getColor().ordinal());
+            tag.putInt("templateColor", ((ShieldTemplateBlock) templateState.getBlock()).getColor().ordinal());
         }
         byte[] blocks = new byte[shieldBlocks.size() * 8];
         int j = 0;
@@ -1089,7 +1120,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             blocks[j + 7] = shortToByte2((short) c.state());
             j += 8;
         }
-        tagCompound.putByteArray("relcoordsNew", blocks);
+        tag.putByteArray("relcoordsNew", blocks);
 
         ListTag list = new ListTag();
         for (BlockState state : blockStateTable) {
@@ -1097,7 +1128,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             tc.putString("b", Tools.getId(state).toString());
             list.add(tc);
         }
-        tagCompound.put("gstates", list);
+        tag.put("gstates", list);
     }
 
     // @todo 1.21 NBT

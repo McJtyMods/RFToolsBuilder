@@ -70,7 +70,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     private static final ResourceLocation iconGuiElements = ResourceLocation.fromNamespaceAndPath(RFToolsBase.MODID, "textures/gui/guielements.png");
 
     public GuiShield(GenericContainer container, Inventory inventory, Component title) {
-        super(container, inventory, title, ShieldModule.SHIELD_BLOCK1.get().getManualEntry());
+        super(container, inventory, title, ShieldModule.SHIELD_BLOCK1.block().get().getManualEntry());
 
         imageWidth = SHIELD_WIDTH;
         imageHeight = SHIELD_HEIGHT;

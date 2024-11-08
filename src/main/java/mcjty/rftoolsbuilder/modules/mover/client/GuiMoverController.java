@@ -39,7 +39,7 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
     private SyncedList<Pair<BlockPos, String>> nodeList;
 
     public GuiMoverController(GenericContainer container, Inventory inventory, Component title) {
-        super(container, inventory, title, MoverModule.MOVER_CONTROLLER.get().getManualEntry());
+        super(container, inventory, title, MoverModule.MOVER_CONTROLLER.block().get().getManualEntry());
     }
 
     public static void register(RegisterMenuScreensEvent event) {

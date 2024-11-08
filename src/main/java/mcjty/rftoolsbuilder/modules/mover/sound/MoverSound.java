@@ -44,7 +44,7 @@ public class MoverSound extends AbstractTickableSoundInstance {
     @Override
     public void tick() {
         Block block = world.getBlockState(pos).getBlock();
-        if (block != MoverModule.MOVER.get()) {
+        if (block != MoverModule.MOVER.block().get()) {
             stop();
             return;
         }

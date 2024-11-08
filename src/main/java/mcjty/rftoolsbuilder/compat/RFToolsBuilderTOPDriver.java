@@ -32,7 +32,7 @@ public class RFToolsBuilderTOPDriver implements TOPDriver {
     public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, Player player, Level world, BlockState blockState, IProbeHitData data) {
         ResourceLocation id = Tools.getId(blockState);
         if (!drivers.containsKey(id)) {
-            if (blockState.getBlock() == BuilderModule.BUILDER.get()) {
+            if (blockState.getBlock() == BuilderModule.BUILDER.block().get()) {
                 drivers.put(id, new BuilderDriver());
             } else if (blockState.getBlock() == BuilderModule.SPACE_CHAMBER_CONTROLLER.get()) {
                 drivers.put(id, new SpaceChamberControllerDriver());

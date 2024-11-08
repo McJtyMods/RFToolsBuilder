@@ -10,6 +10,7 @@ import mcjty.lib.client.DelayedRenderer;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
+import mcjty.lib.setup.Registration;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.TickingTileEntity;
@@ -29,6 +30,7 @@ import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
@@ -49,6 +51,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
@@ -63,19 +66,19 @@ public class MoverTileEntity extends TickingTileEntity {
             .slot(specific(MoverModule.VEHICLE_CARD.get()).in().out(), SLOT_VEHICLE_CARD, 154, 11)
             .playerSlots(10, 70));
 
-    @Cap(type = CapType.ITEMS_AUTOMATION)
     private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
             .onUpdate((slot, stack) -> {
                 updateVehicle();
             })
             .build();
+    @Cap(type = CapType.ITEMS_AUTOMATION)
+    private final static Function<MoverTileEntity, GenericItemHandler> ITEM_CAP = tile -> tile.items;
 
     @Cap(type = CapType.CONTAINER)
-    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Mover")
-            .containerSupplier(container(MoverModule.CONTAINER_MOVER, CONTAINER_FACTORY,this))
-            .itemHandler(() -> items)
-            .setupSync(this));
-
+    private static final Function<MoverTileEntity, MenuProvider> screenHandler = tile -> new DefaultContainerProvider<GenericContainer>("Mover")
+            .containerSupplier(container(MoverModule.CONTAINER_MOVER, CONTAINER_FACTORY, tile))
+            .itemHandler(() -> tile.items)
+            .setupSync(tile);
 
     @GuiValue
     private String name;
@@ -150,7 +153,7 @@ public class MoverTileEntity extends TickingTileEntity {
 
 
     public MoverTileEntity(BlockPos pos, BlockState state) {
-        super(MoverModule.TYPE_MOVER.get(), pos, state);
+        super(MoverModule.MOVER.be().get(), pos, state);
     }
 
     public BlockPos getLastDestination() {
@@ -723,23 +726,25 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
     @Override
-    public void loadAdditional(CompoundTag tagCompound, HolderLookup.Provider provider) {
-        super.loadAdditional(tagCompound, provider);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
+        items.load(tag, "items", provider);
+
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
-            if (tagCompound.contains(direction.name())) {
-                NbtUtils.readBlockPos(tagCompound, direction.name()).ifPresent(p -> {
+            if (tag.contains(direction.name())) {
+                NbtUtils.readBlockPos(tag, direction.name()).ifPresent(p -> {
                     addConnection(direction, p);
                 });
             }
         }
-        logic.load(tagCompound);
-        int[] controller = tagCompound.getIntArray("controller");
+        logic.load(tag);
+        int[] controller = tag.getIntArray("controller");
         if (controller.length >= 3) {
             this.controller = new BlockPos(controller[0], controller[1], controller[2]);
         } else {
             this.controller = null;
         }
-        offset = new BlockPos(tagCompound.getInt("offsetX"), tagCompound.getInt("offsetY"), tagCompound.getInt("offsetZ"));
+        offset = new BlockPos(tag.getInt("offsetX"), tag.getInt("offsetY"), tag.getInt("offsetZ"));
     }
 
     // @todo 1.21 NBT
@@ -757,20 +762,22 @@ public class MoverTileEntity extends TickingTileEntity {
 //    }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag tagCompound, HolderLookup.Provider provider) {
-        super.saveAdditional(tagCompound, provider);
+    public void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
+        items.save(tag, "items", provider);
+
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             if (network.containsKey(direction)) {
-                tagCompound.put(direction.name(), NbtUtils.writeBlockPos(network.get(direction)));
+                tag.put(direction.name(), NbtUtils.writeBlockPos(network.get(direction)));
             }
         }
-        logic.save(tagCompound);
+        logic.save(tag);
         if (controller != null) {
-            tagCompound.putIntArray("controller", new int[] { controller.getX(), controller.getY(), controller.getZ() });
+            tag.putIntArray("controller", new int[] { controller.getX(), controller.getY(), controller.getZ() });
         }
-        tagCompound.putInt("offsetX", offset.getX());
-        tagCompound.putInt("offsetY", offset.getY());
-        tagCompound.putInt("offsetZ", offset.getZ());
+        tag.putInt("offsetX", offset.getX());
+        tag.putInt("offsetY", offset.getY());
+        tag.putInt("offsetZ", offset.getZ());
     }
 
     // @todo 1.21 NBT
@@ -788,6 +795,18 @@ public class MoverTileEntity extends TickingTileEntity {
 //        info.putBoolean("west", west);
 //        info.putBoolean("east", east);
 //    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentInput input) {
+        super.applyImplicitComponents(input);
+        items.applyImplicitComponents(input.get(Registration.ITEM_INVENTORY));
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+        super.collectImplicitComponents(builder);
+        items.collectImplicitComponents(builder);
+    }
 
     @Override
     public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider provider) {

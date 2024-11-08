@@ -27,7 +27,7 @@ public class BuilderRenderer implements BlockEntityRenderer<BuilderTileEntity> {
     }
 
     public static void register() {
-        BlockEntityRenderers.register(BuilderModule.TYPE_BUILDER.get(), BuilderRenderer::new);
+        BlockEntityRenderers.register(BuilderModule.BUILDER.be().get(), BuilderRenderer::new);
     }
 
     @Override

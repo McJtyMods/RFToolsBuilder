@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
 import mcjty.lib.blocks.BaseBlock;
+import mcjty.lib.blocks.RBlock;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.datagen.DataGen;
@@ -35,7 +36,6 @@ import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 
-import java.util.ArrayList;
 import java.util.function.Supplier;
 
 import static mcjty.lib.datagen.Dob.has;
@@ -59,9 +59,12 @@ public class BuilderModule implements IModule {
 
     public static final DeferredItem<Item> SPACE_CHAMBER_CARD = ITEMS.register("space_chamber_card", tab(SpaceChamberCardItem::new));
 
-    public static final DeferredBlock<BaseBlock> BUILDER = BLOCKS.register("builder", BuilderTileEntity::createBlock);
-    public static final DeferredItem<Item> BUILDER_ITEM = ITEMS.register("builder", tab(() -> new BlockItem(BUILDER.get(), Registration.createStandardProperties())));
-    public static final Supplier<BlockEntityType<BuilderTileEntity>> TYPE_BUILDER = TILES.register("builder", () -> BlockEntityType.Builder.of(BuilderTileEntity::new, BUILDER.get()).build(null));
+    public static final RBlock<BaseBlock, BlockItem, BuilderTileEntity> BUILDER = RBLOCKS.registerBlock("builder",
+            BuilderTileEntity.class,
+            BuilderTileEntity::createBlock,
+            block -> new BlockItem(block.get(), createStandardProperties()),
+            BuilderTileEntity::new
+    );
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_BUILDER = CONTAINERS.register("builder", GenericContainer::createContainerType);
 
     public static final DeferredItem<Item> SUPER_HARVESTING_TOOL = ITEMS.register("superharvestingtool", SuperHarvestingTool::new);
@@ -107,9 +110,9 @@ public class BuilderModule implements IModule {
         dataGen.add(
                 Dob.blockBuilder(BUILDER)
                         .ironPickaxeTags()
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get())
                         .parentedItem("block/builder")
-                        .blockState(p -> p.horizontalOrientedBlock(BUILDER.get(), p.frontBasedModel("builder", p.modLoc("block/machinebuilder"))))
+                        .blockState(p -> p.horizontalOrientedBlock(BUILDER.block().get(), p.frontBasedModel("builder", p.modLoc("block/machinebuilder"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
                                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
