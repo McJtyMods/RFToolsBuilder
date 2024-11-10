@@ -1,11 +1,17 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import com.mojang.serialization.Codec;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.StringRepresentable;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
+
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public enum Shape {
+public enum Shape implements StringRepresentable {
     SHAPE_BOX("Box", Formulas.FormulaBox::new),
     SHAPE_TOPDOME("Top Dome", Formulas.FormulaTopDome::new),
     SHAPE_BOTTOMDOME("Bottom Dome", Formulas.FormulaBottomDome::new),
@@ -21,6 +27,9 @@ public enum Shape {
 
     private final String description;
     private final Supplier<IFormula> formulaFactory;
+
+    public static final Codec<Shape> CODEC = StringRepresentable.fromEnum(Shape::values);
+    public static final StreamCodec<FriendlyByteBuf, Shape> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(Shape.class);
 
     private static final Map<String, Shape> SHAPES_BY_DESCRIPTION;
 
@@ -55,5 +64,11 @@ public enum Shape {
 
     public static Shape getShape(String description) {
         return SHAPES_BY_DESCRIPTION.get(description);
+    }
+
+
+    @Override
+    public String getSerializedName() {
+        return name();
     }
 }

@@ -14,6 +14,8 @@ import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEnt
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.client.BuilderRenderer;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
+import mcjty.rftoolsbuilder.modules.builder.data.BuilderData;
+import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
 import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
@@ -21,6 +23,7 @@ import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -31,9 +34,11 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
 import java.util.function.Supplier;
@@ -80,6 +85,22 @@ public class BuilderModule implements IModule {
     public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_FORTUNE = ITEMS.register("shape_card_quarry_fortune", tab(() -> new ShapeCardItem(ShapeCardType.CARD_QUARRY_FORTUNE)));
     public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_SILK = ITEMS.register("shape_card_quarry_silk", tab(() -> new ShapeCardItem(ShapeCardType.CARD_QUARRY_SILK)));
     public static final DeferredItem<ShapeCardItem> SHAPE_CARD_VOID = ITEMS.register("shape_card_void", tab(() -> new ShapeCardItem(ShapeCardType.CARD_VOID)));
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ShapeCardData>> ITEM_SHAPECARD_DATA = COMPONENTS.registerComponentType(
+            "shapecard_data",
+            builder -> builder
+                    .persistent(ShapeCardData.CODEC)
+                    .networkSynchronized(ShapeCardData.STREAM_CODEC));
+
+    public static final Supplier<AttachmentType<BuilderData>> BUILDER_DATA = ATTACHMENT_TYPES.register(
+            "builder_data", () -> AttachmentType.builder(() -> new BuilderData(null))
+                    .serialize(BuilderData.CODEC)
+                    .build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<BuilderData>> ITEM_BUILDER_DATA = COMPONENTS.registerComponentType(
+            "builder_data",
+            builder -> builder
+                    .persistent(BuilderData.CODEC)
+                    .networkSynchronized(BuilderData.STREAM_CODEC));
 
     public BuilderModule(IEventBus bus) {
         bus.addListener(this::registerMenuScreens);
