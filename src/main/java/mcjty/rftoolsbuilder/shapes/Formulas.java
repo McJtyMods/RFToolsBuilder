@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -66,11 +67,12 @@ public class Formulas {
         private BlockState lastState = null;
 
         @Override
-        public void getCheckSumClient(CompoundTag tc, Check32 crc) {
+        public void getCheckSumClient(ItemStack tc, Check32 crc) {
             ShapeCardItem.getLocalChecksum(tc, crc);
-            int scanId = tc.getInt("scanid");
-            crc.add(scanId);
-            crc.add(ScanDataManagerClient.getScansClient().getScanDirtyCounterClient(scanId));
+            // @todo composer
+//            int scanId = tc.getInt("scanid");
+//            crc.add(scanId);
+//            crc.add(ScanDataManagerClient.getScansClient().getScanDirtyCounterClient(scanId));
         }
 
         @Override
@@ -221,8 +223,8 @@ public class Formulas {
                 ShapeRotation rotation = ShapeRotation.getByName(rot);
                 modifiers.add(new ShapeModifier(operation, flip, rotation));
 
-                BlockPos dim = ShapeCardItem.getClampedDimension(childTag, ScannerConfiguration.maxScannerDimension.get());
-                BlockPos off = ShapeCardItem.getClampedOffset(childTag, ScannerConfiguration.maxScannerOffset.get());
+                BlockPos dim = BlockPos.ZERO;// @todo composer ShapeCardItem.getClampedDimension(childTag, ScannerConfiguration.maxScannerDimension.get());
+                BlockPos off = BlockPos.ZERO;// @todo composer ShapeCardItem.getClampedOffset(childTag, ScannerConfiguration.maxScannerOffset.get());
                 BlockPos o = off.offset(offset);
                 formula.setup(world, thisCoord, dim, o, childTag);
                 formulas.add(formula);
@@ -243,13 +245,14 @@ public class Formulas {
         }
 
         @Override
-        public void getCheckSumClient(CompoundTag tc, Check32 crc) {
-            ShapeCardItem.getLocalChecksum(tc, crc);
-            ListTag children = tc.getList("children", Tag.TAG_COMPOUND);
+        public void getCheckSumClient(ItemStack card, Check32 crc) {
+            ShapeCardItem.getLocalChecksum(card, crc);
+            ListTag children = null;// @todo composer card.getList("children", Tag.TAG_COMPOUND);
             for (int i = 0 ; i < children.size() ; i++) {
                 CompoundTag childTag = children.getCompound(i);
                 IFormula formula = ShapeCardItem.createCorrectFormula(childTag);
-                formula.getCheckSumClient(childTag, crc);
+                // @todo composer
+//                formula.getCheckSumClient(childTag, crc);
                 crc.add(childTag.getBoolean("mod_flipy") ? 1 : 0);
 
                 String rot = childTag.getString("mod_rot");

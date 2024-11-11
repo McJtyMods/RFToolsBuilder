@@ -92,8 +92,8 @@ public class BuilderModule implements IModule {
                     .persistent(ShapeCardData.CODEC)
                     .networkSynchronized(ShapeCardData.STREAM_CODEC));
 
-    public static final Supplier<AttachmentType<BuilderData>> BUILDER_DATA = ATTACHMENT_TYPES.register(
-            "builder_data", () -> AttachmentType.builder(() -> new BuilderData(null))
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<BuilderData>> BUILDER_DATA = ATTACHMENT_TYPES.register(
+            "builder_data", () -> AttachmentType.builder(() -> BuilderData.DEFAULT)
                     .serialize(BuilderData.CODEC)
                     .build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<BuilderData>> ITEM_BUILDER_DATA = COMPONENTS.registerComponentType(
@@ -131,7 +131,7 @@ public class BuilderModule implements IModule {
         dataGen.add(
                 Dob.blockBuilder(BUILDER)
                         .ironPickaxeTags()
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), ITEM_BUILDER_DATA.get())
                         .parentedItem("block/builder")
                         .blockState(p -> p.horizontalOrientedBlock(BUILDER.block().get(), p.frontBasedModel("builder", p.modLoc("block/machinebuilder"))))
                         .shaped(builder -> builder

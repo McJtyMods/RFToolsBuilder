@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.lib.varia.Check32;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
@@ -11,8 +12,8 @@ public interface IFormula {
 
     void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card);
 
-    default void getCheckSumClient(CompoundTag cardTag, Check32 crc) {
-        ShapeCardItem.getLocalChecksum(cardTag, crc);
+    default void getCheckSumClient(ItemStack card, Check32 crc) {
+        ShapeCardItem.getLocalChecksum(card, crc);
     }
 
     boolean isInside(int x, int y, int z);
@@ -66,8 +67,8 @@ public interface IFormula {
                 }
 
                 @Override
-                public void getCheckSumClient(CompoundTag cardTag, Check32 crc) {
-                    IFormula.this.getCheckSumClient(cardTag, crc);
+                public void getCheckSumClient(ItemStack card, Check32 crc) {
+                    IFormula.this.getCheckSumClient(card, crc);
                 }
 
                 @Override

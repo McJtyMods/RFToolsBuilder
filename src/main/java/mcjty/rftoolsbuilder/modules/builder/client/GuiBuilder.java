@@ -6,6 +6,7 @@ import mcjty.lib.gui.Window;
 import mcjty.lib.gui.widgets.Button;
 import mcjty.lib.gui.widgets.EnergyBar;
 import mcjty.lib.gui.widgets.ImageChoiceLabel;
+import mcjty.lib.network.PacketAttachmentData;
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
@@ -103,10 +104,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private void selectAnchor(String name) {
         int index = name.charAt(name.length()-1)-48;
         updateAnchorSettings(AnchorMode.values()[index]);
-        sendServerCommandTyped(Minecraft.getInstance().level.dimension(), GenericTileEntity.COMMAND_SYNC_BINDING.name(),
-                TypedMap.builder()
-                        .put(VALUE_ANCHOR.key(), AnchorMode.values()[index].getName())
-                        .build());
+        window.syncDataToServer(BuilderModule.BUILDER_DATA.get(), getBE());
     }
 
     private void updateAnchorSettings(AnchorMode index) {

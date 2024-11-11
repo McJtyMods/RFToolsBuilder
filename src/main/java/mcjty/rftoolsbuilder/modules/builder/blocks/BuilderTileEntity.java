@@ -123,9 +123,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 //    @GuiValue
 //    public static final Value<BuilderTileEntity, String> VALUE_MODE = Value.createEnum("mode", BuilderMode.values(), BuilderTileEntity::getMode, BuilderTileEntity::setMode);
 
-    private RotateMode rotate = RotateMode.ROTATE_0;
-    @GuiValue
-    public static final Value<BuilderTileEntity, String> VALUE_ROTATE = Value.createEnum("rotate", RotateMode.values(), BuilderTileEntity::getRotate, BuilderTileEntity::setRotate);
+    // @todo 1.21 removed!
+//    @GuiValue
+//    public static final Value<BuilderTileEntity, String> VALUE_ROTATE = Value.createEnum("rotate", RotateMode.values(), BuilderTileEntity::getRotate, BuilderTileEntity::setRotate);
 
     // @todo 1.21 removed!
 //    @GuiValue
@@ -142,9 +142,6 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private int collectXP = 0;
 
     private boolean boxValid = false;
-    private BlockPos minBox = null;
-    private BlockPos maxBox = null;
-    private BlockPos scan = null;
     private int projDx;
     private int projDy;
     private int projDz;
@@ -189,7 +186,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             .containerSupplier(container(BuilderModule.CONTAINER_BUILDER, CONTAINER_FACTORY, tile))
             .itemHandler(() -> tile.items)
             .energyHandler(() -> tile.energyStorage)
-            .shortListener(Sync.integer(() -> tile.scan == null ? -1 : tile.scan.getY(), v -> currentLevel = v))
+            .shortListener(Sync.integer(() -> tile.getScan() == null ? -1 : tile.getScan().getY(), v -> currentLevel = v))
             .data(BuilderModule.BUILDER_DATA, BuilderData.STREAM_CODEC)
             .setupSync(tile);
 
@@ -210,20 +207,20 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         setRSMode(RedstoneMode.REDSTONE_ONREQUIRED);
     }
 
-    private boolean supportMode = false;
-    @GuiValue
-    public static final Value<?, Boolean> VALUE_SUPPORT = Value.create("support", Type.BOOLEAN, BuilderTileEntity::hasSupportMode, BuilderTileEntity::setSupportMode);
-
-    @GuiValue(name = "wait")
-    private boolean waitMode = true;
-    @GuiValue(name = "loop")
-    private boolean loopMode = false;
-    @GuiValue(name = "hilight")
-    private boolean hilightMode = false;
-    @GuiValue
-    private boolean silent = false;
-    @GuiValue(name = "entities")
-    private boolean entityMode = false;
+//    private boolean supportMode = false;
+    // @todo 1.21 removed!
+//    @GuiValue
+//    public static final Value<?, Boolean> VALUE_SUPPORT = Value.create("support", Type.BOOLEAN, BuilderTileEntity::hasSupportMode, BuilderTileEntity::setSupportMode);
+//    @GuiValue(name = "wait")
+//    private boolean waitMode = true;
+//    @GuiValue(name = "loop")
+//    private boolean loopMode = false;
+//    @GuiValue(name = "hilight")
+//    private boolean flags().hilightMode = false;
+//    @GuiValue
+//    private boolean silent = false;
+//    @GuiValue(name = "entities")
+//    private boolean entityMode = false;
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
@@ -273,20 +270,20 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         } else {
             list.add("    Space card: " + getMode().getName().toLowerCase());
         }
-        if (scan != null) {
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        if (data.scan() != null) {
             list.add(ChatFormatting.BLUE + "Progress:");
-            list.add("    Y level: " + scan.getY());
-            int minChunkX = minBox.getX() >> 4;
-            int minChunkZ = minBox.getZ() >> 4;
-            int maxChunkX = maxBox.getX() >> 4;
-            int maxChunkZ = maxBox.getZ() >> 4;
-            int curX = scan.getX() >> 4;
-            int curZ = scan.getZ() >> 4;
+            list.add("    Y level: " + data.scan().getY());
+            int minChunkX = data.minBox().getX() >> 4;
+            int minChunkZ = data.minBox().getZ() >> 4;
+            int maxChunkX = data.maxBox().getX() >> 4;
+            int maxChunkZ = data.maxBox().getZ() >> 4;
+            int curX = data.scan().getX() >> 4;
+            int curZ = data.scan().getZ() >> 4;
             int totChunks = (maxChunkX - minChunkX + 1) * (maxChunkZ - minChunkZ + 1);
             int curChunk = (curZ - minChunkZ) * (maxChunkX - minChunkX) + curX - minChunkX;
             list.add("    Chunk:  " + curChunk + " of " + totChunks);
         }
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
         if (data.lastError() != null && !data.lastError().isEmpty()) {
             String[] errors = StringUtils.split(data.lastError(), "\n");
             for (String error : errors) {
@@ -313,6 +310,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     private boolean isShapeCard() {
         return items.getStackInSlot(SLOT_TAB).getItem() instanceof ShapeCardItem;
+    }
+
+    private BlockPos getScan() {
+        return getData(BuilderModule.BUILDER_DATA).scan();
     }
 
     private void makeSupportBlocksShaped() {
@@ -348,6 +349,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             Player player = harvester.get();
             BlockPos.MutableBlockPos src = new BlockPos.MutableBlockPos();
             BlockPos.MutableBlockPos dest = new BlockPos.MutableBlockPos();
+            BuilderData data = getData(BuilderModule.BUILDER_DATA);
+            BlockPos minBox = data.minBox();
+            BlockPos maxBox = data.maxBox();
             for (int x = minBox.getX(); x <= maxBox.getX(); x++) {
                 for (int y = minBox.getY(); y <= maxBox.getY(); y++) {
                     for (int z = minBox.getZ(); z <= maxBox.getZ(); z++) {
@@ -411,6 +415,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
             BlockPos.MutableBlockPos src = new BlockPos.MutableBlockPos();
             BlockPos.MutableBlockPos dest = new BlockPos.MutableBlockPos();
+            BuilderData data = getData(BuilderModule.BUILDER_DATA);
+            BlockPos minBox = data.minBox();
+            BlockPos maxBox = data.maxBox();
             for (int x = minBox.getX(); x <= maxBox.getX(); x++) {
                 for (int y = minBox.getY(); y <= maxBox.getY(); y++) {
                     for (int z = minBox.getZ(); z <= maxBox.getZ(); z++) {
@@ -433,21 +440,21 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     public boolean isHilightMode() {
-        return hilightMode;
+        return getData(BuilderModule.BUILDER_DATA).flags().hilightMode();
     }
 
     public void setHilightMode(boolean hilightMode) {
-        this.hilightMode = hilightMode;
-        setChanged();
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        setData(BuilderModule.BUILDER_DATA, data.withHilightMode(hilightMode));
     }
 
     public boolean isWaitMode() {
-        return waitMode;
+        return getData(BuilderModule.BUILDER_DATA).flags().waitMode();
     }
 
     public void setWaitMode(boolean waitMode) {
-        this.waitMode = waitMode;
-        setChanged();
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        setData(BuilderModule.BUILDER_DATA, data.withWaitMode(waitMode));
     }
 
     private void setLastError(String error) {
@@ -460,10 +467,11 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private boolean waitOrSkip(String error) {
-        if (waitMode) {
+        if (isWaitMode()) {
             setLastError(error);
+            return true;
         }
-        return waitMode;
+        return false;
     }
 
     private boolean skip() {
@@ -487,29 +495,30 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     public boolean hasLoopMode() {
-        return loopMode;
+        return getData(BuilderModule.BUILDER_DATA).flags().loopMode();
     }
 
     public void setLoopMode(boolean loopMode) {
-        this.loopMode = loopMode;
-        setChanged();
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        setData(BuilderModule.BUILDER_DATA, data.withLoopMode(loopMode));
     }
 
     public boolean hasEntityMode() {
-        return entityMode;
+        return getData(BuilderModule.BUILDER_DATA).flags().entityMode();
     }
 
     public void setEntityMode(boolean entityMode) {
-        this.entityMode = entityMode;
-        setChanged();
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        setData(BuilderModule.BUILDER_DATA, data.withEntityMode(entityMode));
     }
 
     public boolean hasSupportMode() {
-        return supportMode;
+        return getData(BuilderModule.BUILDER_DATA).flags().supportMode();
     }
 
     public void setSupportMode(boolean supportMode) {
-        this.supportMode = supportMode;
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        setData(BuilderModule.BUILDER_DATA, data.withSupportMode(supportMode));
         if (!level.isClientSide) {
             if (supportMode) {
                 makeSupportBlocks();
@@ -521,12 +530,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     public boolean isSilent() {
-        return silent;
+        return getData(BuilderModule.BUILDER_DATA).flags().silent();
     }
 
     public void setSilent(boolean silent) {
-        this.silent = silent;
-        setChanged();
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        setData(BuilderModule.BUILDER_DATA, data.withSilent(silent));
     }
 
     public BuilderMode getMode() {
@@ -548,16 +557,17 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     public AnchorMode getAnchor() {
-        return anchor;
+        return getData(BuilderModule.BUILDER_DATA).anchor();
     }
 
     public void setAnchor(AnchorMode anchor) {
-        if (supportMode && !level.isClientSide()) {
+        if (hasSupportMode() && !level.isClientSide()) {
             clearSupportBlocks();
         }
         boxValid = false;
 
-        this.anchor = anchor;
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        setData(BuilderModule.BUILDER_DATA, data.withAnchor(anchor));
 
         if (isShapeCard()) {
             // If there is a shape card we modify it for the new settings.
@@ -572,7 +582,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             ShapeCardItem.setOffset(shapeCard, offset.getX(), offset.getY(), offset.getZ());
         }
 
-        if (supportMode && !level.isClientSide()) {
+        if (hasSupportMode() && !level.isClientSide()) {
             makeSupportBlocks();
         }
         setChanged();
@@ -588,6 +598,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         int x = 0;
         int y;
         int z = 0;
+        AnchorMode anchor = getAnchor();
         y = -((anchor == ANCHOR_NE || anchor == ANCHOR_NW) ? spanY - 1 : 0);
         switch (direction) {
             case SOUTH -> {
@@ -614,19 +625,19 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
 
     public RotateMode getRotate() {
-        return rotate;
+        return getData(BuilderModule.BUILDER_DATA).rotate();
     }
 
     public void setRotate(RotateMode rotate) {
-        if (supportMode && !level.isClientSide()) {
+        if (hasSupportMode() && !level.isClientSide()) {
             clearSupportBlocks();
         }
         boxValid = false;
-        this.rotate = rotate;
-        if (supportMode && !level.isClientSide()) {
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        setData(BuilderModule.BUILDER_DATA, data.withRotate(rotate));
+        if (hasSupportMode() && !level.isClientSide()) {
             makeSupportBlocks();
         }
-        setChanged();
     }
 
     @Override
@@ -635,7 +646,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         super.setPowerInput(powered);
         boolean n = isMachineEnabled();
         if (o != n) {
-            if (loopMode || (n && scan == null)) {
+            BuilderData data = getData(BuilderModule.BUILDER_DATA);
+            if (hasLoopMode() || (n && data.scan() == null)) {
                 if (!level.isClientSide) {
                     restartScan();
                 }
@@ -657,6 +669,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         int spanX = maxCorner.getX() - minCorner.getX();
         int spanY = maxCorner.getY() - minCorner.getY();
         int spanZ = maxCorner.getZ() - minCorner.getZ();
+        AnchorMode anchor = getAnchor();
         switch (direction) {
             case SOUTH -> {
                 projDx = xCoord + Direction.NORTH.getNormal().getX() - minCorner.getX() - ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanX : 0);
@@ -689,9 +702,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return;
         }
 
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
         if (boxValid) {
             // Double check if the box is indeed still valid.
-            if (minCorner.equals(minBox) && maxCorner.equals(maxBox)) {
+            if (minCorner.equals(data.minBox()) && maxCorner.equals(data.maxBox())) {
                 return;
             }
         }
@@ -701,15 +715,16 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
         createProjection(chamberChannel);
 
-        minBox = minCorner;
-        maxBox = maxCorner;
+        data = data.withMinBox(minCorner).withMaxBox(maxCorner);
+        setData(BuilderModule.BUILDER_DATA, data);
         restartScan();
     }
 
     private void checkStateServerShaped() {
         float factor = infusable.getInfusedFactor();
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
         for (int i = 0; i < BuilderConfiguration.quarryBaseSpeed.get() + (factor * BuilderConfiguration.quarryInfusionSpeedFactor.get()); i++) {
-            if (scan != null) {
+            if (data.scan() != null) {
                 handleBlockShaped();
             }
         }
@@ -722,11 +737,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             insertItems(overflowItems.extractList());
         }
 
-        if (!isMachineEnabled() && loopMode) {
+        if (!isMachineEnabled() && hasLoopMode()) {
             return;
         }
 
-        if (scan == null) {
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        if (data.scan() == null) {
             return;
         }
 
@@ -745,8 +761,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = calculateBox();
         if (chamberChannel == null) {
-            scan = null;
-            setChanged();
+            setData(BuilderModule.BUILDER_DATA, data.withScan(null));
             return;
         }
 
@@ -762,7 +777,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         } else {
             float factor = infusable.getInfusedFactor();
             for (int i = 0; i < 2 + (factor * 40); i++) {
-                if (scan != null) {
+                if (data.scan() != null) {
                     handleBlock(world);
                 }
             }
@@ -773,9 +788,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         scanLocCnt--;
         if (scanLocCnt <= 0) {
             scanLocCnt = 5;
-            int x = scan.getX();
-            int y = scan.getY();
-            int z = scan.getZ();
+            BuilderData data = getData(BuilderModule.BUILDER_DATA);
+            int x = data.scan().getX();
+            int y = data.scan().getY();
+            int z = data.scan().getZ();
             double sqradius = 30 * 30;
             for (ServerPlayer player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
                 if (Objects.equals(player.getCommandSenderWorld().dimension(), level.dimension())) {
@@ -784,7 +800,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                     double d2 = z - player.getZ();
                     if (d0 * d0 + d1 * d1 + d2 * d2 < sqradius) {
                         RFToolsBuilderMessages.sendToClient(player, ClientCommandHandler.CMD_POSITION_TO_CLIENT,
-                                TypedMap.builder().put(ClientCommandHandler.PARAM_POS, getBlockPos()).put(ClientCommandHandler.PARAM_SCAN, scan));
+                                TypedMap.builder().put(ClientCommandHandler.PARAM_POS, getBlockPos()).put(ClientCommandHandler.PARAM_SCAN, data.scan()));
                     }
                 }
             }
@@ -798,12 +814,17 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return;
         }
         collectCounter = BuilderConfiguration.collectTimer.get();
-        if (!loopMode) {
-            scan = null;
+
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        if (!hasLoopMode()) {
+            data = data.withScan(null);
+            setData(BuilderModule.BUILDER_DATA, data);
         }
 
         float factor = infusable.getInfusedFactor();
 
+        BlockPos minBox = data.minBox();
+        BlockPos maxBox = data.maxBox();
         long rf = energyStorage.getEnergyStored();
         float area = (maxBox.getX() - minBox.getX() + 1) * (maxBox.getY() - minBox.getY() + 1) * (maxBox.getZ() - minBox.getZ() + 1);
         float infusedFactor = (4.0f - factor) / 4.0f;
@@ -904,9 +925,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             maxCorner = new BlockPos(maxCorner.getX(), maxHeight, maxCorner.getZ());
         }
 
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
         if (boxValid) {
             // Double check if the box is indeed still valid.
-            if (minCorner.equals(minBox) && maxCorner.equals(maxBox)) {
+            if (minCorner.equals(data.minBox()) && maxCorner.equals(data.maxBox())) {
                 return;
             }
         }
@@ -917,8 +939,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         cachedBlocks = null;
         cachedChunk = null;
         cachedVoidableBlocks.clear();
-        minBox = minCorner;
-        maxBox = maxCorner;
+        data = data.withMinBox(minCorner).withMaxBox(maxCorner);
+        setData(BuilderModule.BUILDER_DATA, data);
         restartScan();
     }
 
@@ -967,13 +989,14 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void handleBlockShaped() {
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
         for (int i = 0; i < 100; i++) {
-            if (scan == null) {
+            if (data.scan() == null) {
                 return;
             }
-            Map<BlockPos, BlockState> blocks = getCachedBlocks(new ChunkPos(scan.getX() >> 4, scan.getZ() >> 4));
-            if (blocks.containsKey(scan)) {
-                BlockState state = blocks.get(scan);
+            Map<BlockPos, BlockState> blocks = getCachedBlocks(new ChunkPos(data.scan().getX() >> 4, data.scan().getZ() >> 4));
+            if (blocks.containsKey(data.scan())) {
+                BlockState state = blocks.get(data.scan());
                 if (!handleSingleBlock(state)) {
                     nextLocation();
                 }
@@ -997,10 +1020,11 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return false;
         }
 
-        BlockPos srcPos = scan;
-        int sx = scan.getX();
-        int sy = scan.getY();
-        int sz = scan.getZ();
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        BlockPos srcPos = data.scan();
+        int sx = data.scan().getX();
+        int sy = data.scan().getY();
+        int sz = data.scan().getZ();
         if (!chunkLoad(sx, sz)) {
             // The chunk is not available and we could not chunkload it. We have to wait.
             return suspend("Chunk not available!");
@@ -1072,7 +1096,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 }
             }
 
-            if (!silent) {
+            if (!isSilent()) {
                 SoundType sound = newState.getBlock().getSoundType(newState, level, srcPos, fakePlayer);
                 playPlaceSoundSafe(sound, level, newState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
             }
@@ -1109,7 +1133,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     private void clearOrDirtBlock(int rfNeeded, BlockPos spos, BlockState srcState, boolean clear) {
         energyStorage.consumeEnergy(rfNeeded);
-        if (!silent) {
+        if (!isSilent()) {
             SoundType soundType = srcState.getBlock().getSoundType(srcState, level, spos, null);
             playBreakSoundSafe(soundType, level, srcState, spos.getX(), spos.getY(), spos.getZ());
         }
@@ -1286,7 +1310,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 Player fakePlayer = harvester.get();
                 level.setBlock(srcPos, block.defaultBlockState(), Block.UPDATE_ALL_IMMEDIATE);
 
-                if (!silent) {
+                if (!isSilent()) {
                     SoundType soundType = block.getSoundType(block.defaultBlockState(), level, srcPos, fakePlayer);
                     playPlaceSoundSafe(soundType, level, block.defaultBlockState(), srcPos.getX(), srcPos.getY(), srcPos.getZ());
                 }
@@ -1339,7 +1363,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                             level.setBlock(srcPos, getReplacementBlock(), Block.UPDATE_CLIENTS);       // No block update!
                         }
                     });
-                    if (!silent) {
+                    if (!isSilent()) {
                         SoundType soundType = block.getSoundType(srcState, level, srcPos, fakePlayer);
                         playBreakSoundSafe(soundType, level, srcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
                     }
@@ -1380,7 +1404,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                     }
                 }
 
-                if (!silent) {
+                if (!isSilent()) {
                     SoundType soundType = block.getSoundType(srcState, level, srcPos, fakePlayer);
                     playBreakSoundSafe(soundType, level, srcState, sx, sy, sz);
                 }
@@ -1394,11 +1418,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void handleBlock(Level world) {
-        BlockPos srcPos = scan;
-        BlockPos destPos = sourceToDest(scan);
-        int x = scan.getX();
-        int y = scan.getY();
-        int z = scan.getZ();
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        BlockPos srcPos = data.scan();
+        BlockPos destPos = sourceToDest(data.scan());
+        int x = data.scan().getX();
+        int y = data.scan().getY();
+        int z = data.scan().getZ();
         int destX = destPos.getX();
         int destY = destPos.getY();
         int destZ = destPos.getZ();
@@ -1406,19 +1431,19 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         switch (getMode()) {
             case MODE_COPY -> copyBlock(world, srcPos, world, destPos);
             case MODE_MOVE -> {
-                if (entityMode) {
+                if (hasEntityMode()) {
                     moveEntities(world, x, y, z, world, destX, destY, destZ);
                 }
-                moveBlock(world, srcPos, world, destPos, rotate);
+                moveBlock(world, srcPos, world, destPos, getRotate());
             }
             case MODE_BACK -> {
-                if (entityMode) {
+                if (hasEntityMode()) {
                     moveEntities(world, destX, destY, destZ, world, x, y, z);
                 }
                 moveBlock(world, destPos, world, srcPos, oppositeRotate());
             }
             case MODE_SWAP -> {
-                if (entityMode) {
+                if (hasEntityMode()) {
                     swapEntities(world, x, y, z, world, destX, destY, destZ);
                 }
                 swapBlock(world, srcPos, world, destPos);
@@ -1727,7 +1752,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void clearBlock(Level world, BlockPos pos) {
-        if (supportMode) {
+        if (hasSupportMode()) {
             world.setBlock(pos, BuilderModule.SUPPORT.get().defaultBlockState(), Block.UPDATE_ALL);
         } else {
             world.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
@@ -1735,10 +1760,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private RotateMode oppositeRotate() {
-        return switch (rotate) {
+        return switch (getRotate()) {
             case ROTATE_90 -> RotateMode.ROTATE_270;
             case ROTATE_270 -> RotateMode.ROTATE_90;
-            default -> rotate;
+            default -> getRotate();
         };
     }
 
@@ -1786,7 +1811,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 }
             }
 
-            if (!silent) {
+            if (!isSilent()) {
                 SoundType soundType = newState.getBlock().getSoundType(newState, destWorld, destPos, fakePlayer);
                 playPlaceSoundSafe(soundType, destWorld, newState, destPos.getX(), destPos.getY(), destPos.getZ());
             }
@@ -1923,7 +1948,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             if (srcTileEntity != null) {
                 setTileEntityNBT(destWorld, tc, destPos, srcState);
             }
-            if (!silent) {
+            if (!isSilent()) {
                 SoundType srcSoundType = srcBlock.getSoundType(srcState, srcWorld, srcPos, null);
                 playBreakSoundSafe(srcSoundType, srcWorld, srcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
                 SoundType dstSoundtype = srcBlock.getSoundType(srcState, destWorld, destPos, null);
@@ -2004,7 +2029,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             srcWorld.sendBlockUpdated(srcPos, newSrcState, newSrcState, Block.UPDATE_ALL);
         }
 
-        if (!silent) {
+        if (!isSilent()) {
             if (!isEmpty(oldSrcState, srcBlock)) {
                 SoundType srcSoundType = srcBlock.getSoundType(oldSrcState, srcWorld, srcPos, null);
                 playBreakSoundSafe(srcSoundType, srcWorld, oldSrcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
@@ -2025,7 +2050,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private BlockPos rotate(BlockPos c) {
-        switch (rotate) {
+        switch (getRotate()) {
             case ROTATE_0:
                 return c;
             case ROTATE_90:
@@ -2045,7 +2070,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
 
     private void rotate(BlockPos c, BlockPos.MutableBlockPos dest) {
-        switch (rotate) {
+        switch (getRotate()) {
             case ROTATE_0 -> dest.set(c);
             case ROTATE_90 -> dest.set(-c.getZ(), c.getY(), c.getX());
             case ROTATE_180 -> dest.set(-c.getX(), c.getY(), -c.getZ());
@@ -2056,21 +2081,23 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private void restartScan() {
         setLastError(null);
         chunkUnload();
-        if (loopMode || (isMachineEnabled() && scan == null)) {
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        if (hasLoopMode() || (isMachineEnabled() && data.scan() == null)) {
             if (getCardType() == ShapeCardType.CARD_SPACE) {
                 calculateBox();
-                scan = minBox;
+                data = data.withScan(data.minBox());
             } else if (getCardType() != ShapeCardType.CARD_UNKNOWN) {
                 calculateBoxShaped();
                 // We start at the top for a quarry or shape building
-                scan = new BlockPos(minBox.getX(), maxBox.getY(), minBox.getZ());
+                data = data.withScan(new BlockPos(data.minBox().getX(), data.maxBox().getY(), data.minBox().getZ()));
             }
             cachedBlocks = null;
             cachedChunk = null;
             cachedVoidableBlocks.clear();
         } else {
-            scan = null;
+            data = data.withScan(null);
         }
+        setData(BuilderModule.BUILDER_DATA, data);
     }
 
     @Override
@@ -2140,10 +2167,11 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void nextLocation() {
-        if (scan != null) {
-            int x = scan.getX();
-            int y = scan.getY();
-            int z = scan.getZ();
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        if (data.scan() != null) {
+            int x = data.scan().getX();
+            int y = data.scan().getY();
+            int z = data.scan().getZ();
 
             if (getCardType() == ShapeCardType.CARD_SPACE) {
                 nextLocationNormal(x, y, z);
@@ -2154,6 +2182,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void nextLocationQuarry(int x, int y, int z) {
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        BlockPos minBox = data.minBox();
+        BlockPos maxBox = data.maxBox();
         if (x >= maxBox.getX() || ((x + 1) % 16 == 0)) {
             if (z >= maxBox.getZ() || ((z + 1) % 16 == 0)) {
                 if (y <= minBox.getY()) {
@@ -2161,27 +2192,32 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                         x++;
                         z = (z >> 4) << 4;
                         y = maxBox.getY();
-                        scan = new BlockPos(x, y, z);
+                        data = data.withScan(new BlockPos(x, y, z));
                     } else if (z < maxBox.getZ()) {
                         x = minBox.getX();
                         z++;
                         y = maxBox.getY();
-                        scan = new BlockPos(x, y, z);
+                        data = data.withScan(new BlockPos(x, y, z));
                     } else {
                         restartScan();
+                        return;
                     }
                 } else {
-                    scan = new BlockPos((x >> 4) << 4, y - 1, (z >> 4) << 4);
+                    data = data.withScan(new BlockPos((x >> 4) << 4, y - 1, (z >> 4) << 4));
                 }
             } else {
-                scan = new BlockPos((x >> 4) << 4, y, z + 1);
+                data = data.withScan(new BlockPos((x >> 4) << 4, y, z + 1));
             }
         } else {
-            scan = new BlockPos(x + 1, y, z);
+            data = data.withScan(new BlockPos(x + 1, y, z));
         }
+        setData(BuilderModule.BUILDER_DATA, data);
     }
 
     private void nextLocationNormal(int x, int y, int z) {
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        BlockPos minBox = data.minBox();
+        BlockPos maxBox = data.maxBox();
         if (x >= maxBox.getX()) {
             if (z >= maxBox.getZ()) {
                 if (y >= maxBox.getY()) {
@@ -2189,17 +2225,18 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                         restartScan();
                     } else {
                         // We don't restart in swap mode.
-                        scan = null;
+                        data = data.withScan(null);
                     }
                 } else {
-                    scan = new BlockPos(minBox.getX(), y + 1, minBox.getZ());
+                    data = data.withScan(new BlockPos(minBox.getX(), y + 1, minBox.getZ()));
                 }
             } else {
-                scan = new BlockPos(minBox.getX(), y, z + 1);
+                data = data.withScan(new BlockPos(minBox.getX(), y, z + 1));
             }
         } else {
-            scan = new BlockPos(x + 1, y, z);
+            data = data.withScan(new BlockPos(x + 1, y, z));
         }
+        setData(BuilderModule.BUILDER_DATA, data);
     }
 
     private void refreshSettings() {
@@ -2208,7 +2245,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         cachedChunk = null;
         cachedVoidableBlocks.clear();
         boxValid = false;
-        scan = null;
+        setData(BuilderModule.BUILDER_DATA, getData(BuilderModule.BUILDER_DATA).withScan(null));
         cardType = ShapeCardType.CARD_UNKNOWN;
     }
 
@@ -2228,53 +2265,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
     }
 
-    // @todo 1.21
-    protected void loadInfo(CompoundTag tagCompound) {
-        CompoundTag info = tagCompound.getCompound("Info");
-
-        // Workaround to get the redstone mode for old builders to default to 'on'
-        if (!info.contains("rsMode")) {
-            rsMode = RedstoneMode.REDSTONE_ONREQUIRED;
-        }
-
-        if (info.contains("lastError")) {
-            lastError = info.getString("lastError");
-        } else {
-            lastError = null;
-        }
-        if (info.contains("mode")) {
-            mode = BuilderMode.values()[info.getInt("mode")];
-        }
-        if (info.contains("anchor")) {
-            anchor = AnchorMode.values()[info.getInt("anchor")];
-        }
-        if (info.contains("rotate")) {
-            rotate = RotateMode.values()[info.getInt("rotate")];
-        }
-        silent = info.getBoolean("silent");
-        supportMode = info.getBoolean("support");
-        entityMode = info.getBoolean("entityMode");
-        loopMode = info.getBoolean("loopMode");
-        if (info.contains("waitMode")) {
-            waitMode = info.getBoolean("waitMode");
-        } else {
-            waitMode = true;
-        }
-        hilightMode = info.getBoolean("hilightMode");
-        scan = BlockPosTools.read(info, "scan");
-        minBox = BlockPosTools.read(info, "minBox");
-        maxBox = BlockPosTools.read(info, "maxBox");
-    }
-
     @Override
     public void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
         energyStorage.save(tag, "energy", provider);
         items.save(tag, "items", provider);
         infusable.save(tag, "infusable");
-
-
-        // @todo 1.21 NBT
 
         if (!overflowItems.isEmpty()) {
             ListTag overflowItemsNbt = new ListTag();
@@ -2283,44 +2279,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
             tag.put("overflowItems", overflowItemsNbt);
         }
-        if (lastError != null) {
-            tag.putString("lastError", lastError);
-        }
-        tag.putInt("mode", mode.ordinal());
-        tag.putInt("anchor", anchor.ordinal());
-        tag.putInt("rotate", rotate.ordinal());
-        tag.putBoolean("silent", silent);
-        tag.putBoolean("support", supportMode);
-        tag.putBoolean("entityMode", entityMode);
-        tag.putBoolean("loopMode", loopMode);
-        tag.putBoolean("waitMode", waitMode);
-        tag.putBoolean("hilightMode", hilightMode);
-        BlockPosTools.write(tag, "scan", scan);
-        BlockPosTools.write(tag, "minBox", minBox);
-        BlockPosTools.write(tag, "maxBox", maxBox);
     }
-
-    // @todo 1.21
-//    @Override
-//    protected void saveInfo(CompoundTag tagCompound) {
-//        super.saveInfo(tagCompound);
-//        CompoundTag infoTag = getOrCreateInfo(tagCompound);
-//        if (lastError != null) {
-//            infoTag.putString("lastError", lastError);
-//        }
-//        infoTag.putInt("mode", mode.ordinal());
-//        infoTag.putInt("anchor", anchor.ordinal());
-//        infoTag.putInt("rotate", rotate.ordinal());
-//        infoTag.putBoolean("silent", silent);
-//        infoTag.putBoolean("support", supportMode);
-//        infoTag.putBoolean("entityMode", entityMode);
-//        infoTag.putBoolean("loopMode", loopMode);
-//        infoTag.putBoolean("waitMode", waitMode);
-//        infoTag.putBoolean("hilightMode", hilightMode);
-//        BlockPosTools.write(infoTag, "scan", scan);
-//        BlockPosTools.write(infoTag, "minBox", minBox);
-//        BlockPosTools.write(infoTag, "maxBox", maxBox);
-//    }
 
     @Override
     protected void applyImplicitComponents(DataComponentInput input) {
@@ -2328,6 +2287,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         energyStorage.applyImplicitComponents(input.get(Registration.ITEM_ENERGY));
         items.applyImplicitComponents(input.get(Registration.ITEM_INVENTORY));
         infusable.applyImplicitComponents(input.get(Registration.ITEM_INFUSABLE));
+        BuilderData builderData = input.get(BuilderModule.ITEM_BUILDER_DATA);
+        if (builderData != null) {
+            setData(BuilderModule.BUILDER_DATA, builderData);
+        }
     }
 
     @Override
@@ -2336,6 +2299,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         energyStorage.collectImplicitComponents(builder);
         items.collectImplicitComponents(builder);
         infusable.collectImplicitComponents(builder);
+        builder.set(BuilderModule.ITEM_BUILDER_DATA, getData(BuilderModule.BUILDER_DATA));
     }
 
     public static int getCurrentLevelClientSide() {
@@ -2343,7 +2307,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     public int getCurrentLevel() {
-        return scan == null ? -1 : scan.getY();
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        return data.scan() == null ? -1 : data.scan().getY();
     }
 
     @ServerCommand

@@ -373,7 +373,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
 //        return tagCompound.getInt("scanid");
     }
 
-    private static int getScanIdRecursive(ItemStack card) {
+    public static int getScanIdRecursive(ItemStack card) {
         Shape shape = getShape(card);
         // @todo composer
 //        if (tagCompound.contains("scanid") && shape == Shape.SHAPE_SCAN) {
