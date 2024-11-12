@@ -3,15 +3,15 @@
 
         action('restart','restart')
 
-        bind('redstone','rsmode')
-        bind('silent','silent')
-        bind('entities','entities')
-        bind('wait','wait')
-        bind('loop','loop')
-        bind('hilight','hilight')
-        bind('support','support')
-        bind('mode', 'mode')
-        bind('rotate', 'rotate')
+        binddata('redstone','mcjtylib:base_be_data')
+        binddata('silent','rftoolsbuilder:builder_data')
+        binddata('entities','rftoolsbuilder:builder_data')
+        binddata('wait','rftoolsbuilder:builder_data')
+        binddata('loop','rftoolsbuilder:builder_data')
+        binddata('hilight','rftoolsbuilder:builder_data')
+        binddata('support','rftoolsbuilder:builder_data')
+        binddata('mode', 'rftoolsbuilder:builder_data')
+        binddata('rotate', 'rftoolsbuilder:builder_data')
 
         panel('','positional') {
             bg1('rftoolsbuilder:textures/gui/builder.png')
