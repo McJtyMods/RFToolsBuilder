@@ -115,4 +115,7 @@ public record ShapeCardData(int channel, ShapeCardDimensions dimensions, boolean
         return new ShapeCardData(channel, dimensions, tagMatching, solid, newVoiding, shape);
     }
 
+    public ShapeCardData withVoiding(Set<String> voiding) {
+        return new ShapeCardData(channel, dimensions, tagMatching, solid, voiding, shape);
+    }
 }

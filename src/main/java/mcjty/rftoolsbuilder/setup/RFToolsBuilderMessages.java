@@ -5,6 +5,10 @@ import mcjty.lib.network.PacketSendClientCommand;
 import mcjty.lib.network.PacketSendServerCommand;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenCardGui;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketOpenBuilderGui;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateCardInInventory;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateCardInPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
@@ -25,13 +29,15 @@ public class RFToolsBuilderMessages {
                 .versioned("1.0")
                 .optional();
 
+        registrar.playToServer(PacketUpdateCardInInventory.TYPE, PacketUpdateCardInInventory.CODEC, PacketUpdateCardInInventory::handle);
+        registrar.playToServer(PacketUpdateCardInPlayer.TYPE, PacketUpdateCardInPlayer.CODEC, PacketUpdateCardInPlayer::handle);
+
+        registrar.playToServer(PacketCloseContainerAndOpenCardGui.TYPE, PacketCloseContainerAndOpenCardGui.CODEC, PacketCloseContainerAndOpenCardGui::handle);
+        registrar.playToServer(PacketOpenBuilderGui.TYPE, PacketOpenBuilderGui.CODEC, PacketOpenBuilderGui::handle);
+
         // @todo 1.21
-//        registrar.play(PacketUpdateNBTShapeCard.class, PacketUpdateNBTShapeCard::create, handler -> handler.server(PacketUpdateNBTShapeCard::handle));
-//        registrar.play(PacketUpdateNBTItemInventoryShape.class, PacketUpdateNBTItemInventoryShape::create, handler -> handler.server(PacketUpdateNBTItemInventoryShape::handle));
 //        registrar.play(PacketRequestShapeData.class, PacketRequestShapeData::create, handler -> handler.server(PacketRequestShapeData::handle));
-//        registrar.play(PacketCloseContainerAndOpenCardGui.class, PacketCloseContainerAndOpenCardGui::create, handler -> handler.server(PacketCloseContainerAndOpenCardGui::handle));
 //        registrar.play(PacketOpenCardGuiFromBuilder.class, PacketOpenCardGuiFromBuilder::create, handler -> handler.server(PacketOpenCardGuiFromBuilder::handle));
-//        registrar.play(PacketOpenBuilderGui.class, PacketOpenBuilderGui::create, handler -> handler.server(PacketOpenBuilderGui::handle));
 //        registrar.play(PacketNotifyServerClientReady.class, PacketNotifyServerClientReady::create, handler -> handler.server(PacketNotifyServerClientReady::handle));
 //        registrar.play(PacketClickMover.class, PacketClickMover::create, handler -> handler.server(PacketClickMover::handle));
 //

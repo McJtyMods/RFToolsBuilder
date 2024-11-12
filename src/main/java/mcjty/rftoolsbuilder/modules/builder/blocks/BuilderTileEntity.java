@@ -5,8 +5,6 @@ import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.api.module.DefaultModuleSupport;
 import mcjty.lib.api.module.IModuleSupport;
-import mcjty.lib.bindings.GuiValue;
-import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.ListCommand;
 import mcjty.lib.blockcommands.ServerCommand;
@@ -21,7 +19,6 @@ import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
 import mcjty.lib.tileentity.TickingTileEntity;
-import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
 import mcjty.rftoolsbase.api.client.IHudSupport;
@@ -119,18 +116,6 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             .slot(specific(s -> s.getItem() instanceof FilterModuleItem).in().out(), SLOT_FILTER, 84, 46)
             .playerSlots(10, 70));
 
-    // @todo 1.21 removed!
-//    @GuiValue
-//    public static final Value<BuilderTileEntity, String> VALUE_MODE = Value.createEnum("mode", BuilderMode.values(), BuilderTileEntity::getMode, BuilderTileEntity::setMode);
-
-    // @todo 1.21 removed!
-//    @GuiValue
-//    public static final Value<BuilderTileEntity, String> VALUE_ROTATE = Value.createEnum("rotate", RotateMode.values(), BuilderTileEntity::getRotate, BuilderTileEntity::setRotate);
-
-    // @todo 1.21 removed!
-//    @GuiValue
-//    public static final Value<BuilderTileEntity, String> VALUE_ANCHOR = Value.createEnum("anchor", AnchorMode.values(), BuilderTileEntity::getAnchor, BuilderTileEntity::setAnchor);
-
     // For usage in the gui
     private static int currentLevel = 0;
 
@@ -207,20 +192,6 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         setRSMode(RedstoneMode.REDSTONE_ONREQUIRED);
     }
 
-//    private boolean supportMode = false;
-    // @todo 1.21 removed!
-//    @GuiValue
-//    public static final Value<?, Boolean> VALUE_SUPPORT = Value.create("support", Type.BOOLEAN, BuilderTileEntity::hasSupportMode, BuilderTileEntity::setSupportMode);
-//    @GuiValue(name = "wait")
-//    private boolean waitMode = true;
-//    @GuiValue(name = "loop")
-//    private boolean loopMode = false;
-//    @GuiValue(name = "hilight")
-//    private boolean flags().hilightMode = false;
-//    @GuiValue
-//    private boolean silent = false;
-//    @GuiValue(name = "entities")
-//    private boolean entityMode = false;
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()

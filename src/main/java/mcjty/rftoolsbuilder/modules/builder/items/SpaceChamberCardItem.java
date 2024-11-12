@@ -6,8 +6,10 @@ import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
+import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiChamberDetails;
+import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -43,19 +45,14 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
         return BuilderConfiguration.builderRfPerOperation.get() + " RF/t per block";
     }
 
-    private String getChannelDescription(ItemStack stack) {
-        // @todo 1.21 NBT
-        return "Channel is not set!";
-//        CompoundTag tag = stack.getTag();
-//        int channel = -1;
-//        if (tag != null) {
-//            channel = tag.getInt("channel");
-//        }
-//        if (channel != -1) {
-//            return "Channel: " + channel;
-//        } else {
-//            return "Channel is not set!";
-//        }
+    private String getChannelDescription(ItemStack card) {
+        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA, ShapeCardData.DEFAULT);
+        int channel = data.channel();
+        if (channel != -1) {
+            return "Channel: " + channel;
+        } else {
+            return "Channel is not set!";
+        }
     }
 
     public SpaceChamberCardItem() {
@@ -86,7 +83,6 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         BlockEntity te = level.getBlockEntity(pos);
-        CompoundTag tagCompound = new CompoundTag(); // @todo 1.21 NBT stack.getOrCreateTag();
 
         int channel = -1;
         if (te instanceof SpaceChamberControllerTileEntity) {
@@ -96,7 +92,9 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
         if (channel == -1) {
             showDetails(level, player, stack);
         } else {
-            tagCompound.putInt("channel", channel);
+            ShapeCardData data = stack.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA, ShapeCardData.DEFAULT);
+            data = data.withChannel(channel);
+            stack.set(BuilderModule.ITEM_SHAPECARD_DATA, data);
             if (level.isClientSide) {
                 Logging.message(player, "Card is set to channel '" + channel + "'");
             }
@@ -105,15 +103,13 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
     }
 
     private void showDetails(Level world, Player player, ItemStack stack) {
-        // @todo 1.21 NBT
-//        if (stack.getTag() != null && stack.getTag().contains("channel")) {
-//            int channel = stack.getTag().getInt("channel");
-//            if (channel != -1) {
-//                showDetailsGui(world, player);
-//            } else {
-//                Logging.message(player, ChatFormatting.YELLOW + "Card is not linked!");
-//            }
-//        }
+        ShapeCardData data = stack.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA, ShapeCardData.DEFAULT);
+        int channel = data.channel();
+        if (channel != -1) {
+            showDetailsGui(world, player);
+        } else {
+            Logging.message(player, ChatFormatting.YELLOW + "Card is not linked!");
+        }
     }
 
     private void showDetailsGui(Level world, Player player) {

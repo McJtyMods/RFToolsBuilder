@@ -45,13 +45,13 @@ public class ShieldingTileEntity extends BlockEntity {
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag, provider);
+        this.saveClient(tag);
         return tag;
     }
 
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider provider) {
-        loadAdditional(pkt.getTag(), provider); // @todo 1.21 good way?
+        loadClient(pkt.getTag(), provider);
         requestModelDataUpdate();
         BlockState state = level.getBlockState(worldPosition);
         level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_ALL);
@@ -117,7 +117,6 @@ public class ShieldingTileEntity extends BlockEntity {
         saveClient(tag);
     }
 
-    // @todo 1.21 try to use the GenericTileEntity system
     private void saveClient(CompoundTag tag) {
         if (shieldProjector != null) {
             tag.putInt("sx", shieldProjector.getX());
@@ -127,6 +126,15 @@ public class ShieldingTileEntity extends BlockEntity {
         if (mimic != null) {
             CompoundTag camoNbt = NbtUtils.writeBlockState(mimic);
             tag.put("mimic", camoNbt);
+        }
+    }
+
+    private void loadClient(CompoundTag tag, HolderLookup.Provider provider) {
+        shieldProjector = new BlockPos(tag.getInt("sx"), tag.getInt("sy"), tag.getInt("sz"));
+        if (tag.contains("mimic")) {
+            mimic = NbtUtils.readBlockState(provider.lookup(Registries.BLOCK).get(), tag.getCompound("mimic"));
+        } else {
+            mimic = null;
         }
     }
 }

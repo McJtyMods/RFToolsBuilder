@@ -26,6 +26,7 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.shield.*;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldRenderData;
+import mcjty.rftoolsbuilder.modules.shield.data.ShieldData;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import mcjty.rftoolsbuilder.modules.shield.network.PacketNotifyServerClientReady;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
@@ -106,7 +107,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     // Client side
     private ShieldRenderData renderData;
 
-    private DamageTypeMode damageMode = DamageTypeMode.DAMAGETYPE_GENERIC;
+//    private DamageTypeMode damageMode = DamageTypeMode.DAMAGETYPE_GENERIC;
 
     // If true the shield is currently made.
     private boolean shieldComposed = false;
@@ -121,10 +122,10 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     // a bit after the shield projector itself has had a change to update its client-side data
     private int updateTimeout = 0;
 
-    private int shieldColor;
+//    private int shieldColor;
 
     // If true light is blocked
-    private boolean blockLight = false;
+//    private boolean blockLight = false;
 
     private int supportedBlocks;
     private float damageFactor = 1.0f;
@@ -133,8 +134,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     // Filter list.
     private final List<ShieldFilter> filters = new ArrayList<>();
 
-    private ShieldTexture shieldTexture = ShieldTexture.SHIELD;
-    private ShieldRenderingMode shieldRenderingMode = ShieldRenderingMode.SHIELD;
+//    private ShieldTexture shieldTexture = ShieldTexture.SHIELD;
 
     private final List<RelCoordinateShield> shieldBlocks = new ArrayList<>();
     private final List<BlockState> blockStateTable = new ArrayList<>();
@@ -230,20 +230,22 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 
     public ShieldRenderData getRenderData() {
         if (renderData == null) {
+            int shieldColor = getShieldColor();
             float r = ((shieldColor >> 16) & 0xff) / 255.0f;
             float g = ((shieldColor >> 8) & 0xff) / 255.0f;
             float b = (shieldColor & 0xff) / 255.0f;
-            renderData = new ShieldRenderData(r, g, b, 1.0f, shieldTexture);
+            renderData = new ShieldRenderData(r, g, b, 1.0f, getShieldTexture());
         }
         return renderData;
     }
 
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider provider) {
+        int shieldColor = getShieldColor();
         int oldColor = shieldColor;
-        ShieldTexture oldTexture = shieldTexture;
+        ShieldTexture oldTexture = getShieldTexture();
         super.onDataPacket(net, packet, provider);
-        if (oldColor != shieldColor || oldTexture != shieldTexture) {
+        if (oldColor != shieldColor || oldTexture != getShieldTexture()) {
             renderData = null;
             // @todo this doesn't help to automatically update the color
             BlockState state = level.getBlockState(worldPosition);
@@ -260,23 +262,23 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     public boolean isBlockLight() {
-        return blockLight;
+        return getData(ShieldModule.SHIELD_DATA).blockLight();
     }
 
     public void setBlockLight(boolean blockLight) {
-        this.blockLight = blockLight;
+        ShieldData data = getData(ShieldModule.SHIELD_DATA).withBlockLight(blockLight);
+        setData(ShieldModule.SHIELD_DATA, data);
         updateTimeout = 10;
-        setChanged();
     }
 
     public int getShieldColor() {
-        return shieldColor;
+        return getData(ShieldModule.SHIELD_DATA).shieldColor();
     }
 
     public void setShieldColor(int shieldColor) {
-        this.shieldColor = shieldColor;
+        ShieldData data = getData(ShieldModule.SHIELD_DATA).withShieldColor(shieldColor);
+        setData(ShieldModule.SHIELD_DATA, data);
         updateTimeout = 10;
-        setChanged();
     }
 
     private void delFilter(int selected) {
@@ -317,32 +319,32 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     public DamageTypeMode getDamageMode() {
-        return damageMode;
+        return getData(ShieldModule.SHIELD_DATA).damageMode();
     }
 
     public void setDamageMode(DamageTypeMode damageMode) {
-        this.damageMode = damageMode;
-        setChanged();
+        ShieldData data = getData(ShieldModule.SHIELD_DATA).withDamageMode(damageMode);
+        setData(ShieldModule.SHIELD_DATA, data);
     }
 
     public ShieldRenderingMode getShieldRenderingMode() {
-        return shieldRenderingMode;
+        return getData(ShieldModule.SHIELD_DATA).renderMode();
     }
 
     public void setShieldRenderingMode(ShieldRenderingMode shieldRenderingMode) {
-        this.shieldRenderingMode = shieldRenderingMode;
+        ShieldData data = getData(ShieldModule.SHIELD_DATA).withRenderMode(shieldRenderingMode);
+        setData(ShieldModule.SHIELD_DATA, data);
         updateTimeout = 10;
-        setChanged();
     }
 
     public ShieldTexture getShieldTexture() {
-        return shieldTexture;
+        return getData(ShieldModule.SHIELD_DATA).shieldTexture();
     }
 
     public void setShieldTexture(ShieldTexture shieldTexture) {
-        this.shieldTexture = shieldTexture;
+        ShieldData data = getData(ShieldModule.SHIELD_DATA).withShieldTexture(shieldTexture);
+        setData(ShieldModule.SHIELD_DATA, data);
         updateTimeout = 10;
-        setChanged();
     }
 
     @Nonnull
@@ -362,7 +364,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 
     @Nullable
     private BlockState calculateMimic() {
-        if (!ShieldRenderingMode.MIMIC.equals(shieldRenderingMode)) {
+        if (!ShieldRenderingMode.MIMIC.equals(getShieldRenderingMode())) {
             return null;
         }
         ItemStack stackInSlot = items.getStackInSlot(SLOT_BUFFER);
@@ -377,8 +379,8 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             return Blocks.AIR.defaultBlockState();
         }
 
-        ShieldRenderingMode render = shieldRenderingMode;
-        if (!ShieldConfiguration.allowInvisibleShield.get() && ShieldRenderingMode.INVISIBLE.equals(shieldRenderingMode)) {
+        ShieldRenderingMode render = getShieldingBlock();
+        if (!ShieldConfiguration.allowInvisibleShield.get() && ShieldRenderingMode.INVISIBLE.equals(render)) {
             render = ShieldRenderingMode.SOLID;
         }
         if (mimic != null) {
@@ -464,9 +466,9 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             s = 10;
         }
         int rf = ShieldConfiguration.rfBase.get() * s / 10;
-        if (ShieldRenderingMode.SHIELD.equals(shieldRenderingMode)) {
+        if (ShieldRenderingMode.SHIELD.equals(getShieldRenderingMode())) {
             rf += ShieldConfiguration.rfShield.get() * s / 10;
-        } else if (ShieldRenderingMode.MIMIC.equals(shieldRenderingMode)) {
+        } else if (ShieldRenderingMode.MIMIC.equals(getShieldRenderingMode())) {
             rf += ShieldConfiguration.rfCamo.get() * s / 10;
         }
         return rf;
@@ -485,7 +487,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     public void applyDamageToEntity(Entity entity) {
         DamageSource source;
         int rf;
-        if (DamageTypeMode.DAMAGETYPE_GENERIC.equals(damageMode)) {
+        if (DamageTypeMode.DAMAGETYPE_GENERIC.equals(getDamageMode())) {
             rf = ShieldConfiguration.rfDamage.get();
             source = DamageTools.getGenericDamageSource(entity);
         } else {
@@ -708,7 +710,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             findTemplateBlocks(templateBlocks, state, false, pos);
 
             BlockState mimic = calculateMimic();
-            BlockState shielding = calculateShieldBlock(mimic, blockLight);
+            BlockState shielding = calculateShieldBlock(mimic, isBlockLight());
 
             for (Map.Entry<BlockPos, BlockState> entry : templateBlocks.entrySet()) {
                 BlockPos templateBlock = entry.getKey();
@@ -738,7 +740,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
      */
     private void updateShield() {
         BlockState mimic = calculateMimic();
-        BlockState shielding = calculateShieldBlock(mimic, blockLight);
+        BlockState shielding = calculateShieldBlock(mimic, isBlockLight());
         int xCoord = getBlockPos().getX();
         int yCoord = getBlockPos().getY();
         int zCoord = getBlockPos().getZ();
@@ -1075,6 +1077,10 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         energyStorage.applyImplicitComponents(input.get(Registration.ITEM_ENERGY));
         items.applyImplicitComponents(input.get(Registration.ITEM_INVENTORY));
         infusable.applyImplicitComponents(input.get(Registration.ITEM_INFUSABLE));
+        ShieldData shieldData = input.get(ShieldModule.ITEM_SHIELD_DATA);
+        if (shieldData != null) {
+            setData(ShieldModule.SHIELD_DATA, shieldData);
+        }
     }
 
     @Override
@@ -1083,6 +1089,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         energyStorage.collectImplicitComponents(builder);
         items.collectImplicitComponents(builder);
         infusable.collectImplicitComponents(builder);
+        builder.set(ShieldModule.ITEM_SHIELD_DATA, getData(ShieldModule.SHIELD_DATA));
     }
 
     private void readFiltersFromNBT(CompoundTag tagCompound) {

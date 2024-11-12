@@ -116,7 +116,8 @@ public class ShapeRenderer {
         }
     }
 
-    public void handleMouseWheel(double dwheel) {
+    public void handleMouseWheel(double dwheelX, double dwheelY) {
+        float dwheel = (float) dwheelY;
         if (dwheel < 0) {
             scale *= .6;
             if (scale <= 0.1) {

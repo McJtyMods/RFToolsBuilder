@@ -15,15 +15,13 @@ import mcjty.lib.gui.WindowManager;
 import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.layout.VerticalLayout;
 import mcjty.lib.gui.widgets.*;
-import mcjty.lib.typed.Key;
-import mcjty.lib.typed.Type;
-import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.ComponentFactory;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketOpenBuilderGui;
-import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTShapeCard;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateCardInInventory;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateCardInPlayer;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.shapes.IShapeParentGui;
@@ -335,67 +333,50 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         if (isTorus()) {
             dimZ.text(dimX.getText());
         }
-        if (fromTE) {
-            ItemStack stack = getStackToEdit();
-            if (!stack.isEmpty()) {
-                // @todo 1.21 NBT
-//                CompoundTag tag = stack.getTag();
-//                if (tag == null) {
-//                    tag = new CompoundTag();
-//                }
-//                ShapeCardItem.setShape(stack, getCurrentShape(), isSolid());
-//                ShapeCardItem.setDimension(stack, dx, dy, dz);
-//                ShapeCardItem.setOffset(stack, parseInt(offsetX.getText()), parseInt(offsetY.getText()), parseInt(offsetZ.getText()));
-//                RFToolsBuilderMessages.sendToServer(PacketUpdateNBTItemInventoryShape.create(
-//                        fromTEPos, fromTEStackSlot, tag));
+        ItemStack stack = getStackToEdit();
+        if (!stack.isEmpty()) {
+            ShapeCardItem.setShape(stack, getCurrentShape(), isSolid());
+            ShapeCardItem.setDimension(stack, dx, dy, dz);
+            ShapeCardItem.setOffset(stack, parseInt(offsetX.getText()), parseInt(offsetY.getText()), parseInt(offsetZ.getText()));
+            if (fromTE) {
+                RFToolsBuilderMessages.sendToServer(PacketUpdateCardInInventory.create(fromTEPos, fromTEStackSlot, stack));
+            } else {
+                RFToolsBuilderMessages.sendToServer(PacketUpdateCardInPlayer.create(stack));
             }
-        } else {
-            RFToolsBuilderMessages.sendToServer(PacketUpdateNBTShapeCard.create(
-                    TypedMap.builder()
-                            .put(new Key<>("shape", Type.STRING), getCurrentShape().getDescription())
-                            .put(new Key<>("solid", Type.BOOLEAN), isSolid())
-                            .put(new Key<>("dimX", Type.INTEGER), dx)
-                            .put(new Key<>("dimY", Type.INTEGER), dy)
-                            .put(new Key<>("dimZ", Type.INTEGER), dz)
-                            .put(new Key<>("offsetX", Type.INTEGER), parseInt(offsetX.getText()))
-                            .put(new Key<>("offsetY", Type.INTEGER), parseInt(offsetY.getText()))
-                            .put(new Key<>("offsetZ", Type.INTEGER), parseInt(offsetZ.getText()))
-                            .build()));
         }
     }
 
     private void updateVoidSettings() {
-        if (fromTE) {
-            ItemStack stack = getStackToEdit();
-            if (!stack.isEmpty()) {
-                // @todo 1.21 NBT
-//                CompoundTag tag = stack.getTag();
-//                if (tag == null) {
-//                    tag = new CompoundTag();
-//                }
-//                tag.putBoolean("voidstone", stone.isPressed());
-//                tag.putBoolean("voidcobble", cobble.isPressed());
-//                tag.putBoolean("voiddirt", dirt.isPressed());
-//                tag.putBoolean("voidgravel", gravel.isPressed());
-//                tag.putBoolean("voidsand", sand.isPressed());
-//                tag.putBoolean("voidnetherrack", netherrack.isPressed());
-//                tag.putBoolean("voidendstone", endstone.isPressed());
-//                tag.putBoolean("tagMatching", tagMatching.isPressed());
-//                RFToolsBuilderMessages.sendToServer(PacketUpdateNBTItemInventoryShape.create(
-//                        fromTEPos, fromTEStackSlot, tag));
+        ItemStack stack = getStackToEdit();
+        if (!stack.isEmpty()) {
+            ShapeCardItem.clearVoiding(stack);
+            if (stone.isPressed()) {
+                ShapeCardItem.addVoiding(stack, "stone");
             }
-        } else {
-            RFToolsBuilderMessages.sendToServer(PacketUpdateNBTShapeCard.create(
-                    TypedMap.builder()
-                            .put(new Key<>("voidstone", Type.BOOLEAN), stone.isPressed())
-                            .put(new Key<>("voidcobble", Type.BOOLEAN), cobble.isPressed())
-                            .put(new Key<>("voiddirt", Type.BOOLEAN), dirt.isPressed())
-                            .put(new Key<>("voidgravel", Type.BOOLEAN), gravel.isPressed())
-                            .put(new Key<>("voidsand", Type.BOOLEAN), sand.isPressed())
-                            .put(new Key<>("voidnetherrack", Type.BOOLEAN), netherrack.isPressed())
-                            .put(new Key<>("voidendstone", Type.BOOLEAN), endstone.isPressed())
-                            .put(new Key<>("tagMatching", Type.BOOLEAN), tagMatching.isPressed())
-                            .build()));
+            if (cobble.isPressed()) {
+                ShapeCardItem.addVoiding(stack, "cobble");
+            }
+            if (dirt.isPressed()) {
+                ShapeCardItem.addVoiding(stack, "dirt");
+            }
+            if (gravel.isPressed()) {
+                ShapeCardItem.addVoiding(stack, "gravel");
+            }
+            if (sand.isPressed()) {
+                ShapeCardItem.addVoiding(stack, "sand");
+            }
+            if (netherrack.isPressed()) {
+                ShapeCardItem.addVoiding(stack, "netherrack");
+            }
+            if (endstone.isPressed()) {
+                ShapeCardItem.addVoiding(stack, "endstone");
+            }
+            ShapeCardItem.setTagMatching(stack, tagMatching.isPressed());
+            if (fromTE) {
+                RFToolsBuilderMessages.sendToServer(PacketUpdateCardInInventory.create(fromTEPos, fromTEStackSlot, stack));
+            } else {
+                RFToolsBuilderMessages.sendToServer(PacketUpdateCardInPlayer.create(stack));
+            }
         }
     }
 
@@ -509,7 +490,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         if (window == null) {
             return false;
         }
-        getShapeRenderer().handleMouseWheel(wheelX);    // @todo 1.21 mouse wheel
+        getShapeRenderer().handleMouseWheel(wheelX, wheelY);
         return super.mouseScrolled(x, y, wheelX, wheelY);
     }
 

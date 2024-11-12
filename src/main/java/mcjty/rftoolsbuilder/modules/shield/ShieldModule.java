@@ -10,10 +10,12 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.*;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldModelLoader;
+import mcjty.rftoolsbuilder.modules.shield.data.ShieldData;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.MenuType;
@@ -26,10 +28,12 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
 import javax.annotation.Nonnull;
@@ -79,6 +83,16 @@ public class ShieldModule implements IModule {
     public static final DeferredBlock<ShieldingBlock> SHIELDING_CUTOUT = BLOCKS.register("shielding_cutout", ShieldingBlock::new);
     public static final Supplier<BlockEntityType<?>> TYPE_SHIELDING = TILES.register("shielding", () -> BlockEntityType.Builder.of(ShieldingTileEntity::new,
             SHIELDING_SOLID.get(), SHIELDING_TRANSLUCENT.get(), SHIELDING_CUTOUT.get()).build(null));
+
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<ShieldData>> SHIELD_DATA = ATTACHMENT_TYPES.register(
+            "shield_data", () -> AttachmentType.builder(() -> ShieldData.DEFAULT)
+                    .serialize(ShieldData.CODEC)
+                    .build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ShieldData>> ITEM_SHIELD_DATA = COMPONENTS.registerComponentType(
+            "shield_data",
+            builder -> builder
+                    .persistent(ShieldData.CODEC)
+                    .networkSynchronized(ShieldData.STREAM_CODEC));
 
     @Nonnull
     public static ShieldProjectorTileEntity createProjector1(BlockPos pos, BlockState state) {
@@ -195,7 +209,7 @@ public class ShieldModule implements IModule {
                 Dob.blockBuilder(SHIELD_BLOCK1)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_SHIELD_DATA.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK1.block().get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
@@ -205,7 +219,7 @@ public class ShieldModule implements IModule {
                 Dob.blockBuilder(SHIELD_BLOCK2)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_SHIELD_DATA.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK2.block().get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
                         .shapedComponentPreserve(builder -> builder
                                         .define('M', SHIELD_BLOCK1.block().get())
@@ -214,7 +228,7 @@ public class ShieldModule implements IModule {
                 Dob.blockBuilder(SHIELD_BLOCK3)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_SHIELD_DATA.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK3.block().get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
                         .shapedComponentPreserve(builder -> builder
                                         .define('s', VariousModule.DIMENSIONALSHARD.get())
@@ -224,7 +238,7 @@ public class ShieldModule implements IModule {
                 Dob.blockBuilder(SHIELD_BLOCK4)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_SHIELD_DATA.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK4.block().get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
                         .shapedComponentPreserve(builder -> builder
                                         .define('s', VariousModule.DIMENSIONALSHARD.get())

@@ -1,6 +1,10 @@
 package mcjty.rftoolsbuilder.modules.shield;
 
+import com.mojang.serialization.Codec;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -15,6 +19,9 @@ public enum ShieldTexture implements StringRepresentable {
 
     private final String description;
     private final String path;
+
+    public static final Codec<ShieldTexture> CODEC = StringRepresentable.fromEnum(ShieldTexture::values);
+    public static final StreamCodec<FriendlyByteBuf, ShieldTexture> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(ShieldTexture.class);
 
     ShieldTexture(String description, String path) {
         this.description = description;

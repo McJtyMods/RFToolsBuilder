@@ -335,8 +335,23 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         return card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT).tagMatching();
     }
 
+    public static void setTagMatching(ItemStack card, boolean tagMatching) {
+        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
+        card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.withTagMatching(tagMatching));
+    }
+
     public static boolean isVoiding(ItemStack card, String material) {
         return card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT).voiding().contains(material);
+    }
+
+    public static void addVoiding(ItemStack card, String material) {
+        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
+        card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.addVoiding(material));
+    }
+
+    public static void clearVoiding(ItemStack card) {
+        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
+        card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.withVoiding(new HashSet<>()));
     }
 
     public static Shape getShape(ItemStack card) {

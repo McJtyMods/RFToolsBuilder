@@ -4,6 +4,8 @@ import mcjty.lib.varia.Counter;
 import mcjty.lib.varia.LevelTools;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
+import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData;
+import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
@@ -69,18 +71,19 @@ public class BuilderTools {
     }
 
     @Nullable
-    public static Integer getChannel(ItemStack cardItem) {
-        // @todo 1.21 NBT
-        return null;
-//        if (cardItem.isEmpty() || cardItem.getTag() == null) {
-//            return null;
-//        }
-//
-//        int channel = cardItem.getTag().getInt("channel");
-//        if (channel == -1) {
-//            return null;
-//        }
-//        return channel;
+    public static Integer getChannel(ItemStack card) {
+        if (card.isEmpty() || !(card.getItem() instanceof ShapeCardItem)) {
+            return null;
+        }
+        ShapeCardData data = card.get(BuilderModule.ITEM_SHAPECARD_DATA);
+        if (data == null) {
+            return null;
+        }
+        int channel = data.channel();
+        if (channel == -1) {
+            return null;
+        }
+        return channel;
     }
 
     private static void findEntities(Level world, BlockPos minCorner, BlockPos maxCorner,
