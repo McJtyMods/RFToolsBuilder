@@ -6,6 +6,7 @@ import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
+import mcjty.rftoolsbuilder.modules.builder.data.ChamberControllerData;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.CompoundTag;
@@ -19,7 +20,6 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
 
     private BlockPos minCorner;
     private BlockPos maxCorner;
-    private int channel = -1;
 
     public SpaceChamberControllerTileEntity(BlockPos pos, BlockState state) {
         super(BuilderModule.TYPE_SPACE_CHAMBER_CONTROLLER.get(), pos, state);
@@ -112,7 +112,7 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         Logging.message(player, ChatFormatting.WHITE + "Chamber succesfully created!");
 
         SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(level);
-        SpaceChamberRepository.SpaceChamberChannel chamberChannel = chamberRepository.getOrCreateChannel(channel);
+        SpaceChamberRepository.SpaceChamberChannel chamberChannel = chamberRepository.getOrCreateChannel(getChannel());
         chamberChannel.setDimension(level.dimension());
         chamberChannel.setMinCorner(minCorner);
         chamberChannel.setMaxCorner(maxCorner);
@@ -122,11 +122,11 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
     }
 
     public int getChannel() {
-        return channel;
+        return getData(BuilderModule.CHAMBER_DATA).channel();
     }
 
     public int getChamberSize() {
-        if (channel == -1) {
+        if (getChannel() == -1) {
             return -1;
         }
         if (minCorner == null) {
@@ -136,8 +136,8 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
     }
 
     public void setChannel(int channel) {
-        this.channel = channel;
-        setChanged();
+        ChamberControllerData data = getData(BuilderModule.CHAMBER_DATA).withChannel(channel);
+        setData(BuilderModule.CHAMBER_DATA, data);
     }
 
     @Override

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "tag": "c:glass_blocks"
+    },
+    "l": {
+      "tag": "c:dyes/red"
+    },
+    "w": {
+      "tag": "minecraft:wool"
+    }
+  },
+  "pattern": [
+    "www",
+    "lGl",
+    "www"
+  ],
+  "result": {
+    "count": 8,
+    "id": "rftoolsbuilder:red_shield_template_block"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:copy_name",
+              "source": "block_entity"
+            },
+            {
+              "function": "minecraft:copy_components",
+              "include": [
+                "mcjtylib:item_energy",
+                "mcjtylib:item_inventory",
+                "mcjtylib:item_energy",
+                "mcjtylib:infusable",
+                "mcjtylib:item_inventory",
+                "rftoolsbuilder:shield_data"
+              ],
+              "source": "block_entity"
+            }
+          ],
+          "name": "rftoolsbuilder:shield_block4"
+        }
+      ],
+      "name": "shield_block4",
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "rftoolsbuilder:blocks/shield_block4"
+}

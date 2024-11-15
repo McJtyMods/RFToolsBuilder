@@ -1,0 +1,33 @@
+{
+  "type": "mcjtylib:copy_components",
+  "recipe": {
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "key": {
+      "M": {
+        "item": "rftoolsbuilder:shape_card_def"
+      },
+      "P": {
+        "item": "minecraft:diamond_pickaxe"
+      },
+      "S": {
+        "item": "minecraft:diamond_shovel"
+      },
+      "i": {
+        "tag": "c:ingots/iron"
+      },
+      "r": {
+        "item": "minecraft:redstone"
+      }
+    },
+    "pattern": [
+      "rPr",
+      "iMi",
+      "rSr"
+    ],
+    "result": {
+      "count": 1,
+      "id": "rftoolsbuilder:shape_card_quarry"
+    }
+  }
+}

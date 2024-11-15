@@ -179,7 +179,7 @@ public class ShieldingBlock extends Block implements EntityBlock {
             Entity entity = ctxt.getEntity();
             if (state.getValue(BLOCKED_HOSTILE)) {
                 if (isHostile(entity)) {
-                    if (checkEntityCD(world, pos, HostileFilter.HOSTILE)) {
+                    if (checkEntityCD(world, pos, HostileFilter.ID)) {
                         return COLLISION_SHAPE;
                     }
                     return Shapes.empty();
@@ -187,7 +187,7 @@ public class ShieldingBlock extends Block implements EntityBlock {
             }
             if (state.getValue(BLOCKED_PASSIVE)) {
                 if (isPassive(entity)) {
-                    if (checkEntityCD(world, pos, AnimalFilter.ANIMAL)) {
+                    if (checkEntityCD(world, pos, AnimalFilter.ID)) {
                         return COLLISION_SHAPE;
                     }
                     return Shapes.empty();
@@ -203,7 +203,7 @@ public class ShieldingBlock extends Block implements EntityBlock {
             }
             if (state.getValue(BLOCKED_ITEMS)) {
                 if (isItem(entity)) {
-                    if (checkEntityCD(world, pos, ItemFilter.ITEM)) {
+                    if (checkEntityCD(world, pos, ItemFilter.ID)) {
                         return COLLISION_SHAPE;
                     }
                     return Shapes.empty();
@@ -216,9 +216,9 @@ public class ShieldingBlock extends Block implements EntityBlock {
     private boolean checkEntityCD(BlockGetter world, BlockPos pos, String filterName) {
         ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
         if (projector != null) {
-            List<ShieldFilter> filters = projector.getFilters();
-            for (ShieldFilter filter : filters) {
-                if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
+            List<ShieldFilter<?>> filters = projector.getFilters();
+            for (ShieldFilter<?> filter : filters) {
+                if (DefaultFilter.ID.equals(filter.getFilterName())) {
                     return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
                 } else if (filterName.equals(filter.getFilterName())) {
                     return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
@@ -232,11 +232,11 @@ public class ShieldingBlock extends Block implements EntityBlock {
     private boolean checkPlayerCD(BlockGetter world, BlockPos pos, Player entity) {
         ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
         if (projector != null) {
-            List<ShieldFilter> filters = projector.getFilters();
-            for (ShieldFilter filter : filters) {
-                if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
+            List<ShieldFilter<?>> filters = projector.getFilters();
+            for (ShieldFilter<?> filter : filters) {
+                if (DefaultFilter.ID.equals(filter.getFilterName())) {
                     return (filter.getAction() & ShieldFilter.ACTION_SOLID) != 0;
-                } else if (PlayerFilter.PLAYER.equals(filter.getFilterName())) {
+                } else if (PlayerFilter.ID.equals(filter.getFilterName())) {
                     PlayerFilter playerFilter = (PlayerFilter) filter;
                     String name = playerFilter.getName();
                     if ((name == null || name.isEmpty())) {
@@ -300,15 +300,15 @@ public class ShieldingBlock extends Block implements EntityBlock {
             ShieldProjectorTileEntity projector = getShieldProjector(world, pos);
             if (projector != null) {
                 if (dmgItems && entity instanceof ItemEntity) {
-                    if (checkEntityDamage(projector, ItemFilter.ITEM)) {
+                    if (checkEntityDamage(projector, ItemFilter.ID)) {
                         projector.applyDamageToEntity(entity);
                     }
                 } else if (dmgHostile && isHostile(entity)) {
-                    if (checkEntityDamage(projector, HostileFilter.HOSTILE)) {
+                    if (checkEntityDamage(projector, HostileFilter.ID)) {
                         projector.applyDamageToEntity(entity);
                     }
                 } else if (dmgPassive && isPassive(entity)) {
-                    if (checkEntityDamage(projector, AnimalFilter.ANIMAL)) {
+                    if (checkEntityDamage(projector, AnimalFilter.ID)) {
                         projector.applyDamageToEntity(entity);
                     }
                 } else if (dmgPlayer && entity instanceof Player) {
@@ -321,9 +321,9 @@ public class ShieldingBlock extends Block implements EntityBlock {
     }
 
     private boolean checkEntityDamage(@Nonnull ShieldProjectorTileEntity shieldTileEntity, String filterName) {
-        List<ShieldFilter> filters = shieldTileEntity.getFilters();
-        for (ShieldFilter filter : filters) {
-            if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
+        List<ShieldFilter<?>> filters = shieldTileEntity.getFilters();
+        for (ShieldFilter<?> filter : filters) {
+            if (DefaultFilter.ID.equals(filter.getFilterName())) {
                 return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
             } else if (filterName.equals(filter.getFilterName())) {
                 return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
@@ -333,11 +333,11 @@ public class ShieldingBlock extends Block implements EntityBlock {
     }
 
     private boolean checkPlayerDamage(@Nonnull ShieldProjectorTileEntity shieldTileEntity, Player entity) {
-        List<ShieldFilter> filters = shieldTileEntity.getFilters();
-        for (ShieldFilter filter : filters) {
-            if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
+        List<ShieldFilter<?>> filters = shieldTileEntity.getFilters();
+        for (ShieldFilter<?> filter : filters) {
+            if (DefaultFilter.ID.equals(filter.getFilterName())) {
                 return ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0);
-            } else if (PlayerFilter.PLAYER.equals(filter.getFilterName())) {
+            } else if (PlayerFilter.ID.equals(filter.getFilterName())) {
                 PlayerFilter playerFilter = (PlayerFilter) filter;
                 String name = playerFilter.getName();
                 if ((name == null || name.isEmpty())) {

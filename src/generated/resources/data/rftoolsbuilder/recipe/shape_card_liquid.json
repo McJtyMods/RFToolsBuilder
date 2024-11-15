@@ -1,0 +1,33 @@
+{
+  "type": "mcjtylib:copy_components",
+  "recipe": {
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "key": {
+      "L": {
+        "item": "minecraft:lava_bucket"
+      },
+      "M": {
+        "item": "rftoolsbuilder:shape_card_def"
+      },
+      "W": {
+        "item": "minecraft:water_bucket"
+      },
+      "i": {
+        "tag": "c:ingots/iron"
+      },
+      "r": {
+        "item": "minecraft:redstone"
+      }
+    },
+    "pattern": [
+      "rWr",
+      "iMi",
+      "rLr"
+    ],
+    "result": {
+      "count": 1,
+      "id": "rftoolsbuilder:shape_card_liquid"
+    }
+  }
+}

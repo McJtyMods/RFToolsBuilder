@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "rftoolsbase:machine_frame"
+    },
+    "G": {
+      "tag": "c:glass_blocks"
+    },
+    "x": {
+      "tag": "c:dyes/blue"
+    }
+  },
+  "pattern": [
+    "xGx",
+    "GFG",
+    "xGx"
+  ],
+  "result": {
+    "count": 1,
+    "id": "rftoolsbuilder:space_chamber"
+  }
+}

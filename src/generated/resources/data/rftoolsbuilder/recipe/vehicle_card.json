@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:minecart"
+    },
+    "p": {
+      "item": "minecraft:paper"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    " C ",
+    "rpr",
+    " r "
+  ],
+  "result": {
+    "count": 1,
+    "id": "rftoolsbuilder:vehicle_card"
+  }
+}

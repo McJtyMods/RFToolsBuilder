@@ -15,6 +15,7 @@ import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.client.BuilderRenderer;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
 import mcjty.rftoolsbuilder.modules.builder.data.BuilderData;
+import mcjty.rftoolsbuilder.modules.builder.data.ChamberControllerData;
 import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
@@ -101,6 +102,16 @@ public class BuilderModule implements IModule {
             builder -> builder
                     .persistent(BuilderData.CODEC)
                     .networkSynchronized(BuilderData.STREAM_CODEC));
+
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<ChamberControllerData>> CHAMBER_DATA = ATTACHMENT_TYPES.register(
+            "chamber_data", () -> AttachmentType.builder(() -> ChamberControllerData.DEFAULT)
+                    .serialize(ChamberControllerData.CODEC)
+                    .build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ChamberControllerData>> ITEM_CHAMBER_DATA = COMPONENTS.registerComponentType(
+            "chamber_data",
+            builder -> builder
+                    .persistent(ChamberControllerData.CODEC)
+                    .networkSynchronized(ChamberControllerData.STREAM_CODEC));
 
     public BuilderModule(IEventBus bus) {
         bus.addListener(this::registerMenuScreens);

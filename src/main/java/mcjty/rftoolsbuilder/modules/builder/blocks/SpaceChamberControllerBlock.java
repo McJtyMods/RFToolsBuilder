@@ -5,10 +5,11 @@ import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.varia.SoundTools;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
+import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
+import mcjty.rftoolsbuilder.modules.builder.data.ChamberControllerData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -41,19 +42,12 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     }
 
     private static String getChannelDescription(ItemStack stack) {
-        // @todo 1.21 NBT
-        return "Channel is not set!";
-//        CompoundTag tag = stack.getTag();
-//        int channel = -1;
-//        CompoundTag info = tag == null ? null : tag.getCompound("BlockEntityTag").getCompound("Info");
-//        if (info != null) {
-//            channel = info.getInt("channel");
-//        }
-//        if (channel != -1) {
-//            return "Channel: " + channel;
-//        } else {
-//            return "Channel is not set!";
-//        }
+        ChamberControllerData data = stack.getOrDefault(BuilderModule.ITEM_CHAMBER_DATA, ChamberControllerData.DEFAULT);
+        if (data.channel() == -1) {
+            return "Channel is not set!";
+        } else {
+            return "Channel: " + data.channel();
+        }
     }
 
     @Override

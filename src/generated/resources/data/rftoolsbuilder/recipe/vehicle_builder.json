@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:minecart"
+    },
+    "F": {
+      "item": "rftoolsbase:machine_frame"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    },
+    "i": {
+      "tag": "c:ingots/iron"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "iCi",
+    "rFr",
+    "iTi"
+  ],
+  "result": {
+    "count": 1,
+    "id": "rftoolsbuilder:vehicle_builder"
+  }
+}

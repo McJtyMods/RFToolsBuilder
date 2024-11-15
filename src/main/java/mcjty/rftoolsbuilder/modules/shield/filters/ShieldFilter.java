@@ -19,7 +19,7 @@ public interface ShieldFilter<T extends ShieldFilter<?>> {
     int ACTION_SOLID = 1;           // Entities that match this filter are blocked
     int ACTION_DAMAGE = 2;          // Entities that match this filter get damage (can be combined with solid)
 
-    Map<String, MapCodec> CODECS = Map.of(
+    Map<String, MapCodec<? extends ShieldFilter<?>>> CODECS = Map.of(
             AnimalFilter.ID, AnimalFilter.CODEC,
             DefaultFilter.ID, DefaultFilter.CODEC,
             HostileFilter.ID, HostileFilter.CODEC,

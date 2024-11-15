@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "rftoolsbuilder:shield_block3"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "machine_frame": {
+      "conditions": {
+        "items": [
+          {
+            "items": "rftoolsbase:machine_frame"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "machine_frame"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "rftoolsbuilder:shield_block3"
+    ]
+  },
+  "sends_telemetry_event": true
+}
