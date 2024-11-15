@@ -1,10 +1,8 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
 import mcjty.lib.varia.Logging;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 
-public abstract class AbstractShieldFilter implements ShieldFilter {
+public abstract class AbstractShieldFilter<T extends ShieldFilter<?>> implements ShieldFilter<T> {
     private int action = ACTION_PASS;
 
     @Override
@@ -17,45 +15,15 @@ public abstract class AbstractShieldFilter implements ShieldFilter {
         this.action = action;
     }
 
-    @Override
-    public void toBytes(FriendlyByteBuf buf) {
-        CompoundTag tagCompound = new CompoundTag();
-        writeToNBT(tagCompound);
-        buf.writeNbt(tagCompound);
-    }
-
-    @Override
-    public void readFromNBT(CompoundTag tagCompound) {
-        action = tagCompound.getInt("action");
-    }
-
-    @Override
-    public void writeToNBT(CompoundTag tagCompound) {
-        tagCompound.putString("type", getFilterName());
-        tagCompound.putInt("action", action);
-    }
-
-    public static ShieldFilter createFilter(FriendlyByteBuf buf) {
-        CompoundTag compound = buf.readNbt();
-        return createFilter(compound);
-    }
-
-    public static ShieldFilter createFilter(CompoundTag compound) {
-        String type = compound.getString("type");
-        ShieldFilter filter = createFilter(type);
-        filter.readFromNBT(compound);
-        return filter;
-    }
-
-    public static ShieldFilter createFilter(String type) {
-        ShieldFilter filter;
+    public static ShieldFilter<?> createFilter(String type) {
+        ShieldFilter<?> filter;
         // @todo: improve this if in a nicer manner
         if ("animal".equals(type)) {
             filter = new AnimalFilter();
         } else if ("hostile".equals(type)) {
             filter = new HostileFilter();
         } else if ("player".equals(type)) {
-            filter = new PlayerFilter();
+            filter = new PlayerFilter("");
         } else if ("item".equals(type)) {
             filter = new ItemFilter();
         } else if ("default".equals(type)) {

@@ -62,7 +62,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     private int listDirty = 0;
 
     private static List<ShieldFilter> fromServer_filters = new ArrayList<>();
-    public static void storeFiltersForClient(List<ShieldFilter> filters) {
+    public static void storeFiltersForClient(List<ShieldFilter<?>> filters) {
         fromServer_filters = new ArrayList<>(filters);
     }
 
@@ -168,15 +168,15 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
                 actionOptions.choice(ACTION_PASS);
             }
             String type = shieldFilter.getFilterName();
-            if (DefaultFilter.DEFAULT.equals(type)) {
+            if (DefaultFilter.ID.equals(type)) {
                 typeOptions.choice("All");
-            } else if (AnimalFilter.ANIMAL.equals(type)) {
+            } else if (AnimalFilter.ID.equals(type)) {
                 typeOptions.choice("Passive");
-            } else if (HostileFilter.HOSTILE.equals(type)) {
+            } else if (HostileFilter.ID.equals(type)) {
                 typeOptions.choice("Hostile");
-            } else if (PlayerFilter.PLAYER.equals(type)) {
+            } else if (PlayerFilter.ID.equals(type)) {
                 typeOptions.choice("Player");
-            } else if (ItemFilter.ITEM.equals(type)) {
+            } else if (ItemFilter.ID.equals(type)) {
                 typeOptions.choice("Item");
             }
             if (shieldFilter instanceof PlayerFilter) {
@@ -270,19 +270,18 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
         String filterName = typeOptions.getCurrentChoice();
         String type;
         if ("All".equals(filterName)) {
-            type = DefaultFilter.DEFAULT;
+            type = DefaultFilter.ID;
         } else if ("Passive".equals(filterName)) {
-            type = AnimalFilter.ANIMAL;
+            type = AnimalFilter.ID;
         } else if ("Hostile".equals(filterName)) {
-            type = HostileFilter.HOSTILE;
+            type = HostileFilter.ID;
         } else if ("Item".equals(filterName)) {
-            type = ItemFilter.ITEM;
+            type = ItemFilter.ID;
         } else {
-            type = PlayerFilter.PLAYER;
+            type = PlayerFilter.ID;
         }
 
         String playerName = player.getText();
-        int selected = filterList.getSelected();
 
         sendServerCommandTyped(ShieldProjectorTileEntity.CMD_ADDFILTER,
                 TypedMap.builder()

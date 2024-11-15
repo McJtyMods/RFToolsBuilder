@@ -40,6 +40,7 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -132,7 +133,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     private float costFactor = 1.0f;
 
     // Filter list.
-    private final List<ShieldFilter> filters = new ArrayList<>();
+//    private final List<ShieldFilter> filters = new ArrayList<>();
 
 //    private ShieldTexture shieldTexture = ShieldTexture.SHIELD;
 
@@ -180,6 +181,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             .containerSupplier(container(ShieldModule.CONTAINER_SHIELD, CONTAINER_FACTORY, tile))
             .energyHandler(()-> tile.getEnergyStorage())
             .itemHandler(() -> tile.items)
+            .data(ShieldModule.SHIELD_DATA, ShieldData.STREAM_CODEC)
             .setupSync(tile);
 
     private final DefaultInfusable infusable = new DefaultInfusable(ShieldProjectorTileEntity.this);
@@ -257,8 +259,8 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         return powerLevel > 0;
     }
 
-    public List<ShieldFilter> getFilters() {
-        return filters;
+    public List<ShieldFilter<?>> getFilters() {
+        return getData(ShieldModule.SHIELD_DATA).filters();
     }
 
     public boolean isBlockLight() {
@@ -282,25 +284,19 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     private void delFilter(int selected) {
-        filters.remove(selected);
+        ShieldData data = getData(ShieldModule.SHIELD_DATA).removeFilter(selected);
+        setData(ShieldModule.SHIELD_DATA, data);
         updateTimeout = 10;
-        setChanged();
     }
 
     private void upFilter(int selected) {
-        ShieldFilter filter1 = filters.get(selected - 1);
-        ShieldFilter filter2 = filters.get(selected);
-        filters.set(selected - 1, filter2);
-        filters.set(selected, filter1);
-        setChanged();
+        ShieldData data = getData(ShieldModule.SHIELD_DATA).moveSelectedFilterUp(selected);
+        setData(ShieldModule.SHIELD_DATA, data);
     }
 
     private void downFilter(int selected) {
-        ShieldFilter filter1 = filters.get(selected);
-        ShieldFilter filter2 = filters.get(selected + 1);
-        filters.set(selected, filter2);
-        filters.set(selected + 1, filter1);
-        setChanged();
+        ShieldData data = getData(ShieldModule.SHIELD_DATA).moveSelectedFilterDown(selected);
+        setData(ShieldModule.SHIELD_DATA, data);
     }
 
     private void addFilter(int action, String type, String player, int selected) {
@@ -309,13 +305,14 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         if (filter instanceof PlayerFilter) {
             ((PlayerFilter) filter).setName(player);
         }
+        ShieldData data = getData(ShieldModule.SHIELD_DATA);
         if (selected == -1) {
-            filters.add(filter);
+            data = data.addFilter(filter);
         } else {
-            filters.add(selected, filter);
+            data = data.addFilter(filter, selected);
         }
+        setData(ShieldModule.SHIELD_DATA, data);
         updateTimeout = 10;
-        setChanged();
     }
 
     public DamageTypeMode getDamageMode() {
@@ -379,7 +376,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             return Blocks.AIR.defaultBlockState();
         }
 
-        ShieldRenderingMode render = getShieldingBlock();
+        ShieldRenderingMode render = getShieldRenderingMode();
         if (!ShieldConfiguration.allowInvisibleShield.get() && ShieldRenderingMode.INVISIBLE.equals(render)) {
             render = ShieldRenderingMode.SOLID;
         }
@@ -420,17 +417,17 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     private BlockState calculateDamageBits(BlockState shielding) {
-        for (ShieldFilter filter : filters) {
+        for (ShieldFilter<?> filter : getFilters()) {
             if ((filter.getAction() & ShieldFilter.ACTION_DAMAGE) != 0) {
-                if (ItemFilter.ITEM.equals(filter.getFilterName())) {
+                if (ItemFilter.ID.equals(filter.getFilterName())) {
                     shielding = shielding.setValue(DAMAGE_ITEMS, true);
-                } else if (AnimalFilter.ANIMAL.equals(filter.getFilterName())) {
+                } else if (AnimalFilter.ID.equals(filter.getFilterName())) {
                     shielding = shielding.setValue(DAMAGE_PASSIVE, true);
-                } else if (HostileFilter.HOSTILE.equals(filter.getFilterName())) {
+                } else if (HostileFilter.ID.equals(filter.getFilterName())) {
                     shielding = shielding.setValue(DAMAGE_HOSTILE, true);
-                } else if (PlayerFilter.PLAYER.equals(filter.getFilterName())) {
+                } else if (PlayerFilter.ID.equals(filter.getFilterName())) {
                     shielding = shielding.setValue(DAMAGE_PLAYERS, true);
-                } else if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
+                } else if (DefaultFilter.ID.equals(filter.getFilterName())) {
                     shielding = shielding.setValue(DAMAGE_ITEMS, true).setValue(DAMAGE_PASSIVE, true).setValue(DAMAGE_HOSTILE, true).setValue(DAMAGE_PLAYERS, true);
                 }
             }
@@ -439,17 +436,17 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     private BlockState calculateShieldCollisionData(BlockState shielding) {
-        for (ShieldFilter filter : filters) {
+        for (ShieldFilter<?> filter : getFilters()) {
             if ((filter.getAction() & ShieldFilter.ACTION_SOLID) != 0) {
-                if (ItemFilter.ITEM.equals(filter.getFilterName())) {
+                if (ItemFilter.ID.equals(filter.getFilterName())) {
                     shielding = shielding.setValue(BLOCKED_ITEMS, true);
-                } else if (AnimalFilter.ANIMAL.equals(filter.getFilterName())) {
+                } else if (AnimalFilter.ID.equals(filter.getFilterName())) {
                     shielding = shielding.setValue(BLOCKED_PASSIVE, true);
-                } else if (HostileFilter.HOSTILE.equals(filter.getFilterName())) {
+                } else if (HostileFilter.ID.equals(filter.getFilterName())) {
                     shielding = shielding.setValue(BLOCKED_HOSTILE, true);
-                } else if (PlayerFilter.PLAYER.equals(filter.getFilterName())) {
+                } else if (PlayerFilter.ID.equals(filter.getFilterName())) {
                     shielding = shielding.setValue(BLOCKED_PLAYERS, true);
-                } else if (DefaultFilter.DEFAULT.equals(filter.getFilterName())) {
+                } else if (DefaultFilter.ID.equals(filter.getFilterName())) {
                     shielding = shielding.setValue(BLOCKED_ITEMS, true).setValue(BLOCKED_PASSIVE, true).setValue(BLOCKED_HOSTILE, true).setValue(BLOCKED_PLAYERS, true);
                 }
             }
@@ -934,23 +931,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 
         // @todo 1.21 NBT
 //        loadEnergyCap(tagCompound);
-
-        if (tagCompound.contains("Info")) {
-            CompoundTag info = tagCompound.getCompound("Info");
-            shieldRenderingMode = ShieldRenderingMode.values()[info.getInt("visMode")];
-            shieldTexture = ShieldTexture.values()[info.getInt("shieldTexture")];
-//            rsMode = RedstoneMode.values()[(info.getByte("rsMode"))]; @todo 1.21
-            damageMode = DamageTypeMode.values()[(info.getByte("damageMode"))];
-            blockLight = info.getBoolean("blocklight");
-
-            if (info.contains("shieldColor")) {
-                shieldColor = info.getInt("shieldColor");
-            } else {
-                shieldColor = 0x96ffc8;
-            }
-            readFiltersFromNBT(info);
-        }
-
+        ShieldData.CODEC.decode(NbtOps.INSTANCE, tagCompound.get("data")).result().ifPresent(data -> setData(ShieldModule.SHIELD_DATA, data.getFirst()));
         renderData = null;
 
         // We got our render data on the client. Notify the server so that the
@@ -968,18 +949,10 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             tagCompound.putInt("templateColor", ((ShieldTemplateBlock) templateState.getBlock()).getColor().ordinal());
         }
 
+        ShieldData.CODEC.encodeStart(NbtOps.INSTANCE, getData(ShieldModule.SHIELD_DATA)).result().ifPresent(data -> tagCompound.put("data", data));
+
         // @todo 1.21 NBT
-//        CompoundTag info = getOrCreateInfo(tagCompound);
-//        info.putInt("visMode", shieldRenderingMode.ordinal());
-//        info.putInt("shieldTexture", shieldTexture.ordinal());
-//        info.putByte("rsMode", (byte) rsMode.ordinal());
-//        info.putByte("damageMode", (byte) damageMode.ordinal());
-//
-//        info.putBoolean("blocklight", blockLight);
-//        info.putInt("shieldColor", shieldColor);
-//
-//        writeFiltersToNBT(info);
-//        saveEnergyCap(tagCompound);
+        //        saveEnergyCap(tagCompound);
     }
 
     @Override
@@ -1050,27 +1023,6 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         }
     }
 
-    // @todo 1.21 NBT
-//    @Override
-//    protected void loadInfo(CompoundTag tagCompound) {
-//        super.loadInfo(tagCompound);
-//        if (tagCompound.contains("Info")) {
-//            CompoundTag info = tagCompound.getCompound("Info");
-//            shieldRenderingMode = ShieldRenderingMode.values()[info.getInt("visMode")];
-//            shieldTexture = ShieldTexture.values()[info.getInt("shieldTexture")];
-//            damageMode = DamageTypeMode.values()[(info.getByte("damageMode"))];
-//            blockLight = info.getBoolean("blocklight");
-//
-//            if (info.contains("shieldColor")) {
-//                shieldColor = info.getInt("shieldColor");
-//            } else {
-//                shieldColor = 0x96ffc8;
-//            }
-//
-//            readFiltersFromNBT(info);
-//        }
-//    }
-
     @Override
     protected void applyImplicitComponents(DataComponentInput input) {
         super.applyImplicitComponents(input);
@@ -1090,15 +1042,6 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         items.collectImplicitComponents(builder);
         infusable.collectImplicitComponents(builder);
         builder.set(ShieldModule.ITEM_SHIELD_DATA, getData(ShieldModule.SHIELD_DATA));
-    }
-
-    private void readFiltersFromNBT(CompoundTag tagCompound) {
-        filters.clear();
-        ListTag filterList = tagCompound.getList("filters", Tag.TAG_COMPOUND);
-        for (int i = 0; i < filterList.size(); i++) {
-            CompoundTag compound = filterList.getCompound(i);
-            filters.add(AbstractShieldFilter.createFilter(compound));
-        }
     }
 
     @Override
@@ -1138,31 +1081,6 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         tag.put("gstates", list);
     }
 
-    // @todo 1.21 NBT
-//    @Override
-//    protected void saveInfo(CompoundTag tagCompound) {
-//        super.saveInfo(tagCompound);
-//        CompoundTag info = getOrCreateInfo(tagCompound);
-//        info.putInt("visMode", shieldRenderingMode.ordinal());
-//        info.putInt("shieldTexture", shieldTexture.ordinal());
-//        info.putByte("damageMode", (byte) damageMode.ordinal());
-//
-//        info.putBoolean("blocklight", blockLight);
-//        info.putInt("shieldColor", shieldColor);
-//
-//        writeFiltersToNBT(info);
-//    }
-
-    private void writeFiltersToNBT(CompoundTag tagCompound) {
-        ListTag filterList = new ListTag();
-        for (ShieldFilter filter : filters) {
-            CompoundTag compound = new CompoundTag();
-            filter.writeToNBT(compound);
-            filterList.add(compound);
-        }
-        tagCompound.put("filters", filterList);
-    }
-
     public static final Key<Integer> PARAM_ACTION = new Key<>("action", Type.INTEGER);
     public static final Key<String> PARAM_TYPE = new Key<>("type", Type.STRING);
     public static final Key<String> PARAM_PLAYER = new Key<>("player", Type.STRING);
@@ -1182,7 +1100,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             (te, player, params) -> te.downFilter(params.get(PARAM_SELECTED)));
 
     @ServerCommand(type = ShieldFilter.class, serializer = ShieldFilter.Serializer.class)
-    public static final ListCommand<?, ?> CMD_GETFILTERS = ListCommand.<ShieldProjectorTileEntity, ShieldFilter>create("rftoolsbuilder.shield.getFilters",
+    public static final ListCommand<?, ?> CMD_GETFILTERS = ListCommand.<ShieldProjectorTileEntity, ShieldFilter<?>>create("rftoolsbuilder.shield.getFilters",
             (te, player, params) -> te.getFilters(),
             (te, player, params, list) -> GuiShield.storeFiltersForClient(list));
 

@@ -1,23 +1,44 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.nbt.CompoundTag;
 
-public class PlayerFilter extends AbstractShieldFilter {
-    public static final String PLAYER = "player";
+public class PlayerFilter extends AbstractShieldFilter<PlayerFilter> {
+
+    public static final String ID = "player";
     private String name = null;
 
-    public PlayerFilter() {
-    }
+    public static final MapCodec<PlayerFilter> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            Codec.STRING.fieldOf("name").forGetter(PlayerFilter::getName)
+    ).apply(instance, PlayerFilter::new));
+    public static final StreamCodec<FriendlyByteBuf, PlayerFilter> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8, PlayerFilter::getName,
+            PlayerFilter::new
+    );
 
     public PlayerFilter(String name) {
         this.name = name;
     }
 
     @Override
+    public MapCodec getCodec() {
+        return CODEC;
+    }
+
+    @Override
+    public StreamCodec<FriendlyByteBuf, PlayerFilter> getStreamCodec() {
+        return STREAM_CODEC;
+    }
+
+    @Override
     public String getFilterName() {
-        return PLAYER;
+        return ID;
     }
 
     public String getName() {
@@ -40,17 +61,5 @@ public class PlayerFilter extends AbstractShieldFilter {
 
         Player PlayerEntity = (Player) entity;
         return name.equals(PlayerEntity.getName().getString());
-    }
-
-    @Override
-    public void readFromNBT(CompoundTag tagCompound) {
-        super.readFromNBT(tagCompound);
-        name = tagCompound.getString("name");
-    }
-
-    @Override
-    public void writeToNBT(CompoundTag tagCompound) {
-        super.writeToNBT(tagCompound);
-        tagCompound.putString("name", name);
     }
 }

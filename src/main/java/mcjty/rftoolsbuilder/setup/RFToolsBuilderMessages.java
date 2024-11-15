@@ -9,6 +9,7 @@ import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenC
 import mcjty.rftoolsbuilder.modules.builder.network.PacketOpenBuilderGui;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateCardInInventory;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateCardInPlayer;
+import mcjty.rftoolsbuilder.modules.shield.network.PacketNotifyServerClientReady;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
@@ -34,11 +35,11 @@ public class RFToolsBuilderMessages {
 
         registrar.playToServer(PacketCloseContainerAndOpenCardGui.TYPE, PacketCloseContainerAndOpenCardGui.CODEC, PacketCloseContainerAndOpenCardGui::handle);
         registrar.playToServer(PacketOpenBuilderGui.TYPE, PacketOpenBuilderGui.CODEC, PacketOpenBuilderGui::handle);
+        registrar.playToServer(PacketNotifyServerClientReady.TYPE, PacketNotifyServerClientReady.CODEC, PacketNotifyServerClientReady::handle);
 
         // @todo 1.21
 //        registrar.play(PacketRequestShapeData.class, PacketRequestShapeData::create, handler -> handler.server(PacketRequestShapeData::handle));
 //        registrar.play(PacketOpenCardGuiFromBuilder.class, PacketOpenCardGuiFromBuilder::create, handler -> handler.server(PacketOpenCardGuiFromBuilder::handle));
-//        registrar.play(PacketNotifyServerClientReady.class, PacketNotifyServerClientReady::create, handler -> handler.server(PacketNotifyServerClientReady::handle));
 //        registrar.play(PacketClickMover.class, PacketClickMover::create, handler -> handler.server(PacketClickMover::handle));
 //
 //        registrar.play(PacketGrabbedEntitiesToClient.class, PacketGrabbedEntitiesToClient::create, handler -> handler.client(PacketGrabbedEntitiesToClient::handle));
