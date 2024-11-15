@@ -152,4 +152,20 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
         BlockPosTools.write(tagCompound, "minCorner", minCorner);
         BlockPosTools.write(tagCompound, "maxCorner", maxCorner);
     }
+
+    @Override
+    protected void loadInfo(CompoundTag tagCompound) {
+        super.loadInfo(tagCompound);
+        CompoundTag info = tagCompound.getCompound("info");
+        if (info.contains("channel")) {
+            channel = info.getInt("channel");
+        }
+    }
+
+    @Override
+    protected void saveInfo(CompoundTag tagCompound) {
+        super.saveInfo(tagCompound);
+        CompoundTag info = getOrCreateInfo(tagCompound);
+        info.putInt("channel", channel);
+    }
 }

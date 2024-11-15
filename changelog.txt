@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem with the space chamber controller not remembering its channel
+
 1.20-6.0.8:
 - Now fix the loottables for real!
 
