@@ -181,7 +181,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             .containerSupplier(container(ShieldModule.CONTAINER_SHIELD, CONTAINER_FACTORY, tile))
             .energyHandler(()-> tile.getEnergyStorage())
             .itemHandler(() -> tile.items)
-            .data(ShieldModule.SHIELD_DATA, ShieldData.STREAM_CODEC)
+            .data(ShieldModule.SHIELD_DATA, ShieldData.STREAM_CODEC, ShieldData.CODEC)
             .setupSync(tile);
 
     private final DefaultInfusable infusable = new DefaultInfusable(ShieldProjectorTileEntity.this);

@@ -15,10 +15,7 @@ import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
 import mcjty.lib.setup.Registration;
-import mcjty.lib.tileentity.Cap;
-import mcjty.lib.tileentity.CapType;
-import mcjty.lib.tileentity.GenericEnergyStorage;
-import mcjty.lib.tileentity.TickingTileEntity;
+import mcjty.lib.tileentity.*;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
 import mcjty.rftoolsbase.api.client.IHudSupport;
@@ -99,6 +96,7 @@ import java.util.function.Predicate;
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.lib.container.SlotDefinition.specific;
+import static mcjty.lib.setup.Registration.BASE_BE_DATA;
 import static mcjty.rftoolsbase.modules.hud.Hud.COMMAND_GETHUDLOG;
 import static mcjty.rftoolsbuilder.modules.builder.blocks.AnchorMode.*;
 import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderMode.*;
@@ -172,7 +170,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             .itemHandler(() -> tile.items)
             .energyHandler(() -> tile.energyStorage)
             .shortListener(Sync.integer(() -> tile.getScan() == null ? -1 : tile.getScan().getY(), v -> currentLevel = v))
-            .data(BuilderModule.BUILDER_DATA, BuilderData.STREAM_CODEC)
+            .data(BuilderModule.BUILDER_DATA, BuilderData.STREAM_CODEC, BuilderData.CODEC)
+            .data(BASE_BE_DATA, BaseBEData.STREAM_CODEC, BaseBEData.CODEC)
             .setupSync(tile);
 
     private final DefaultInfusable infusable = new DefaultInfusable(BuilderTileEntity.this);
