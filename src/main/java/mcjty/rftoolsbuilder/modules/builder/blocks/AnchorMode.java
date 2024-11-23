@@ -35,6 +35,6 @@ public enum AnchorMode implements NamedEnum<AnchorMode> {
 
     @Override
     public String getSerializedName() {
-        return name();
+        return getName();
     }
 }

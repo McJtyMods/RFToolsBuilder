@@ -36,6 +36,6 @@ public enum BuilderMode implements NamedEnum<BuilderMode> {
 
     @Override
     public String getSerializedName() {
-        return name();
+        return getName();
     }
 }

@@ -35,6 +35,6 @@ public enum RotateMode implements NamedEnum<RotateMode> {
 
     @Override
     public String getSerializedName() {
-        return name();
+        return getName();
     }
 }
