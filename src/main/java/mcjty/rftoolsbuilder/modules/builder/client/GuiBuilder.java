@@ -6,17 +6,14 @@ import mcjty.lib.gui.Window;
 import mcjty.lib.gui.widgets.Button;
 import mcjty.lib.gui.widgets.EnergyBar;
 import mcjty.lib.gui.widgets.ImageChoiceLabel;
-import mcjty.lib.network.PacketAttachmentData;
-import mcjty.lib.tileentity.GenericTileEntity;
-import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.AnchorMode;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
+import mcjty.rftoolsbuilder.modules.builder.data.BuilderData;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenCardGui;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -28,7 +25,8 @@ import net.neoforged.neoforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 
-import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity.*;
+import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity.SLOT_TAB;
+import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity.getCurrentLevelClientSide;
 
 public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericContainer> {
 
@@ -104,6 +102,8 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private void selectAnchor(String name) {
         int index = name.charAt(name.length()-1)-48;
         updateAnchorSettings(AnchorMode.values()[index]);
+        BuilderData data = getBE().getData(BuilderModule.BUILDER_DATA.get()).withAnchor(AnchorMode.values()[index]);
+        getBE().setData(BuilderModule.BUILDER_DATA.get(), data);
         window.syncDataToServer(BuilderModule.BUILDER_DATA.get(), getBE());
     }
 

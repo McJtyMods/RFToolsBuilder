@@ -73,6 +73,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.SpecialPlantable;
@@ -409,6 +410,27 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
     }
 
+    @Override
+    public void onDataChanged(AttachmentType<?> type, Object oldData, Object newData) {
+        if (type == BuilderModule.BUILDER_DATA.get()) {
+            onDataChanged((BuilderData) oldData, (BuilderData) newData);
+        }
+    }
+
+    private void onDataChanged(BuilderData oldData, BuilderData newData) {
+        if (oldData.mode() != newData.mode()) {
+            if (!level.isClientSide()) {
+                restartScan();
+            }
+        }
+        if (oldData.anchor() != newData.anchor()) {
+            if (hasSupportMode() && !level.isClientSide()) {
+                clearSupportBlocks();
+                makeSupportBlocks();
+            }
+        }
+    }
+
     public boolean isHilightMode() {
         return getData(BuilderModule.BUILDER_DATA).flags().hilightMode();
     }
@@ -512,16 +534,16 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return getData(BuilderModule.BUILDER_DATA).mode();
     }
 
-    public void setMode(BuilderMode mode) {
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
-        if (mode != data.mode()) {
-            setData(BuilderModule.BUILDER_DATA, data.withMode(mode));
-            if (!level.isClientSide()) {
-                restartScan();
-            }
-        }
-    }
-
+//    public void setMode(BuilderMode mode) {
+//        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+//        if (mode != data.mode()) {
+//            setData(BuilderModule.BUILDER_DATA, data.withMode(mode));
+//            if (!level.isClientSide()) {
+//                restartScan();
+//            }
+//        }
+//    }
+//
     public void resetBox() {
         boxValid = false;
     }
@@ -529,14 +551,18 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     public AnchorMode getAnchor() {
         return getData(BuilderModule.BUILDER_DATA).anchor();
     }
+xx
+    public void onAnchorChanged(AnchorMode anchor) {
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        if (data.anchor() == anchor) {
+            return;
+        }
 
-    public void setAnchor(AnchorMode anchor) {
         if (hasSupportMode() && !level.isClientSide()) {
             clearSupportBlocks();
         }
         boxValid = false;
 
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
         setData(BuilderModule.BUILDER_DATA, data.withAnchor(anchor));
 
         if (isShapeCard()) {
@@ -599,11 +625,14 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     public void setRotate(RotateMode rotate) {
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        if (data.rotate() == rotate) {
+            return;
+        }
         if (hasSupportMode() && !level.isClientSide()) {
             clearSupportBlocks();
         }
         boxValid = false;
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
         setData(BuilderModule.BUILDER_DATA, data.withRotate(rotate));
         if (hasSupportMode() && !level.isClientSide()) {
             makeSupportBlocks();
@@ -871,10 +900,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return false;
     }
 
-    private void calculateBoxShaped() {
+    private BuilderData calculateBoxShaped(BuilderData data) {
         ItemStack shapeCard = items.getStackInSlot(SLOT_TAB);
         if (shapeCard.isEmpty()) {
-            return;
+            return data;
         }
         BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
         BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
@@ -895,11 +924,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             maxCorner = new BlockPos(maxCorner.getX(), maxHeight, maxCorner.getZ());
         }
 
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
         if (boxValid) {
             // Double check if the box is indeed still valid.
             if (minCorner.equals(data.minBox()) && maxCorner.equals(data.maxBox())) {
-                return;
+                return data;
             }
         }
 
@@ -912,6 +940,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         data = data.withMinBox(minCorner).withMaxBox(maxCorner);
         setData(BuilderModule.BUILDER_DATA, data);
         restartScan();
+        return data;
     }
 
     private SpaceChamberRepository.SpaceChamberChannel calculateBox() {
@@ -2057,7 +2086,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 calculateBox();
                 data = data.withScan(data.minBox());
             } else if (getCardType() != ShapeCardType.CARD_UNKNOWN) {
-                calculateBoxShaped();
+                data = calculateBoxShaped(data);
                 // We start at the top for a quarry or shape building
                 data = data.withScan(new BlockPos(data.minBox().getX(), data.maxBox().getY(), data.minBox().getZ()));
             }
