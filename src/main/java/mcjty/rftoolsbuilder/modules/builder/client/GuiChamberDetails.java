@@ -12,7 +12,11 @@ import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -34,7 +38,7 @@ public class GuiChamberDetails extends GuiItemScreen {
     private static Map<BlockState, ItemStack> stacks = null;
     private static Map<String, Integer> entities = null;
     private static Map<String, Integer> entityCosts = null;
-    private static Map<String, Entity> realEntities = null;
+    private static Map<String, CompoundTag> realEntities = null;
     private static Map<String, String> playerNames = null;
 
     private WidgetList blockList;
@@ -49,7 +53,7 @@ public class GuiChamberDetails extends GuiItemScreen {
     public static void setItemsWithCount(Map<BlockState, Integer> items, Map<BlockState, Integer> costs,
                                          Map<BlockState, ItemStack> stacks,
                                          Map<String, Integer> entities, Map<String, Integer> entityCosts,
-                                         Map<String, Entity> realEntities,
+                                         Map<String, CompoundTag> realEntities,
                                          Map<String, String> playerNames) {
         GuiChamberDetails.items = new HashMap<>(items);
         GuiChamberDetails.costs = new HashMap<>(costs);
@@ -129,15 +133,19 @@ public class GuiChamberDetails extends GuiItemScreen {
         int totalCostEntities = 0;
         RenderHelper.rot += .5f;
         for (Map.Entry<String, Integer> entry : entities.entrySet()) {
-            String className = entry.getKey();
+            String id = entry.getKey();
             int count = entry.getValue();
-            int cost = entityCosts.get(className);
+            int cost = entityCosts.get(id);
             Panel panel = horizontal().desiredHeight(16);
 
             String entityName = "<?>";
             Entity entity = null;
-            if (realEntities.containsKey(className)) {
-                entity = realEntities.get(className);
+            if (realEntities.containsKey(id)) {
+                CompoundTag tag = realEntities.get(id);
+                EntityType<?> value = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
+
+                entity = value.create(minecraft.level);
+                entity.load(tag);
                 entityName = entity.getDisplayName().getString();
                 if (entity instanceof ItemEntity entityItem) {
                     if (!entityItem.getItem().isEmpty()) {
@@ -146,16 +154,13 @@ public class GuiChamberDetails extends GuiItemScreen {
                     }
                 }
             } else {
-                try {
-                    Class<?> aClass = Class.forName(className);
-                    entity = (Entity) aClass.getConstructor(Level.class).newInstance(minecraft.level);
-                    entityName = aClass.getSimpleName();
-                } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
-                }
+                EntityType<?> value = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
+                entity = value.create(minecraft.level);
+                entityName = entity.getDisplayName().getString();
             }
 
-            if (playerNames.containsKey(className)) {
-                entityName = playerNames.get(className);
+            if (playerNames.containsKey(id)) {
+                entityName = playerNames.get(id);
             }
 
             BlockRender blockRender = new BlockRender().renderItem(entity).offsetX(-1).offsetY(-1);

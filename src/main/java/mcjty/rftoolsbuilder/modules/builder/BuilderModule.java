@@ -8,6 +8,7 @@ import mcjty.lib.datagen.DataGen;
 import mcjty.lib.datagen.Dob;
 import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbase.modules.various.VariousModule;
+import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerBlock;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
@@ -25,6 +26,7 @@ import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -38,6 +40,8 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
+import net.neoforged.neoforge.common.world.chunk.TicketController;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -45,6 +49,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import java.util.function.Supplier;
 
 import static mcjty.lib.datagen.Dob.has;
+import static mcjty.rftoolsbuilder.RFToolsBuilder.MODID;
 import static mcjty.rftoolsbuilder.RFToolsBuilder.tab;
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
@@ -115,11 +120,16 @@ public class BuilderModule implements IModule {
 
     public BuilderModule(IEventBus bus) {
         bus.addListener(this::registerMenuScreens);
+        bus.addListener(this::onRegisterTicketController);
     }
 
     @Override
     public void init(FMLCommonSetupEvent event) {
+    }
 
+    private void onRegisterTicketController(RegisterTicketControllersEvent event) {
+        RFToolsBuilder.setup.ticketController = new TicketController(ResourceLocation.fromNamespaceAndPath(MODID, "builder"));
+        event.register(RFToolsBuilder.setup.ticketController);
     }
 
     @Override

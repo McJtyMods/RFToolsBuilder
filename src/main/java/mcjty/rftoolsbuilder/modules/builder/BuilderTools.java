@@ -9,6 +9,9 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -46,7 +49,7 @@ public class BuilderTools {
 
         Counter<String> entitiesWithCount = new Counter<>();
         Counter<String> entitiesWithCost = new Counter<>();
-        Map<String,Entity> firstEntity = new HashMap<>();
+        Map<String, CompoundTag> firstEntity = new HashMap<>();
         findEntities(world, minCorner, maxCorner, entitiesWithCount, entitiesWithCost, firstEntity);
 
         RFToolsBuilderMessages.sendToPlayer(PacketChamberInfoReady.create(blocks, costs, stacks,
@@ -87,7 +90,7 @@ public class BuilderTools {
     }
 
     private static void findEntities(Level world, BlockPos minCorner, BlockPos maxCorner,
-                                 Counter<String> entitiesWithCount, Counter<String> entitiesWithCost, Map<String, Entity> firstEntity) {
+                                 Counter<String> entitiesWithCount, Counter<String> entitiesWithCost, Map<String, CompoundTag> firstEntity) {
         List<Entity> entities = world.getEntities(null, new AABB(
                 minCorner.getX(), minCorner.getY(), minCorner.getZ(), maxCorner.getX() + 1, maxCorner.getY() + 1, maxCorner.getZ() + 1));
         for (Entity entity : entities) {
@@ -101,8 +104,13 @@ public class BuilderTools {
 
             entitiesWithCount.increment(canonicalName);
 
+            // @todo 1.21 what to do with canonicalName?
             if (!firstEntity.containsKey(canonicalName)) {
-                firstEntity.put(canonicalName, entity);
+                ResourceLocation registryName = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+                CompoundTag entityNBT = new CompoundTag();
+                entity.saveWithoutId(entityNBT);
+
+                firstEntity.put(registryName.toString(), entityNBT);
             }
 
             if (entity instanceof Player) {

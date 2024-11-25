@@ -418,15 +418,25 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private void onDataChanged(BuilderData oldData, BuilderData newData) {
+        if (level.isClientSide()) {
+            return;
+        }
         if (oldData.mode() != newData.mode()) {
-            if (!level.isClientSide()) {
-                restartScan();
-            }
+            restartScan();
         }
         if (oldData.anchor() != newData.anchor()) {
-            if (hasSupportMode() && !level.isClientSide()) {
-                clearSupportBlocks();
+            if (hasSupportMode()) {
+                onAnchorChanged(newData.anchor());
+            }
+        }
+        if (oldData.rotate() != newData.rotate()) {
+            onRotateChanged(newData.rotate());
+        }
+        if (oldData.flags().supportMode() != newData.flags().supportMode()) {
+            if (newData.flags().supportMode()) {
                 makeSupportBlocks();
+            } else {
+                clearSupportBlocks();
             }
         }
     }
@@ -435,18 +445,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return getData(BuilderModule.BUILDER_DATA).flags().hilightMode();
     }
 
-    public void setHilightMode(boolean hilightMode) {
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
-        setData(BuilderModule.BUILDER_DATA, data.withHilightMode(hilightMode));
-    }
-
     public boolean isWaitMode() {
         return getData(BuilderModule.BUILDER_DATA).flags().waitMode();
-    }
-
-    public void setWaitMode(boolean waitMode) {
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
-        setData(BuilderModule.BUILDER_DATA, data.withWaitMode(waitMode));
     }
 
     private void setLastError(String error) {
@@ -490,18 +490,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return getData(BuilderModule.BUILDER_DATA).flags().loopMode();
     }
 
-    public void setLoopMode(boolean loopMode) {
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
-        setData(BuilderModule.BUILDER_DATA, data.withLoopMode(loopMode));
-    }
-
     public boolean hasEntityMode() {
         return getData(BuilderModule.BUILDER_DATA).flags().entityMode();
-    }
-
-    public void setEntityMode(boolean entityMode) {
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
-        setData(BuilderModule.BUILDER_DATA, data.withEntityMode(entityMode));
     }
 
     public boolean hasSupportMode() {
@@ -525,25 +515,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return getData(BuilderModule.BUILDER_DATA).flags().silent();
     }
 
-    public void setSilent(boolean silent) {
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
-        setData(BuilderModule.BUILDER_DATA, data.withSilent(silent));
-    }
-
     public BuilderMode getMode() {
         return getData(BuilderModule.BUILDER_DATA).mode();
     }
 
-//    public void setMode(BuilderMode mode) {
-//        BuilderData data = getData(BuilderModule.BUILDER_DATA);
-//        if (mode != data.mode()) {
-//            setData(BuilderModule.BUILDER_DATA, data.withMode(mode));
-//            if (!level.isClientSide()) {
-//                restartScan();
-//            }
-//        }
-//    }
-//
     public void resetBox() {
         boxValid = false;
     }
@@ -551,19 +526,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     public AnchorMode getAnchor() {
         return getData(BuilderModule.BUILDER_DATA).anchor();
     }
-xx
-    public void onAnchorChanged(AnchorMode anchor) {
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
-        if (data.anchor() == anchor) {
-            return;
-        }
 
+    public void onAnchorChanged(AnchorMode anchor) {
         if (hasSupportMode() && !level.isClientSide()) {
             clearSupportBlocks();
         }
         boxValid = false;
-
-        setData(BuilderModule.BUILDER_DATA, data.withAnchor(anchor));
 
         if (isShapeCard()) {
             // If there is a shape card we modify it for the new settings.
@@ -624,16 +592,11 @@ xx
         return getData(BuilderModule.BUILDER_DATA).rotate();
     }
 
-    public void setRotate(RotateMode rotate) {
-        BuilderData data = getData(BuilderModule.BUILDER_DATA);
-        if (data.rotate() == rotate) {
-            return;
-        }
+    public void onRotateChanged(RotateMode rotate) {
         if (hasSupportMode() && !level.isClientSide()) {
             clearSupportBlocks();
         }
         boxValid = false;
-        setData(BuilderModule.BUILDER_DATA, data.withRotate(rotate));
         if (hasSupportMode() && !level.isClientSide()) {
             makeSupportBlocks();
         }
@@ -2108,8 +2071,7 @@ xx
     private void chunkUnload() {
         if (forcedChunk != null) {
             if (getOwnerUUID() != null) {
-                // @todo 1.21 ForgeChunkManager
-//                ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
+                RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
             }
             forcedChunk = null;
         }
@@ -2130,14 +2092,12 @@ xx
             }
             if (forcedChunk != null) {
                 if (getOwnerUUID() != null) {
-                    // @todo 1.21 ForgeChunkManager
-//                    ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
+                    RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
                 }
             }
             forcedChunk = pair;
             if (getOwnerUUID() != null) {
-                // @todo 1.21 ForgeChunkManager
-//                ForgeChunkManager.forceChunk((ServerLevel) level, RFToolsBuilder.MODID, getOwnerUUID(), forcedChunk.x, forcedChunk.z, true, false);
+                RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
             }
             return true;
         }
