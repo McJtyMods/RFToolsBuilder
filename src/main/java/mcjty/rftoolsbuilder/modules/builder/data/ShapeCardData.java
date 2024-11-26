@@ -31,9 +31,9 @@ public record ShapeCardData(int channel, ShapeCardDimensions dimensions, boolean
             BlockPos.CODEC.fieldOf("dimension").forGetter(ShapeCardDimensions::dimension),
             BlockPos.CODEC.fieldOf("offset").forGetter(ShapeCardDimensions::offset),
             Codec.INT.fieldOf("mode").forGetter(ShapeCardDimensions::mode),
-            BlockPos.CODEC.optionalFieldOf("corner1", null).forGetter(ShapeCardDimensions::corner1),
-            GlobalPos.CODEC.optionalFieldOf("selected", null).forGetter(ShapeCardDimensions::selected)
-    ).apply(instance, ShapeCardDimensions::new));
+            BlockPos.CODEC.optionalFieldOf("corner1").forGetter(o -> Optional.ofNullable(o.corner1)),
+            GlobalPos.CODEC.optionalFieldOf("selected").forGetter(o -> Optional.ofNullable(o.selected))
+    ).apply(instance, (dim, offs, m, c1, sel) -> new ShapeCardDimensions(dim, offs, m, c1.orElse(null), sel.orElse(null))));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ShapeCardDimensions> DIMENSIONS_STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, ShapeCardDimensions::dimension,
