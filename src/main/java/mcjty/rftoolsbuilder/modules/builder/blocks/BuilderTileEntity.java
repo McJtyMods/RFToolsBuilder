@@ -425,9 +425,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             restartScan();
         }
         if (oldData.anchor() != newData.anchor()) {
-            if (hasSupportMode()) {
-                onAnchorChanged(newData.anchor());
-            }
+            onAnchorChanged(newData.anchor());
         }
         if (oldData.rotate() != newData.rotate()) {
             onRotateChanged(newData.rotate());

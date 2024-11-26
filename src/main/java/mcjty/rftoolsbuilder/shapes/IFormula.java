@@ -10,7 +10,7 @@ import net.minecraft.world.level.Level;
 
 public interface IFormula {
 
-    void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card);
+    void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, ItemStack card);
 
     default void getCheckSumClient(ItemStack card, Check32 crc) {
         ShapeCardItem.getLocalChecksum(card, crc);
@@ -62,7 +62,7 @@ public interface IFormula {
         } else {
             return new IFormula() {
                 @Override
-                public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, CompoundTag card) {
+                public void setup(Level world, BlockPos thisCoord, BlockPos dimension, BlockPos offset, ItemStack card) {
                     IFormula.this.setup(world, thisCoord, dimension, offset, card);
                 }
 

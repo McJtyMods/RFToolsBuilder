@@ -626,7 +626,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
 
         formula = formula.correctFormula(solid);
         // @todo composer
-//        formula.setup(worldObj, thisCoord, dimension, offset, shapeCard != null ? shapeCard.getTag() : null);
+        formula.setup(worldObj, thisCoord, dimension, offset, shapeCard);
 
         for (int ox = 0 ; ox < dx ; ox++) {
             int x = tl.getX() + ox;
