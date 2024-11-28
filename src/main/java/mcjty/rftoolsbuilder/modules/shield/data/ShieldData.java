@@ -63,7 +63,7 @@ public record ShieldData(ShieldRenderingMode renderMode, ShieldTexture shieldTex
     }
 
     public ShieldData addFilter(ShieldFilter<?> filter) {
-        List<ShieldFilter<?>> newFilters = filters;
+        List<ShieldFilter<?>> newFilters = new ArrayList<>(filters);
         newFilters.add(filter);
         return new ShieldData(renderMode, shieldTexture, damageMode, blockLight, shieldColor, newFilters);
     }
@@ -75,7 +75,7 @@ public record ShieldData(ShieldRenderingMode renderMode, ShieldTexture shieldTex
     }
 
     public ShieldData removeFilter(int index) {
-        List<ShieldFilter<?>> newFilters = filters;
+        List<ShieldFilter<?>> newFilters = new ArrayList<>(filters);
         newFilters.remove(index);
         return new ShieldData(renderMode, shieldTexture, damageMode, blockLight, shieldColor, newFilters);
     }

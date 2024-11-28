@@ -1,6 +1,8 @@
 package mcjty.rftoolsbuilder.modules.shield.filters;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -10,11 +12,19 @@ public class AnimalFilter extends AbstractShieldFilter<AnimalFilter> {
 
     public static final String ID = "animal";
 
-    public static final MapCodec<AnimalFilter> CODEC = MapCodec.unit(new AnimalFilter());
+    public static final MapCodec<AnimalFilter> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            Codec.INT.fieldOf("action").forGetter(AnimalFilter::getAction))
+            .apply(instance, AnimalFilter::new));
     public static final StreamCodec<FriendlyByteBuf, AnimalFilter> STREAM_CODEC = StreamCodec.of(
-            (buf, settings) -> {},
-            buf -> new AnimalFilter()
+            (buf, settings) -> {
+                buf.writeInt(settings.getAction());
+            },
+            buf -> new AnimalFilter(buf.readInt())
     );
+
+    public AnimalFilter(int action) {
+        super(action);
+    }
 
     @Override
     public MapCodec<AnimalFilter> getCodec() {

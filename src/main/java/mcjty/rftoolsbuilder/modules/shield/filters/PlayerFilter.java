@@ -15,14 +15,17 @@ public class PlayerFilter extends AbstractShieldFilter<PlayerFilter> {
     private String name = null;
 
     public static final MapCodec<PlayerFilter> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Codec.STRING.fieldOf("name").forGetter(PlayerFilter::getName)
-    ).apply(instance, PlayerFilter::new));
+            Codec.STRING.fieldOf("name").forGetter(PlayerFilter::getName),
+            Codec.INT.fieldOf("action").forGetter(PlayerFilter::getAction))
+            .apply(instance, PlayerFilter::new));
     public static final StreamCodec<FriendlyByteBuf, PlayerFilter> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.STRING_UTF8, PlayerFilter::getName,
+            ByteBufCodecs.INT, PlayerFilter::getAction,
             PlayerFilter::new
     );
 
-    public PlayerFilter(String name) {
+    public PlayerFilter(String name, int action) {
+        super(action);
         this.name = name;
     }
 

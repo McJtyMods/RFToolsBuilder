@@ -84,7 +84,7 @@ public interface ShieldFilter<T extends ShieldFilter<?>> {
 
     int getAction();
 
-    void setAction(int action);
+    T setAction(int action);
 
     String getFilterName();
 }
