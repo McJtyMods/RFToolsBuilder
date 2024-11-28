@@ -13,12 +13,15 @@ import mcjty.rftoolsbuilder.modules.mover.client.ClientSetup;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiMover;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiVehicleBuilder;
+import mcjty.rftoolsbuilder.modules.mover.data.MoverControllerData;
+import mcjty.rftoolsbuilder.modules.mover.data.MoverData;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlModuleItem;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleStatusModuleItem;
 import mcjty.rftoolsbuilder.modules.mover.sound.Sounds;
 import mcjty.rftoolsbuilder.setup.Config;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -30,8 +33,10 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
 import java.util.function.Supplier;
@@ -84,6 +89,26 @@ public class MoverModule implements IModule {
     public static final DeferredItem<VehicleControlModuleItem> VEHICLE_CONTROL_MODULE = ITEMS.register("vehicle_control_module", tab(VehicleControlModuleItem::new));
     public static final DeferredItem<VehicleStatusModuleItem> VEHICLE_STATUS_MODULE = ITEMS.register("vehicle_status_module", tab(VehicleStatusModuleItem::new));
 
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<MoverControllerData>> MOVER_CONTROLLER_DATA = ATTACHMENT_TYPES.register(
+            "mover_controller_data", () -> AttachmentType.builder(() -> MoverControllerData.DEFAULT)
+                    .serialize(MoverControllerData.CODEC)
+                    .build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<MoverControllerData>> ITEM_MOVER_CONTROLLER_DATA = COMPONENTS.registerComponentType(
+            "mover_controller_data",
+            builder -> builder
+                    .persistent(MoverControllerData.CODEC)
+                    .networkSynchronized(MoverControllerData.STREAM_CODEC));
+
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<MoverData>> MOVER_DATA = ATTACHMENT_TYPES.register(
+            "mover_data", () -> AttachmentType.builder(() -> MoverData.DEFAULT)
+                    .serialize(MoverData.CODEC)
+                    .build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<MoverData>> ITEM_MOVER_DATA = COMPONENTS.registerComponentType(
+            "mover_data",
+            builder -> builder
+                    .persistent(MoverData.CODEC)
+                    .networkSynchronized(MoverData.STREAM_CODEC));
+
     public MoverModule(IEventBus bus, Dist dist) {
         Sounds.init();
         bus.addListener(this::registerMenuScreens);
@@ -115,7 +140,7 @@ public class MoverModule implements IModule {
                 Dob.blockBuilder(MOVER)
                         .ironPickaxeTags()
                         .parentedItem("block/mover")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_MOVER_DATA.get())
                         .blockState(p -> p.simpleBlock(MOVER.block().get(), p.frontBasedModel("mover", p.modLoc("block/machinemover"), p.modLoc("block/machinemover"), RFTOOLSBASE_TOP, RFTOOLSBASE_BOTTOM)))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
@@ -125,7 +150,7 @@ public class MoverModule implements IModule {
                 Dob.blockBuilder(MOVER_CONTROLLER)
                         .ironPickaxeTags()
                         .parentedItem("block/mover_controller")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), ITEM_MOVER_CONTROLLER_DATA.get())
                         .blockState(p -> p.orientedBlock(MOVER_CONTROLLER.block().get(), p.frontBasedModel("mover_controller", p.modLoc("block/machinemovercontroller"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())

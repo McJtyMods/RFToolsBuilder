@@ -209,7 +209,7 @@ public class ShieldModule implements IModule {
                 Dob.blockBuilder(SHIELD_BLOCK1)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_SHIELD_DATA.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), ITEM_SHIELD_DATA.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK1.block().get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
@@ -219,7 +219,7 @@ public class ShieldModule implements IModule {
                 Dob.blockBuilder(SHIELD_BLOCK2)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_SHIELD_DATA.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), ITEM_SHIELD_DATA.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK2.block().get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
                         .shapedComponentPreserve(builder -> builder
                                         .define('M', SHIELD_BLOCK1.block().get())
@@ -228,7 +228,7 @@ public class ShieldModule implements IModule {
                 Dob.blockBuilder(SHIELD_BLOCK3)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_SHIELD_DATA.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), ITEM_SHIELD_DATA.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK3.block().get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
                         .shapedComponentPreserve(builder -> builder
                                         .define('s', VariousModule.DIMENSIONALSHARD.get())
@@ -238,7 +238,7 @@ public class ShieldModule implements IModule {
                 Dob.blockBuilder(SHIELD_BLOCK4)
                         .ironPickaxeTags()
                         .parentedItem("block/shield_block")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_ENERGY.get(), mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_SHIELD_DATA.get())
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), ITEM_SHIELD_DATA.get())
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK4.block().get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
                         .shapedComponentPreserve(builder -> builder
                                         .define('s', VariousModule.DIMENSIONALSHARD.get())

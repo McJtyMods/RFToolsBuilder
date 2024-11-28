@@ -8,6 +8,7 @@ import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbase.modules.various.items.SmartWrenchItem;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
+import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,7 +39,7 @@ public class ShieldProjectorBlock extends BaseBlock implements IComponentsToPres
 
     public ShieldProjectorBlock(BlockEntityType.BlockEntitySupplier<BlockEntity> te, Supplier<Integer> max) {
         super(new BlockBuilder()
-                .manualEntry(ManualHelper.create("rftoolsbuilder:shield/shield_intro"))
+                .manualEntry(ManualHelper.create("rftoolsbase:shield/shield_intro"))
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
                 .info(key("message.rftoolsbuilder.shiftmessage"))
@@ -53,9 +54,7 @@ public class ShieldProjectorBlock extends BaseBlock implements IComponentsToPres
 
     @Override
     public Collection<DataComponentType<?>> getComponentsToPreserve() {
-        // @todo 1.21
-//        return Collections.singleton("BlockEntityTag");
-        return List.of();
+        return Collections.singleton(ShieldModule.ITEM_SHIELD_DATA.get());
     }
 
     // @todo 1.14

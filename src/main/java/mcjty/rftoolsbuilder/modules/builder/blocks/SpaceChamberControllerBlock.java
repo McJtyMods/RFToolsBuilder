@@ -34,7 +34,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
                         .noOcclusion())
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .tileEntitySupplier(SpaceChamberControllerTileEntity::new)
-//                .manualEntry(ManualHelper.create("rftoolsbuilder:builder/builder_intro"))
+//                .manualEntry(ManualHelper.create("rftoolsbase:builder/builder_intro"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(),
                         parameter("channel", SpaceChamberControllerBlock::getChannelDescription)

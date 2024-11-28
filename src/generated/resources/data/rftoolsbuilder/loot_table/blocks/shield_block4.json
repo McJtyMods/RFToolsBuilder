@@ -16,9 +16,7 @@
               "include": [
                 "mcjtylib:item_energy",
                 "mcjtylib:item_inventory",
-                "mcjtylib:item_energy",
                 "mcjtylib:infusable",
-                "mcjtylib:item_inventory",
                 "rftoolsbuilder:shield_data"
               ],
               "source": "block_entity"

@@ -16,7 +16,8 @@
               "include": [
                 "mcjtylib:item_energy",
                 "mcjtylib:item_inventory",
-                "mcjtylib:infusable"
+                "mcjtylib:infusable",
+                "rftoolsbuilder:mover_controller_data"
               ],
               "source": "block_entity"
             }

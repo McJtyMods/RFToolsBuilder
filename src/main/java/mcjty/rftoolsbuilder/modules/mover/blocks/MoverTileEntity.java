@@ -21,6 +21,7 @@ import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
+import mcjty.rftoolsbuilder.modules.mover.data.MoverData;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.logic.EntityMovementLogic;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketClickMover;
@@ -78,23 +79,8 @@ public class MoverTileEntity extends TickingTileEntity {
     private static final Function<MoverTileEntity, MenuProvider> screenHandler = tile -> new DefaultContainerProvider<GenericContainer>("Mover")
             .containerSupplier(container(MoverModule.CONTAINER_MOVER, CONTAINER_FACTORY, tile))
             .itemHandler(() -> tile.items)
+            .data(MoverModule.MOVER_DATA, MoverData.STREAM_CODEC, MoverData.CODEC)
             .setupSync(tile);
-
-    @GuiValue
-    private String name;
-
-    @GuiValue
-    private boolean down = true;
-    @GuiValue
-    private boolean up = true;
-    @GuiValue
-    private boolean north = true;
-    @GuiValue
-    private boolean south = true;
-    @GuiValue
-    private boolean west = true;
-    @GuiValue
-    private boolean east = true;
 
     @GuiValue
     public static final Value<?, String> VALUE_CONNECTIONS = Value.create("connections", Type.STRING, MoverTileEntity::getConnectionCount, MoverTileEntity::setConnectionCount);
@@ -151,7 +137,6 @@ public class MoverTileEntity extends TickingTileEntity {
         };
     }
 
-
     public MoverTileEntity(BlockPos pos, BlockState state) {
         super(MoverModule.MOVER.be().get(), pos, state);
     }
@@ -173,7 +158,7 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
     public String getName() {
-        return name == null ? "" : name;
+        return getData(MoverModule.MOVER_DATA).name();
     }
 
     @Override
@@ -250,9 +235,9 @@ public class MoverTileEntity extends TickingTileEntity {
         HitResult mouseOver = SafeClientTools.getClientMouseOver();
         if (mouseOver instanceof BlockHitResult blockResult) {
             BlockPos pos = blockResult.getBlockPos();
-            List<InvisibleMoverBlock.MoverData> list = MoverModule.INVISIBLE_MOVER_BLOCK.get().getData(worldPosition);
+            List<InvisibleMoverBlock.MD> list = MoverModule.INVISIBLE_MOVER_BLOCK.get().getData(worldPosition);
             if (list != null) {
-                for (InvisibleMoverBlock.MoverData data : list) {
+                for (InvisibleMoverBlock.MD data : list) {
                     if (pos.equals(data.controlPos())) {
                         Pair<Double, Double> cursor = getCursor(mouseOver.getLocation().x - pos.getX(), mouseOver.getLocation().y - pos.getY(), mouseOver.getLocation().z - pos.getZ(),
                                 data.horizDirection(), data.direction());
@@ -626,13 +611,14 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
     public boolean canConnect(Direction direction) {
+        MoverData data = getData(MoverModule.MOVER_DATA);
         return switch (direction) {
-            case DOWN -> down;
-            case UP -> up;
-            case NORTH -> north;
-            case SOUTH -> south;
-            case WEST -> west;
-            case EAST -> east;
+            case DOWN -> data.down();
+            case UP -> data.up();
+            case NORTH -> data.north();
+            case SOUTH -> data.south();
+            case WEST -> data.west();
+            case EAST -> data.east();
         };
     }
 
@@ -780,32 +766,21 @@ public class MoverTileEntity extends TickingTileEntity {
         tag.putInt("offsetZ", offset.getZ());
     }
 
-    // @todo 1.21 NBT
-//    @Override
-//    public void saveInfo(CompoundTag tagCompound) {
-//        super.saveInfo(tagCompound);
-//        CompoundTag info = getOrCreateInfo(tagCompound);
-//        if (name != null) {
-//            info.putString("name", name);
-//        }
-//        info.putBoolean("down", down);
-//        info.putBoolean("up", up);
-//        info.putBoolean("north", north);
-//        info.putBoolean("south", south);
-//        info.putBoolean("west", west);
-//        info.putBoolean("east", east);
-//    }
-
     @Override
     protected void applyImplicitComponents(DataComponentInput input) {
         super.applyImplicitComponents(input);
         items.applyImplicitComponents(input.get(Registration.ITEM_INVENTORY));
+        MoverData moverData = input.get(MoverModule.ITEM_MOVER_DATA);
+        if (moverData != null) {
+            setData(MoverModule.MOVER_DATA, moverData);
+        }
     }
 
     @Override
     protected void collectImplicitComponents(DataComponentMap.Builder builder) {
         super.collectImplicitComponents(builder);
         items.collectImplicitComponents(builder);
+        builder.set(MoverModule.ITEM_MOVER_DATA, getData(MoverModule.MOVER_DATA));
     }
 
     @Override

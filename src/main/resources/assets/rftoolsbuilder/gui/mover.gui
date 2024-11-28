@@ -1,14 +1,14 @@
 window {
     size(180,152)
 
-    bind('name', 'name')
+    binddata('name', 'name', 'rftoolsbuilder:mover_data')
     bind('connections', 'connections')
-    bind('down', 'down')
-    bind('up', 'up')
-    bind('north', 'north')
-    bind('south', 'south')
-    bind('west', 'west')
-    bind('east', 'east')
+    binddata('down', 'down', 'rftoolsbuilder:mover_data')
+    binddata('up', 'up', 'rftoolsbuilder:mover_data')
+    binddata('north', 'north', 'rftoolsbuilder:mover_data')
+    binddata('south', 'south', 'rftoolsbuilder:mover_data')
+    binddata('west', 'west', 'rftoolsbuilder:mover_data')
+    binddata('east', 'east', 'rftoolsbuilder:mover_data')
 
     panel('','positional') {
         bg1('rftoolsbuilder:textures/gui/mover.png')

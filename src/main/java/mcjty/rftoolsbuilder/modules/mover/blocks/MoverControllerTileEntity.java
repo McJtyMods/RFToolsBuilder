@@ -2,7 +2,6 @@ package mcjty.rftoolsbuilder.modules.mover.blocks;
 
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.infusable.DefaultInfusable;
-import mcjty.lib.api.infusable.IInfusable;
 import mcjty.lib.bindings.GuiValue;
 import mcjty.lib.bindings.Value;
 import mcjty.lib.blockcommands.Command;
@@ -25,6 +24,7 @@ import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
+import mcjty.rftoolsbuilder.modules.mover.data.MoverControllerData;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,7 +35,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -57,6 +57,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     private static final Function<MoverControllerTileEntity, MenuProvider> SCREEN_CAP = tile -> new DefaultContainerProvider<GenericContainer>("Mover")
             .containerSupplier(empty(MoverModule.CONTAINER_MOVER_CONTROLLER, tile))
             .energyHandler(() -> tile.energyStorage)
+            .data(MoverModule.MOVER_CONTROLLER_DATA, MoverControllerData.STREAM_CODEC, MoverControllerData.CODEC)
             .setupSync(tile);
 
 
@@ -69,16 +70,6 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     @GuiValue
     public static final Value<?, String> VALUE_SELECTED_VEHICLE = Value.create("selectedVehicle", Type.STRING, MoverControllerTileEntity::getSelectedVehicle, MoverControllerTileEntity::setSelectedVehicle);
     private String selectedVehicle;
-
-    @GuiValue
-    public static final Value<?, Integer> VALUE_OFFSET_X = Value.<MoverControllerTileEntity, Integer>create("x", Type.INTEGER, te -> te.offsetX, (te, x) -> te.setOffset(x, te.offsetY, te.offsetZ));
-    private int offsetX = 1;
-    @GuiValue
-    public static final Value<?, Integer> VALUE_OFFSET_Y = Value.<MoverControllerTileEntity, Integer>create("y", Type.INTEGER, te -> te.offsetY, (te, y) -> te.setOffset(te.offsetX, y, te.offsetZ));
-    private int offsetY = 1;
-    @GuiValue
-    public static final Value<?, Integer> VALUE_OFFSET_Z = Value.<MoverControllerTileEntity, Integer>create("z", Type.INTEGER, te -> te.offsetZ, (te, z) -> te.setOffset(te.offsetX, te.offsetY, z));
-    private int offsetZ = 1;
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
@@ -108,14 +99,20 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         }
     }
 
-    private void setOffset(int x, int y, int z) {
-        if (offsetX == x && offsetY == y && offsetZ == z) {
-            return;
+    @Override
+    public void onDataChanged(AttachmentType<?> type, Object oldData, Object newData) {
+        if (type == MoverModule.MOVER_CONTROLLER_DATA.get()) {
+            onDataChanged((MoverControllerData) oldData, (MoverControllerData) newData);
         }
-        offsetX = x;
-        offsetY = y;
-        offsetZ = z;
-        setChanged();
+    }
+
+    private void onDataChanged(MoverControllerData oldData, MoverControllerData newData) {
+        if (oldData.offsetX() != newData.offsetX() || oldData.offsetY() != newData.offsetY() || oldData.offsetZ() != newData.offsetZ()) {
+            onOffsetChanged(newData.offsetX(), newData.offsetY(), newData.offsetZ());
+        }
+    }
+
+    private void onOffsetChanged(int x, int y, int z) {
         traverseDepthFirst((pos, mover) -> {
             mover.setOffset(x, y, z);
             return null;
@@ -325,6 +322,10 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         super.applyImplicitComponents(input);
         energyStorage.applyImplicitComponents(input.get(Registration.ITEM_ENERGY));
         infusable.applyImplicitComponents(input.get(Registration.ITEM_INFUSABLE));
+        MoverControllerData moverControllerData = input.get(MoverModule.ITEM_MOVER_CONTROLLER_DATA);
+        if (moverControllerData != null) {
+            setData(MoverModule.MOVER_CONTROLLER_DATA, moverControllerData);
+        }
     }
 
     @Override
@@ -332,30 +333,8 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         super.collectImplicitComponents(builder);
         energyStorage.collectImplicitComponents(builder);
         infusable.collectImplicitComponents(builder);
+        builder.set(MoverModule.ITEM_MOVER_CONTROLLER_DATA, getData(MoverModule.MOVER_CONTROLLER_DATA));
     }
-
-
-    // @todo 1.21
-//    @Override
-//    protected void saveInfo(CompoundTag tagCompound) {
-//        super.saveInfo(tagCompound);
-//        getOrCreateInfo(tagCompound).putInt("offsetX", offsetX);
-//        getOrCreateInfo(tagCompound).putInt("offsetY", offsetY);
-//        getOrCreateInfo(tagCompound).putInt("offsetZ", offsetZ);
-//    }
-//
-//    @Override
-//    protected void loadInfo(CompoundTag tagCompound) {
-//        super.loadInfo(tagCompound);
-//        if (tagCompound.contains("Info")) {
-//            CompoundTag info = tagCompound.getCompound("Info");
-//            offsetX = info.getInt("offsetX");
-//            offsetY = info.getInt("offsetY");
-//            offsetZ = info.getInt("offsetZ");
-//        } else {
-//            offsetX = offsetY = offsetZ = 1;
-//        }
-//    }
 
     public static final Key<BlockPos> SELECTED_NODE = new Key<>("node", Type.BLOCKPOS);
     public static final Key<String> SELECTED_VEHICLE = new Key<>("vehicle", Type.STRING);
@@ -381,17 +360,17 @@ public class MoverControllerTileEntity extends GenericTileEntity {
             (te, player, params, list) -> GuiMoverController.setNodesFromServer(list));
 
     public static class NodePairSerializer implements ISerializer<Pair<BlockPos, String>> {
-    @Override
-    public Function<RegistryFriendlyByteBuf, Pair<BlockPos, String>> getDeserializer() {
-        return buf -> Pair.of(buf.readBlockPos(), buf.readUtf(32767));
-    }
+        @Override
+        public Function<RegistryFriendlyByteBuf, Pair<BlockPos, String>> getDeserializer() {
+            return buf -> Pair.of(buf.readBlockPos(), buf.readUtf(32767));
+        }
 
-    @Override
-    public BiConsumer<RegistryFriendlyByteBuf, Pair<BlockPos, String>> getSerializer() {
-        return (buf, pair) -> {
-            buf.writeBlockPos(pair.getLeft());
-            buf.writeUtf(pair.getRight());
-        };
+        @Override
+        public BiConsumer<RegistryFriendlyByteBuf, Pair<BlockPos, String>> getSerializer() {
+            return (buf, pair) -> {
+                buf.writeBlockPos(pair.getLeft());
+                buf.writeUtf(pair.getRight());
+            };
+        }
     }
-}
 }

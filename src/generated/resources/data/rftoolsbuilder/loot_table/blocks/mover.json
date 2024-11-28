@@ -16,7 +16,8 @@
               "include": [
                 "mcjtylib:item_energy",
                 "mcjtylib:item_inventory",
-                "mcjtylib:item_inventory"
+                "mcjtylib:item_inventory",
+                "rftoolsbuilder:mover_data"
               ],
               "source": "block_entity"
             }
