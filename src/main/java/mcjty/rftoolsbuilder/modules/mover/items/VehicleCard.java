@@ -3,11 +3,10 @@ package mcjty.rftoolsbuilder.modules.mover.items;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.tooltips.ITooltipSettings;
 import mcjty.lib.varia.Tools;
+import mcjty.rftoolsbuilder.modules.mover.MoverModule;
+import mcjty.rftoolsbuilder.modules.mover.data.VehicleData;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -43,9 +42,8 @@ public class VehicleCard extends Item implements ITooltipSettings {
     }
 
     public static String getVehicleName(ItemStack stack) {
-        // @todo 1.21 NBT
-//        return NBTTools.getString(stack, "vehicleName", "<unknown>");
-        return "";
+        VehicleData data = stack.getOrDefault(MoverModule.ITEM_VEHICLE_DATA.get(), VehicleData.DEFAULT);
+        return data.name();
     }
 
     private static String getContentsDescription(ItemStack stack) {
@@ -64,83 +62,58 @@ public class VehicleCard extends Item implements ITooltipSettings {
     }
 
     public static void storeVehicleInCard(ItemStack vehicleCard, Map<BlockState, List<Integer>> blocks, String vehicleName) {
-        ListTag list = new ListTag();
-        blocks.forEach((state, positions) -> {
-            CompoundTag tag = new CompoundTag();
-            tag.put("state", NbtUtils.writeBlockState(state));
-            tag.putIntArray("blocks", positions);
-            list.add(tag);
-        });
-        // @todo 1.21 NBT
-//        vehicleCard.getOrCreateTag().put("blocks", list);
-//        vehicleCard.getOrCreateTag().putString("vehicleName", vehicleName);
+        List<VehicleData.StateWithCount> states = blocks.entrySet().stream().map(e -> new VehicleData.StateWithCount(e.getKey(), e.getValue())).toList();
+        VehicleData data = vehicleCard.getOrDefault(MoverModule.ITEM_VEHICLE_DATA.get(), VehicleData.DEFAULT);
+        data = data.withStates(states).withName(vehicleName);
+        vehicleCard.set(MoverModule.ITEM_VEHICLE_DATA.get(), data);
     }
 
     public static void setDesiredDestination(ItemStack vehicleCard, BlockPos pos, String name) {
-        // @todo 1.21 NBT
-//        vehicleCard.getOrCreateTag().putIntArray("desiredPos", new int[] { pos.getX(), pos.getY(), pos.getZ()});
-//        vehicleCard.getOrCreateTag().putString("desiredPosName", name);
+        VehicleData data = vehicleCard.getOrDefault(MoverModule.ITEM_VEHICLE_DATA.get(), VehicleData.DEFAULT);
+        data = data.withDesiredPos(pos).withDesiredPosName(name);
+        vehicleCard.set(MoverModule.ITEM_VEHICLE_DATA.get(), data);
     }
 
     public static void clearDesiredDestination(ItemStack vehicleCard) {
-        // @todo 1.21 NBT
-//        vehicleCard.getOrCreateTag().remove("desiredPos");
-//        vehicleCard.getOrCreateTag().remove("desiredPosName");
+        VehicleData data = vehicleCard.getOrDefault(MoverModule.ITEM_VEHICLE_DATA.get(), VehicleData.DEFAULT);
+        data = data.withDesiredPos(BlockPos.ZERO).withDesiredPosName("");
+        vehicleCard.set(MoverModule.ITEM_VEHICLE_DATA.get(), data);
     }
 
 
     @Nullable
     public static BlockPos getDesiredDestination(ItemStack vehicleCard) {
-        // @todo 1.21 NBT
-//        CompoundTag tag = vehicleCard.getTag();
-//        if (tag == null ) {
-//            return null;
-//        }
-//        if (tag.contains("desiredPos")) {
-//            int[] desiredPos = tag.getIntArray("desiredPos");
-//            return new BlockPos(desiredPos[0], desiredPos[1], desiredPos[2]);
-//        }
-        return null;
+        VehicleData data = vehicleCard.getOrDefault(MoverModule.ITEM_VEHICLE_DATA.get(), VehicleData.DEFAULT);
+        if (data.desiredPosName().isEmpty()) {
+            return null;
+        }
+        return data.desiredPos();
     }
 
     private static boolean isMoving(ItemStack vehicleCard) {
-        // @todo 1.21 NBT
-//        CompoundTag tag = vehicleCard.getTag();
-//        if (tag == null ) {
-//            return false;
-//        }
-//        return tag.contains("desiredPosName");
-        return false;
+        VehicleData data = vehicleCard.getOrDefault(MoverModule.ITEM_VEHICLE_DATA.get(), VehicleData.DEFAULT);
+        return !data.desiredPosName().isEmpty();
     }
 
     @Nullable
     public static String getDesiredDestinationName(ItemStack vehicleCard) {
-        // @todo 1.21 NBT
-//        CompoundTag tag = vehicleCard.getTag();
-//        if (tag == null ) {
-//            return null;
-//        }
-//        if (tag.contains("desiredPosName")) {
-//            return tag.getString("desiredPosName");
-//        }
-        return null;
+        VehicleData data = vehicleCard.getOrDefault(MoverModule.ITEM_VEHICLE_DATA.get(), VehicleData.DEFAULT);
+        String s = data.desiredPosName();
+        if (s.isEmpty()) {
+            return null;
+        }
+        return s;
     }
 
     public static Map<BlockState, List<BlockPos>> getBlocks(ItemStack vehicleCard, BlockPos minPos) {
+        // @todo avoid translation
         Map<BlockState, List<BlockPos>> result = new HashMap<>();
-        // @todo 1.21 NBT
-//        CompoundTag compoundTag = vehicleCard.getTag();
-//        if (compoundTag != null) {
-//            ListTag list = compoundTag.getList("blocks", Tag.TAG_COMPOUND);
-//            for (Tag tag : list) {
-//                CompoundTag c = (CompoundTag) tag;
-//                BlockState state = NBTTools.readBlockState(c.getCompound("state"));
-//                int[] blocks = c.getIntArray("blocks");
-//                List<BlockPos> blockPosList = Arrays.stream(blocks).mapToObj(i -> convertIntToPos(minPos, i)).collect(Collectors.toList());
-//                result.put(state, blockPosList);
-//            }
-//
-//        }
+        VehicleData data = vehicleCard.getOrDefault(MoverModule.ITEM_VEHICLE_DATA.get(), VehicleData.DEFAULT);
+        for (VehicleData.StateWithCount stateWithCount : data.states()) {
+            BlockState state = stateWithCount.state();
+            List<BlockPos> blockPosList = stateWithCount.positions().stream().map(i -> convertIntToPos(minPos, i)).toList();
+            result.put(state, blockPosList);
+        }
         return result;
     }
 

@@ -15,6 +15,8 @@ import mcjty.rftoolsbuilder.modules.mover.client.GuiMoverController;
 import mcjty.rftoolsbuilder.modules.mover.client.GuiVehicleBuilder;
 import mcjty.rftoolsbuilder.modules.mover.data.MoverControllerData;
 import mcjty.rftoolsbuilder.modules.mover.data.MoverData;
+import mcjty.rftoolsbuilder.modules.mover.data.VehicleBuilderData;
+import mcjty.rftoolsbuilder.modules.mover.data.VehicleData;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlModuleItem;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleStatusModuleItem;
@@ -65,9 +67,12 @@ public class MoverModule implements IModule {
     );
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_MOVER_CONTROLLER = CONTAINERS.register("mover_controller", GenericContainer::createContainerType);
 
-    public static final DeferredBlock<BaseBlock> VEHICLE_BUILDER = BLOCKS.register("vehicle_builder", VehicleBuilderTileEntity::createBlock);
-    public static final DeferredItem<Item> VEHICLE_BUILDER_ITEM = ITEMS.register("vehicle_builder", tab(() -> new BlockItem(VEHICLE_BUILDER.get(), createStandardProperties())));
-    public static final Supplier<BlockEntityType<?>> TYPE_VEHICLE_BUILDER = TILES.register("vehicle_builder", () -> BlockEntityType.Builder.of(VehicleBuilderTileEntity::new, VEHICLE_BUILDER.get()).build(null));
+    public static final RBlock<BaseBlock, BlockItem, VehicleBuilderTileEntity> VEHICLE_BUILDER = RBLOCKS.registerBlock("vehicle_builder",
+            VehicleBuilderTileEntity.class,
+            VehicleBuilderTileEntity::createBlock,
+            block -> new BlockItem(block.get(), createStandardProperties()),
+            VehicleBuilderTileEntity::new
+    );
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_VEHICLE_BUILDER = CONTAINERS.register("vehicle_builder", GenericContainer::createContainerType);
 
     public static final DeferredBlock<InvisibleMoverBlock> INVISIBLE_MOVER_BLOCK = BLOCKS.register("invisible_mover", InvisibleMoverBlock::new);
@@ -108,6 +113,22 @@ public class MoverModule implements IModule {
             builder -> builder
                     .persistent(MoverData.CODEC)
                     .networkSynchronized(MoverData.STREAM_CODEC));
+
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<VehicleBuilderData>> VEHICLE_BUILDER_DATA = ATTACHMENT_TYPES.register(
+            "vehicle_builder_data", () -> AttachmentType.builder(() -> VehicleBuilderData.DEFAULT)
+                    .serialize(VehicleBuilderData.CODEC)
+                    .build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<VehicleBuilderData>> ITEM_VEHICLE_BUILDER_DATA = COMPONENTS.registerComponentType(
+            "vehicle_builder_data",
+            builder -> builder
+                    .persistent(VehicleBuilderData.CODEC)
+                    .networkSynchronized(VehicleBuilderData.STREAM_CODEC));
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<VehicleData>> ITEM_VEHICLE_DATA = COMPONENTS.registerComponentType(
+            "vehicle_data",
+            builder -> builder
+                    .persistent(VehicleData.CODEC)
+                    .networkSynchronized(VehicleData.STREAM_CODEC));
 
     public MoverModule(IEventBus bus, Dist dist) {
         Sounds.init();
@@ -160,8 +181,8 @@ public class MoverModule implements IModule {
                 Dob.blockBuilder(VEHICLE_BUILDER)
                         .ironPickaxeTags()
                         .parentedItem("block/vehicle_builder")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
-                        .blockState(p -> p.orientedBlock(VEHICLE_BUILDER.get(), p.frontBasedModel("vehicle_builder", p.modLoc("block/machinevehiclebuilder"))))
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_VEHICLE_BUILDER_DATA.get())
+                        .blockState(p -> p.orientedBlock(VEHICLE_BUILDER.block().get(), p.frontBasedModel("vehicle_builder", p.modLoc("block/machinevehiclebuilder"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
                                         .define('C', Items.MINECART)

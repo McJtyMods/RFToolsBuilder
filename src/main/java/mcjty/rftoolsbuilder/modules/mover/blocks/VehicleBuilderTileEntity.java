@@ -10,6 +10,7 @@ import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
+import mcjty.lib.setup.Registration;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericTileEntity;
@@ -22,8 +23,12 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderTools;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import mcjty.rftoolsbuilder.modules.builder.blocks.RotateMode;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
+import mcjty.rftoolsbuilder.modules.mover.data.VehicleBuilderData;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
@@ -35,10 +40,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.header;
@@ -53,7 +60,6 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
     @GuiValue
     private String vehicleName = "";
 
-    private RotateMode rotate = RotateMode.ROTATE_0;
     @GuiValue
     public static final Value<VehicleBuilderTileEntity, String> VALUE_ROTATE = Value.createEnum("rotate", RotateMode.values(), VehicleBuilderTileEntity::getRotate, VehicleBuilderTileEntity::setRotate);
 
@@ -62,7 +68,6 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
             .slot(specific(MoverModule.VEHICLE_CARD.get()).in().out(), SLOT_VEHICLE_CARD, 154, 24)
             .playerSlots(10, 70));
 
-    @Cap(type = CapType.ITEMS_AUTOMATION)
     private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
             .onUpdate((slot, stack) -> {
                 if (stack.getItem() == MoverModule.VEHICLE_CARD.get()) {
@@ -72,12 +77,15 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
                 }
             })
             .build();
+    @Cap(type = CapType.ITEMS_AUTOMATION)
+    private final static Function<VehicleBuilderTileEntity, GenericItemHandler> ITEM_CAP = tile -> tile.items;
+
 
     @Cap(type = CapType.CONTAINER)
-    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Vehicle Builder")
-            .containerSupplier(container(MoverModule.CONTAINER_VEHICLE_BUILDER, CONTAINER_FACTORY,this))
-            .itemHandler(() -> items)
-            .setupSync(this));
+    private static final Function<VehicleBuilderTileEntity, MenuProvider> screenHandler = (tile) -> new DefaultContainerProvider<GenericContainer>("Vehicle Builder")
+            .containerSupplier(container(MoverModule.CONTAINER_VEHICLE_BUILDER, CONTAINER_FACTORY, tile))
+            .itemHandler(() -> tile.items)
+            .setupSync(tile);
 
     public static BaseBlock createBlock() {
         return new BaseBlock(new BlockBuilder()
@@ -91,7 +99,7 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
 
 
     public VehicleBuilderTileEntity(BlockPos pos, BlockState state) {
-        super(MoverModule.TYPE_VEHICLE_BUILDER.get(), pos, state);
+        super(MoverModule.VEHICLE_BUILDER.be().get(), pos, state);
     }
 
     public GenericItemHandler getItems() {
@@ -101,12 +109,12 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
     private static final int MAXDIM = 16;
 
     public RotateMode getRotate() {
-        return rotate;
+        return getData(MoverModule.VEHICLE_BUILDER_DATA.get()).rotate();
     }
 
     public void setRotate(RotateMode rotate) {
-        this.rotate = rotate;
-        setChanged();
+        VehicleBuilderData data = getData(MoverModule.VEHICLE_BUILDER_DATA.get()).withRotate(rotate);
+        setData(MoverModule.VEHICLE_BUILDER_DATA.get(), data);
     }
 
 
@@ -132,7 +140,7 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
     private Map<BlockState, List<Integer>> getBlocks(BlockPos minCorner, BlockPos maxCorner, ServerLevel world) {
         Map<BlockState, List<Integer>> blocks = new HashMap<>();
         var mpos = new BlockPos.MutableBlockPos(0, 0, 0);
-        Rotation rotation = switch (rotate) {
+        Rotation rotation = switch (getRotate()) {
             case ROTATE_0 -> Rotation.NONE;
             case ROTATE_90 -> Rotation.CLOCKWISE_90;
             case ROTATE_180 -> Rotation.CLOCKWISE_180;
@@ -231,24 +239,34 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
         return true;
     }
 
-    // @todo 1.21
-//    @Override
-//    protected void saveInfo(CompoundTag tagCompound) {
-//        super.saveInfo(tagCompound);
-//        getOrCreateInfo(tagCompound).putInt("rotate", rotate.ordinal());
-//    }
+    @Override
+    public void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
+        items.save(tag, "items", provider);
+    }
 
-    // @todo 1.21
-//    @Override
-//    protected void loadInfo(CompoundTag tagCompound) {
-//        super.loadInfo(tagCompound);
-//        if (tagCompound.contains("Info")) {
-//            CompoundTag info = tagCompound.getCompound("Info");
-//            if (info.contains("rotate")) {
-//                rotate = RotateMode.values()[info.getInt("rotate")];
-//            }
-//        }
-//    }
+    @Override
+    public void loadAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
+        items.load(tag, "items", provider);
+    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentInput input) {
+        super.applyImplicitComponents(input);
+        items.applyImplicitComponents(input.get(Registration.ITEM_INVENTORY));
+        VehicleBuilderData vehicleBuilderData = input.get(MoverModule.ITEM_VEHICLE_BUILDER_DATA);
+        if (vehicleBuilderData != null) {
+            setData(MoverModule.VEHICLE_BUILDER_DATA, vehicleBuilderData);
+        }
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+        super.collectImplicitComponents(builder);
+        items.collectImplicitComponents(builder);
+        builder.set(MoverModule.ITEM_VEHICLE_BUILDER_DATA, getData(MoverModule.VEHICLE_BUILDER_DATA));
+    }
 
     @ServerCommand
     public static final Command<?> CMD_CREATE = Command.<VehicleBuilderTileEntity>create("create", (te, player, params) -> te.copyVehicle(player));

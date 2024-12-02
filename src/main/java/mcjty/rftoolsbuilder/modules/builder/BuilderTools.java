@@ -6,6 +6,7 @@ import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
 import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
+import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
@@ -75,7 +76,7 @@ public class BuilderTools {
 
     @Nullable
     public static Integer getChannel(ItemStack card) {
-        if (card.isEmpty() || !(card.getItem() instanceof ShapeCardItem)) {
+        if (card.isEmpty() || !(card.getItem() instanceof ShapeCardItem || card.getItem() instanceof SpaceChamberCardItem)) {
             return null;
         }
         ShapeCardData data = card.get(BuilderModule.ITEM_SHAPECARD_DATA);
@@ -102,11 +103,11 @@ public class BuilderTools {
                 }
             }
 
-            entitiesWithCount.increment(canonicalName);
+            ResourceLocation registryName = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+            entitiesWithCount.increment(registryName.toString());
 
             // @todo 1.21 what to do with canonicalName?
-            if (!firstEntity.containsKey(canonicalName)) {
-                ResourceLocation registryName = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+            if (!firstEntity.containsKey(registryName.toString())) {
                 CompoundTag entityNBT = new CompoundTag();
                 entity.saveWithoutId(entityNBT);
 
@@ -114,9 +115,9 @@ public class BuilderTools {
             }
 
             if (entity instanceof Player) {
-                entitiesWithCost.increment(canonicalName, BuilderConfiguration.builderRfPerPlayer.get());
+                entitiesWithCost.increment(registryName.toString(), BuilderConfiguration.builderRfPerPlayer.get());
             } else {
-                entitiesWithCost.increment(canonicalName, BuilderConfiguration.builderRfPerEntity.get());
+                entitiesWithCost.increment(registryName.toString(), BuilderConfiguration.builderRfPerEntity.get());
             }
         }
     }

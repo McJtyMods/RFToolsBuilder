@@ -34,6 +34,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
@@ -174,6 +175,7 @@ public class MoverTileEntity extends TickingTileEntity {
         if (!isMoving()) {
             logic.clearGrabbedEntities();
         }
+//        markDirtyClient();
         updateVehicleStatus();
         logic.tryMoveVehicleServer();
         // If there is a vehicle we sync status to clients
@@ -733,20 +735,6 @@ public class MoverTileEntity extends TickingTileEntity {
         offset = new BlockPos(tag.getInt("offsetX"), tag.getInt("offsetY"), tag.getInt("offsetZ"));
     }
 
-    // @todo 1.21 NBT
-//    @Override
-//    public void loadInfo(CompoundTag tagCompound) {
-//        super.loadInfo(tagCompound);
-//        CompoundTag info = tagCompound.getCompound("Info");
-//        name = info.getString("name");
-//        down = info.getBoolean("down");
-//        up = info.getBoolean("up");
-//        north = info.getBoolean("north");
-//        south = info.getBoolean("south");
-//        west = info.getBoolean("west");
-//        east = info.getBoolean("east");
-//    }
-
     @Override
     public void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
@@ -784,17 +772,13 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider provider) {
-        super.handleUpdateTag(tag, provider);
-        loadClientDataFromNBT(tag, provider);
-    }
-
-    @Override
     public void saveClientDataToNBT(CompoundTag tagCompound, HolderLookup.Provider provider) {
         ItemStack card = items.getStackInSlot(SLOT_VEHICLE_CARD);
-        CompoundTag tag = new CompoundTag();
-        card.save(provider, tag);
-        tagCompound.put("card", tag);
+        if (!card.isEmpty()) {
+            CompoundTag tag = new CompoundTag();
+            Tag tg = card.save(provider, tag);
+            tagCompound.put("card", tg);
+        }
         logic.saveClientDataToNBT(tagCompound);
         if (controller != null) {
             tagCompound.putIntArray("controller", new int[] { controller.getX(), controller.getY(), controller.getZ() });

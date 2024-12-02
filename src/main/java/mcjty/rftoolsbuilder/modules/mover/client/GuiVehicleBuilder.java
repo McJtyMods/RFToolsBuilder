@@ -21,7 +21,7 @@ public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEnt
     private Button createButton;
 
     public GuiVehicleBuilder(GenericContainer container, Inventory inventory, Component title) {
-        super(container, inventory, title, MoverModule.VEHICLE_BUILDER.get().getManualEntry());
+        super(container, inventory, title, MoverModule.VEHICLE_BUILDER.block().get().getManualEntry());
     }
 
     public static void register(RegisterMenuScreensEvent event) {

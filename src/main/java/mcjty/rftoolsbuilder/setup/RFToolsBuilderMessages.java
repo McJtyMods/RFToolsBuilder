@@ -5,10 +5,10 @@ import mcjty.lib.network.PacketSendClientCommand;
 import mcjty.lib.network.PacketSendServerCommand;
 import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
-import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenCardGui;
-import mcjty.rftoolsbuilder.modules.builder.network.PacketOpenBuilderGui;
-import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateCardInInventory;
-import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateCardInPlayer;
+import mcjty.rftoolsbuilder.modules.builder.network.*;
+import mcjty.rftoolsbuilder.modules.mover.network.PacketClickMover;
+import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
+import mcjty.rftoolsbuilder.modules.mover.network.PacketSyncVehicleInformationToClient;
 import mcjty.rftoolsbuilder.modules.shield.network.PacketNotifyServerClientReady;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -36,17 +36,18 @@ public class RFToolsBuilderMessages {
         registrar.playToServer(PacketCloseContainerAndOpenCardGui.TYPE, PacketCloseContainerAndOpenCardGui.CODEC, PacketCloseContainerAndOpenCardGui::handle);
         registrar.playToServer(PacketOpenBuilderGui.TYPE, PacketOpenBuilderGui.CODEC, PacketOpenBuilderGui::handle);
         registrar.playToServer(PacketNotifyServerClientReady.TYPE, PacketNotifyServerClientReady.CODEC, PacketNotifyServerClientReady::handle);
+        registrar.playToServer(PacketClickMover.TYPE, PacketClickMover.CODEC, PacketClickMover::handle);
+        registrar.playToServer(PacketOpenCardGuiFromBuilder.TYPE, PacketOpenCardGuiFromBuilder.CODEC, PacketOpenCardGuiFromBuilder::handle);
+
+        registrar.playToClient(PacketChamberInfoReady.TYPE, PacketChamberInfoReady.CODEC, PacketChamberInfoReady::handle);
+        registrar.playToClient(PacketSyncVehicleInformationToClient.TYPE, PacketSyncVehicleInformationToClient.CODEC, PacketSyncVehicleInformationToClient::handle);
+        registrar.playToClient(PacketGrabbedEntitiesToClient.TYPE, PacketGrabbedEntitiesToClient.CODEC, PacketGrabbedEntitiesToClient::handle);
 
         // @todo 1.21
 //        registrar.play(PacketRequestShapeData.class, PacketRequestShapeData::create, handler -> handler.server(PacketRequestShapeData::handle));
-//        registrar.play(PacketOpenCardGuiFromBuilder.class, PacketOpenCardGuiFromBuilder::create, handler -> handler.server(PacketOpenCardGuiFromBuilder::handle));
-//        registrar.play(PacketClickMover.class, PacketClickMover::create, handler -> handler.server(PacketClickMover::handle));
 //
-//        registrar.play(PacketGrabbedEntitiesToClient.class, PacketGrabbedEntitiesToClient::create, handler -> handler.client(PacketGrabbedEntitiesToClient::handle));
 //        registrar.play(PacketReturnShapeData.class, PacketReturnShapeData::create, handler -> handler.client(PacketReturnShapeData::handle));
-//        registrar.play(PacketChamberInfoReady.class, PacketChamberInfoReady::create, handler -> handler.client(PacketChamberInfoReady::handle));
 //        registrar.play(PacketReturnExtraData.class, PacketReturnExtraData::create, handler -> handler.client(PacketReturnExtraData::handle));
-//        registrar.play(PacketSyncVehicleInformationToClient.class, PacketSyncVehicleInformationToClient::create, handler -> handler.client(PacketSyncVehicleInformationToClient::handle));
     }
 
     public static void sendToServer(String command, @Nonnull TypedMap.Builder argumentBuilder) {
