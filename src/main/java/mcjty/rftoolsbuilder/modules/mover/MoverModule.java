@@ -51,7 +51,7 @@ import static mcjty.rftoolsbuilder.setup.Registration.*;
 
 public class MoverModule implements IModule {
 
-    public static final RBlock<BaseBlock, BlockItem, MoverTileEntity> MOVER = RBLOCKS.registerBlock("mover",
+    public static final RBlock<BaseBlock, BlockItem, MoverTileEntity> MOVER = RBLOCKS.registerBlockWIP("mover",
             MoverTileEntity.class,
             MoverTileEntity::createBlock,
             block -> new BlockItem(block.get(), createStandardProperties()),
@@ -59,7 +59,7 @@ public class MoverModule implements IModule {
     );
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_MOVER = CONTAINERS.register("mover", GenericContainer::createContainerType);
 
-    public static final RBlock<BaseBlock, BlockItem, MoverControllerTileEntity> MOVER_CONTROLLER = RBLOCKS.registerBlock("mover_controller",
+    public static final RBlock<BaseBlock, BlockItem, MoverControllerTileEntity> MOVER_CONTROLLER = RBLOCKS.registerBlockWIP("mover_controller",
             MoverControllerTileEntity.class,
             MoverControllerTileEntity::createBlock,
             block -> new BlockItem(block.get(), createStandardProperties()),
@@ -67,7 +67,7 @@ public class MoverModule implements IModule {
     );
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_MOVER_CONTROLLER = CONTAINERS.register("mover_controller", GenericContainer::createContainerType);
 
-    public static final RBlock<BaseBlock, BlockItem, VehicleBuilderTileEntity> VEHICLE_BUILDER = RBLOCKS.registerBlock("vehicle_builder",
+    public static final RBlock<BaseBlock, BlockItem, VehicleBuilderTileEntity> VEHICLE_BUILDER = RBLOCKS.registerBlockWIP("vehicle_builder",
             VehicleBuilderTileEntity.class,
             VehicleBuilderTileEntity::createBlock,
             block -> new BlockItem(block.get(), createStandardProperties()),
