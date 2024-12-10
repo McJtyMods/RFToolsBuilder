@@ -1,4 +1,4 @@
-Upcoming:
+1.21-7.0.1:
 - Fixed a bug when opening the shape card gui from within the builder gui
 
 1.21-7.0.0:
