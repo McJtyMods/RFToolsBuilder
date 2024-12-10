@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
 import mcjty.lib.api.container.CapabilityContainerProvider;
+import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -40,7 +41,12 @@ public record PacketOpenBuilderGui(BlockPos pos) implements CustomPacketPayload 
                 return;
             }
             MenuProvider h = world.getCapability(CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY, te.getBlockPos(), null);
-            player.openMenu(h);
+            player.openMenu(h, buf -> {
+                buf.writeBlockPos(pos);
+                if (h instanceof DefaultContainerProvider<?> provider) {
+                    provider.writeExtraData(buf, te);
+                }
+            });
         });
     }
 }

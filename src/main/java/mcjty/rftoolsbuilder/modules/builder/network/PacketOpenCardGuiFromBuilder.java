@@ -22,10 +22,6 @@ public record PacketOpenCardGuiFromBuilder() implements CustomPacketPayload {
         return TYPE;
     }
 
-    public static PacketOpenCardGuiFromBuilder create(FriendlyByteBuf buf) {
-        return new PacketOpenCardGuiFromBuilder();
-    }
-
     public void handle(IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             GuiShapeCard.open(true);

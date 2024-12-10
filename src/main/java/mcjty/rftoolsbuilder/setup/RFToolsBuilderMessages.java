@@ -37,8 +37,8 @@ public class RFToolsBuilderMessages {
         registrar.playToServer(PacketOpenBuilderGui.TYPE, PacketOpenBuilderGui.CODEC, PacketOpenBuilderGui::handle);
         registrar.playToServer(PacketNotifyServerClientReady.TYPE, PacketNotifyServerClientReady.CODEC, PacketNotifyServerClientReady::handle);
         registrar.playToServer(PacketClickMover.TYPE, PacketClickMover.CODEC, PacketClickMover::handle);
-        registrar.playToServer(PacketOpenCardGuiFromBuilder.TYPE, PacketOpenCardGuiFromBuilder.CODEC, PacketOpenCardGuiFromBuilder::handle);
 
+        registrar.playToClient(PacketOpenCardGuiFromBuilder.TYPE, PacketOpenCardGuiFromBuilder.CODEC, PacketOpenCardGuiFromBuilder::handle);
         registrar.playToClient(PacketChamberInfoReady.TYPE, PacketChamberInfoReady.CODEC, PacketChamberInfoReady::handle);
         registrar.playToClient(PacketSyncVehicleInformationToClient.TYPE, PacketSyncVehicleInformationToClient.CODEC, PacketSyncVehicleInformationToClient::handle);
         registrar.playToClient(PacketGrabbedEntitiesToClient.TYPE, PacketGrabbedEntitiesToClient.CODEC, PacketGrabbedEntitiesToClient::handle);

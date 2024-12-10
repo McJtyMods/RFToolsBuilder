@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a bug when opening the shape card gui from within the builder gui
+
 1.21-7.0.0:
 - First port to 1.21!
 

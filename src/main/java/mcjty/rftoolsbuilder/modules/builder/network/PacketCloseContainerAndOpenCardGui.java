@@ -35,7 +35,7 @@ public record PacketCloseContainerAndOpenCardGui(BlockPos builderPos) implements
         ctx.enqueueWork(() -> {
             Player player = ctx.player();
             ((ServerPlayer) player).doCloseContainer();
-            RFToolsBuilderMessages.sendToPlayer(new PacketOpenCardGuiFromBuilder(), player);
+            RFToolsBuilderMessages.sendToPlayer(PacketOpenCardGuiFromBuilder.INSTANCE, player);
             BlockEntity te = player.level().getBlockEntity(builderPos);
             if (te instanceof BuilderTileEntity builderTileEntity) {
                 builderTileEntity.setSupportMode(false);
