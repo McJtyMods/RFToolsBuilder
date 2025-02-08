@@ -2,7 +2,6 @@ package mcjty.rftoolsbuilder.compat.rftoolsutility;
 
 import mcjty.rftoolsbase.api.screens.IScreenModuleRegistry;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlScreenModule;
-import mcjty.rftoolsbuilder.modules.mover.items.VehicleStatusScreenModule;
 
 import javax.annotation.Nullable;
 import java.util.function.Function;
@@ -13,7 +12,7 @@ public class RFToolsSupport {
         @Nullable
         @Override
         public Void apply(IScreenModuleRegistry manager) {
-            manager.registerModuleDataFactory(VehicleControlScreenModule.EmptyData.ID, VehicleControlScreenModule.EmptyData::new);
+            manager.registerModuleDataFactory(VehicleControlScreenModule.EmptyData.ID, buf -> new EmptyData(buf));
             return null;
         }
     }
