@@ -12,7 +12,7 @@ public class RFToolsSupport {
         @Nullable
         @Override
         public Void apply(IScreenModuleRegistry manager) {
-            manager.registerModuleDataFactory(VehicleControlScreenModule.EmptyData.ID, buf -> new EmptyData(buf));
+            manager.registerModuleDataFactory(VehicleControlScreenModule.EmptyData.ID, VehicleControlScreenModule.EmptyData::new);
             return null;
         }
     }
