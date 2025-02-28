@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class VehicleControlClientScreenModule implements IClientScreenModule<VehicleControlScreenModule.EmptyData> {
@@ -57,7 +58,7 @@ public class VehicleControlClientScreenModule implements IClientScreenModule<Veh
     }
 
     @Override
-    public void mouseClick(Level world, int x, int y, boolean clicked) {
+    public void mouseClick(ItemStack moduleStack, Level world, int x, int y, boolean clicked) {
         int xoffset;
         if (!line.isEmpty()) {
             xoffset = 40;
