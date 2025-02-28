@@ -26,12 +26,12 @@ public class VehicleControlClientScreenModule implements IClientScreenModule<Veh
     private final ITextRenderHelper buttonCache = new ScreenTextHelper();
 
     @Override
-    public TransformMode getTransformMode() {
+    public TransformMode getTransformMode(ItemStack moduleItem) {
         return TransformMode.TEXT;
     }
 
     @Override
-    public int getHeight() {
+    public int getHeight(ItemStack moduleItem) {
         return 14;
     }
 

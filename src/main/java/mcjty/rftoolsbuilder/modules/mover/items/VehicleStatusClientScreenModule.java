@@ -23,12 +23,12 @@ public class VehicleStatusClientScreenModule implements IClientScreenModule<IMod
     private final ITextRenderHelper cache = new ScreenTextHelper();
 
     @Override
-    public TransformMode getTransformMode() {
+    public TransformMode getTransformMode(ItemStack moduleItem) {
         return TransformMode.TEXT;
     }
 
     @Override
-    public int getHeight() {
+    public int getHeight(ItemStack moduleItem) {
         return 14;
     }
 
