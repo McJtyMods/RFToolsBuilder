@@ -74,16 +74,6 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
     }
 
     @Override
-    public Class<VehicleControlScreenModule> getServerScreenModule() {
-        return VehicleControlScreenModule.class;
-    }
-
-    @Override
-    public Class<VehicleControlClientScreenModule> getClientScreenModule() {
-        return VehicleControlClientScreenModule.class;
-    }
-
-    @Override
     public String getModuleName() {
         return "Veh";
     }
