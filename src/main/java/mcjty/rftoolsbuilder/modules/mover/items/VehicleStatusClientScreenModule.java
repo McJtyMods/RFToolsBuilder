@@ -1,23 +1,18 @@
 package mcjty.rftoolsbuilder.modules.mover.items;
 
-import mcjty.rftoolsbase.api.screens.*;
+import mcjty.rftoolsbase.api.screens.IClientScreenModule;
+import mcjty.rftoolsbase.api.screens.IModuleRenderHelper;
+import mcjty.rftoolsbase.api.screens.ITextRenderHelper;
+import mcjty.rftoolsbase.api.screens.ModuleRenderInfo;
 import mcjty.rftoolsbase.api.screens.data.IModuleDataString;
 import mcjty.rftoolsbase.tools.ScreenTextHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class VehicleStatusClientScreenModule implements IClientScreenModule<IModuleDataString> {
-
-    private int labelColor = 0xffffff;
-    private int color = 0xffffff;
-    private String label = "";
-    private String vehicle = "";
 
     private final ITextRenderHelper labelCache = new ScreenTextHelper();
     private final ITextRenderHelper cache = new ScreenTextHelper();
@@ -36,9 +31,11 @@ public class VehicleStatusClientScreenModule implements IClientScreenModule<IMod
     public void render(GuiGraphics graphics, MultiBufferSource buffer, IModuleRenderHelper renderHelper, Font fontRenderer, int currenty, IModuleDataString screenData, ModuleRenderInfo renderInfo) {
         int xoffset;
         int buttonWidth;
-        if (!label.isEmpty()) {
-            labelCache.setup(label, 316, renderInfo);
-            labelCache.renderText(graphics, buffer, 0, currenty + 2, labelColor, renderInfo);
+        VehicleStatusScreenModule data = VehicleStatusModuleItem.data(renderInfo.moduleStack);
+        if (!data.getLabel().isEmpty()) {
+            labelCache.setup(data.getLabel(), 316, renderInfo);
+            labelCache.align(data.getAlign());
+            labelCache.renderText(graphics, buffer, 0, currenty + 2, data.getLabelColor(), renderInfo);
             xoffset = 7 + 40;
             buttonWidth = 300;
         } else {
@@ -50,37 +47,12 @@ public class VehicleStatusClientScreenModule implements IClientScreenModule<IMod
         if (line != null) {
             cache.setup(line, buttonWidth, renderInfo);
             cache.setDirty();
-            cache.renderText(graphics, buffer, xoffset -10, currenty + 2, color, renderInfo);
+            cache.renderText(graphics, buffer, xoffset -10, currenty + 2, data.getColor(), renderInfo);
         }
     }
 
     @Override
     public void mouseClick(ItemStack moduleStack, Level world, int x, int y, boolean clicked) {
-    }
-
-    @Override
-    public void setupFromNBT(CompoundTag tagCompound, ResourceKey<Level> dim, BlockPos pos) {
-        if (tagCompound != null) {
-            if (tagCompound.contains("color")) {
-                color = tagCompound.getInt("color");
-            } else {
-                color = 0xffffff;
-            }
-            if (tagCompound.contains("labelColor")) {
-                labelColor = tagCompound.getInt("labelColor");
-            } else {
-                labelColor = 0xffffff;
-            }
-            label = tagCompound.getString("label");
-            vehicle = tagCompound.getString("vehicle");
-            if (tagCompound.contains("align")) {
-                String alignment = tagCompound.getString("align");
-                labelCache.align(TextAlign.get(alignment));
-            } else {
-                labelCache.align(TextAlign.ALIGN_LEFT);
-            }
-            cache.setDirty();
-        }
     }
 
     @Override

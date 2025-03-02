@@ -1,16 +1,24 @@
 package mcjty.rftoolsbuilder.modules.mover.items;
 
+import com.mojang.serialization.Codec;
 import mcjty.lib.crafting.IComponentsToPreserve;
+import mcjty.lib.varia.BlockPosTools;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.ModuleTools;
 import mcjty.lib.varia.Tools;
+import mcjty.rftoolsbase.api.screens.IClientScreenModule;
 import mcjty.rftoolsbase.api.screens.IModuleGuiBuilder;
+import mcjty.rftoolsbase.api.screens.IScreenModule;
+import mcjty.rftoolsbase.api.screens.TextAlign;
 import mcjty.rftoolsbase.tools.GenericModuleItem;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
+import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -19,10 +27,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class VehicleStatusModuleItem extends GenericModuleItem implements IComponentsToPreserve {
 
@@ -33,16 +43,42 @@ public class VehicleStatusModuleItem extends GenericModuleItem implements ICompo
 
     @Override
     protected boolean hasGoldMessage(ItemStack stack) {
-        return !ModuleTools.hasModuleTarget(stack);
+        return data(stack).getPos().pos() == BlockPosTools.INVALID;
     }
 
     @Override
     protected String getInfoString(ItemStack stack) {
-        return ModuleTools.getTargetString(stack);
+        VehicleStatusScreenModule data = data(stack);
+        return ModuleTools.getTargetString(data.getMonitor(), data.getPos());
     }
 
     public VehicleStatusModuleItem() {
         super(Registration.createStandardProperties().stacksTo(1));
+    }
+
+    @Override
+    public @Nullable Codec<? extends IScreenModule<?>> codec() {
+        return VehicleStatusScreenModule.CODEC;
+    }
+
+    @Override
+    public @Nullable StreamCodec<RegistryFriendlyByteBuf, ? extends IScreenModule<?>> streamCodec() {
+        return VehicleStatusScreenModule.STREAM_CODEC;
+    }
+
+    @Override
+    public @Nullable DataComponentType<? extends IScreenModule<?>> componentType() {
+        return MoverModule.MODULE_VEHICLESTATUS_DATA.get();
+    }
+
+    @Override
+    public IScreenModule<?> createServerScreenModule() {
+        return new VehicleControlScreenModule();
+    }
+
+    @Override
+    public IClientScreenModule<?> createClientScreenModule() {
+        return new VehicleControlClientScreenModule();
     }
 
     @Nonnull
@@ -74,26 +110,40 @@ public class VehicleStatusModuleItem extends GenericModuleItem implements ICompo
     }
 
     @Override
-    public Class<VehicleStatusScreenModule> getServerScreenModule() {
-        return VehicleStatusScreenModule.class;
-    }
-
-    @Override
-    public Class<VehicleStatusClientScreenModule> getClientScreenModule() {
-        return VehicleStatusClientScreenModule.class;
-    }
-
-    @Override
     public String getModuleName() {
         return "VStat";
     }
 
+    public static VehicleStatusScreenModule data(ItemStack stack) {
+        VehicleStatusScreenModule data = stack.get(MoverModule.MODULE_VEHICLESTATUS_DATA);
+        if (data == null) {
+            data = new VehicleStatusScreenModule();
+        }
+        return data;
+    }
+
+    public static void data(ItemStack stack, Consumer<VehicleStatusScreenModule> setter) {
+        VehicleStatusScreenModule data = data(stack);
+        setter.accept(data);
+        stack.set(MoverModule.MODULE_VEHICLESTATUS_DATA, data);
+    }
+
+
     @Override
     public void createGui(IModuleGuiBuilder guiBuilder) {
         guiBuilder
-                .label("Label:").text("label", "Label text").color("labelColor", "Label color").nl()
-                .label("Vehicle:").text("vehicle", "Name of the vehicle").color("color", "Mover color").nl()
-                .choices("align", "Label alignment", "Left", "Center", "Right").nl();
+                .label("Label:")
+                .text((stack, s) -> data(stack).setLabel(s), stack -> data(stack).getLabel(), "Label text")
+                .color((stack, c) -> data(stack).setLabelColor(c), stack -> data(stack).getLabelColor(), "Label color")
+                .nl()
+
+                .label("Vehicle:")
+                .text((stack, s) -> data(stack).setVehicle(s), stack -> data(stack).getVehicle(), "Name of the vehicle")
+                .color((stack, c) -> data(stack).setColor(c), stack -> data(stack).getColor(), "Mover color")
+                .nl()
+
+                .choices((stack, c) -> data(stack).setAlign(TextAlign.get(c)), stack -> data(stack).getAlign().name(), "Label alignment", "Left", "Center", "Right")
+                .nl();
     }
 
     // @todo 1.14 implement! / 1.21 TODO

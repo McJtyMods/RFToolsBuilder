@@ -17,9 +17,7 @@ import mcjty.rftoolsbuilder.modules.mover.data.MoverControllerData;
 import mcjty.rftoolsbuilder.modules.mover.data.MoverData;
 import mcjty.rftoolsbuilder.modules.mover.data.VehicleBuilderData;
 import mcjty.rftoolsbuilder.modules.mover.data.VehicleData;
-import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
-import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlModuleItem;
-import mcjty.rftoolsbuilder.modules.mover.items.VehicleStatusModuleItem;
+import mcjty.rftoolsbuilder.modules.mover.items.*;
 import mcjty.rftoolsbuilder.modules.mover.sound.Sounds;
 import mcjty.rftoolsbuilder.setup.Config;
 import net.minecraft.core.HolderLookup;
@@ -129,6 +127,18 @@ public class MoverModule implements IModule {
             builder -> builder
                     .persistent(VehicleData.CODEC)
                     .networkSynchronized(VehicleData.STREAM_CODEC));
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<VehicleControlScreenModule>> MODULE_VEHICLECONTROL_DATA = COMPONENTS.registerComponentType(
+            "module_vehiclecontrol_data",
+            builder -> builder
+                    .persistent(VehicleControlScreenModule.CODEC)
+                    .networkSynchronized(VehicleControlScreenModule.STREAM_CODEC));
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<VehicleStatusScreenModule>> MODULE_VEHICLESTATUS_DATA = COMPONENTS.registerComponentType(
+            "module_vehiclestatus_data",
+            builder -> builder
+                    .persistent(VehicleStatusScreenModule.CODEC)
+                    .networkSynchronized(VehicleStatusScreenModule.STREAM_CODEC));
 
     public MoverModule(IEventBus bus, Dist dist) {
         Sounds.init();
