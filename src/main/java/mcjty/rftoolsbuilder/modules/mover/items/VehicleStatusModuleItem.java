@@ -57,23 +57,23 @@ public class VehicleStatusModuleItem extends GenericModuleItem implements ICompo
     }
 
     @Override
-    public @Nullable Codec<? extends IScreenModule<?>> codec() {
+    public @Nullable Codec<? extends IScreenModule<?, ?>> codec() {
         return VehicleStatusScreenModule.CODEC;
     }
 
     @Override
-    public @Nullable StreamCodec<RegistryFriendlyByteBuf, ? extends IScreenModule<?>> streamCodec() {
+    public @Nullable StreamCodec<RegistryFriendlyByteBuf, ? extends IScreenModule<?, ?>> streamCodec() {
         return VehicleStatusScreenModule.STREAM_CODEC;
     }
 
     @Override
-    public @Nullable DataComponentType<? extends IScreenModule<?>> componentType() {
+    public @Nullable DataComponentType<? extends IScreenModule<?, ?>> componentType() {
         return MoverModule.MODULE_VEHICLESTATUS_DATA.get();
     }
 
     @Override
-    public IScreenModule<?> createServerScreenModule() {
-        return new VehicleControlScreenModule();
+    public IScreenModule<?, ?> createServerScreenModule() {
+        return VehicleControlScreenModule.DEFAULT;
     }
 
     @Override
@@ -117,7 +117,7 @@ public class VehicleStatusModuleItem extends GenericModuleItem implements ICompo
     public static VehicleStatusScreenModule data(ItemStack stack) {
         VehicleStatusScreenModule data = stack.get(MoverModule.MODULE_VEHICLESTATUS_DATA);
         if (data == null) {
-            data = new VehicleStatusScreenModule();
+            data = VehicleStatusScreenModule.DEFAULT;
         }
         return data;
     }
@@ -133,22 +133,21 @@ public class VehicleStatusModuleItem extends GenericModuleItem implements ICompo
     public void createGui(IModuleGuiBuilder guiBuilder) {
         guiBuilder
                 .label("Label:")
-                .text((stack, s) -> data(stack).setLabel(s), stack -> data(stack).getLabel(), "Label text")
-                .color((stack, c) -> data(stack).setLabelColor(c), stack -> data(stack).getLabelColor(), "Label color")
+                .text((stack, s) -> data(stack).withLabel(s), stack -> data(stack).getLabel(), "Label text")
+                .color((stack, c) -> data(stack).withLabelColor(c), stack -> data(stack).getLabelColor(), "Label color")
                 .nl()
 
                 .label("Vehicle:")
-                .text((stack, s) -> data(stack).setVehicle(s), stack -> data(stack).getVehicle(), "Name of the vehicle")
-                .color((stack, c) -> data(stack).setColor(c), stack -> data(stack).getColor(), "Mover color")
+                .text((stack, s) -> data(stack).withVehicle(s), stack -> data(stack).getVehicle(), "Name of the vehicle")
+                .color((stack, c) -> data(stack).withColor(c), stack -> data(stack).getColor(), "Mover color")
                 .nl()
 
-                .choices((stack, c) -> data(stack).setAlign(TextAlign.get(c)), stack -> data(stack).getAlign().name(), "Label alignment", "Left", "Center", "Right")
+                .choices((stack, c) -> data(stack).withAlign(TextAlign.get(c)), stack -> data(stack).getAlign().name(), "Label alignment", "Left", "Center", "Right")
                 .nl();
     }
 
-    // @todo 1.14 implement! / 1.21 TODO
     @Override
     public Collection<DataComponentType<?>> getComponentsToPreserve() {
-        return List.of();
+        return List.of(MoverModule.MODULE_VEHICLESTATUS_DATA.get());
     }
 }

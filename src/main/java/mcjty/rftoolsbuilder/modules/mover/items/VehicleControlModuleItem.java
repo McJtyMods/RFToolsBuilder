@@ -34,6 +34,7 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class VehicleControlModuleItem extends GenericModuleItem implements IComponentsToPreserve {
 
@@ -54,23 +55,23 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
     }
 
     @Override
-    public @Nullable Codec<? extends IScreenModule<?>> codec() {
+    public @Nullable Codec<? extends IScreenModule<?, ?>> codec() {
         return VehicleControlScreenModule.CODEC;
     }
 
     @Override
-    public @Nullable StreamCodec<RegistryFriendlyByteBuf, ? extends IScreenModule<?>> streamCodec() {
+    public @Nullable StreamCodec<RegistryFriendlyByteBuf, ? extends IScreenModule<?, ?>> streamCodec() {
         return VehicleControlScreenModule.STREAM_CODEC;
     }
 
     @Override
-    public @Nullable DataComponentType<? extends IScreenModule<?>> componentType() {
+    public @Nullable DataComponentType<? extends IScreenModule<?, ?>> componentType() {
         return MoverModule.MODULE_VEHICLECONTROL_DATA.get();
     }
 
     @Override
-    public IScreenModule<?> createServerScreenModule() {
-        return new VehicleControlScreenModule();
+    public IScreenModule<?, ?> createServerScreenModule() {
+        return VehicleControlScreenModule.DEFAULT;
     }
 
     @Override
@@ -98,18 +99,19 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
             if (block != null && !world.getBlockState(pos).isAir()) {
                 name = Tools.getReadableName(world, pos);
             }
-            data.setPos(GlobalPos.of(world.dimension(), pos));
-            data.setMonitor(name);
+            data = data.withPos(GlobalPos.of(world.dimension(), pos));
+            data = data.withMonitor(name);
             if (world.isClientSide) {
                 Logging.message(player, "Vehicle control module is set to block '" + name + "'");
             }
         } else {
-            data.setPos(GlobalPos.of(Level.OVERWORLD, BlockPosTools.INVALID));
-            data.setMonitor("");
+            data = data.withPos(GlobalPos.of(Level.OVERWORLD, BlockPosTools.INVALID));
+            data = data.withMonitor("");
             if (world.isClientSide) {
                 Logging.message(player, "Vehicle control module is cleared");
             }
         }
+        stack.set(MoverModule.MODULE_VEHICLECONTROL_DATA, data);
         return InteractionResult.SUCCESS;
     }
 
@@ -121,14 +123,14 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
     public static VehicleControlScreenModule data(ItemStack stack) {
         VehicleControlScreenModule data = stack.get(MoverModule.MODULE_VEHICLECONTROL_DATA);
         if (data == null) {
-            data = new VehicleControlScreenModule();
+            data = VehicleControlScreenModule.DEFAULT;
         }
         return data;
     }
 
-    public static void data(ItemStack stack, Consumer<VehicleControlScreenModule> setter) {
+    public static void data(ItemStack stack, Function<VehicleControlScreenModule, VehicleControlScreenModule> setter) {
         VehicleControlScreenModule data = data(stack);
-        setter.accept(data);
+        data = setter.apply(data);
         stack.set(MoverModule.MODULE_VEHICLECONTROL_DATA, data);
     }
 
@@ -136,30 +138,29 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
     public void createGui(IModuleGuiBuilder guiBuilder) {
         guiBuilder
                 .label("Label:")
-                .text((stack, s) -> data(stack).setLine(s), stack -> data(stack).getLine(), "Label text")
-                .color((stack, c) -> data(stack).setColor(c), stack -> data(stack).getColor(), "Label color")
+                .text((stack, s) -> data(stack).withLine(s), stack -> data(stack).getLine(), "Label text")
+                .color((stack, c) -> data(stack).withColor(c), stack -> data(stack).getColor(), "Label color")
                 .nl()
 
                 .label("Button:")
-                .text((stack, s) -> data(stack).setButton(s), stack -> data(stack).getButton(), "Button text")
-                .color((stack, c) -> data(stack).setButtonColor(c), stack -> data(stack).getButtonColor(), "Button color")
+                .text((stack, s) -> data(stack).withButton(s), stack -> data(stack).getButton(), "Button text")
+                .color((stack, c) -> data(stack).withButtonColor(c), stack -> data(stack).getButtonColor(), "Button color")
                 .nl()
 
                 .label("Mover:")
-                .text((stack, s) -> data(stack).setMover(s), stack -> data(stack).getMover(), "Name of the mover")
+                .text((stack, s) -> data(stack).withMover(s), stack -> data(stack).getMover(), "Name of the mover")
                 .nl()
 
                 .label("Vehicle:")
-                .text((stack, s) -> data(stack).setVehicle(s), stack -> data(stack).getVehicle(), "Name of the vehicle")
+                .text((stack, s) -> data(stack).withVehicle(s), stack -> data(stack).getVehicle(), "Name of the vehicle")
                 .nl()
 
-                .choices((stack, c) -> data(stack).setAlign(TextAlign.get(c)), stack -> data(stack).getAlign().name(), "Label alignment", "Left", "Center", "Right")
+                .choices((stack, c) -> data(stack).withAlign(TextAlign.get(c)), stack -> data(stack).getAlign().name(), "Label alignment", "Left", "Center", "Right")
                 .nl();
     }
 
-    // @todo 1.14 implement! / 1.21 TODO
     @Override
     public Collection<DataComponentType<?>> getComponentsToPreserve() {
-        return List.of();
+        return List.of(MoverModule.MODULE_VEHICLECONTROL_DATA.get());
     }
 }

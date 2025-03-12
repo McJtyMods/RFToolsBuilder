@@ -28,19 +28,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Optional;
 
-public class VehicleControlScreenModule implements IScreenModule<VehicleControlScreenModule.EmptyData> {
+public record VehicleControlScreenModule(GlobalPos pos, String line, String mover, String vehicle, String button, int color, int buttonColor, String monitor, TextAlign align) implements IScreenModule<VehicleControlScreenModule, VehicleControlScreenModule.EmptyData> {
 
-    private GlobalPos pos = GlobalPos.of(Level.OVERWORLD, BlockPosTools.INVALID);
-
-    private String line = "";
-    private String mover = "";
-    private String vehicle = "";
-
-    private String button = "";
-    private int color = 0xffffff;
-    private int buttonColor = 0xffffff;
-    private String monitor = "";
-    private TextAlign align = TextAlign.ALIGN_LEFT;
+    public static final VehicleControlScreenModule DEFAULT = new VehicleControlScreenModule(GlobalPos.of(Level.OVERWORLD, BlockPosTools.INVALID), "", "", "", "", 0xffffff, 0xffffff, "", TextAlign.ALIGN_LEFT);
 
     public static final Codec<VehicleControlScreenModule> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             GlobalPos.CODEC.fieldOf("pos").forGetter(module -> module.pos),
@@ -78,79 +68,80 @@ public class VehicleControlScreenModule implements IScreenModule<VehicleControlS
         this.align = align;
     }
 
-    public VehicleControlScreenModule() {
-    }
-
     public GlobalPos getPos() {
         return pos;
-    }
-
-    public void setPos(GlobalPos pos) {
-        this.pos = pos;
     }
 
     public String getLine() {
         return line;
     }
 
-    public void setLine(String line) {
-        this.line = line;
-    }
-
     public String getMover() {
         return mover;
-    }
-
-    public void setMover(String mover) {
-        this.mover = mover;
     }
 
     public String getVehicle() {
         return vehicle;
     }
 
-    public void setVehicle(String vehicle) {
-        this.vehicle = vehicle;
-    }
-
     public String getButton() {
         return button;
-    }
-
-    public void setButton(String button) {
-        this.button = button;
     }
 
     public int getColor() {
         return color;
     }
 
-    public void setColor(int color) {
-        this.color = color;
-    }
-
     public int getButtonColor() {
         return buttonColor;
-    }
-
-    public void setButtonColor(int buttonColor) {
-        this.buttonColor = buttonColor;
     }
 
     public String getMonitor() {
         return monitor;
     }
 
-    public void setMonitor(String monitor) {
-        this.monitor = monitor;
-    }
-
     public TextAlign getAlign() {
         return align;
     }
 
-    public void setAlign(TextAlign align) {
-        this.align = align;
+    public VehicleControlScreenModule withLine(String line) {
+        return new VehicleControlScreenModule(pos, line, mover, vehicle, button, color, buttonColor, monitor, align);
+    }
+
+    public VehicleControlScreenModule withMover(String mover) {
+        return new VehicleControlScreenModule(pos, line, mover, vehicle, button, color, buttonColor, monitor, align);
+    }
+
+    public VehicleControlScreenModule withVehicle(String vehicle) {
+        return new VehicleControlScreenModule(pos, line, mover, vehicle, button, color, buttonColor, monitor, align);
+    }
+
+    public VehicleControlScreenModule withButton(String button) {
+        return new VehicleControlScreenModule(pos, line, mover, vehicle, button, color, buttonColor, monitor, align);
+    }
+
+    public VehicleControlScreenModule withColor(int color) {
+        return new VehicleControlScreenModule(pos, line, mover, vehicle, button, color, buttonColor, monitor, align);
+    }
+
+    public VehicleControlScreenModule withButtonColor(int buttonColor) {
+        return new VehicleControlScreenModule(pos, line, mover, vehicle, button, color, buttonColor, monitor, align);
+    }
+
+    public VehicleControlScreenModule withMonitor(String monitor) {
+        return new VehicleControlScreenModule(pos, line, mover, vehicle, button, color, buttonColor, monitor, align);
+    }
+
+    public VehicleControlScreenModule withAlign(TextAlign align) {
+        return new VehicleControlScreenModule(pos, line, mover, vehicle, button, color, buttonColor, monitor, align);
+    }
+
+    public VehicleControlScreenModule withPos(GlobalPos pos) {
+        return new VehicleControlScreenModule(pos, line, mover, vehicle, button, color, buttonColor, monitor, align);
+    }
+
+    public VehicleControlScreenModule withPos(ResourceKey<Level> dim, BlockPos coordinate) {
+        return new VehicleControlScreenModule(GlobalPos.of(dim, coordinate), line, mover, vehicle, button, color, buttonColor, monitor, align);
     }
 
     public static class EmptyData implements IModuleData {
@@ -178,7 +169,8 @@ public class VehicleControlScreenModule implements IScreenModule<VehicleControlS
     }
 
     @Override
-    public void validate(Level world, BlockPos pos, boolean isPlus) {
+    public VehicleControlScreenModule validate(Level world, BlockPos pos, boolean isPlus) {
+        return this;
     }
 
     @Override

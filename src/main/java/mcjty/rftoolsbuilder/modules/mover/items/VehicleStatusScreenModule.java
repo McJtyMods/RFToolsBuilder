@@ -24,18 +24,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Optional;
 
-public class VehicleStatusScreenModule implements IScreenModule<IModuleDataString> {
+public record VehicleStatusScreenModule(GlobalPos pos, String label, String vehicle, String monitor, TextAlign align, int labelColor, int color) implements IScreenModule<VehicleStatusScreenModule, IModuleDataString> {
 
-    private GlobalPos pos = GlobalPos.of(Level.OVERWORLD, BlockPosTools.INVALID);
-
-    private String label = "";
-    private String vehicle = "";
-    private String monitor = "";
-    private TextAlign align = TextAlign.ALIGN_LEFT;
-
-    private int labelColor = 0xffffff;
-    private int color = 0xffffff;
-
+    public static final VehicleStatusScreenModule DEFAULT = new VehicleStatusScreenModule(GlobalPos.of(Level.OVERWORLD, BlockPosTools.INVALID), "", "", "", TextAlign.ALIGN_LEFT, 0xffffff, 0xffffff);
 
     public static final Codec<VehicleStatusScreenModule> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             GlobalPos.CODEC.fieldOf("pos").forGetter(module -> module.pos),
@@ -67,63 +58,60 @@ public class VehicleStatusScreenModule implements IScreenModule<IModuleDataStrin
         this.color = color;
     }
 
-    public VehicleStatusScreenModule() {
-    }
-
     public GlobalPos getPos() {
         return pos;
-    }
-
-    public void setPos(GlobalPos pos) {
-        this.pos = pos;
     }
 
     public String getLabel() {
         return label;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
     public String getVehicle() {
         return vehicle;
-    }
-
-    public void setVehicle(String vehicle) {
-        this.vehicle = vehicle;
     }
 
     public String getMonitor() {
         return monitor;
     }
 
-    public void setMonitor(String monitor) {
-        this.monitor = monitor;
-    }
-
     public TextAlign getAlign() {
         return align;
-    }
-
-    public void setAlign(TextAlign align) {
-        this.align = align;
     }
 
     public int getLabelColor() {
         return labelColor;
     }
 
-    public void setLabelColor(int labelColor) {
-        this.labelColor = labelColor;
-    }
-
     public int getColor() {
         return color;
     }
 
-    public void setColor(int color) {
-        this.color = color;
+    public VehicleStatusScreenModule withLabel(String label) {
+        return new VehicleStatusScreenModule(pos, label, vehicle, monitor, align, labelColor, color);
+    }
+
+    public VehicleStatusScreenModule withVehicle(String vehicle) {
+        return new VehicleStatusScreenModule(pos, label, vehicle, monitor, align, labelColor, color);
+    }
+
+    public VehicleStatusScreenModule withMonitor(String monitor) {
+        return new VehicleStatusScreenModule(pos, label, vehicle, monitor, align, labelColor, color);
+    }
+
+    public VehicleStatusScreenModule withAlign(TextAlign align) {
+        return new VehicleStatusScreenModule(pos, label, vehicle, monitor, align, labelColor, color);
+    }
+
+    public VehicleStatusScreenModule withLabelColor(int labelColor) {
+        return new VehicleStatusScreenModule(pos, label, vehicle, monitor, align, labelColor, color);
+    }
+
+    public VehicleStatusScreenModule withColor(int color) {
+        return new VehicleStatusScreenModule(pos, label, vehicle, monitor, align, labelColor, color);
+    }
+
+    public VehicleStatusScreenModule withPos(GlobalPos pos) {
+        return new VehicleStatusScreenModule(pos, label, vehicle, monitor, align, labelColor, color);
     }
 
     @Override
@@ -141,7 +129,8 @@ public class VehicleStatusScreenModule implements IScreenModule<IModuleDataStrin
     }
 
     @Override
-    public void validate(Level world, BlockPos pos, boolean isPlus) {
+    public VehicleStatusScreenModule validate(Level world, BlockPos pos, boolean isPlus) {
+        return this;
     }
 
     @Override
