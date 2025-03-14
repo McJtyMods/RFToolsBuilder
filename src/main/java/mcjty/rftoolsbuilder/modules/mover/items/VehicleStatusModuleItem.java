@@ -142,7 +142,7 @@ public class VehicleStatusModuleItem extends GenericModuleItem implements ICompo
                 .color((stack, c) -> data(stack).withColor(c), stack -> data(stack).getColor(), "Mover color")
                 .nl()
 
-                .choices((stack, c) -> data(stack).withAlign(TextAlign.get(c)), stack -> data(stack).getAlign().name(), "Label alignment", "Left", "Center", "Right")
+                .choices((stack, c) -> data(stack, d -> d.withAlign(TextAlign.get(c))), stack -> data(stack).getAlign().getSerializedName(), "Label alignment", "Left", "Center", "Right")
                 .nl();
     }
 

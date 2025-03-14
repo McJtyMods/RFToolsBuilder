@@ -155,7 +155,7 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
                 .text((stack, s) -> data(stack).withVehicle(s), stack -> data(stack).getVehicle(), "Name of the vehicle")
                 .nl()
 
-                .choices((stack, c) -> data(stack).withAlign(TextAlign.get(c)), stack -> data(stack).getAlign().name(), "Label alignment", "Left", "Center", "Right")
+                .choices((stack, c) -> data(stack, d -> d.withAlign(TextAlign.get(c))), stack -> data(stack).getAlign().getSerializedName(), "Label alignment", "Left", "Center", "Right")
                 .nl();
     }
 
