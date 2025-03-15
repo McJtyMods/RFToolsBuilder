@@ -45,7 +45,7 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
 
     @Override
     protected boolean hasGoldMessage(ItemStack stack) {
-        return data(stack).getPos().pos() == BlockPosTools.INVALID;
+        return !BlockPosTools.isValid(data(stack).getPos().pos());
     }
 
     @Override
