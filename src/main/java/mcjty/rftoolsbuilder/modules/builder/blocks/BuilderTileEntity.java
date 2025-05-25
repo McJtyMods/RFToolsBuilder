@@ -1641,7 +1641,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             if (fluid != null) {
                 fluid = level.getCapability(Capabilities.FluidHandler.BLOCK, te.getBlockPos(), null);
             }
-            if (fluid == null) {
+            if (fluid != null) {
                 return findAndConsumeLiquid(fluid, srcWorld, srcPos);
             }
         }
