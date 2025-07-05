@@ -23,6 +23,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -179,7 +180,7 @@ public record VehicleControlScreenModule(GlobalPos pos, String line, String move
     }
 
     @Override
-    public void mouseClick(Level world, int x, int y, boolean clicked, Player player) {
+    public ItemStack mouseClick(ItemStack moduleStack, Level world, int x, int y, boolean clicked, Player player) {
         int xoffset;
         if (!line.isEmpty()) {
             xoffset = 40;
@@ -197,6 +198,7 @@ public record VehicleControlScreenModule(GlobalPos pos, String line, String move
                 }
             }
         }
+        return ItemStack.EMPTY;
     }
 
     public static Optional<MoverControllerTileEntity> getMoverController(Level worldObj, ResourceKey<Level> dim, BlockPos coordinate) {
