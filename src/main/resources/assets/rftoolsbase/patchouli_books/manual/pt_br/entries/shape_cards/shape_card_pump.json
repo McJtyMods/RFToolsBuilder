@@ -1,0 +1,12 @@
+{
+  "name": "Cartão de Bomba",
+  "icon": "rftoolsbuilder:shape_card_pump",
+  "category": "rftoolsbase:category_rftoolsbuilder_shape_cards",
+  "sortnum": 50,
+  "pages": [
+    {
+      "type": "text",
+      "text": "O Cartão de Bomba pode ser usado para bombear pedreiras pelo Construtor."
+    }
+  ]
+}

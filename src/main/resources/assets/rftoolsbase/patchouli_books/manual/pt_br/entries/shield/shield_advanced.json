@@ -1,0 +1,14 @@
+{
+  "rftoolsbuilder.entry.shield_advanced": "Avançado",
+  "rftoolsbuilder.page.shield_advanced0": "",
+  "name": "Avançado",
+  "icon": "minecraft:nether_star",
+  "category": "rftoolsbase:category_rftoolsbuilder_shield",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "text",
+      "text": "Alguns usos avançados @todo"
+    }
+  ]
+}

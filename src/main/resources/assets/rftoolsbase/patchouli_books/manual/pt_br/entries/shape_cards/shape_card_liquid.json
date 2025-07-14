@@ -1,0 +1,12 @@
+{
+  "name": "Cartão de Líquido",
+  "icon": "rftoolsbuilder:shape_card_liquid",
+  "category": "rftoolsbase:category_rftoolsbuilder_shape_cards",
+  "sortnum": 40,
+  "pages": [
+    {
+      "type": "text",
+      "text": "O Cartão de Líquido pode ser usado para colocar líquidos pelo Construtor."
+    }
+  ]
+}

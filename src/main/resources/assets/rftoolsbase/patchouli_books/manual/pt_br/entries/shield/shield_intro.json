@@ -1,0 +1,12 @@
+{
+  "name": "Introdução",
+  "icon": "minecraft:experience_bottle",
+  "category": "rftoolsbase:category_rftoolsbuilder_shield",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "text",
+      "text": "O Projetor de Escudo pode ser usado para proteger áreas contra mobs ou manter mobs em uma área. Ele também pode causar dano."
+    }
+  ]
+}
