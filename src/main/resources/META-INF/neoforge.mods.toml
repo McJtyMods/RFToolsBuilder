@@ -27,12 +27,12 @@ Everything related to the builder
 [[dependencies.rftoolsbuilder]]
     modId="mcjtylib"
     mandatory=true
-    versionRange="[1.21-9.0.15,)"
+    versionRange="[1.21-9.0.16,)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.rftoolsbuilder]]
     modId="rftoolsbase"
     mandatory=true
-    versionRange="[1.21-6.0.8,)"
+    versionRange="[1.21-6.0.9,)"
     ordering="AFTER"
     side="BOTH"
