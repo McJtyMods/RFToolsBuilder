@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a rendering bug with the shape card user interface for the voiding buttons
+
 1.21-7.0.3:
 - Fixed a bug in the Builder when handling tanks
 

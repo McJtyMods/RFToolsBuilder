@@ -2283,7 +2283,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             ListTag overflowItemsNbt = tag.getList("overflowItems", Tag.TAG_COMPOUND);
             overflowItems.clear();
             for (Tag overflowNbt : overflowItemsNbt) {
-                overflowItems.add(ItemStack.parseOptional(provider, (CompoundTag) overflowNbt)); // @todo 1.21 check, is this the same as ItemStack.of()?
+                overflowItems.add(ItemStack.parseOptional(provider, (CompoundTag) overflowNbt));
             }
         }
     }

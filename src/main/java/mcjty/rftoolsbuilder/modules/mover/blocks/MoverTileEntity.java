@@ -791,7 +791,7 @@ public class MoverTileEntity extends TickingTileEntity {
     @Override
     public void loadClientDataFromNBT(CompoundTag tagCompound, HolderLookup.Provider provider) {
         CompoundTag tag = tagCompound.getCompound("card");
-        items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.parseOptional(provider, tag));    // @todo 1.21 is this correct instead of ItemStack.of()?
+        items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.parseOptional(provider, tag));
         logic.loadClientDataFromNBT(tagCompound);
         int[] controller = tagCompound.getIntArray("controller");
         if (controller.length >= 3) {

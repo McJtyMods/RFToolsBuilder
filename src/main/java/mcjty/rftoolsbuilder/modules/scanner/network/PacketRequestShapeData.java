@@ -48,8 +48,7 @@ public record PacketRequestShapeData(ItemStack card, ShapeID shapeID) implements
 
             IFormula formula = shape.getFormulaFactory().get();
             formula = formula.correctFormula(solid);
-            // @todo 1.21 NBT
-//            formula.setup(player.level(), new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), copy.getTag());
+            formula.setup(player.level(), new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), copy);
 
             for (int y = 0; y < dy; y++) {
                 ShapeDataManagerServer.pushWork(shapeID, copy, y, formula, (ServerPlayer) player);

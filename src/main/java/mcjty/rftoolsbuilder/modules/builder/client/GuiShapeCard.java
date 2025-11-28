@@ -555,34 +555,11 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         x += (int) button.getBounds().getX();
         RenderHelper.renderObject(graphics, x, y, new ItemStack(block), button.isPressed());
         if (button.isPressed()) {
-            drawLine(x - 1, y - 1, x + 18, y + 18, 0xffff0000);
-            drawLine(x + 18, y - 1, x - 1, y + 18, 0xffff0000);
+            RenderHelper.drawFlatBox(graphics, x, y, x+17, y+17, 0x55ff0000, 0x55ff0000);
         }
-    }
-
-    private static void drawLine(int x1, int y1, int x2, int y2, int color) {
-        float f3 = (color >> 24 & 255) / 255.0F;
-        float f = (color >> 16 & 255) / 255.0F;
-        float f1 = (color >> 8 & 255) / 255.0F;
-        float f2 = (color & 255) / 255.0F;
-        Tesselator tessellator = Tesselator.getInstance();
-//        BufferBuilder buffer = tessellator.getBuilder();
-
-        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION);
-        GlStateManager._enableBlend();
-        GlStateManager._disableDepthTest();
-        GL11.glLineWidth(2.0f);
-        GlStateManager._blendFuncSeparate(770, 771, 1, 0);
-//        GlStateManager._color4f(f, f1, f2, f3);// @todo 1.18
-        buffer.addVertex(x1, y1, 0.0f);
-        buffer.addVertex(x2, y2, 0.0f);
-//        tessellator.end();    // @todo 1.21 what else?
-        GlStateManager._enableDepthTest();
-        GlStateManager._disableBlend();
     }
 
     public static void open(boolean fromTE) {
         Minecraft.getInstance().setScreen(new GuiShapeCard(fromTE));
     }
-
 }
