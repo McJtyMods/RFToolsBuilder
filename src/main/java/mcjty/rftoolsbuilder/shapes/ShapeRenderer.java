@@ -129,34 +129,25 @@ public class ShapeRenderer {
         }
     }
 
-    // @todo 1.15: this needs rewriting
-    public boolean renderShapeInWorld(ItemStack stack, double x, double y, double z, float offset, float scale, float angle,
+    public boolean renderShapeInWorld(PoseStack poseStack, ItemStack stack, float offset, float scale, float angle,
                                       boolean scan, ShapeID shape) {
-//        GlStateManager._pushMatrix();
-//        GlStateManager._translatef((float) x + 0.5F, (float) y + 1F + offset, (float) z + 0.5F);
-//        GlStateManager._scalef(scale, scale, scale);
-//        GlStateManager._rotatef(angle, 0, 1, 0);
-//
-////        net.minecraft.client.renderer.RenderHelper.disableStandardItemLighting();
-//        Minecraft.getInstance().gameRenderer.lightTexture().turnOffLightLayer();
-//        GlStateManager._disableBlend();
-//        GlStateManager._enableCull();
-//        GlStateManager._disableLighting();
-//        GlStateManager._disableTexture();
-//
-//        Tesselator tessellator = Tesselator.getInstance();
-//        BufferBuilder buffer = tessellator.getBuilder();
-//        boolean doSound = renderFacesInWorld(buffer, stack, scan, shape.isGrayscale(), shape.getScanId());
-//
-//        GlStateManager._enableTexture();
-//        GlStateManager._disableBlend();
-//        GlStateManager._enableLighting();
-////        RenderHelper.enableStandardItemLighting();
-//        Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
-//
-//        GlStateManager._popMatrix();
-//        return doSound;
-        return false;
+        poseStack.pushPose();
+        poseStack.translate(.5f, 1.0f + offset, .5f);
+        poseStack.scale(scale, scale, scale);
+        RenderHelper.rotateYP(poseStack, angle);
+
+        RenderSystem.disableBlend();
+        RenderSystem.enableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder buffer = tessellator.getBuilder();
+        boolean doSound = renderFacesInWorld(poseStack, buffer, stack, scan, shape.isGrayscale(), shape.getScanId());
+
+        RenderSystem.disableBlend();
+        poseStack.popPose();
+        return doSound;
     }
 
     public void renderShape(GuiGraphics graphics, IShapeParentGui gui, ItemStack stack, int x, int y, boolean showAxis, boolean showOuter, boolean showScan, boolean showGuidelines) {
@@ -412,22 +403,16 @@ public class ShapeRenderer {
             long time = System.currentTimeMillis();
             for (RenderData.RenderPlane plane : data.getPlanes()) {
                 if (plane != null) {
-                    if (plane.isDirty()) {
-                        createRenderData(plane, data, grayscale);
-                        plane.markClean();
-                    }
                     boolean flash = showScan && (plane.getBirthtime() > time- ScannerConfiguration.projectorFlashTimeout.get());
                     if (flash) {
                         needScanSound = true;
-                        GlStateManager._enableBlend();
-                        GlStateManager._blendFunc(GL11.GL_ONE, GL11.GL_ONE);
-//                        GlStateManager.colorMask(false, false, true, true);
+                        RenderSystem.enableBlend();
+                        RenderSystem.blendFunc(GL11.GL_ONE, GL11.GL_ONE);
                     }
-                    plane.render(poseStack);
+                    renderPlaneImmediate(poseStack, buffer, plane, grayscale, false);
                     if (flash) {
-                        GlStateManager._disableBlend();
-                        GlStateManager._blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-//                        GlStateManager.colorMask(true, true, true, true);
+                        RenderSystem.disableBlend();
+                        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
                     }
                 }
             }
@@ -494,7 +479,7 @@ public class ShapeRenderer {
                         RenderSystem.enableBlend();
                         RenderSystem.blendFunc(GL11.GL_ONE, GL11.GL_ONE);
                     }
-                    renderPlaneForGui(poseStack, tessellator, buffer, plane, grayscale);
+                    renderPlaneImmediate(poseStack, buffer, plane, grayscale, true);
                     if (flash) {
                         RenderSystem.disableBlend();
                         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -530,7 +515,7 @@ public class ShapeRenderer {
         return needScanSound;
     }
 
-    private void renderPlaneForGui(PoseStack poseStack, Tesselator tessellator, BufferBuilder buffer, RenderData.RenderPlane plane, boolean grayscale) {
+    private void renderPlaneImmediate(PoseStack poseStack, BufferBuilder buffer, RenderData.RenderPlane plane, boolean grayscale, boolean gui) {
         Matrix4f matrix = poseStack.last().pose();
         Map<BlockState, ShapeBlockInfo> palette = new HashMap<>();
 
@@ -558,16 +543,16 @@ public class ShapeRenderer {
                     }
                     ShapeBlockInfo.IBlockRender bd = info.getRender();
                     if (bd == null) {
-                        addSideFullTextureU(matrix, buffer, cnt, r * .8f, g * .8f, b * .8f);
-                        addSideFullTextureD(matrix, buffer, cnt, r * .8f, g * .8f, b * .8f);
+                        addSideFullTextureU(matrix, buffer, cnt, r * .8f, g * .8f, b * .8f, gui);
+                        addSideFullTextureD(matrix, buffer, cnt, r * .8f, g * .8f, b * .8f, gui);
                         if (strip.isEmptyAt(i - 1, palette)) {
-                            addSideFullTextureN(matrix, buffer, cnt, r * 1.2f, g * 1.2f, b * 1.2f);
+                            addSideFullTextureN(matrix, buffer, cnt, r * 1.2f, g * 1.2f, b * 1.2f, gui);
                         }
                         if (strip.isEmptyAt(i + 1, palette)) {
-                            addSideFullTextureS(matrix, buffer, cnt, r * 1.2f, g * 1.2f, b * 1.2f);
+                            addSideFullTextureS(matrix, buffer, cnt, r * 1.2f, g * 1.2f, b * 1.2f, gui);
                         }
-                        addSideFullTextureW(matrix, buffer, cnt, r, g, b);
-                        addSideFullTextureE(matrix, buffer, cnt, r, g, b);
+                        addSideFullTextureW(matrix, buffer, cnt, r, g, b, gui);
+                        addSideFullTextureE(matrix, buffer, cnt, r, g, b, gui);
                     } else {
                         for (int c = 0; c < cnt; c++) {
                             bd.render(buffer, c, r, g, b);
@@ -727,7 +712,11 @@ public class ShapeRenderer {
     }
 
     public static void addSideFullTextureD(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b) {
-        float a = 0.9f;
+        addSideFullTextureD(matrix, buffer, cnt, r, g, b, true);
+    }
+
+    public static void addSideFullTextureD(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
         buffer.vertex(matrix, (float) offset.x, (float) offset.y, (float) offset.z).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) (1 + offset.x), (float) offset.y, (float) offset.z).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) (1 + offset.x), (float) offset.y, (float) (cnt + offset.z)).color(r, g, b, a).endVertex();
@@ -743,7 +732,11 @@ public class ShapeRenderer {
     }
 
     public static void addSideFullTextureU(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b) {
-        float a = 0.9f;
+        addSideFullTextureU(matrix, buffer, cnt, r, g, b, true);
+    }
+
+    public static void addSideFullTextureU(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
         buffer.vertex(matrix, (float) offset.x, (float) (1 + offset.y), (float) (cnt + offset.z)).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) (cnt + offset.z)).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) offset.z).color(r, g, b, a).endVertex();
@@ -759,7 +752,11 @@ public class ShapeRenderer {
     }
 
     public static void addSideFullTextureE(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b) {
-        float a = 0.9f;
+        addSideFullTextureE(matrix, buffer, cnt, r, g, b, true);
+    }
+
+    public static void addSideFullTextureE(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
         buffer.vertex(matrix, (float) (1 + offset.x), (float) offset.y, (float) offset.z).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) offset.z).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) (cnt + offset.z)).color(r, g, b, a).endVertex();
@@ -775,7 +772,11 @@ public class ShapeRenderer {
     }
 
     public static void addSideFullTextureW(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b) {
-        float a = 0.9f;
+        addSideFullTextureW(matrix, buffer, cnt, r, g, b, true);
+    }
+
+    public static void addSideFullTextureW(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
         buffer.vertex(matrix, (float) offset.x, (float) offset.y, (float) (cnt + offset.z)).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) offset.x, (float) (1 + offset.y), (float) (cnt + offset.z)).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) offset.x, (float) (1 + offset.y), (float) offset.z).color(r, g, b, a).endVertex();
@@ -791,7 +792,11 @@ public class ShapeRenderer {
     }
 
     public static void addSideFullTextureN(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b) {
-        float a = 0.9f;
+        addSideFullTextureN(matrix, buffer, cnt, r, g, b, true);
+    }
+
+    public static void addSideFullTextureN(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
         buffer.vertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) offset.z).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) (1 + offset.x), (float) offset.y, (float) offset.z).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) offset.x, (float) offset.y, (float) offset.z).color(r, g, b, a).endVertex();
@@ -807,7 +812,11 @@ public class ShapeRenderer {
     }
 
     public static void addSideFullTextureS(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b) {
-        float a = 0.9f;
+        addSideFullTextureS(matrix, buffer, cnt, r, g, b, true);
+    }
+
+    public static void addSideFullTextureS(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
         buffer.vertex(matrix, (float) (1 + offset.x), (float) offset.y, (float) (cnt + offset.z)).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) (cnt + offset.z)).color(r, g, b, a).endVertex();
         buffer.vertex(matrix, (float) offset.x, (float) (1 + offset.y), (float) (cnt + offset.z)).color(r, g, b, a).endVertex();

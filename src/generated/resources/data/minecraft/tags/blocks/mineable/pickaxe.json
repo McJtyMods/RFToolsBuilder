@@ -11,6 +11,7 @@
     "rftoolsbuilder:shielding_solid",
     "rftoolsbuilder:shielding_translucent",
     "rftoolsbuilder:shielding_cutout",
+    "rftoolsbuilder:projector",
     "rftoolsbuilder:mover",
     "rftoolsbuilder:mover_controller",
     "rftoolsbuilder:vehicle_builder",

@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "rftoolsbuilder:projector"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "machine_frame": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "rftoolsbase:machine_frame"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "machine_frame",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "rftoolsbuilder:projector"
+    ]
+  },
+  "sends_telemetry_event": false
+}

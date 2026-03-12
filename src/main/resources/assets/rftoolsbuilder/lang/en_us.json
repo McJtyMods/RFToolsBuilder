@@ -65,6 +65,7 @@
   "message.rftoolsbuilder.red_shield_template_block.header": "This block can be used to build a shield. The set of template blocks with the same color should touch the shield projector",
   "message.rftoolsbuilder.green_shield_template_block.header": "This block can be used to build a shield. The set of template blocks with the same color should touch the shield projector",
   "message.rftoolsbuilder.yellow_shield_template_block.header": "This block can be used to build a shield. The set of template blocks with the same color should touch the shield projector",
+  "block.rftoolsbuilder.projector": "Projector",
 
   "message.rftoolsbuilder.space_chamber_controller.header": "This block is one of the eight corners of an area of space you want to copy/move elsewhere. The other corners should be normal space chamber blocks",
   "message.rftoolsbuilder.space_chamber_controller.channel": "Channel: ",

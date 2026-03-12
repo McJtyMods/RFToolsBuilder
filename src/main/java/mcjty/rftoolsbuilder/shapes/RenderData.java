@@ -27,7 +27,7 @@ public class RenderData {
             return false;
         }
         for (RenderPlane plane : planes) {
-            if (plane != null && plane.vbo != null) {
+            if (plane != null) {
                 return true;
             }
         }

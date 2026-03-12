@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "rftoolsbuilder:block/projector",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "rftoolsbuilder:block/projector"
+    },
+    "facing=south": {
+      "model": "rftoolsbuilder:block/projector",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "rftoolsbuilder:block/projector",
+      "y": 270
+    }
+  }
+}
