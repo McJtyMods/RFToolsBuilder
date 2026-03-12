@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.GuiTools;
@@ -30,6 +31,7 @@ import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.locale.Language;
 import net.minecraft.nbt.CompoundTag;
@@ -544,8 +546,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
 
         ItemStack stack = getStackToEdit();
         if (!stack.isEmpty()) {
-            // @todo 1.18 DISABLED FOR NOW
-//            getShapeRenderer().renderShape(matrixStack, this, stack, guiLeft, guiTop, true, true, true, false);
+            getShapeRenderer().renderShape(graphics, this, stack, guiLeft, guiTop, true, true, false, false);
         }
 
         List<String> tooltips = window.getTooltips();
@@ -578,15 +579,15 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.getBuilder();
 
-        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         GlStateManager._enableBlend();
         GlStateManager._disableDepthTest();
         GL11.glLineWidth(2.0f);
         GlStateManager._blendFuncSeparate(770, 771, 1, 0);
-//        GlStateManager._color4f(f, f1, f2, f3);// @todo 1.18
-        buffer.vertex(x1, y1, 0.0D).endVertex();
-        buffer.vertex(x2, y2, 0.0D).endVertex();
-        tessellator.end();
+        buffer.vertex(x1, y1, 0.0D).color(f, f1, f2, f3).endVertex();
+        buffer.vertex(x2, y2, 0.0D).color(f, f1, f2, f3).endVertex();
+        BufferUploader.drawWithShader(buffer.end());
         GlStateManager._enableDepthTest();
         GlStateManager._disableBlend();
     }

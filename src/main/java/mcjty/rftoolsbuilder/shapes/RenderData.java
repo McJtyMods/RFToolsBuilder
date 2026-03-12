@@ -1,7 +1,10 @@
 package mcjty.rftoolsbuilder.shapes;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -11,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public class RenderData {
-
     public static BufferBuilder vboBuffer = new BufferBuilder(2097152);
 
     private RenderPlane[] planes = null;
@@ -118,40 +120,41 @@ public class RenderData {
 //    }
 
     public static class RenderElement {
-        protected com.mojang.blaze3d.vertex.VertexBuffer vbo;
+        protected VertexBuffer vbo;
+        protected boolean valid = false;
 
         public void cleanup() {
             if (vbo != null) {
                 vbo.close();
                 vbo = null;
             }
+            valid = false;
         }
 
-        public void render() {
-            if (vbo != null) {
-                // @todo 1.18
-//                vbo.bind();
-//                GlStateManager._enableClientState(GL11.GL_VERTEX_ARRAY);
-//                GlStateManager._vertexPointer(3, GL11.GL_FLOAT, 16, 0);
-//                GlStateManager._enableClientState(GL11.GL_COLOR_ARRAY);
-//                GlStateManager._colorPointer(4, GL11.GL_UNSIGNED_BYTE, 16, 12);
-//                vbo.draw(IDENTITY, GL11.GL_QUADS);
-//                vbo.unbind();
-//                GlStateManager._disableClientState(GL11.GL_COLOR_ARRAY);
-//                GlStateManager._disableClientState(GL11.GL_VERTEX_ARRAY);
+        public void render(PoseStack poseStack) {
+            if (vbo != null && valid) {
+                vbo.bind();
+                vbo.drawWithShader(poseStack.last().pose(), com.mojang.blaze3d.systems.RenderSystem.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+                VertexBuffer.unbind();
             }
         }
 
         public void createRenderList() {
-            // @todo 1.18
-//            vbo = new com.mojang.blaze3d.vertex.VertexBuffer(DefaultVertexFormat.POSITION_COLOR);
+            cleanup();
+            vbo = new VertexBuffer(VertexBuffer.Usage.STATIC);
         }
 
         public void performRenderToList() {
-            vboBuffer.end();
-//            vboBuffer.reset();
-            // @todo 1.19
-//            vbo.upload(vboBuffer);
+            BufferBuilder.RenderedBuffer renderedBuffer = vboBuffer.end();
+            valid = false;
+            if (renderedBuffer != null && renderedBuffer.drawState() != null && renderedBuffer.drawState().mode() != null && vbo != null) {
+                vbo.bind();
+                vbo.upload(renderedBuffer);
+                VertexBuffer.unbind();
+                valid = true;
+            } else if (renderedBuffer != null) {
+                renderedBuffer.release();
+            }
             vboBuffer.clear();
         }
     }
