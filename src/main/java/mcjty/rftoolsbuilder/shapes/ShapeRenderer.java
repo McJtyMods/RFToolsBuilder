@@ -660,13 +660,15 @@ public class ShapeRenderer {
                 shader.clear();
             }
             if (validFluidBuffer) {
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
+                RenderType.translucent().setupRenderState();
+                RenderSystem.enableDepthTest();
+                RenderSystem.depthMask(false);
                 RenderSystem.disableCull();
                 fluidBuffer.bind();
                 fluidBuffer.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+                RenderSystem.depthMask(true);
                 RenderSystem.enableCull();
-                RenderSystem.disableBlend();
+                RenderType.translucent().clearRenderState();
             }
             VertexBuffer.unbind();
         }
