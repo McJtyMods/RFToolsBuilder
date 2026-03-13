@@ -8,17 +8,28 @@ import mcjty.lib.client.RenderHelper;
 import mcjty.lib.varia.Check32;
 import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
+import mcjty.rftoolsbuilder.modules.scanner.client.DummyBlockGetter;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.ChunkBufferBuilderPack;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.client.model.data.ModelData;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
@@ -43,6 +54,7 @@ public class ShapeRenderer {
     private ShapeID shapeID;
 
     private int waitForNewRequest = 0;
+    private final ModelRenderCache modelRenderCache = new ModelRenderCache();
 
 
     public ShapeRenderer(ShapeID shapeID) {
@@ -144,6 +156,29 @@ public class ShapeRenderer {
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.getBuilder();
         boolean doSound = renderFacesInWorld(poseStack, buffer, stack, scan, shape.isGrayscale(), shape.getScanId());
+
+        RenderSystem.disableBlend();
+        poseStack.popPose();
+        return doSound;
+    }
+
+    public boolean renderShapeInWorld(PoseStack poseStack, MultiBufferSource buffer, ItemStack stack, float offset, float scale, float angle,
+                                      boolean scan, ShapeID shape, boolean renderBlockModels, int combinedLight, int combinedOverlay) {
+        poseStack.pushPose();
+        poseStack.translate(.5f, 1.0f + offset, .5f);
+        poseStack.scale(scale, scale, scale);
+        RenderHelper.rotateYP(poseStack, angle);
+
+        RenderSystem.disableBlend();
+        RenderSystem.enableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder builder = tessellator.getBuilder();
+        boolean doSound = renderBlockModels
+                ? renderBlockModelsInWorld(poseStack, builder, stack, scan)
+                : renderFacesInWorld(poseStack, builder, stack, scan, shape.isGrayscale(), shape.getScanId());
 
         RenderSystem.disableBlend();
         poseStack.popPose();
@@ -374,15 +409,10 @@ public class ShapeRenderer {
 
     private int extraDataCounter = 0;
 
-    // @todo 1.15 in world version
-    private boolean renderFacesInWorld(PoseStack poseStack, final BufferBuilder buffer,
-                                       ItemStack stack, boolean showScan, boolean grayscale, int scanId) {
-
+    private RenderData requestRenderData(ItemStack stack) {
         RenderData data = getRenderDataAndCreate(shapeID);
-
         if (data.isWantData() || waitForNewRequest > 0) {
             if (waitForNewRequest <= 0) {
-                // No positions, send a new request
                 RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID));
                 waitForNewRequest = 20;
                 data.setWantData(false);
@@ -397,6 +427,14 @@ public class ShapeRenderer {
                 data.setWantData(true);
             }
         }
+        return data;
+    }
+
+    // @todo 1.15 in world version
+    private boolean renderFacesInWorld(PoseStack poseStack, final BufferBuilder buffer,
+                                       ItemStack stack, boolean showScan, boolean grayscale, int scanId) {
+
+        RenderData data = requestRenderData(stack);
 
         boolean needScanSound = false;
         if (data.getPlanes() != null) {
@@ -443,6 +481,309 @@ public class ShapeRenderer {
         }
 
         return needScanSound;
+    }
+
+    private boolean renderBlockModelsInWorld(PoseStack poseStack, BufferBuilder overlayBuffer, ItemStack stack, boolean showScan) {
+        RenderData data = requestRenderData(stack);
+        boolean needScanSound = false;
+        if (data.getPlanes() == null) {
+            return false;
+        }
+
+        Level level = Minecraft.getInstance().level;
+        modelRenderCache.buildIfNeeded(data, level);
+        long time = System.currentTimeMillis();
+
+        for (RenderData.RenderPlane plane : data.getPlanes()) {
+            if (plane == null) {
+                continue;
+            }
+            boolean flash = showScan && (plane.getBirthtime() > time - ScannerConfiguration.projectorFlashTimeout.get());
+            if (flash) {
+                needScanSound = true;
+            }
+            if (flash) {
+                RenderSystem.enableBlend();
+                RenderSystem.blendFunc(GL11.GL_ONE, GL11.GL_ONE);
+                RenderSystem.setShader(GameRenderer::getPositionColorShader);
+                renderPlaneImmediate(poseStack, overlayBuffer, plane, false, false);
+                RenderSystem.disableBlend();
+                RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            }
+        }
+        modelRenderCache.render(poseStack);
+        return needScanSound;
+    }
+
+    private long calculateBlockMapStamp(RenderData data) {
+        long stamp = 1L;
+        for (RenderData.RenderPlane plane : data.getPlanes()) {
+            stamp = 31L * stamp + (plane == null ? 0L : plane.getBirthtime());
+        }
+        return stamp;
+    }
+
+    private Map<BlockPos, BlockState> buildBlockMap(RenderData data) {
+        Map<BlockPos, BlockState> states = new HashMap<>();
+        for (RenderData.RenderPlane plane : data.getPlanes()) {
+            if (plane == null) {
+                continue;
+            }
+            int y = plane.getY();
+            for (RenderData.RenderStrip strip : plane.getStrips()) {
+                int z = plane.getStartz();
+                int x = strip.getX();
+                for (Pair<Integer, BlockState> pair : strip.getData()) {
+                    int cnt = pair.getKey();
+                    BlockState state = pair.getValue();
+                    if (state != null) {
+                        for (int c = 0; c < cnt; c++) {
+                            states.put(new BlockPos(x, y, z + c), state);
+                        }
+                    }
+                    z += cnt;
+                }
+            }
+        }
+        return states;
+    }
+
+    private static class ModelRenderCache {
+        private final ChunkBufferBuilderPack fixedBuffers = new ChunkBufferBuilderPack();
+        private final Map<RenderType, VertexBuffer> buffers = RenderType.chunkBufferLayers().stream()
+                .collect(java.util.stream.Collectors.toMap(key -> key, key -> new VertexBuffer(VertexBuffer.Usage.STATIC)));
+        private final java.util.Set<RenderType> validLayers = new java.util.HashSet<>();
+        private final VertexBuffer fluidBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        private boolean validFluidBuffer = false;
+        private long stamp = Long.MIN_VALUE;
+
+        private void buildIfNeeded(RenderData data, @Nullable Level level) {
+            if (level == null) {
+                return;
+            }
+            long newStamp = 31L * calculateStaticStamp(data) + data.getBlockCount();
+            if (stamp == newStamp) {
+                return;
+            }
+            stamp = newStamp;
+
+            Map<BlockPos, BlockState> blockMap = buildStaticBlockMap(data);
+            DummyBlockGetter blockGetter = new DummyBlockGetter(level.registryAccess(), blockMap);
+            BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
+            RandomSource random = RandomSource.create(42L);
+            PoseStack buildingPoseStack = new PoseStack();
+
+            for (RenderType renderType : RenderType.chunkBufferLayers()) {
+                BufferBuilder builder = fixedBuffers.builder(renderType);
+                builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
+                for (Map.Entry<BlockPos, BlockState> entry : blockMap.entrySet()) {
+                    BlockPos pos = entry.getKey();
+                    BlockState state = entry.getValue();
+                    if (!state.getFluidState().isEmpty()) {
+                        continue;
+                    }
+                    RenderType stateRenderType = ItemBlockRenderTypes.getChunkRenderType(state);
+                    if (stateRenderType != renderType) {
+                        continue;
+                    }
+                    buildingPoseStack.pushPose();
+                    buildingPoseStack.translate(pos.getX(), pos.getY(), pos.getZ());
+                    random.setSeed(state.getSeed(pos));
+                    blockRenderer.renderBatched(state, pos, blockGetter, buildingPoseStack, builder, false, random, ModelData.EMPTY, renderType);
+                    buildingPoseStack.popPose();
+                }
+            }
+
+            validLayers.clear();
+            for (RenderType renderType : RenderType.chunkBufferLayers()) {
+                BufferBuilder builder = fixedBuffers.builder(renderType);
+                BufferBuilder.RenderedBuffer renderedBuffer = builder.endOrDiscardIfEmpty();
+                VertexBuffer buffer = buffers.get(renderType);
+                if (renderedBuffer != null) {
+                    buffer.bind();
+                    buffer.upload(renderedBuffer);
+                    validLayers.add(renderType);
+                }
+            }
+            VertexBuffer.unbind();
+
+            buildFluidBuffer(blockMap);
+        }
+
+        private void render(PoseStack poseStack) {
+            for (RenderType renderType : RenderType.chunkBufferLayers()) {
+                if (!validLayers.contains(renderType)) {
+                    continue;
+                }
+                renderType.setupRenderState();
+                ShaderInstance shader = RenderSystem.getShader();
+                for (int i = 0; i < 12; i++) {
+                    int texId = RenderSystem.getShaderTexture(i);
+                    shader.setSampler("Sampler" + i, texId);
+                }
+                if (shader.MODEL_VIEW_MATRIX != null) {
+                    shader.MODEL_VIEW_MATRIX.set(poseStack.last().pose());
+                }
+                if (shader.PROJECTION_MATRIX != null) {
+                    shader.PROJECTION_MATRIX.set(RenderSystem.getProjectionMatrix());
+                }
+                if (shader.COLOR_MODULATOR != null) {
+                    shader.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
+                }
+                if (shader.GLINT_ALPHA != null) {
+                    shader.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
+                }
+                if (shader.FOG_START != null) {
+                    shader.FOG_START.set(RenderSystem.getShaderFogStart());
+                }
+                if (shader.FOG_END != null) {
+                    shader.FOG_END.set(RenderSystem.getShaderFogEnd());
+                }
+                if (shader.FOG_COLOR != null) {
+                    shader.FOG_COLOR.set(RenderSystem.getShaderFogColor());
+                }
+                if (shader.FOG_SHAPE != null) {
+                    shader.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
+                }
+                if (shader.TEXTURE_MATRIX != null) {
+                    shader.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
+                }
+                if (shader.GAME_TIME != null) {
+                    shader.GAME_TIME.set(RenderSystem.getShaderGameTime());
+                }
+                RenderSystem.setupShaderLights(shader);
+                shader.apply();
+                VertexBuffer buffer = buffers.get(renderType);
+                buffer.bind();
+                buffer.draw();
+                renderType.clearRenderState();
+                shader.clear();
+            }
+            if (validFluidBuffer) {
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.disableCull();
+                fluidBuffer.bind();
+                fluidBuffer.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+                RenderSystem.enableCull();
+                RenderSystem.disableBlend();
+            }
+            VertexBuffer.unbind();
+        }
+
+        private void buildFluidBuffer(Map<BlockPos, BlockState> blockMap) {
+            BufferBuilder builder = new BufferBuilder(262144);
+            builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            boolean hasFluids = false;
+
+            for (Map.Entry<BlockPos, BlockState> entry : blockMap.entrySet()) {
+                BlockPos pos = entry.getKey();
+                BlockState state = entry.getValue();
+                if (state.getFluidState().isEmpty()) {
+                    continue;
+                }
+                hasFluids = true;
+                addFluidBlock(builder, blockMap, pos, state);
+            }
+
+            validFluidBuffer = false;
+            BufferBuilder.RenderedBuffer renderedBuffer = builder.endOrDiscardIfEmpty();
+            if (hasFluids && renderedBuffer != null) {
+                fluidBuffer.bind();
+                fluidBuffer.upload(renderedBuffer);
+                validFluidBuffer = true;
+                VertexBuffer.unbind();
+            }
+        }
+
+        private void addFluidBlock(BufferBuilder builder, Map<BlockPos, BlockState> blockMap, BlockPos pos, BlockState state) {
+            float height = state.getFluidState().isSource() ? 1.0f : 0.875f;
+            float r = 0.25f;
+            float g = 0.45f;
+            float b = 1.0f;
+            float a = 0.7f;
+
+            if (isFluidFaceVisible(blockMap, pos, net.minecraft.core.Direction.UP)) {
+                builder.vertex(pos.getX(), pos.getY() + height, pos.getZ() + 1).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX() + 1, pos.getY() + height, pos.getZ() + 1).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX() + 1, pos.getY() + height, pos.getZ()).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX(), pos.getY() + height, pos.getZ()).color(r, g, b, a).endVertex();
+            }
+            if (isFluidFaceVisible(blockMap, pos, net.minecraft.core.Direction.DOWN)) {
+                builder.vertex(pos.getX(), pos.getY(), pos.getZ()).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX() + 1, pos.getY(), pos.getZ()).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX() + 1, pos.getY(), pos.getZ() + 1).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX(), pos.getY(), pos.getZ() + 1).color(r, g, b, a).endVertex();
+            }
+            if (isFluidFaceVisible(blockMap, pos, net.minecraft.core.Direction.NORTH)) {
+                builder.vertex(pos.getX() + 1, pos.getY() + height, pos.getZ()).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX() + 1, pos.getY(), pos.getZ()).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX(), pos.getY(), pos.getZ()).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX(), pos.getY() + height, pos.getZ()).color(r, g, b, a).endVertex();
+            }
+            if (isFluidFaceVisible(blockMap, pos, net.minecraft.core.Direction.SOUTH)) {
+                builder.vertex(pos.getX() + 1, pos.getY(), pos.getZ() + 1).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX() + 1, pos.getY() + height, pos.getZ() + 1).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX(), pos.getY() + height, pos.getZ() + 1).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX(), pos.getY(), pos.getZ() + 1).color(r, g, b, a).endVertex();
+            }
+            if (isFluidFaceVisible(blockMap, pos, net.minecraft.core.Direction.WEST)) {
+                builder.vertex(pos.getX(), pos.getY(), pos.getZ() + 1).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX(), pos.getY() + height, pos.getZ() + 1).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX(), pos.getY() + height, pos.getZ()).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX(), pos.getY(), pos.getZ()).color(r, g, b, a).endVertex();
+            }
+            if (isFluidFaceVisible(blockMap, pos, net.minecraft.core.Direction.EAST)) {
+                builder.vertex(pos.getX() + 1, pos.getY(), pos.getZ()).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX() + 1, pos.getY() + height, pos.getZ()).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX() + 1, pos.getY() + height, pos.getZ() + 1).color(r, g, b, a).endVertex();
+                builder.vertex(pos.getX() + 1, pos.getY(), pos.getZ() + 1).color(r, g, b, a).endVertex();
+            }
+        }
+
+        private boolean isFluidFaceVisible(Map<BlockPos, BlockState> blockMap, BlockPos pos, net.minecraft.core.Direction direction) {
+            BlockState neighbor = blockMap.get(pos.relative(direction));
+            if (neighbor == null) {
+                return true;
+            }
+            if (!neighbor.getFluidState().isEmpty()) {
+                return false;
+            }
+            return !neighbor.canOcclude();
+        }
+
+        private static long calculateStaticStamp(RenderData data) {
+            long result = 1L;
+            for (RenderData.RenderPlane plane : data.getPlanes()) {
+                result = 31L * result + (plane == null ? 0L : plane.getBirthtime());
+            }
+            return result;
+        }
+
+        private static Map<BlockPos, BlockState> buildStaticBlockMap(RenderData data) {
+            Map<BlockPos, BlockState> states = new HashMap<>();
+            for (RenderData.RenderPlane plane : data.getPlanes()) {
+                if (plane == null) {
+                    continue;
+                }
+                int y = plane.getY();
+                for (RenderData.RenderStrip strip : plane.getStrips()) {
+                    int z = plane.getStartz();
+                    int x = strip.getX();
+                    for (Pair<Integer, BlockState> pair : strip.getData()) {
+                        int cnt = pair.getKey();
+                        BlockState state = pair.getValue();
+                        if (state != null) {
+                            for (int c = 0; c < cnt; c++) {
+                                states.put(new BlockPos(x, y, z + c), state);
+                            }
+                        }
+                        z += cnt;
+                    }
+                }
+            }
+            return states;
+        }
     }
 
     private boolean renderFacesForGui(PoseStack poseStack, Tesselator tessellator, final BufferBuilder buffer,

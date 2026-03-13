@@ -20,8 +20,8 @@ public class ProjectorRenderer implements BlockEntityRenderer<ProjectorTileEntit
     public void render(@Nonnull ProjectorTileEntity te, float partialTicks, @Nonnull PoseStack poseStack, @Nonnull MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
         ItemStack renderStack = te.getRenderStack();
         if (te.isProjecting() && !renderStack.isEmpty()) {
-            te.getShapeRenderer().renderShapeInWorld(poseStack, renderStack, te.getVerticalOffset(), te.getScale(), te.getAngle(),
-                    te.isScanline(), te.getShapeID());
+            te.getShapeRenderer().renderShapeInWorld(poseStack, buffer, renderStack, te.getVerticalOffset(), te.getScale(), te.getAngle(),
+                    te.isScanline(), te.getShapeID(), te.isRenderBlockModels(), combinedLight, combinedOverlay);
         }
     }
 

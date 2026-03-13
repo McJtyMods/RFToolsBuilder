@@ -83,6 +83,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
     public static final Key<Boolean> PARAM_SCAN = new Key<>("scan", Type.BOOLEAN);
     public static final Key<Boolean> PARAM_SOUND = new Key<>("sound", Type.BOOLEAN);
     public static final Key<Boolean> PARAM_GRAY = new Key<>("gray", Type.BOOLEAN);
+    public static final Key<Boolean> PARAM_RENDERMODELS = new Key<>("render_models", Type.BOOLEAN);
 
     public static final int SLOT_CARD = 0;
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(1)
@@ -126,6 +127,8 @@ public class ProjectorTileEntity extends TickingTileEntity {
     private boolean sound = true;
     @GuiValue
     private boolean grayscale = false;
+    @GuiValue
+    private boolean renderBlockModels = false;
     private int counter = 0;
 
     private int powerLevel = 0;
@@ -475,6 +478,10 @@ public class ProjectorTileEntity extends TickingTileEntity {
         return grayscale;
     }
 
+    public boolean isRenderBlockModels() {
+        return renderBlockModels;
+    }
+
     public boolean isProjecting() {
         return projecting;
     }
@@ -493,6 +500,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
         scanline = !tag.contains("scan") || tag.getBoolean("scan");
         sound = !tag.contains("sound") || tag.getBoolean("sound");
         grayscale = tag.getBoolean("grayscale");
+        renderBlockModels = tag.getBoolean("render_models");
         projecting = tag.getBoolean("projecting");
         active = !tag.contains("active") || tag.getBoolean("active");
         counter = tag.getInt("counter");
@@ -520,6 +528,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
         tag.putBoolean("scan", scanline);
         tag.putBoolean("sound", sound);
         tag.putBoolean("grayscale", grayscale);
+        tag.putBoolean("render_models", renderBlockModels);
         tag.putBoolean("projecting", projecting);
         tag.putBoolean("active", active);
         tag.putInt("counter", counter);
@@ -559,6 +568,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
         tag.putBoolean("scan", scanline);
         tag.putBoolean("sound", sound);
         tag.putBoolean("grayscale", grayscale);
+        tag.putBoolean("render_models", renderBlockModels);
         tag.putInt("counter", counter);
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             int index = facing.get2DDataValue();
@@ -588,6 +598,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
         scanline = !tag.contains("scan") || tag.getBoolean("scan");
         sound = !tag.contains("sound") || tag.getBoolean("sound");
         grayscale = tag.getBoolean("grayscale");
+        renderBlockModels = tag.getBoolean("render_models");
         counter = tag.getInt("counter");
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             String key = "op_" + facing.getName();
@@ -641,6 +652,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
             grayscale = gs;
             shapeRenderer = null;
         }
+        renderBlockModels = params.get(PARAM_RENDERMODELS);
         setChanged();
         markDirtyClient();
     }

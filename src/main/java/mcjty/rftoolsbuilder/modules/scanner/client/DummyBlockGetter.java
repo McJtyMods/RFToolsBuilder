@@ -53,6 +53,24 @@ public class DummyBlockGetter implements BlockAndTintGetter {
         }, true, true);
     }
 
+    public DummyBlockGetter(RegistryAccess access, Map<BlockPos, BlockState> states) {
+        this.access = access;
+        this.states = new HashMap<>(states);
+        this.air = Blocks.AIR.defaultBlockState();
+        this.lightEngine = new LevelLightEngine(new LightChunkGetter() {
+            @Nullable
+            @Override
+            public LightChunk getChunkForLighting(int i, int i1) {
+                return null;
+            }
+
+            @Override
+            public BlockGetter getLevel() {
+                return DummyBlockGetter.this;
+            }
+        }, true, true);
+    }
+
     @Override
     public float getShade(Direction direction, boolean b) {
         return 1.0f;
@@ -86,7 +104,7 @@ public class DummyBlockGetter implements BlockAndTintGetter {
 
     @Override
     public FluidState getFluidState(BlockPos pos) {
-        return Fluids.EMPTY.defaultFluidState();
+        return getBlockState(pos).getFluidState();
     }
 
     @Override
@@ -97,5 +115,20 @@ public class DummyBlockGetter implements BlockAndTintGetter {
     @Override
     public int getMinBuildHeight() {
         return 0;   // @todo check?
+    }
+
+    @Override
+    public int getBrightness(net.minecraft.world.level.LightLayer lightLayer, BlockPos pos) {
+        return 15;
+    }
+
+    @Override
+    public int getRawBrightness(BlockPos pos, int amount) {
+        return 15;
+    }
+
+    @Override
+    public boolean canSeeSky(BlockPos pos) {
+        return true;
     }
 }

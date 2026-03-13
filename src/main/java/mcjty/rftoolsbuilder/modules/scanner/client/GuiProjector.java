@@ -50,6 +50,7 @@ public class GuiProjector extends GenericGuiContainer<ProjectorTileEntity, Gener
     private ToggleButton scanline;
     private ToggleButton sound;
     private ToggleButton grayScale;
+    private ToggleButton renderModels;
 
     public GuiProjector(ProjectorTileEntity tileEntity, GenericContainer container, Inventory inventory) {
         super(tileEntity, container, inventory, ScannerModule.PROJECTOR.get().getManualEntry());
@@ -103,13 +104,15 @@ public class GuiProjector extends GenericGuiContainer<ProjectorTileEntity, Gener
         sound.pressed(tileEntity.isSound());
         grayScale = new ToggleButton().checkMarker(true).text("Gray").tooltips("Enable grayscale mode").hint(42, 146, 39, 16).event(this::updateSettings);
         grayScale.pressed(tileEntity.isGrayscale());
+        renderModels = new ToggleButton().checkMarker(true).text("M").tooltips("Render baked block models in the world", "instead of solid projected cubes").hint(83, 200, 24, 16).event(this::updateSettings);
+        renderModels.pressed(tileEntity.isRenderBlockModels());
 
         panel.children(
                 label("Angle").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).hint(34, 30, 32, 14),
                 label("Offset").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).hint(34, 62, 32, 14),
                 label("Scale").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).hint(34, 94, 32, 14),
                 angle, offset, scale,
-                autoRotate, scanline, sound, grayScale
+                autoRotate, scanline, sound, grayScale, renderModels
         );
 
         showAxis = ShapeGuiTools.createAxisButton(this, panel, 5, 200);
@@ -181,6 +184,7 @@ public class GuiProjector extends GenericGuiContainer<ProjectorTileEntity, Gener
                         .put(PARAM_SCAN, scanline.isPressed())
                         .put(PARAM_SOUND, sound.isPressed())
                         .put(PARAM_GRAY, grayScale.isPressed())
+                        .put(PARAM_RENDERMODELS, renderModels.isPressed())
                         .build());
     }
 
