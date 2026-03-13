@@ -4,6 +4,7 @@ import mcjty.lib.network.CustomPacketPayload;
 import mcjty.lib.network.PlayPayloadContext;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
+import mcjty.rftoolsbuilder.modules.scanner.blocks.ComposerTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -26,7 +27,7 @@ public record PacketUpdateNBTItemInventoryShape(BlockPos pos, int slotIndex, Com
     }
 
     protected boolean isValidBlock(Level world, BlockPos blockPos, BlockEntity tileEntity) {
-        return /* @todo 1.14 tileEntity instanceof ComposerTileEntity || */tileEntity instanceof BuilderTileEntity;
+        return tileEntity instanceof BuilderTileEntity || tileEntity instanceof ComposerTileEntity;
     }
 
     @Override

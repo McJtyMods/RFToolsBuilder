@@ -8,6 +8,9 @@ import mcjty.lib.modules.IModule;
 import mcjty.lib.setup.DeferredBlock;
 import mcjty.lib.setup.DeferredItem;
 import mcjty.rftoolsbase.modules.various.VariousModule;
+import mcjty.rftoolsbuilder.modules.scanner.blocks.ComposerBlock;
+import mcjty.rftoolsbuilder.modules.scanner.blocks.ComposerTileEntity;
+import mcjty.rftoolsbuilder.modules.scanner.client.GuiComposer;
 import mcjty.rftoolsbuilder.modules.scanner.blocks.ScannerBlock;
 import mcjty.rftoolsbuilder.modules.scanner.blocks.ScannerTileEntity;
 import mcjty.rftoolsbuilder.modules.scanner.client.GuiScanner;
@@ -44,6 +47,11 @@ public class ScannerModule implements IModule {
     public static final Supplier<BlockEntityType<ScannerTileEntity>> TYPE_SCANNER = TILES.register("scanner", () -> BlockEntityType.Builder.of(ScannerTileEntity::new, SCANNER.get()).build(null));
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_SCANNER = CONTAINERS.register("scanner", GenericContainer::createContainerType);
 
+    public static final DeferredBlock<BaseBlock> COMPOSER = BLOCKS.register("composer", ComposerBlock::new);
+    public static final DeferredItem<Item> COMPOSER_ITEM = ITEMS.register("composer", tab(() -> new BlockItem(COMPOSER.get(), Registration.createStandardProperties())));
+    public static final Supplier<BlockEntityType<ComposerTileEntity>> TYPE_COMPOSER = TILES.register("composer", () -> BlockEntityType.Builder.of(ComposerTileEntity::new, COMPOSER.get()).build(null));
+    public static final Supplier<MenuType<GenericContainer>> CONTAINER_COMPOSER = CONTAINERS.register("composer", GenericContainer::createContainerType);
+
     public static final DeferredBlock<BaseBlock> PROJECTOR = BLOCKS.register("projector", ProjectorBlock::new);
     public static final DeferredItem<Item> PROJECTOR_ITEM = ITEMS.register("projector", tab(() -> new BlockItem(PROJECTOR.get(), Registration.createStandardProperties())));
     public static final Supplier<BlockEntityType<ProjectorTileEntity>> TYPE_PROJECTOR = TILES.register("projector", () -> BlockEntityType.Builder.of(ProjectorTileEntity::new, PROJECTOR.get()).build(null));
@@ -57,6 +65,7 @@ public class ScannerModule implements IModule {
     @Override
     public void initClient(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
+            GuiComposer.register();
             GuiProjector.register();
             GuiScanner.register();
         });
@@ -72,6 +81,17 @@ public class ScannerModule implements IModule {
     @Override
     public void initDatagen(DataGen dataGen) {
         dataGen.add(
+                Dob.blockBuilder(COMPOSER)
+                        .ironPickaxeTags()
+                        .standardLoot(TYPE_COMPOSER)
+                        .parentedItem("block/composer")
+                        .blockState(p -> p.horizontalOrientedBlock(COMPOSER.get(), p.models().getExistingFile(p.modLoc("block/composer"))))
+                        .shaped(builder -> builder
+                                        .define('F', VariousModule.MACHINE_FRAME.get())
+                                        .define('P', Items.PAPER)
+                                        .define('B', Items.BRICK)
+                                        .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
+                                "PBP", "BFB", "PBP"),
                 Dob.blockBuilder(PROJECTOR)
                         .ironPickaxeTags()
                         .standardLoot(TYPE_PROJECTOR)

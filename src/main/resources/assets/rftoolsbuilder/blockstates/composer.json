@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "rftoolsbuilder:block/composer",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "rftoolsbuilder:block/composer"
+    },
+    "facing=south": {
+      "model": "rftoolsbuilder:block/composer",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "rftoolsbuilder:block/composer",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:brick"
+    },
+    "F": {
+      "item": "rftoolsbase:machine_frame"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
+  },
+  "pattern": [
+    "PBP",
+    "BFB",
+    "PBP"
+  ],
+  "result": {
+    "item": "rftoolsbuilder:composer"
+  },
+  "show_notification": true
+}
