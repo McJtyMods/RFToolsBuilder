@@ -13,6 +13,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelResource;
 
 import javax.annotation.Nonnull;
 import java.io.*;
@@ -48,7 +49,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
 
     public void save(Level w, int scanId) {
         Level world = LevelTools.getOverworld(w);
-        File dataDir = null; // @todo 1.16 new File(((ServerWorld)world).getSaveHandler().getWorldDirectory(), "rftoolsscans");
+        File dataDir = world.getServer().getWorldPath(LevelResource.ROOT).resolve("rftoolsscans").toFile();
         dataDir.mkdirs();
         File file = new File(dataDir, "scan" + scanId);
         Scan scan = getOrCreateScan(scanId);
@@ -99,13 +100,14 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
             if (scan == null) {
                 scan = new Scan();
             }
-            File dataDir = null; // @todo 1.16 new File(((ServerWorld)world).getSaveHandler().getWorldDirectory(), "rftoolsscans");
+            File dataDir = world.getServer().getWorldPath(LevelResource.ROOT).resolve("rftoolsscans").toFile();
             dataDir.mkdirs();
             File file = new File(dataDir, "scan" + id);
             if (file.exists()) {
                 try(DataInputStream datainputstream = new DataInputStream(new FileInputStream(file))) {
                     CompoundTag tag = NbtIo.readCompressed(datainputstream);
                     scan.readFromNBTExternal(tag);
+                    scans.put(id, scan);
                 } catch (IOException e) {
                     Logging.log("Error reading scan file for id: " + id);
                 }

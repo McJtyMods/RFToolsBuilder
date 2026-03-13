@@ -1,25 +1,29 @@
 package mcjty.rftoolsbuilder.modules.scanner.blocks;
 
 import mcjty.lib.api.container.DefaultContainerProvider;
-import mcjty.lib.blocks.BaseBlock;
-import mcjty.lib.blocks.RotationType;
-import mcjty.lib.builder.BlockBuilder;
+import mcjty.lib.blockcommands.Command;
+import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.TickingTileEntity;
+import mcjty.lib.typed.Key;
+import mcjty.lib.typed.Type;
+import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.Cached;
 import mcjty.lib.varia.RLE;
 import mcjty.lib.varia.RedstoneMode;
 import mcjty.rftoolsbase.modules.filter.items.FilterModuleItem;
-import mcjty.rftoolsbase.tools.ManualHelper;
-import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
+import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
+import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
+import mcjty.rftoolsbuilder.shapes.ScanDataManager;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
@@ -28,13 +32,17 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.Lazy;
 
+import javax.annotation.Nonnull;
 import java.util.function.Predicate;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
-import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.lib.container.SlotDefinition.specific;
 
 public class ScannerTileEntity extends TickingTileEntity {
+
+    public static final String CMD_SCAN_ID = "scanner.scan";
+    public static final String CMD_OFFSET_ID = "scanner.offset";
+    public static final Key<BlockPos> PARAM_OFFSET = new Key<>("offset", Type.BLOCKPOS);
 
     public static final int SLOT_IN = 0;
     public static final int SLOT_OUT = 1;
@@ -42,183 +50,149 @@ public class ScannerTileEntity extends TickingTileEntity {
     public static final int SLOT_MODIFIER = 3;
 
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(4)
-            .slot(specific(s -> (s.getItem() instanceof ShapeCardItem)).in().out(), SLOT_IN, 15, 7)
-            .slot(specific(s -> (s.getItem() instanceof ShapeCardItem)).in().out(), SLOT_OUT, 15, 200)
+            .slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), SLOT_IN, 15, 7)
+            .slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), SLOT_OUT, 15, 200)
             .slot(specific(s -> s.getItem() instanceof FilterModuleItem).in().out(), SLOT_FILTER, 35, 7)
-            .slot(specific(s -> true /*@todo*/).in().out(), SLOT_MODIFIER, 55, 7)
+            .slot(specific(s -> true).in().out(), SLOT_MODIFIER, 55, 7)
             .playerSlots(85, 142));
 
     @Cap(type = CapType.ITEMS_AUTOMATION)
-    private final GenericItemHandler items = createItemHandler();
+    private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
+            .itemValid((slot, stack) -> switch (slot) {
+                case SLOT_IN, SLOT_OUT -> stack.getItem() instanceof ShapeCardItem;
+                case SLOT_FILTER -> stack.getItem() instanceof FilterModuleItem;
+                case SLOT_MODIFIER -> true;
+                default -> false;
+            })
+            .onUpdate(this::handleSlotUpdate)
+            .build();
 
     @Cap(type = CapType.CONTAINER)
-    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Builder")
-            .containerSupplier(container(BuilderModule.CONTAINER_BUILDER, CONTAINER_FACTORY,this))
+    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Scanner")
+            .containerSupplier(container(ScannerModule.CONTAINER_SCANNER, CONTAINER_FACTORY, this))
             .itemHandler(() -> items)
-//            .energyHandler(() -> energyStorage)
-//            .shortListener(Sync.integer(() -> scan == null ? -1 : scan.getY(), v -> currentLevel = v))
             .setupSync(this));
-
-    private int scanId = 0;
-    private ItemStack renderStack = ItemStack.EMPTY;
-    private BlockPos dataDim;
-    private BlockPos dataOffset = new BlockPos(0, 0, 0);
-
-    // Transient data that is used during the scan.
-    private ScanProgress progress = null;
-    // Client side indication if there is a scan in progress
-    private int progressBusy = -1;
 
     private final Cached<Predicate<ItemStack>> filterCache = Cached.of(this::createFilterCache);
 
-    public ScannerTileEntity(BlockEntityType type, BlockPos pos, BlockState state) {
+    private int scanId = 0;
+    private ItemStack renderStack = ItemStack.EMPTY;
+    private BlockPos dataDim = new BlockPos(5, 5, 5);
+    private BlockPos dataOffset = BlockPos.ZERO;
+
+    private ScanProgress progress = null;
+    private int progressBusy = -1;
+
+    public ScannerTileEntity(BlockPos pos, BlockState state) {
+        this(ScannerModule.TYPE_SCANNER.get(), pos, state);
+    }
+
+    public ScannerTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         setRSMode(RedstoneMode.REDSTONE_ONREQUIRED);
     }
 
-    public static BaseBlock createBlock() {
-        return new BaseBlock(new BlockBuilder()
-//                .tileEntitySupplier(ScannerTileEntity::new)
-                .topDriver(RFToolsBuilderTOPDriver.DRIVER)
-                .infusable()
-                .manualEntry(ManualHelper.create("rftoolsbuilder:projector/scanner"))
-                .info(key("message.rftoolsbuilder.shiftmessage"))
-                .infoShift(header(), gold())) {
-            @Override
-            public RotationType getRotationType() {
-                return RotationType.HORIZROTATION;
-            }
-        };
-    }
-
     @Override
     protected void tickServer() {
-        int surfaceAreaPerTick = 512*256*2; // @todo ScannerConfiguration.surfaceAreaPerTick
         if (progress != null) {
-//            if (getStoredPower() >= getEnergyPerTick()) { @todo
-//                consumeEnergy(getEnergyPerTick());
             int done = 0;
-            while (progress != null && done < surfaceAreaPerTick) {
+            while (progress != null && done < ScannerConfiguration.surfaceAreaPerTick.get()) {
                 progressScan();
-                done += dataDim.getZ() * dataDim.getY();  // We scan planes on the x axis
+                if (progress != null) {
+                    done += progress.dimY * progress.dimZ;
+                }
             }
-//            }
+            int percent = progress == null ? -1 : (progress.x - progress.tl.getX()) * 100 / Math.max(1, progress.dimX);
+            if (percent != progressBusy) {
+                progressBusy = percent;
+                markDirtyClient();
+            }
         } else if (isMachineEnabled()) {
             scan();
         }
     }
 
-    private void scan() {
-        if (progress != null) {
-            return;
+    public ItemStack getRenderStack() {
+        ItemStack stack = items.getStackInSlot(SLOT_OUT);
+        if (!stack.isEmpty()) {
+            return stack;
         }
-        if (items.getStackInSlot(SLOT_IN).isEmpty()) {
-            // Cannot scan. No input card
-            return;
+        if (renderStack.isEmpty()) {
+            renderStack = new ItemStack(BuilderModule.SHAPE_CARD_DEF.get());
+            updateScanCard(renderStack);
         }
-
-        BlockPos machinePos = getScanPos();
-        if (machinePos == null) {
-            // No valid destination. We cannot scan
-            return;
-        }
-
-        int dimX = dataDim.getX();
-        int dimY = dataDim.getY();
-        int dimZ = dataDim.getZ();
-        startScanArea(getScanCenter(), getScanDimension(), dimX, dimY, dimZ);
+        return renderStack;
     }
 
-    public Level getScanWorld(ResourceKey<Level> dimension) {
-        return level.getServer().getLevel(dimension);
+    public BlockPos getDataDim() {
+        return dataDim;
     }
 
-    protected BlockPos getScanPos() {
-        return getBlockPos();
+    public BlockPos getDataOffset() {
+        return dataOffset;
+    }
+
+    public int getScanProgress() {
+        return progressBusy;
     }
 
     public BlockPos getScanCenter() {
-        if (getScanPos() == null) {
-            return null;
-        }
-        return getScanPos().offset(dataOffset.getX(), dataOffset.getY(), dataOffset.getZ());
+        return getBlockPos().offset(dataOffset);
     }
 
-    public BlockPos getFirstCorner() {
-        if (getScanPos() == null) {
-            return null;
-        }
-        return getScanPos().offset(dataOffset.getX()-dataDim.getX()/2,
-                dataOffset.getY()-dataDim.getY()/2,
-                dataOffset.getZ()-dataDim.getZ()/2);
-    }
-
-    public BlockPos getLastCorner() {
-        if (getScanPos() == null) {
-            return null;
-        }
-        return getScanPos().offset(dataOffset.getX()+dataDim.getX()/2,
-                dataOffset.getY()+dataDim.getY()/2,
-                dataOffset.getZ()+dataDim.getZ()/2);
-    }
-
-    public ResourceKey<Level> getScanDimension() {
-        return level.dimension();
-    }
-
-    private void progressScan() {
-        if (progress == null) {
-            return;
-        }
-        BlockPos tl = progress.tl;
-        int dimX = progress.dimX;
-        int dimY = progress.dimY;
-        int dimZ = progress.dimZ;
-        Level world = getScanWorld(progress.dimension);
-        BlockPos.MutableBlockPos mpos = progress.mpos;
-        for (int z = tl.getZ() ; z < tl.getZ() + dimZ ; z++) {
-            for (int y = tl.getY() ; y < tl.getY() + dimY ; y++) {
-                mpos.set(progress.x, y, z);
-                int c;
-                // @todo
-//                if (world.isAirBlock(mpos)) {
-//                    c = 0;
-//                } else {
-//                    IBlockState state = world.getBlockState(mpos);
-//                    getFilterCache();
-//                    if (filterCache != null) {
-//                        ItemStack item = state.getBlock().getItem(world, mpos, state);
-//                        if (!filterCache.match(item)) {
-//                            state = null;
-//                        }
-//                    }
-//                    if (state != null && state != Blocks.AIR.getDefaultState()) {
-//                        state = mapState(progress.modifiers, progress.modifierMapping, mpos, state);
-//                    }
-//                    if (state != null && state != Blocks.AIR.getDefaultState()) {
-//                        c = progress.materialPalette.alloc(state, 0) + 1;
-//                    } else {
-//                        c = 0;
-//                    }
-//                }
-//                progress.rle.add(c);
-            }
-        }
-        progress.x++;
-        if (progress.x >= tl.getX() + dimX) {
-            stopScanArea();
-        } else {
+    public int getScanId() {
+        if (scanId == 0 && level != null && !level.isClientSide) {
+            scanId = ScanDataManager.get(level).newScan(level);
+            setChanged();
             markDirtyClient();
         }
+        return scanId;
+    }
+
+    private void handleSlotUpdate(int slot, ItemStack stack) {
+        if (slot == SLOT_FILTER) {
+            filterCache.clear();
+        }
+        if (slot == SLOT_IN) {
+            if (!stack.isEmpty()) {
+                dataDim = ShapeCardItem.getDimension(stack);
+            }
+            if (renderStack.isEmpty()) {
+                renderStack = new ItemStack(BuilderModule.SHAPE_CARD_DEF.get());
+            }
+            updateScanCard(renderStack);
+        } else if (slot == SLOT_OUT && !stack.isEmpty()) {
+            updateScanCard(stack);
+        }
+        setChanged();
+        markDirtyClient();
+    }
+
+    private void updateScanCard(ItemStack card) {
+        if (card.isEmpty()) {
+            return;
+        }
+        if (!ShapeCardItem.getShape(card).isScan()) {
+            ShapeCardItem.setShape(card, mcjty.rftoolsbuilder.shapes.Shape.SHAPE_SCAN, ShapeCardItem.isSolid(card));
+        }
+        ShapeCardItem.setDimension(card, dataDim.getX(), dataDim.getY(), dataDim.getZ());
+        ShapeCardItem.setOffset(card, dataOffset.getX(), dataOffset.getY(), dataOffset.getZ());
+        ShapeCardItem.setData(card.getOrCreateTag(), getScanId());
+    }
+
+    private void scan() {
+        if (progress != null || items.getStackInSlot(SLOT_IN).isEmpty()) {
+            return;
+        }
+        ItemStack card = items.getStackInSlot(SLOT_IN);
+        dataDim = ShapeCardItem.getDimension(card);
+        startScanArea(getScanCenter(), level.dimension(), dataDim.getX(), dataDim.getY(), dataDim.getZ());
     }
 
     private void startScanArea(BlockPos center, ResourceKey<Level> dimension, int dimX, int dimY, int dimZ) {
         progress = new ScanProgress();
-        // @todo
-//        progress.modifiers = ModifierItem.getModifiers(getStackInSlot(SLOT_MODIFIER));
-//        progress.modifierMapping = new HashMap<>();
         progress.rle = new RLE();
-        progress.tl = new BlockPos(center.getX() - dimX/2, center.getY() - dimY/2, center.getZ() - dimZ/2);
+        progress.tl = new BlockPos(center.getX() - dimX / 2, center.getY() - dimY / 2, center.getZ() - dimZ / 2);
         progress.materialPalette = new StatePalette();
         progress.materialPalette.alloc(BuilderModule.SUPPORT.get().defaultBlockState(), 0);
         progress.x = progress.tl.getX();
@@ -226,42 +200,143 @@ public class ScannerTileEntity extends TickingTileEntity {
         progress.dimY = dimY;
         progress.dimZ = dimZ;
         progress.dimension = dimension;
+        progressBusy = 0;
+        setChanged();
         markDirtyClient();
     }
 
+    private void progressScan() {
+        if (progress == null) {
+            return;
+        }
+        Level scanWorld = level.getServer().getLevel(progress.dimension);
+        if (scanWorld == null) {
+            stopScanArea();
+            return;
+        }
+
+        Predicate<ItemStack> filter = filterCache.get();
+        BlockPos.MutableBlockPos mpos = progress.mpos;
+        BlockPos tl = progress.tl;
+        for (int z = tl.getZ(); z < tl.getZ() + progress.dimZ; z++) {
+            for (int y = tl.getY(); y < tl.getY() + progress.dimY; y++) {
+                mpos.set(progress.x, y, z);
+                int c = 0;
+                if (!scanWorld.isEmptyBlock(mpos)) {
+                    BlockState state = scanWorld.getBlockState(mpos);
+                    if (filter == null || filter.test(state.getBlock().getCloneItemStack(scanWorld, mpos, state))) {
+                        c = progress.materialPalette.alloc(state, 0) + 1;
+                    }
+                }
+                progress.rle.add(c);
+            }
+        }
+        progress.x++;
+        if (progress.x >= tl.getX() + progress.dimX) {
+            stopScanArea();
+        }
+    }
+
     private void stopScanArea() {
-        this.dataDim = new BlockPos(progress.dimX, progress.dimY, progress.dimZ);
-        // @todo
-//        ScanDataManager scan = ScanDataManager.getScans();
-//        scan.getOrCreateScan(getScanId()).setData(progress.rle.getData(), progress.materialPalette.getPalette(), dataDim, dataOffset);
-//        scan.save(getScanId());
-//        if (renderStack.isEmpty()) {
-//            renderStack = new ItemStack(BuilderSetup.shapeCardItem);
-//        }
-//        updateScanCard(renderStack);
-//        markDirtyClient();
+        if (progress == null) {
+            return;
+        }
+        dataDim = new BlockPos(progress.dimX, progress.dimY, progress.dimZ);
+        ScanDataManager manager = ScanDataManager.get(level);
+        manager.getOrCreateScan(getScanId()).setData(progress.rle.getData(), progress.materialPalette.getPalette(), dataDim, dataOffset);
+        manager.save(level, getScanId());
+        if (renderStack.isEmpty()) {
+            renderStack = new ItemStack(BuilderModule.SHAPE_CARD_DEF.get());
+        }
+        updateScanCard(renderStack);
+        ItemStack out = items.getStackInSlot(SLOT_OUT);
+        if (!out.isEmpty()) {
+            updateScanCard(out);
+        }
         progress = null;
+        progressBusy = -1;
+        setChanged();
+        markDirtyClient();
     }
 
     private Predicate<ItemStack> createFilterCache() {
         return FilterModuleItem.getCache(items.getStackInSlot(SLOT_FILTER));
     }
 
-    private GenericItemHandler createItemHandler() {
-        return new GenericItemHandler(ScannerTileEntity.this, CONTAINER_FACTORY.get());
+    @Override
+    public void load(@Nonnull CompoundTag tag) {
+        super.load(tag);
+        scanId = tag.getInt("scanid");
+        if (tag.contains("scandimx")) {
+            dataDim = new BlockPos(tag.getInt("scandimx"), tag.getInt("scandimy"), tag.getInt("scandimz"));
+        }
+        dataOffset = new BlockPos(tag.getInt("scanoffx"), tag.getInt("scanoffy"), tag.getInt("scanoffz"));
+    }
+
+    @Override
+    public void saveAdditional(@Nonnull CompoundTag tag) {
+        super.saveAdditional(tag);
+        tag.putInt("scanid", scanId);
+        tag.putInt("scandimx", dataDim.getX());
+        tag.putInt("scandimy", dataDim.getY());
+        tag.putInt("scandimz", dataDim.getZ());
+        tag.putInt("scanoffx", dataOffset.getX());
+        tag.putInt("scanoffy", dataOffset.getY());
+        tag.putInt("scanoffz", dataOffset.getZ());
+    }
+
+    @Override
+    public void saveClientDataToNBT(CompoundTag tag) {
+        CompoundTag stackTag = new CompoundTag();
+        getRenderStack().save(stackTag);
+        tag.put("render", stackTag);
+        tag.putInt("scanid", scanId);
+        tag.putInt("scandimx", dataDim.getX());
+        tag.putInt("scandimy", dataDim.getY());
+        tag.putInt("scandimz", dataDim.getZ());
+        tag.putInt("scanoffx", dataOffset.getX());
+        tag.putInt("scanoffy", dataOffset.getY());
+        tag.putInt("scanoffz", dataOffset.getZ());
+        tag.putInt("progress", progressBusy);
+    }
+
+    @Override
+    public void loadClientDataFromNBT(CompoundTag tag) {
+        renderStack = ItemStack.of(tag.getCompound("render"));
+        scanId = tag.getInt("scanid");
+        dataDim = new BlockPos(tag.getInt("scandimx"), tag.getInt("scandimy"), tag.getInt("scandimz"));
+        dataOffset = new BlockPos(tag.getInt("scanoffx"), tag.getInt("scanoffy"), tag.getInt("scanoffz"));
+        progressBusy = tag.getInt("progress");
+    }
+
+    @ServerCommand
+    public static final Command<?> CMD_SCAN = Command.<ScannerTileEntity>create(CMD_SCAN_ID, (te, player, params) -> te.scan());
+
+    @ServerCommand
+    public static final Command<?> CMD_OFFSET = Command.<ScannerTileEntity>create(CMD_OFFSET_ID, (te, player, params) -> te.applyOffset(params));
+
+    private void applyOffset(TypedMap params) {
+        dataOffset = params.get(PARAM_OFFSET);
+        if (!renderStack.isEmpty()) {
+            updateScanCard(renderStack);
+        }
+        ItemStack out = items.getStackInSlot(SLOT_OUT);
+        if (!out.isEmpty()) {
+            updateScanCard(out);
+        }
+        setChanged();
+        markDirtyClient();
     }
 
     private static class ScanProgress {
-//        List<ModifierEntry> modifiers;    @todo
-//        Map<BlockState, BlockState> modifierMapping;
-        RLE rle;
-        BlockPos tl;
-        StatePalette materialPalette;
-        BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
-        int dimX;
-        int dimY;
-        int dimZ;
-        int x;
-        ResourceKey<Level> dimension;
+        private RLE rle;
+        private BlockPos tl;
+        private StatePalette materialPalette;
+        private final BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
+        private int dimX;
+        private int dimY;
+        private int dimZ;
+        private int x;
+        private ResourceKey<Level> dimension;
     }
 }

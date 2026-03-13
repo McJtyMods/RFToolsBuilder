@@ -8,6 +8,9 @@ import mcjty.lib.modules.IModule;
 import mcjty.lib.setup.DeferredBlock;
 import mcjty.lib.setup.DeferredItem;
 import mcjty.rftoolsbase.modules.various.VariousModule;
+import mcjty.rftoolsbuilder.modules.scanner.blocks.ScannerBlock;
+import mcjty.rftoolsbuilder.modules.scanner.blocks.ScannerTileEntity;
+import mcjty.rftoolsbuilder.modules.scanner.client.GuiScanner;
 import mcjty.rftoolsbuilder.modules.scanner.blocks.ProjectorBlock;
 import mcjty.rftoolsbuilder.modules.scanner.blocks.ProjectorTileEntity;
 import mcjty.rftoolsbuilder.modules.scanner.client.GuiProjector;
@@ -36,6 +39,11 @@ import static mcjty.rftoolsbuilder.setup.Registration.TILES;
 
 public class ScannerModule implements IModule {
 
+    public static final DeferredBlock<BaseBlock> SCANNER = BLOCKS.register("scanner", ScannerBlock::new);
+    public static final DeferredItem<Item> SCANNER_ITEM = ITEMS.register("scanner", tab(() -> new BlockItem(SCANNER.get(), Registration.createStandardProperties())));
+    public static final Supplier<BlockEntityType<ScannerTileEntity>> TYPE_SCANNER = TILES.register("scanner", () -> BlockEntityType.Builder.of(ScannerTileEntity::new, SCANNER.get()).build(null));
+    public static final Supplier<MenuType<GenericContainer>> CONTAINER_SCANNER = CONTAINERS.register("scanner", GenericContainer::createContainerType);
+
     public static final DeferredBlock<BaseBlock> PROJECTOR = BLOCKS.register("projector", ProjectorBlock::new);
     public static final DeferredItem<Item> PROJECTOR_ITEM = ITEMS.register("projector", tab(() -> new BlockItem(PROJECTOR.get(), Registration.createStandardProperties())));
     public static final Supplier<BlockEntityType<ProjectorTileEntity>> TYPE_PROJECTOR = TILES.register("projector", () -> BlockEntityType.Builder.of(ProjectorTileEntity::new, PROJECTOR.get()).build(null));
@@ -48,7 +56,10 @@ public class ScannerModule implements IModule {
 
     @Override
     public void initClient(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> GuiProjector.register());
+        event.enqueueWork(() -> {
+            GuiProjector.register();
+            GuiScanner.register();
+        });
         MinecraftForge.EVENT_BUS.addListener(ShapeDataManagerClient::cleanupOldRenderers);
         ProjectorRenderer.register();
     }

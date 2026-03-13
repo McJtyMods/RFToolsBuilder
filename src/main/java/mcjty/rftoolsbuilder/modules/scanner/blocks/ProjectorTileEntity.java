@@ -417,7 +417,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
     }
 
     public int getOffsetInt() {
-        return (int) getOffsetDouble();
+        return Math.round((float) getOffsetDouble());
     }
 
     private double getOffsetDouble() {
@@ -434,7 +434,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
     }
 
     public int getScaleInt() {
-        return (int) getScaleDouble();
+        return Math.round((float) getScaleDouble());
     }
 
     private double getScaleDouble() {
@@ -451,7 +451,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
     }
 
     public int getAngleInt() {
-        return (int) angle;
+        return Math.round(angle);
     }
 
     private void setAngleInt(int a) {

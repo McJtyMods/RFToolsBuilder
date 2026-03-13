@@ -63,7 +63,7 @@ public class ShapeDataManagerServer {
     // Server-side
     private static final Map<ShapeID, WorkQueue> workQueues = new HashMap<>();
 
-    public static void pushWork(ShapeID shapeID, ItemStack stack, int offsetY, IFormula formula, ServerPlayer player) {
+    public static synchronized void pushWork(ShapeID shapeID, ItemStack stack, int offsetY, IFormula formula, ServerPlayer player) {
         WorkQueue queue = workQueues.get(shapeID);
         if (queue == null) {
             queue = new WorkQueue();
@@ -78,7 +78,7 @@ public class ShapeDataManagerServer {
         }
     }
 
-    public static void handleWork() {
+    public static synchronized void handleWork() {
         Set<ShapeID> toRemove = new HashSet<>();
         for (Map.Entry<ShapeID, WorkQueue> entry : workQueues.entrySet()) {
             ShapeID shapeID = entry.getKey();

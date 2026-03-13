@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": {
+      "item": "rftoolsbase:machine_frame"
+    },
+    "X": {
+      "item": "rftoolsbase:infused_diamond"
+    },
+    "e": {
+      "tag": "forge:ender_pearls"
+    },
+    "q": {
+      "item": "minecraft:quartz"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "XeX",
+    "qMq",
+    "XrX"
+  ],
+  "result": {
+    "item": "rftoolsbuilder:scanner"
+  },
+  "show_notification": true
+}

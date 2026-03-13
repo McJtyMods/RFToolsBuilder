@@ -10,6 +10,7 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiShapeCard;
 import mcjty.rftoolsbuilder.shapes.IFormula;
+import mcjty.rftoolsbuilder.shapes.ScanDataManager;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeModifier;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
@@ -18,6 +19,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
@@ -817,9 +820,11 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             writer.println("DIM:" + dimension.getX() + "," + dimension.getY() + "," + dimension.getZ());
             writer.println("OFF:" + offset.getX() + "," + offset.getY() + "," + offset.getZ());
             for (BlockState state : statePalette.getPalette()) {
-                String r = Tools.getId(state).toString();
-//                writer.println(r + "@" + state.getBlock().getMetaFromState(state));   // @todo 1.14 no more meta!
-                writer.println(r);
+                try {
+                    writer.println("NBT:" + encodeState(state));
+                } catch (IOException e) {
+                    writer.println(Tools.getId(state.getBlock()).toString());
+                }
             }
             writer.println("DATA");
 
@@ -876,22 +881,23 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
             s = reader.readLine();
             StatePalette statePalette = new StatePalette();
             while (!"DATA".equals(s)) {
-                String[] split = StringUtils.split(s, '@');
-                Block block = Tools.getBlock(new ResourceLocation(split[0]));
-                int meta = Integer.parseInt(split[1]);
-                if (block == null) {
-                    player.displayClientMessage(ComponentFactory.literal(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);
-                    block = Blocks.STONE;
-                    meta = 0;
+                if (s.startsWith("NBT:")) {
+                    statePalette.add(decodeState(s.substring(4)));
+                } else {
+                    String[] split = StringUtils.split(s, '@');
+                    Block block = Tools.getBlock(new ResourceLocation(split[0]));
+                    if (block == null) {
+                        player.displayClientMessage(ComponentFactory.literal(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);
+                        block = Blocks.STONE;
+                    }
+                    statePalette.add(block.defaultBlockState());
                 }
-//                statePalette.add(block.getStateFromMeta(meta));
-                statePalette.add(block.defaultBlockState());  // @todo 1.14 no more meta!
                 s = reader.readLine();
             }
             s = reader.readLine();
             byte[] decoded = Base64.getDecoder().decode(s.getBytes());
 
-            setDataFromFile(scanId, card, dim, off, decoded, statePalette);
+            setDataFromFile(player.getCommandSenderWorld(), scanId, card, dim, off, decoded, statePalette);
         } catch (IOException e) {
             player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
             return;
@@ -905,14 +911,25 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
         player.displayClientMessage(ComponentFactory.literal(ChatFormatting.GREEN + "Loaded shape from file '" + file.getPath() + "'"), false);
     }
 
-    private static void setDataFromFile(int scanId, ItemStack card, BlockPos dimension, BlockPos offset, byte[] data, StatePalette palette) {
-        // @todo 1.14 scanner
-//        ScanDataManager scans = ScanDataManager.get();
-//        scans.getOrCreateScan(scanId).setData(data, palette.getPalette(), dimension, offset);
-//        scans.save(scanId);
-//        ShapeCardItem.setDimension(card, dimension.getX(), dimension.getY(), dimension.getZ());
-//        ShapeCardItem.setOffset(card, offset.getX(), offset.getY(), offset.getZ());
-//        ShapeCardItem.setShape(card, Shape.SHAPE_SCAN, true);
+    private static void setDataFromFile(Level world, int scanId, ItemStack card, BlockPos dimension, BlockPos offset, byte[] data, StatePalette palette) {
+        ScanDataManager scans = ScanDataManager.get(world);
+        scans.getOrCreateScan(scanId).setData(data, palette.getPalette(), dimension, offset);
+        scans.save(world, scanId);
+        ShapeCardItem.setDimension(card, dimension.getX(), dimension.getY(), dimension.getZ());
+        ShapeCardItem.setOffset(card, offset.getX(), offset.getY(), offset.getZ());
+        ShapeCardItem.setShape(card, Shape.SHAPE_SCAN, true);
+    }
+
+    private static String encodeState(BlockState state) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        NbtIo.writeCompressed(NbtUtils.writeBlockState(state), output);
+        return Base64.getEncoder().encodeToString(output.toByteArray());
+    }
+
+    private static BlockState decodeState(String encoded) throws IOException {
+        byte[] decoded = Base64.getDecoder().decode(encoded);
+        CompoundTag tag = NbtIo.readCompressed(new ByteArrayInputStream(decoded));
+        return mcjty.lib.varia.NBTTools.readBlockState(tag);
     }
 
 

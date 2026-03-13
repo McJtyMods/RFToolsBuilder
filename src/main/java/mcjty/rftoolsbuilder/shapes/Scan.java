@@ -4,7 +4,6 @@ import mcjty.lib.varia.NBTTools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -68,12 +67,11 @@ public class Scan {
 
     public void writeToNBTExternal(CompoundTag tagCompound) {
         tagCompound.putByteArray("data", rledata == null ? new byte[0] : rledata);
-        ListTag pal = new ListTag();
+        StatePalette palette = new StatePalette();
         for (BlockState state : materialPalette) {
-            CompoundTag tc = NbtUtils.writeBlockState(state);
-            pal.add(tc);
+            palette.add(state);
         }
-        tagCompound.put("scanpal", pal);
+        tagCompound.put("scanpal", palette.writeToNBT());
         if (dataDim != null) {
             tagCompound.putInt("scandimx", dataDim.getX());
             tagCompound.putInt("scandimy", dataDim.getY());
@@ -91,12 +89,9 @@ public class Scan {
     }
 
     public void readFromNBTExternal(CompoundTag tagCompound) {
+        materialPalette.clear();
         ListTag list = tagCompound.getList("scanpal", Tag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
-            CompoundTag tc = list.getCompound(i);
-            BlockState state = NBTTools.readBlockState(tc);
-            materialPalette.add(state);
-        }
+        materialPalette.addAll(StatePalette.readFromNBT(list).getPalette());
         rledata = tagCompound.getByteArray("data");
         dataDim = new BlockPos(tagCompound.getInt("scandimx"), tagCompound.getInt("scandimy"), tagCompound.getInt("scandimz"));
         dataOffset = new BlockPos(tagCompound.getInt("scanoffx"), tagCompound.getInt("scanoffy"), tagCompound.getInt("scanoffz"));

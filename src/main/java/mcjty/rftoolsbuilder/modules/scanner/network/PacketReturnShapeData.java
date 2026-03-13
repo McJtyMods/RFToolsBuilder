@@ -1,10 +1,8 @@
 package mcjty.rftoolsbuilder.modules.scanner.network;
 
 import mcjty.lib.network.CustomPacketPayload;
-import mcjty.lib.network.NetworkTools;
 import mcjty.lib.network.PlayPayloadContext;
 import mcjty.lib.varia.RLE;
-import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.shapes.RenderData;
@@ -14,8 +12,6 @@ import mcjty.rftoolsbuilder.shapes.StatePalette;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette statePalette, BlockPos dimension,
@@ -28,21 +24,14 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
         shapeID.toBytes(buf);
         buf.writeInt(count);
         buf.writeInt(offsetY);
-        NetworkTools.writeStringUTF8(buf, msg);
+        buf.writeUtf(msg);
         buf.writeBlockPos(dimension);
 
         if (statePalette == null) {
-            buf.writeInt(0);
+            buf.writeBoolean(false);
         } else {
-            buf.writeInt(statePalette.getPalette().size());
-            for (BlockState state : statePalette.getPalette()) {
-                BlockState blockState = state;
-                if (Tools.getId(blockState) == null) {
-                    blockState = Blocks.STONE.defaultBlockState();
-                }
-                buf.writeUtf(Tools.getId(blockState).toString());
-                //                buf.writeInt(state.getBlock().getMetaFromState(state));   // @todo 1.14 persist blockstate here!
-            }
+            buf.writeBoolean(true);
+            statePalette.writeToBuf(buf);
         }
 
         if (positions == null) {
@@ -62,27 +51,18 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
         ShapeID shapeID = new ShapeID(buf);
         int count = buf.readInt();
         int offsetY = buf.readInt();
-        String msg = NetworkTools.readStringUTF8(buf);
+        String msg = buf.readUtf();
         BlockPos dimension = buf.readBlockPos();
         StatePalette statePalette;
         RLE positions;
 
-        int size = buf.readInt();
-        if (size == 0) {
+        if (!buf.readBoolean()) {
             statePalette = null;
         } else {
-            statePalette = new StatePalette();
-            while (size > 0) {
-                String r = buf.readUtf(32767);
-//                int m = buf.readInt();    // @todo 1.14 no meta!
-//                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(r));
-                Block block = Tools.getBlock(new ResourceLocation(r));
-                statePalette.add(block.defaultBlockState());
-                size--;
-            }
+            statePalette = StatePalette.readFromBuf(buf);
         }
 
-        size = buf.readInt();
+        int size = buf.readInt();
         if (size == 0) {
             positions = null;
         } else {

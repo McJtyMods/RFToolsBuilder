@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "rftoolsbuilder:block/scanner",
+      "y": 180
+    },
+    "facing=south": {
+      "model": "rftoolsbuilder:block/scanner"
+    },
+    "facing=west": {
+      "model": "rftoolsbuilder:block/scanner",
+      "y": 90
+    },
+    "facing=east": {
+      "model": "rftoolsbuilder:block/scanner",
+      "y": 270
+    }
+  }
+}
