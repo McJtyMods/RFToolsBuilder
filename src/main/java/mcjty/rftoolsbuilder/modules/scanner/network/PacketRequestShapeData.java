@@ -41,7 +41,8 @@ public record PacketRequestShapeData(ItemStack card, ShapeID shapeID) implements
         ctx.workHandler().submitAsync(() -> {
             ctx.player().ifPresent(player -> {
                 Shape shape = ShapeCardItem.getShape(card);
-                boolean solid = ShapeCardItem.isSolid(card);
+                boolean shapeSolid = ShapeCardItem.isSolid(card);
+                boolean optimizeRenderShell = shapeID.isSolid();
                 BlockPos dimension = ShapeCardItem.getDimension(card);
 
                 BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 256), Math.min(dimension.getZ(), 512));
@@ -49,11 +50,11 @@ public record PacketRequestShapeData(ItemStack card, ShapeID shapeID) implements
                 ItemStack copy = card.copy();
 
                 IFormula formula = shape.getFormulaFactory().get();
-                formula = formula.correctFormula(solid);
+                formula = formula.correctFormula(shapeSolid);
                 formula.setup(player.level(), new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), copy.getTag());
 
                 for (int y = 0; y < dy; y++) {
-                    ShapeDataManagerServer.pushWork(shapeID, copy, y, formula, (ServerPlayer) player);
+                    ShapeDataManagerServer.pushWork(shapeID, copy, y, formula, optimizeRenderShell, (ServerPlayer) player);
                 }
             });
         });

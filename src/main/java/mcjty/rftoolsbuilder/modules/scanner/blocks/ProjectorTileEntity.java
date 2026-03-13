@@ -393,7 +393,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
     public ShapeID getShapeID() {
         ItemStack stack = getRenderStack();
         int scanId = ShapeCardItem.getScanId(stack);
-        boolean solid = ShapeCardItem.isSolid(stack);
+        boolean solid = renderBlockModels ? false : ShapeCardItem.isSolid(stack);
         ResourceKey<Level> dimension = level == null ? Level.OVERWORLD : level.dimension();
         if (scanId == 0) {
             return new ShapeID(dimension, worldPosition, scanId, grayscale, solid);
