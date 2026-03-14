@@ -68,6 +68,14 @@ public class RenderData {
     }
 
     public void setPlaneData(@Nullable RenderPlane plane, int offsetY, int dy) {
+        if (dy <= 0) {
+            cleanup();
+            planes = null;
+            return;
+        }
+        if (offsetY < 0 || offsetY >= dy) {
+            return;
+        }
         if (planes == null) {
             planes = new RenderPlane[dy];
         } else if (planes.length != dy) {
@@ -75,7 +83,9 @@ public class RenderData {
             planes = new RenderPlane[dy];
         }
         if (plane == null) {
-        } else if (planes[offsetY] == null) {
+            return;
+        }
+        if (planes[offsetY] == null) {
             planes[offsetY] = plane;
         } else {
             planes[offsetY].refreshData(plane);
