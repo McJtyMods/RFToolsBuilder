@@ -147,7 +147,7 @@ public class Formulas {
             }
             BlockState state = getLastState();
             if (state != null) {
-                return ShapeBlockInfo.isNonSolidBlock(state.getBlock());
+                return !state.canOcclude() || ShapeBlockInfo.isNonSolidBlock(state.getBlock());
             } else {
                 return false;
             }

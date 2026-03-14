@@ -14,16 +14,26 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
 
-public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette statePalette, BlockPos dimension,
+import javax.annotation.Nullable;
+import java.io.ByteArrayOutputStream;
+import java.util.List;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
+
+public record PacketReturnShapeData(ShapeID shapeID, int checksum, RLE positions, StatePalette statePalette, BlockPos dimension,
                                     int count, int offsetY, String msg) implements CustomPacketPayload {
 
     public static ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "returnshapedata");
+    private static final int COMPRESSION_MIN_BYTES = 256;
+    private static final int COMPRESSION_MIN_GAIN = 32;
 
     @Override
     public void write(FriendlyByteBuf buf) {
         shapeID.toBytes(buf);
-        buf.writeInt(count);
-        buf.writeInt(offsetY);
+        buf.writeVarInt(checksum);
+        buf.writeVarInt(count);
+        buf.writeVarInt(offsetY);
         buf.writeUtf(msg);
         buf.writeBlockPos(dimension);
 
@@ -35,10 +45,29 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
         }
 
         if (positions == null) {
-            buf.writeInt(0);
+            buf.writeBoolean(false);
         } else {
-            buf.writeInt(positions.getData().length);
-            buf.writeBytes(positions.getData());
+            byte[] raw = positions.getData();
+            if (raw.length == 0) {
+                buf.writeBoolean(false);
+                return;
+            }
+            buf.writeBoolean(true);
+            byte[] payload = raw;
+            boolean compressed = false;
+            if (raw.length >= COMPRESSION_MIN_BYTES) {
+                byte[] packed = compress(raw);
+                if (packed.length + COMPRESSION_MIN_GAIN < raw.length) {
+                    payload = packed;
+                    compressed = true;
+                }
+            }
+            buf.writeBoolean(compressed);
+            if (compressed) {
+                buf.writeVarInt(raw.length);
+            }
+            buf.writeVarInt(payload.length);
+            buf.writeBytes(payload);
         }
     }
 
@@ -49,8 +78,9 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
 
     public static PacketReturnShapeData create(FriendlyByteBuf buf) {
         ShapeID shapeID = new ShapeID(buf);
-        int count = buf.readInt();
-        int offsetY = buf.readInt();
+        int checksum = buf.readVarInt();
+        int count = buf.readVarInt();
+        int offsetY = buf.readVarInt();
         String msg = buf.readUtf();
         BlockPos dimension = buf.readBlockPos();
         StatePalette statePalette;
@@ -62,23 +92,33 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
             statePalette = StatePalette.readFromBuf(buf);
         }
 
-        int size = buf.readInt();
-        if (size == 0) {
+        if (!buf.readBoolean()) {
             positions = null;
         } else {
+            boolean compressed = buf.readBoolean();
+            int rawLength = compressed ? buf.readVarInt() : -1;
+            int size = buf.readVarInt();
             positions = new RLE();
-            byte[] data = new byte[size];
-            buf.readBytes(data);
-            positions.setData(data);
+            byte[] payload = new byte[size];
+            buf.readBytes(payload);
+            positions.setData(compressed ? decompress(payload, rawLength) : payload);
         }
-        return new PacketReturnShapeData(shapeID, positions, statePalette, dimension, count, offsetY, msg);
+        return new PacketReturnShapeData(shapeID, checksum, positions, statePalette, dimension, count, offsetY, msg);
     }
 
-    public static PacketReturnShapeData create(ShapeID id, RLE positions, StatePalette statePalette, BlockPos dimension, int count, int offsetY, String msg) {
-        return new PacketReturnShapeData(id, positions, statePalette, dimension, count, offsetY, msg);
+    public static PacketReturnShapeData create(ShapeID id, int checksum, RLE positions, StatePalette statePalette, BlockPos dimension, int count, int offsetY, String msg) {
+        return new PacketReturnShapeData(id, checksum, positions, statePalette, dimension, count, offsetY, msg);
     }
 
     public void handle(PlayPayloadContext ctx) {
+        ctx.workHandler().submitAsync(() -> {
+            RenderData.RenderPlane plane = decodePlane();
+            ShapeDataManagerClient.queueRenderPlane(shapeID, checksum, plane, offsetY, dimension.getY(), msg);
+        });
+    }
+
+    @Nullable
+    private RenderData.RenderPlane decodePlane() {
         int dx = dimension.getX();
         int dy = dimension.getY();
         int dz = dimension.getZ();
@@ -88,6 +128,7 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
 
         if (rle != null) {
             BlockState dummy = BuilderModule.SUPPORT.get().defaultBlockState();
+            List<BlockState> palette = statePalette == null ? List.of() : statePalette.getPalette();
 
             rle.reset();
             int oy = offsetY;
@@ -106,8 +147,12 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
                         if (data == 0) {
                             strip.add(dummy);
                         } else {
-                            data--;
-                            strip.add(statePalette.getPalette().get(data));
+                            int index = data - 1;
+                            if (index >= 0 && index < palette.size()) {
+                                strip.add(palette.get(index));
+                            } else {
+                                strip.add(dummy);
+                            }
                         }
                     } else {
                         strip.add(null);
@@ -118,7 +163,54 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
             }
             plane = new RenderData.RenderPlane(strips, y, oy, -dz / 2, count);
         }
+        return plane;
+    }
 
-        ShapeDataManagerClient.queueRenderPlane(shapeID, plane, offsetY, dy, msg);
+    private static byte[] compress(byte[] data) {
+        Deflater deflater = new Deflater(Deflater.BEST_SPEED);
+        deflater.setInput(data);
+        deflater.finish();
+        byte[] buffer = new byte[1024];
+        ByteArrayOutputStream out = new ByteArrayOutputStream(data.length);
+        while (!deflater.finished()) {
+            int len = deflater.deflate(buffer);
+            out.write(buffer, 0, len);
+        }
+        deflater.end();
+        return out.toByteArray();
+    }
+
+    private static byte[] decompress(byte[] payload, int expectedLength) {
+        if (expectedLength <= 0) {
+            throw new IllegalStateException("Invalid expected decompressed length for shape packet: " + expectedLength);
+        }
+        Inflater inflater = new Inflater();
+        inflater.setInput(payload);
+        byte[] buffer = new byte[Math.max(1024, Math.min(65536, expectedLength))];
+        ByteArrayOutputStream out = new ByteArrayOutputStream(expectedLength);
+        try {
+            while (!inflater.finished()) {
+                int len = inflater.inflate(buffer);
+                if (len == 0) {
+                    if (inflater.needsInput()) {
+                        break;
+                    }
+                    if (inflater.needsDictionary()) {
+                        throw new IllegalStateException("Unable to decompress shape packet (dictionary required)");
+                    }
+                } else {
+                    out.write(buffer, 0, len);
+                }
+            }
+        } catch (DataFormatException e) {
+            throw new IllegalStateException("Unable to decompress shape packet", e);
+        } finally {
+            inflater.end();
+        }
+        byte[] data = out.toByteArray();
+        if (data.length != expectedLength) {
+            throw new IllegalStateException("Unexpected decompressed length for shape packet: got " + data.length + ", expected " + expectedLength);
+        }
+        return data;
     }
 }

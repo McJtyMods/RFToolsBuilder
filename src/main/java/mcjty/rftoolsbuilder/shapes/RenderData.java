@@ -21,6 +21,10 @@ public class RenderData {
     private long touchTime = 0;
     private long checksum = -1;
     private boolean wantData = true;
+    private boolean requestInFlight = false;
+    private long requestSentAt = 0L;
+
+    private static final long REQUEST_TIMEOUT_MS = 5000L;
 
     public boolean hasData() {
         if (planes == null) {
@@ -63,14 +67,37 @@ public class RenderData {
         this.wantData = wantData;
     }
 
+    public boolean isRequestInFlight() {
+        return requestInFlight;
+    }
+
+    public void markRequestSent() {
+        requestInFlight = true;
+        requestSentAt = System.currentTimeMillis();
+    }
+
+    public void clearRequest() {
+        requestInFlight = false;
+        requestSentAt = 0L;
+    }
+
+    public boolean isRequestTimedOut() {
+        return requestInFlight && requestSentAt + REQUEST_TIMEOUT_MS < System.currentTimeMillis();
+    }
+
+    public void clearData() {
+        cleanup();
+        planes = null;
+        previewMessage = "";
+    }
+
     public RenderPlane[] getPlanes() {
         return planes;
     }
 
     public void setPlaneData(@Nullable RenderPlane plane, int offsetY, int dy) {
         if (dy <= 0) {
-            cleanup();
-            planes = null;
+            clearData();
             return;
         }
         if (offsetY < 0 || offsetY >= dy) {
@@ -79,13 +106,14 @@ public class RenderData {
         if (planes == null) {
             planes = new RenderPlane[dy];
         } else if (planes.length != dy) {
-            cleanup();
+            clearData();
             planes = new RenderPlane[dy];
         }
         if (plane == null) {
             return;
         }
         if (planes[offsetY] == null) {
+            plane.markUpdated();
             planes[offsetY] = plane;
         } else {
             planes[offsetY].refreshData(plane);
@@ -194,9 +222,13 @@ public class RenderData {
             this.offsety = other.offsety;
             this.startz = other.startz;
             this.count = other.count;
-            this.dirty = true;
-            birthtime = System.currentTimeMillis();
+            markUpdated();
             super.cleanup();
+        }
+
+        public void markUpdated() {
+            dirty = true;
+            birthtime = System.currentTimeMillis();
         }
 
         public long getBirthtime() {
@@ -261,10 +293,16 @@ public class RenderData {
                 return true;
             }
             BlockState state = data.get(i).getValue();
+            if (state == null) {
+                return true;
+            }
+            if (!state.canOcclude()) {
+                return true;
+            }
             if (ShapeBlockInfo.getBlockInfo(palette, state).isNonSolid()) {
                 return true;
             }
-            return state == null;
+            return false;
         }
 
         public void add(BlockState state) {

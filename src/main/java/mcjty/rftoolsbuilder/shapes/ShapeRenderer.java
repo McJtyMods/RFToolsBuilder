@@ -35,9 +35,14 @@ import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 public class ShapeRenderer {
 
@@ -83,9 +88,15 @@ public class ShapeRenderer {
         return data;
     }
 
-    public static void setRenderData(ShapeID id, @Nullable RenderData.RenderPlane plane, int offsetY, int dy, String msg) {
+    public static void setRenderData(ShapeID id, int checksum, @Nullable RenderData.RenderPlane plane, int offsetY, int dy, String msg) {
         RenderData data = getRenderDataAndCreate(id);
+        if (data.getChecksum() != checksum) {
+            return;
+        }
         data.setPlaneData(plane, offsetY, dy);
+        if (offsetY >= dy - 1) {
+            data.clearRequest();
+        }
         data.previewMessage = msg;
     }
 
@@ -411,20 +422,25 @@ public class ShapeRenderer {
 
     private RenderData requestRenderData(ItemStack stack) {
         RenderData data = getRenderDataAndCreate(shapeID);
-        if (data.isWantData() || waitForNewRequest > 0) {
+        int check = calculateChecksum(stack);
+        if (check != data.getChecksum()) {
+            data.clearRequest();
+            data.clearData();
+            data.setChecksum(check);
+            data.setWantData(true);
+        } else if (data.isRequestTimedOut()) {
+            data.clearRequest();
+            data.setWantData(true);
+        }
+
+        if ((data.isWantData() || !data.hasData()) && !data.isRequestInFlight()) {
             if (waitForNewRequest <= 0) {
-                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID));
+                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID, check));
                 waitForNewRequest = 20;
                 data.setWantData(false);
+                data.markRequestSent();
             } else {
                 waitForNewRequest--;
-            }
-        } else {
-            long check = calculateChecksum(stack);
-            if (!data.hasData() || check != data.getChecksum()) {
-                // Checksum failed, we want new data
-                data.setChecksum(check);
-                data.setWantData(true);
             }
         }
         return data;
@@ -549,72 +565,89 @@ public class ShapeRenderer {
     }
 
     private static class ModelRenderCache {
+        private static final int PLANES_TO_BUILD_PER_FRAME = 1;
+
+        private static class PlaneBuffers {
+            private final Map<RenderType, VertexBuffer> layerBuffers = new HashMap<>();
+            @Nullable
+            private VertexBuffer fluidBuffer = null;
+
+            private void close() {
+                for (VertexBuffer buffer : layerBuffers.values()) {
+                    buffer.close();
+                }
+                layerBuffers.clear();
+                if (fluidBuffer != null) {
+                    fluidBuffer.close();
+                    fluidBuffer = null;
+                }
+            }
+        }
+
         private final ChunkBufferBuilderPack fixedBuffers = new ChunkBufferBuilderPack();
-        private final Map<RenderType, VertexBuffer> buffers = RenderType.chunkBufferLayers().stream()
-                .collect(java.util.stream.Collectors.toMap(key -> key, key -> new VertexBuffer(VertexBuffer.Usage.STATIC)));
-        private final java.util.Set<RenderType> validLayers = new java.util.HashSet<>();
-        private final VertexBuffer fluidBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-        private boolean validFluidBuffer = false;
-        private long stamp = Long.MIN_VALUE;
+        private final Set<RenderType> supportedLayers = new HashSet<>(RenderType.chunkBufferLayers());
+        private final Map<Integer, PlaneBuffers> planeBuffers = new HashMap<>();
+        private final Map<Integer, Long> knownBirthtimes = new HashMap<>();
+        private final Map<Integer, Map<BlockPos, BlockState>> planeBlockMaps = new HashMap<>();
+        private final Map<BlockPos, BlockState> blockMap = new HashMap<>();
+        private final Queue<Integer> pendingBuilds = new ArrayDeque<>();
+        private final Set<Integer> pendingBuildSet = new HashSet<>();
+        private int planeCount = -1;
 
         private void buildIfNeeded(RenderData data, @Nullable Level level) {
             if (level == null) {
                 return;
             }
-            long newStamp = 31L * calculateStaticStamp(data) + data.getBlockCount();
-            if (stamp == newStamp) {
+            RenderData.RenderPlane[] planes = data.getPlanes();
+            if (planes == null) {
+                clearAll();
                 return;
             }
-            stamp = newStamp;
+            syncPlaneCount(planes.length);
 
-            Map<BlockPos, BlockState> blockMap = buildStaticBlockMap(data);
-            DummyBlockGetter blockGetter = new DummyBlockGetter(level.registryAccess(), blockMap);
-            BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
-            RandomSource random = RandomSource.create(42L);
-            PoseStack buildingPoseStack = new PoseStack();
-
-            for (RenderType renderType : RenderType.chunkBufferLayers()) {
-                BufferBuilder builder = fixedBuffers.builder(renderType);
-                builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
-                for (Map.Entry<BlockPos, BlockState> entry : blockMap.entrySet()) {
-                    BlockPos pos = entry.getKey();
-                    BlockState state = entry.getValue();
-                    if (!state.getFluidState().isEmpty()) {
-                        continue;
-                    }
-                    RenderType stateRenderType = ItemBlockRenderTypes.getChunkRenderType(state);
-                    if (stateRenderType != renderType) {
-                        continue;
-                    }
-                    buildingPoseStack.pushPose();
-                    buildingPoseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                    random.setSeed(state.getSeed(pos));
-                    blockRenderer.renderBatched(state, pos, blockGetter, buildingPoseStack, builder, false, random, ModelData.EMPTY, renderType);
-                    buildingPoseStack.popPose();
+            for (int i = 0; i < planes.length; i++) {
+                RenderData.RenderPlane plane = planes[i];
+                if (plane == null) {
+                    removePlane(i);
+                    continue;
+                }
+                long birthtime = plane.getBirthtime();
+                Long known = knownBirthtimes.get(i);
+                if (known == null || known != birthtime) {
+                    knownBirthtimes.put(i, birthtime);
+                    markPlaneDirty(i);
+                    markPlaneDirty(i - 1);
+                    markPlaneDirty(i + 1);
                 }
             }
 
-            validLayers.clear();
-            for (RenderType renderType : RenderType.chunkBufferLayers()) {
-                BufferBuilder builder = fixedBuffers.builder(renderType);
-                BufferBuilder.RenderedBuffer renderedBuffer = builder.endOrDiscardIfEmpty();
-                VertexBuffer buffer = buffers.get(renderType);
-                if (renderedBuffer != null) {
-                    buffer.bind();
-                    buffer.upload(renderedBuffer);
-                    validLayers.add(renderType);
+            int built = 0;
+            while (built < PLANES_TO_BUILD_PER_FRAME && !pendingBuilds.isEmpty()) {
+                Integer index = pendingBuilds.poll();
+                if (index == null || !pendingBuildSet.remove(index)) {
+                    continue;
                 }
+                if (index < 0 || index >= planes.length) {
+                    continue;
+                }
+                RenderData.RenderPlane plane = planes[index];
+                if (plane == null) {
+                    removePlane(index);
+                    continue;
+                }
+                rebuildPlaneBuffers(level, index, plane);
+                built++;
             }
-            VertexBuffer.unbind();
-
-            buildFluidBuffer(blockMap);
         }
 
         private void render(PoseStack poseStack) {
+            if (planeBuffers.isEmpty()) {
+                return;
+            }
+            List<Integer> indices = new ArrayList<>(planeBuffers.keySet());
+            indices.sort(Integer::compareTo);
+
             for (RenderType renderType : RenderType.chunkBufferLayers()) {
-                if (!validLayers.contains(renderType)) {
-                    continue;
-                }
                 renderType.setupRenderState();
                 ShaderInstance shader = RenderSystem.getShader();
                 for (int i = 0; i < 12; i++) {
@@ -653,32 +686,181 @@ public class ShapeRenderer {
                 }
                 RenderSystem.setupShaderLights(shader);
                 shader.apply();
-                VertexBuffer buffer = buffers.get(renderType);
-                buffer.bind();
-                buffer.draw();
+
+                for (Integer index : indices) {
+                    PlaneBuffers buffers = planeBuffers.get(index);
+                    if (buffers == null) {
+                        continue;
+                    }
+                    VertexBuffer buffer = buffers.layerBuffers.get(renderType);
+                    if (buffer != null) {
+                        buffer.bind();
+                        buffer.draw();
+                    }
+                }
                 renderType.clearRenderState();
                 shader.clear();
             }
-            if (validFluidBuffer) {
+
+            boolean hasFluids = false;
+            for (Integer index : indices) {
+                PlaneBuffers buffers = planeBuffers.get(index);
+                if (buffers != null && buffers.fluidBuffer != null) {
+                    hasFluids = true;
+                    break;
+                }
+            }
+            if (hasFluids) {
                 RenderType.translucent().setupRenderState();
                 RenderSystem.enableDepthTest();
                 RenderSystem.depthMask(false);
                 RenderSystem.disableCull();
-                fluidBuffer.bind();
-                fluidBuffer.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+                for (Integer index : indices) {
+                    PlaneBuffers buffers = planeBuffers.get(index);
+                    if (buffers != null && buffers.fluidBuffer != null) {
+                        buffers.fluidBuffer.bind();
+                        buffers.fluidBuffer.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+                    }
+                }
                 RenderSystem.depthMask(true);
                 RenderSystem.enableCull();
                 RenderType.translucent().clearRenderState();
             }
+
             VertexBuffer.unbind();
         }
 
-        private void buildFluidBuffer(Map<BlockPos, BlockState> blockMap) {
+        private void syncPlaneCount(int count) {
+            if (planeCount != count) {
+                clearAll();
+                planeCount = count;
+            }
+        }
+
+        private void markPlaneDirty(int index) {
+            if (index < 0 || index >= planeCount) {
+                return;
+            }
+            if (pendingBuildSet.add(index)) {
+                pendingBuilds.add(index);
+            }
+        }
+
+        private void removePlane(int index) {
+            knownBirthtimes.remove(index);
+            pendingBuildSet.remove(index);
+
+            Map<BlockPos, BlockState> oldPlaneMap = planeBlockMaps.remove(index);
+            if (oldPlaneMap != null) {
+                for (BlockPos pos : oldPlaneMap.keySet()) {
+                    blockMap.remove(pos);
+                }
+            }
+
+            PlaneBuffers oldBuffers = planeBuffers.remove(index);
+            if (oldBuffers != null) {
+                oldBuffers.close();
+            }
+        }
+
+        private void clearAll() {
+            for (PlaneBuffers buffers : planeBuffers.values()) {
+                buffers.close();
+            }
+            planeBuffers.clear();
+            knownBirthtimes.clear();
+            planeBlockMaps.clear();
+            blockMap.clear();
+            pendingBuilds.clear();
+            pendingBuildSet.clear();
+            planeCount = -1;
+        }
+
+        private void rebuildPlaneBuffers(Level level, int index, RenderData.RenderPlane plane) {
+            Map<BlockPos, BlockState> newPlaneMap = extractPlaneBlocks(plane);
+            Map<BlockPos, BlockState> oldPlaneMap = planeBlockMaps.put(index, newPlaneMap);
+            if (oldPlaneMap != null) {
+                for (BlockPos pos : oldPlaneMap.keySet()) {
+                    blockMap.remove(pos);
+                }
+            }
+            blockMap.putAll(newPlaneMap);
+
+            PlaneBuffers oldBuffers = planeBuffers.remove(index);
+            if (oldBuffers != null) {
+                oldBuffers.close();
+            }
+
+            PlaneBuffers buffersForPlane = new PlaneBuffers();
+            DummyBlockGetter blockGetter = new DummyBlockGetter(level.registryAccess(), blockMap);
+            BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
+            RandomSource random = RandomSource.create(42L);
+            PoseStack buildingPoseStack = new PoseStack();
+
+            for (RenderType renderType : RenderType.chunkBufferLayers()) {
+                fixedBuffers.builder(renderType).begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
+            }
+
+            for (Map.Entry<BlockPos, BlockState> entry : newPlaneMap.entrySet()) {
+                BlockPos pos = entry.getKey();
+                BlockState state = entry.getValue();
+                if (!state.getFluidState().isEmpty()) {
+                    continue;
+                }
+                RenderType stateRenderType = ItemBlockRenderTypes.getChunkRenderType(state);
+                if (!supportedLayers.contains(stateRenderType)) {
+                    continue;
+                }
+                BufferBuilder builder = fixedBuffers.builder(stateRenderType);
+                buildingPoseStack.pushPose();
+                buildingPoseStack.translate(pos.getX(), pos.getY(), pos.getZ());
+                random.setSeed(state.getSeed(pos));
+                blockRenderer.renderBatched(state, pos, blockGetter, buildingPoseStack, builder, false, random, ModelData.EMPTY, stateRenderType);
+                buildingPoseStack.popPose();
+            }
+
+            for (RenderType renderType : RenderType.chunkBufferLayers()) {
+                BufferBuilder builder = fixedBuffers.builder(renderType);
+                BufferBuilder.RenderedBuffer renderedBuffer = builder.endOrDiscardIfEmpty();
+                if (renderedBuffer != null) {
+                    VertexBuffer layerBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+                    layerBuffer.bind();
+                    layerBuffer.upload(renderedBuffer);
+                    VertexBuffer.unbind();
+                    buffersForPlane.layerBuffers.put(renderType, layerBuffer);
+                }
+            }
+
+            buildFluidBuffer(buffersForPlane, newPlaneMap);
+            planeBuffers.put(index, buffersForPlane);
+        }
+
+        private static Map<BlockPos, BlockState> extractPlaneBlocks(RenderData.RenderPlane plane) {
+            Map<BlockPos, BlockState> states = new HashMap<>();
+            int y = plane.getY();
+            for (RenderData.RenderStrip strip : plane.getStrips()) {
+                int z = plane.getStartz();
+                int x = strip.getX();
+                for (Pair<Integer, BlockState> pair : strip.getData()) {
+                    int cnt = pair.getKey();
+                    BlockState state = pair.getValue();
+                    if (state != null) {
+                        for (int c = 0; c < cnt; c++) {
+                            states.put(new BlockPos(x, y, z + c), state);
+                        }
+                    }
+                    z += cnt;
+                }
+            }
+            return states;
+        }
+
+        private void buildFluidBuffer(PlaneBuffers buffersForPlane, Map<BlockPos, BlockState> planeMap) {
             BufferBuilder builder = new BufferBuilder(262144);
             builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             boolean hasFluids = false;
 
-            for (Map.Entry<BlockPos, BlockState> entry : blockMap.entrySet()) {
+            for (Map.Entry<BlockPos, BlockState> entry : planeMap.entrySet()) {
                 BlockPos pos = entry.getKey();
                 BlockState state = entry.getValue();
                 if (state.getFluidState().isEmpty()) {
@@ -688,13 +870,13 @@ public class ShapeRenderer {
                 addFluidBlock(builder, blockMap, pos, state);
             }
 
-            validFluidBuffer = false;
             BufferBuilder.RenderedBuffer renderedBuffer = builder.endOrDiscardIfEmpty();
             if (hasFluids && renderedBuffer != null) {
+                VertexBuffer fluidBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
                 fluidBuffer.bind();
                 fluidBuffer.upload(renderedBuffer);
-                validFluidBuffer = true;
                 VertexBuffer.unbind();
+                buffersForPlane.fluidBuffer = fluidBuffer;
             }
         }
 
@@ -753,63 +935,12 @@ public class ShapeRenderer {
             }
             return !neighbor.canOcclude();
         }
-
-        private static long calculateStaticStamp(RenderData data) {
-            long result = 1L;
-            for (RenderData.RenderPlane plane : data.getPlanes()) {
-                result = 31L * result + (plane == null ? 0L : plane.getBirthtime());
-            }
-            return result;
-        }
-
-        private static Map<BlockPos, BlockState> buildStaticBlockMap(RenderData data) {
-            Map<BlockPos, BlockState> states = new HashMap<>();
-            for (RenderData.RenderPlane plane : data.getPlanes()) {
-                if (plane == null) {
-                    continue;
-                }
-                int y = plane.getY();
-                for (RenderData.RenderStrip strip : plane.getStrips()) {
-                    int z = plane.getStartz();
-                    int x = strip.getX();
-                    for (Pair<Integer, BlockState> pair : strip.getData()) {
-                        int cnt = pair.getKey();
-                        BlockState state = pair.getValue();
-                        if (state != null) {
-                            for (int c = 0; c < cnt; c++) {
-                                states.put(new BlockPos(x, y, z + c), state);
-                            }
-                        }
-                        z += cnt;
-                    }
-                }
-            }
-            return states;
-        }
     }
 
     private boolean renderFacesForGui(PoseStack poseStack, Tesselator tessellator, final BufferBuilder buffer,
                                       ItemStack stack, boolean showScan, boolean grayscale, int scanId) {
 
-        RenderData data = getRenderDataAndCreate(shapeID);
-
-        if (data.isWantData() || waitForNewRequest > 0) {
-            if (waitForNewRequest <= 0) {
-                // No positions, send a new request
-                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID));
-                waitForNewRequest = 20;
-                data.setWantData(false);
-            } else {
-                waitForNewRequest--;
-            }
-        } else {
-            long check = calculateChecksum(stack);
-            if (!data.hasData() || check != data.getChecksum()) {
-                // Checksum failed, we want new data
-                data.setChecksum(check);
-                data.setWantData(true);
-            }
-        }
+        RenderData data = requestRenderData(stack);
 
         boolean needScanSound = false;
         if (data.getPlanes() != null) {

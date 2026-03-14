@@ -35,6 +35,7 @@ public class ScannerConfiguration {
 
     public static ForgeConfigSpec.IntValue surfaceAreaPerTick;
     public static ForgeConfigSpec.IntValue planeSurfacePerTick;
+    public static ForgeConfigSpec.IntValue projectorPlaneSendInterval;
     public static ForgeConfigSpec.IntValue clientRenderDataTimeout;
 
     public static ForgeConfigSpec.IntValue projectorFlashTimeout;
@@ -125,6 +126,10 @@ public class ScannerConfiguration {
                 .comment("The amount of 'surface area' that the server will send to the client for the projector. Increasing this will increase the speed at which projections are ready but also increase the load for server and client")
                 .defineInRange("planeSurfacePerTick", 200*200,
                 100, 10000000);
+        projectorPlaneSendInterval = SERVER_BUILDER
+                .comment("How many ticks to wait before sending the next projector preview plane to clients. Increase this to spread setup load over time")
+                .defineInRange("projectorPlaneSendInterval", 5,
+                1, 200);
         clientRenderDataTimeout = CLIENT_BUILDER
                 .comment("The amount of milliseconds before the client will remove shape render data that hasn't been used. Decreasing this will free memory faster at the cost of having to update shape renders more often")
                 .defineInRange("clientRenderDataTimeout", 10000,

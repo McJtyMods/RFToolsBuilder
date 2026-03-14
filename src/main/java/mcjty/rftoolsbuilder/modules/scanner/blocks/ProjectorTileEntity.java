@@ -43,6 +43,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.container.SlotDefinition.specific;
@@ -93,12 +94,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
     @Cap(type = CapType.ITEMS_AUTOMATION)
     private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
             .itemValid((slot, stack) -> stack.getItem() instanceof ShapeCardItem)
-            .onUpdate((slot, stack) -> {
-                shapeRenderer = null;
-                updateProjecting();
-                setChanged();
-                markDirtyClient();
-            })
+            .onUpdate((slot, stack) -> onCardSlotUpdated())
             .build();
 
     @Cap(type = CapType.CONTAINER)
@@ -134,6 +130,28 @@ public class ProjectorTileEntity extends TickingTileEntity {
     private int powerLevel = 0;
     private int prevPowerLevel = 0;
     private int clientCounter = 0;
+    private boolean loadingClientData = false;
+
+    private boolean isLoadingClientData() {
+        return loadingClientData;
+    }
+
+    private void onCardSlotUpdated() {
+        if (isLoadingClientData()) {
+            return;
+        }
+        if (level != null && level.isClientSide) {
+            if (shapeRenderer != null && !getShapeID().equals(shapeRenderer.getShapeID())) {
+                shapeRenderer = null;
+            }
+            updateProjecting();
+            return;
+        }
+        shapeRenderer = null;
+        updateProjecting();
+        setChanged();
+        markDirtyClient();
+    }
 
     public ProjectorTileEntity(BlockPos pos, BlockState state) {
         this(ScannerModule.TYPE_PROJECTOR.get(), pos, state);
@@ -588,7 +606,10 @@ public class ProjectorTileEntity extends TickingTileEntity {
 
     @Override
     public void loadClientDataFromNBT(CompoundTag tag) {
+        ShapeID oldShapeId = getShapeID();
+        loadingClientData = true;
         items.setStackInSlot(SLOT_CARD, ItemStack.of(tag.getCompound("card")));
+        loadingClientData = false;
         projecting = tag.getBoolean("projecting");
         active = !tag.contains("active") || tag.getBoolean("active");
         verticalOffset = tag.contains("offs") ? tag.getFloat("offs") : .2f;
@@ -612,7 +633,9 @@ public class ProjectorTileEntity extends TickingTileEntity {
                 op.setValueOff(tc.contains("voff") ? tc.getDouble("voff") : null);
             }
         }
-        shapeRenderer = null;
+        if (!Objects.equals(oldShapeId, getShapeID())) {
+            shapeRenderer = null;
+        }
     }
 
     @Override
@@ -629,31 +652,84 @@ public class ProjectorTileEntity extends TickingTileEntity {
             (te, player, params) -> te.applySettings(params));
 
     private void applyRsSettings(TypedMap params) {
+        boolean changed = false;
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             int idx = facing.get2DDataValue();
-            operations[idx].setOpcodeOn(ProjectorOpcode.getByCode(params.get(PARAM_OPON.get(idx))));
-            operations[idx].setOpcodeOff(ProjectorOpcode.getByCode(params.get(PARAM_OPOFF.get(idx))));
-            operations[idx].setValueOn(params.get(PARAM_VALON.get(idx)));
-            operations[idx].setValueOff(params.get(PARAM_VALOFF.get(idx)));
+            ProjectorOperation operation = operations[idx];
+            ProjectorOpcode opcodeOn = ProjectorOpcode.getByCode(params.get(PARAM_OPON.get(idx)));
+            ProjectorOpcode opcodeOff = ProjectorOpcode.getByCode(params.get(PARAM_OPOFF.get(idx)));
+            Double valueOn = params.get(PARAM_VALON.get(idx));
+            Double valueOff = params.get(PARAM_VALOFF.get(idx));
+            if (operation.getOpcodeOn() != opcodeOn) {
+                operation.setOpcodeOn(opcodeOn);
+                changed = true;
+            }
+            if (operation.getOpcodeOff() != opcodeOff) {
+                operation.setOpcodeOff(opcodeOff);
+                changed = true;
+            }
+            if (!Objects.equals(operation.getValueOn(), valueOn)) {
+                operation.setValueOn(valueOn);
+                changed = true;
+            }
+            if (!Objects.equals(operation.getValueOff(), valueOff)) {
+                operation.setValueOff(valueOff);
+                changed = true;
+            }
         }
-        setChanged();
-        markDirtyClient();
+        if (changed) {
+            setChanged();
+            markDirtyClient();
+        }
     }
 
     private void applySettings(TypedMap params) {
-        setScaleInt(params.get(PARAM_SCALE));
-        setOffsetInt(params.get(PARAM_OFFSET));
-        setAngleInt(params.get(PARAM_ANGLE));
-        autoRotate = params.get(PARAM_AUTO);
-        scanline = params.get(PARAM_SCAN);
-        sound = params.get(PARAM_SOUND);
+        boolean changed = false;
+        int newScale = params.get(PARAM_SCALE);
+        if (newScale != getScaleInt()) {
+            setScaleInt(newScale);
+            changed = true;
+        }
+        int newOffset = params.get(PARAM_OFFSET);
+        if (newOffset != getOffsetInt()) {
+            setOffsetInt(newOffset);
+            changed = true;
+        }
+        int newAngle = params.get(PARAM_ANGLE);
+        if (newAngle != getAngleInt()) {
+            setAngleInt(newAngle);
+            changed = true;
+        }
+        boolean newAutoRotate = params.get(PARAM_AUTO);
+        if (autoRotate != newAutoRotate) {
+            autoRotate = newAutoRotate;
+            changed = true;
+        }
+        boolean newScanline = params.get(PARAM_SCAN);
+        if (scanline != newScanline) {
+            scanline = newScanline;
+            changed = true;
+        }
+        boolean newSound = params.get(PARAM_SOUND);
+        if (sound != newSound) {
+            sound = newSound;
+            changed = true;
+        }
         boolean gs = params.get(PARAM_GRAY);
         if (grayscale != gs) {
             grayscale = gs;
             shapeRenderer = null;
+            changed = true;
         }
-        renderBlockModels = params.get(PARAM_RENDERMODELS);
-        setChanged();
-        markDirtyClient();
+        boolean newRenderModels = params.get(PARAM_RENDERMODELS);
+        if (renderBlockModels != newRenderModels) {
+            renderBlockModels = newRenderModels;
+            shapeRenderer = null;
+            changed = true;
+        }
+        if (changed) {
+            setChanged();
+            markDirtyClient();
+        }
     }
 }

@@ -5,11 +5,12 @@ import net.minecraftforge.event.TickEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Queue;
+import java.util.TreeMap;
 import java.util.Set;
 
 /// Client side handling for shape data
@@ -17,11 +18,16 @@ public class ShapeDataManagerClient {
 
     // Client-side
     static final Map<ShapeID, RenderData> renderDataMap = new HashMap<>();
-    private static final Queue<PendingRenderPlane> pendingRenderPlanes = new ArrayDeque<>();
+    private static final Map<PendingShapeKey, TreeMap<Integer, PendingRenderPlane>> pendingRenderPlanes = new LinkedHashMap<>();
+    private static final Map<PendingShapeKey, Integer> nextOffsets = new HashMap<>();
     private static int cleanupCounter = 20;
-    private static final int PLANES_PER_TICK = 2;
+    private static final int MIN_PLANES_PER_TICK = 4;
+    private static final int MAX_PLANES_PER_TICK = 24;
 
-    private record PendingRenderPlane(ShapeID shapeID, @Nullable RenderData.RenderPlane plane, int offsetY, int dy, String msg) {
+    private record PendingShapeKey(ShapeID shapeID, int checksum) {
+    }
+
+    private record PendingRenderPlane(ShapeID shapeID, int checksum, @Nullable RenderData.RenderPlane plane, int offsetY, int dy, String msg) {
     }
 
     @Nullable
@@ -39,20 +45,46 @@ public class ShapeDataManagerClient {
         return data;
     }
 
-    public static synchronized void queueRenderPlane(ShapeID id, @Nullable RenderData.RenderPlane plane, int offsetY, int dy, String msg) {
-        pendingRenderPlanes.add(new PendingRenderPlane(id, plane, offsetY, dy, msg));
+    public static synchronized void queueRenderPlane(ShapeID id, int checksum, @Nullable RenderData.RenderPlane plane, int offsetY, int dy, String msg) {
+        PendingShapeKey key = new PendingShapeKey(id, checksum);
+        pendingRenderPlanes.computeIfAbsent(key, k -> new TreeMap<>())
+                .put(offsetY, new PendingRenderPlane(id, checksum, plane, offsetY, dy, msg));
     }
 
     public static synchronized void processPendingRenderPlanes(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) {
             return;
         }
-        int cnt = PLANES_PER_TICK;
+        int queued = pendingRenderPlanes.values().stream().mapToInt(Map::size).sum();
+        int cnt = Math.min(MAX_PLANES_PER_TICK, Math.max(MIN_PLANES_PER_TICK, queued / 8));
         while (cnt > 0 && !pendingRenderPlanes.isEmpty()) {
-            PendingRenderPlane pending = pendingRenderPlanes.poll();
-            if (pending != null) {
-                ShapeRenderer.setRenderData(pending.shapeID(), pending.plane(), pending.offsetY(), pending.dy(), pending.msg());
+            boolean progressed = false;
+            Iterator<Map.Entry<PendingShapeKey, TreeMap<Integer, PendingRenderPlane>>> iterator = pendingRenderPlanes.entrySet().iterator();
+            while (cnt > 0 && iterator.hasNext()) {
+                Map.Entry<PendingShapeKey, TreeMap<Integer, PendingRenderPlane>> entry = iterator.next();
+                PendingShapeKey key = entry.getKey();
+                TreeMap<Integer, PendingRenderPlane> planes = entry.getValue();
+                int nextOffset = nextOffsets.getOrDefault(key, 0);
+                PendingRenderPlane pending = planes.remove(nextOffset);
+                if (pending == null) {
+                    continue;
+                }
+
+                ShapeRenderer.setRenderData(pending.shapeID(), pending.checksum(), pending.plane(), pending.offsetY(), pending.dy(), pending.msg());
+                progressed = true;
                 cnt--;
+
+                if (pending.offsetY() >= pending.dy() - 1) {
+                    nextOffsets.remove(key);
+                    if (planes.isEmpty()) {
+                        iterator.remove();
+                    }
+                } else {
+                    nextOffsets.put(key, nextOffset + 1);
+                }
+            }
+            if (!progressed) {
+                break;
             }
         }
     }
@@ -77,6 +109,7 @@ public class ShapeDataManagerClient {
             data.cleanup();
             renderDataMap.remove(id);
         }
-        pendingRenderPlanes.removeIf(pending -> toRemove.contains(pending.shapeID()));
+        pendingRenderPlanes.entrySet().removeIf(entry -> toRemove.contains(entry.getKey().shapeID()));
+        nextOffsets.keySet().removeIf(key -> toRemove.contains(key.shapeID()));
     }
 }

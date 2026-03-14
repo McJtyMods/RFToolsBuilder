@@ -661,7 +661,10 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     }
 
     public static int getRenderPositions(ItemStack stack, boolean solid, RLE positions, StatePalette statePalette, IFormula formula, int oy) {
-        BlockPos dimension = ShapeCardItem.getDimension(stack);
+        return getRenderPositions(ShapeCardItem.getDimension(stack), solid, positions, statePalette, formula, oy);
+    }
+
+    public static int getRenderPositions(BlockPos dimension, boolean solid, RLE positions, StatePalette statePalette, IFormula formula, int oy) {
         BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 4096), Math.min(dimension.getZ(), 512));
 
         int dx = clamped.getX();
