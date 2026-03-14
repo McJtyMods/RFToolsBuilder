@@ -6,6 +6,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ public class StatePalette {
     public void writeToBuf(FriendlyByteBuf buf) {
         buf.writeVarInt(palette.size());
         for (BlockState state : palette) {
-            buf.writeNbt(NbtUtils.writeBlockState(state));
+            buf.writeVarInt(Block.getId(state));
         }
     }
 
@@ -73,10 +74,7 @@ public class StatePalette {
         int size = buf.readVarInt();
         StatePalette palette = new StatePalette();
         for (int i = 0; i < size; i++) {
-            CompoundTag tag = buf.readNbt();
-            if (tag != null) {
-                palette.add(NBTTools.readBlockState(tag));
-            }
+            palette.add(Block.stateById(buf.readVarInt()));
         }
         return palette;
     }

@@ -53,9 +53,7 @@ public record PacketRequestShapeData(ItemStack card, ShapeID shapeID) implements
                 formula = formula.correctFormula(shapeSolid);
                 formula.setup(player.level(), new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), copy.getTag());
 
-                for (int y = 0; y < dy; y++) {
-                    ShapeDataManagerServer.pushWork(shapeID, copy, y, formula, optimizeRenderShell, (ServerPlayer) player);
-                }
+                ShapeDataManagerServer.pushWork(shapeID, copy, dy, formula, optimizeRenderShell, (ServerPlayer) player);
             });
         });
     }

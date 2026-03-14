@@ -6,8 +6,8 @@ import mcjty.lib.varia.RLE;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.shapes.RenderData;
+import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
-import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -79,48 +79,46 @@ public record PacketReturnShapeData(ShapeID shapeID, RLE positions, StatePalette
     }
 
     public void handle(PlayPayloadContext ctx) {
-        ctx.workHandler().submitAsync(() -> {
-            int dx = dimension.getX();
-            int dy = dimension.getY();
-            int dz = dimension.getZ();
+        int dx = dimension.getX();
+        int dy = dimension.getY();
+        int dz = dimension.getZ();
 
-            RLE rle = positions;
-            RenderData.RenderPlane plane = null;
+        RLE rle = positions;
+        RenderData.RenderPlane plane = null;
 
-            if (rle != null) {
-                BlockState dummy = BuilderModule.SUPPORT.get().defaultBlockState();
+        if (rle != null) {
+            BlockState dummy = BuilderModule.SUPPORT.get().defaultBlockState();
 
-                rle.reset();
-//                for (int oy = 0; oy < dy; oy++) {
-                int oy = offsetY;
-                int y = oy - dy / 2;
+            rle.reset();
+            int oy = offsetY;
+            int y = oy - dy / 2;
 
-                RenderData.RenderStrip[] strips = new RenderData.RenderStrip[dx];
-                for (int ox = 0; ox < dx; ox++) {
-                    int x = ox - dx / 2;
+            RenderData.RenderStrip[] strips = new RenderData.RenderStrip[dx];
+            for (int ox = 0; ox < dx; ox++) {
+                int x = ox - dx / 2;
 
-                    RenderData.RenderStrip strip = new RenderData.RenderStrip(x);
-                    strips[ox] = strip;
+                RenderData.RenderStrip strip = new RenderData.RenderStrip(x);
+                strips[ox] = strip;
 
-                    for (int oz = 0; oz < dz; oz++) {
-                        int data = rle.read();
-                        if (data < 255) {
-                            if (data == 0) {
-                                strip.add(dummy);
-                            } else {
-                                data--;
-                                strip.add(statePalette.getPalette().get(data));
-                            }
+                for (int oz = 0; oz < dz; oz++) {
+                    int data = rle.read();
+                    if (data < 255) {
+                        if (data == 0) {
+                            strip.add(dummy);
                         } else {
-                            strip.add(null);
+                            data--;
+                            strip.add(statePalette.getPalette().get(data));
                         }
+                    } else {
+                        strip.add(null);
                     }
-
-                    strip.close();
-                    plane = new RenderData.RenderPlane(strips, y, oy, -dz / 2, count);
                 }
+
+                strip.close();
             }
-            ShapeRenderer.setRenderData(shapeID, plane, offsetY, dy, msg);
-        });
+            plane = new RenderData.RenderPlane(strips, y, oy, -dz / 2, count);
+        }
+
+        ShapeDataManagerClient.queueRenderPlane(shapeID, plane, offsetY, dy, msg);
     }
 }

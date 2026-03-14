@@ -2,13 +2,11 @@ package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.lib.varia.RLE;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
-import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnShapeData;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.BlockPos;
-import net.minecraftforge.network.NetworkDirection;
 
 import java.util.*;
 
@@ -19,23 +17,26 @@ public class ShapeDataManagerServer {
     private static class WorkUnit {
         private final List<ServerPlayer> players = new ArrayList<>();
         private ItemStack stack;
-        private int offsetY;
         private IFormula formula;
         private boolean optimizeRenderShell;
+        private int maxOffsetY;
+        private int nextOffsetY;
 
-        public WorkUnit(ItemStack stack, int offsetY, IFormula formula, boolean optimizeRenderShell, ServerPlayer player) {
+        public WorkUnit(ItemStack stack, int maxOffsetY, IFormula formula, boolean optimizeRenderShell, ServerPlayer player) {
             this.stack = stack;
-            this.offsetY = offsetY;
             this.formula = formula;
             this.optimizeRenderShell = optimizeRenderShell;
+            this.maxOffsetY = maxOffsetY;
+            this.nextOffsetY = 0;
             this.players.add(player);
         }
 
-        public void update(ItemStack stack, int offsetY, IFormula formula, boolean optimizeRenderShell, ServerPlayer player) {
+        public void update(ItemStack stack, int maxOffsetY, IFormula formula, boolean optimizeRenderShell, ServerPlayer player) {
             this.stack = stack;
-            this.offsetY = offsetY;
             this.formula = formula;
             this.optimizeRenderShell = optimizeRenderShell;
+            this.maxOffsetY = maxOffsetY;
+            this.nextOffsetY = 0;
             if (!players.contains(player)) {
                 players.add(player);
             }
@@ -49,10 +50,6 @@ public class ShapeDataManagerServer {
             return stack;
         }
 
-        public int getOffsetY() {
-            return offsetY;
-        }
-
         public IFormula getFormula() {
             return formula;
         }
@@ -60,28 +57,34 @@ public class ShapeDataManagerServer {
         public boolean isOptimizeRenderShell() {
             return optimizeRenderShell;
         }
+
+        public int getNextOffsetY() {
+            return nextOffsetY;
+        }
+
+        public boolean advance() {
+            nextOffsetY++;
+            return nextOffsetY < maxOffsetY;
+        }
     }
 
     private static class WorkQueue {
-        private final ArrayDeque<WorkUnit> workQueue = new ArrayDeque<>();
-        private final Map<Integer, WorkUnit> workingOn = new HashMap<>();
+        private WorkUnit workUnit;
     }
 
     // Server-side
     private static final Map<ShapeID, WorkQueue> workQueues = new HashMap<>();
 
-    public static synchronized void pushWork(ShapeID shapeID, ItemStack stack, int offsetY, IFormula formula, boolean optimizeRenderShell, ServerPlayer player) {
+    public static synchronized void pushWork(ShapeID shapeID, ItemStack stack, int maxOffsetY, IFormula formula, boolean optimizeRenderShell, ServerPlayer player) {
         WorkQueue queue = workQueues.get(shapeID);
         if (queue == null) {
             queue = new WorkQueue();
             workQueues.put(shapeID, queue);
         }
-        if (queue.workingOn.containsKey(offsetY)) {
-            queue.workingOn.get(offsetY).update(stack, offsetY, formula, optimizeRenderShell, player);
+        if (queue.workUnit != null) {
+            queue.workUnit.update(stack, maxOffsetY, formula, optimizeRenderShell, player);
         } else {
-            WorkUnit unit = new WorkUnit(stack, offsetY, formula, optimizeRenderShell, player);
-            queue.workQueue.addLast(unit);
-            queue.workingOn.put(offsetY, unit);
+            queue.workUnit = new WorkUnit(stack, maxOffsetY, formula, optimizeRenderShell, player);
         }
     }
 
@@ -91,29 +94,26 @@ public class ShapeDataManagerServer {
             ShapeID shapeID = entry.getKey();
             WorkQueue queue = entry.getValue();
 
-            int pertick = ScannerConfiguration.planeSurfacePerTick.get();
-            while (!queue.workQueue.isEmpty()) {
-                WorkUnit unit = queue.workQueue.removeFirst();
-                queue.workingOn.remove(unit.getOffsetY());
-
+            if (queue.workUnit != null) {
+                WorkUnit unit = queue.workUnit;
                 ItemStack card = unit.getStack();
                 BlockPos dimension = ShapeCardItem.getDimension(card);
+                int offsetY = unit.getNextOffsetY();
 
                 RLE positions = new RLE();
                 StatePalette statePalette = new StatePalette();
-                int cnt = ShapeCardItem.getRenderPositions(card, unit.isOptimizeRenderShell(), positions, statePalette, unit.getFormula(), unit.getOffsetY());
+                int cnt = ShapeCardItem.getRenderPositions(card, unit.isOptimizeRenderShell(), positions, statePalette, unit.getFormula(), offsetY);
 
+                PacketReturnShapeData packet = PacketReturnShapeData.create(shapeID, positions, statePalette, dimension, cnt, offsetY, "");
                 for (ServerPlayer player : unit.getPlayers()) {
-                    RFToolsBuilderMessages.sendToPlayer(PacketReturnShapeData.create(shapeID, positions, statePalette, dimension, cnt, unit.getOffsetY(), ""), player);
+                    RFToolsBuilderMessages.sendToPlayer(packet, player);
                 }
-                if (cnt > 0) {
-                    pertick -= dimension.getX() * dimension.getZ();
-                    if (pertick <= 0) {
-                        break;
-                    }
+
+                if (!unit.advance()) {
+                    queue.workUnit = null;
                 }
             }
-            if (queue.workQueue.isEmpty()) {
+            if (queue.workUnit == null) {
                 toRemove.add(shapeID);
             }
         }

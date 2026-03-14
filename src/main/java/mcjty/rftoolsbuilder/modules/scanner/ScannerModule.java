@@ -70,6 +70,7 @@ public class ScannerModule implements IModule {
             GuiScanner.register();
         });
         MinecraftForge.EVENT_BUS.addListener(ShapeDataManagerClient::cleanupOldRenderers);
+        MinecraftForge.EVENT_BUS.addListener(ShapeDataManagerClient::processPendingRenderPlanes);
         ProjectorRenderer.register();
     }
 
