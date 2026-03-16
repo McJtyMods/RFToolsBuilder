@@ -27,6 +27,7 @@ public record PacketReturnShapeData(ShapeID shapeID, int checksum, RLE positions
     public static ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "returnshapedata");
     private static final int COMPRESSION_MIN_BYTES = 256;
     private static final int COMPRESSION_MIN_GAIN = 32;
+    private static final int COMPRESSION_LEVEL = Deflater.BEST_COMPRESSION;
 
     @Override
     public void write(FriendlyByteBuf buf) {
@@ -167,7 +168,7 @@ public record PacketReturnShapeData(ShapeID shapeID, int checksum, RLE positions
     }
 
     private static byte[] compress(byte[] data) {
-        Deflater deflater = new Deflater(Deflater.BEST_SPEED);
+        Deflater deflater = new Deflater(COMPRESSION_LEVEL);
         deflater.setInput(data);
         deflater.finish();
         byte[] buffer = new byte[1024];
