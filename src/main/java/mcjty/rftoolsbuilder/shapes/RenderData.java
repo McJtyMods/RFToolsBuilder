@@ -81,6 +81,12 @@ public class RenderData {
         requestSentAt = 0L;
     }
 
+    public void markRequestProgress() {
+        if (requestInFlight) {
+            requestSentAt = System.currentTimeMillis();
+        }
+    }
+
     public boolean isRequestTimedOut() {
         return requestInFlight && requestSentAt + REQUEST_TIMEOUT_MS < System.currentTimeMillis();
     }

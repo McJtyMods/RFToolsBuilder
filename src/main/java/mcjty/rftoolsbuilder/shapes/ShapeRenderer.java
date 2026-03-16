@@ -79,6 +79,7 @@ public class ShapeRenderer {
         if (data.getChecksum() != checksum) {
             return;
         }
+        data.markRequestProgress();
         data.setPlaneData(plane, offsetY, dy);
         if (offsetY >= dy - 1) {
             data.clearRequest();

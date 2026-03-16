@@ -12,7 +12,7 @@ public class ShapeHandler {
         if (event.phase == TickEvent.Phase.START && event.level.dimension().equals(Level.OVERWORLD)) {
             int delay = Math.max(1, ScannerConfiguration.projectorPlaneSendInterval.get());
             if ((event.level.getGameTime() % delay) == 0) {
-                ShapeDataManagerServer.handleWork();
+                ShapeDataManagerServer.handleWork(delay);
             }
         }
     }

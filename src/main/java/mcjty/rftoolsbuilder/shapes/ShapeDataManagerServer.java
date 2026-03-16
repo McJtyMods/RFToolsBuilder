@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.lib.varia.RLE;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
+import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnShapeData;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
@@ -109,34 +110,53 @@ public class ShapeDataManagerServer {
         }
     }
 
-    public static synchronized void handleWork() {
+    public static synchronized void handleWork(int tickInterval) {
         workQueues.entrySet().removeIf(entry -> entry.getValue().workUnit == null);
 
-        for (Map.Entry<ShapeID, WorkQueue> entry : workQueues.entrySet()) {
+        long budgetPerRun = (long) Math.max(1, ScannerConfiguration.planeSurfacePerTick.get()) * Math.max(1, tickInterval);
+        Iterator<Map.Entry<ShapeID, WorkQueue>> iterator = workQueues.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<ShapeID, WorkQueue> entry = iterator.next();
             ShapeID shapeID = entry.getKey();
             WorkQueue queue = entry.getValue();
-
             WorkUnit unit = queue.workUnit;
             if (unit == null) {
+                iterator.remove();
                 continue;
             }
-            ItemStack card = unit.getStack();
-            BlockPos dimension = unit.getDimension();
-            int offsetY = unit.getNextOffsetY();
 
-            RLE positions = new RLE();
-            StatePalette statePalette = new StatePalette();
-            int cnt = ShapeCardItem.getRenderPositions(dimension, unit.isOptimizeRenderShell(), positions, statePalette, unit.getFormula(), offsetY);
+            long remainingBudget = budgetPerRun;
+            while (unit != null) {
+                BlockPos dimension = unit.getDimension();
+                int offsetY = unit.getNextOffsetY();
 
-            PacketReturnShapeData packet = PacketReturnShapeData.create(shapeID, unit.getChecksum(), positions, statePalette, dimension, cnt, offsetY, "");
-            for (ServerPlayer player : unit.getPlayers()) {
-                RFToolsBuilderMessages.sendToPlayer(packet, player);
+                RLE positions = new RLE();
+                StatePalette statePalette = new StatePalette();
+                int cnt = ShapeCardItem.getRenderPositions(dimension, unit.isOptimizeRenderShell(), positions, statePalette, unit.getFormula(), offsetY);
+
+                PacketReturnShapeData packet = PacketReturnShapeData.create(shapeID, unit.getChecksum(), positions, statePalette, dimension, cnt, offsetY, "");
+                for (ServerPlayer player : unit.getPlayers()) {
+                    RFToolsBuilderMessages.sendToPlayer(packet, player);
+                }
+
+                if (!unit.advance()) {
+                    queue.workUnit = null;
+                    break;
+                }
+
+                if (cnt > 0) {
+                    remainingBudget -= Math.max(1L, (long) dimension.getX() * dimension.getZ());
+                    if (remainingBudget <= 0) {
+                        break;
+                    }
+                }
+
+                unit = queue.workUnit;
             }
 
-            if (!unit.advance()) {
-                queue.workUnit = null;
+            if (queue.workUnit == null) {
+                iterator.remove();
             }
-            break;
         }
     }
 
