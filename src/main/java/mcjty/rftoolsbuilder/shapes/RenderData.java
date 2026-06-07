@@ -212,6 +212,7 @@ public class RenderData {
         private boolean dirty = true;
         private int count = 0;
         private long birthtime;
+        private long flashBirthtime = 0L;
 
         public RenderPlane(RenderStrip[] strips, int y, int offsety, int startz, int count) {
             this.strips = strips;
@@ -235,10 +236,21 @@ public class RenderData {
         public void markUpdated() {
             dirty = true;
             birthtime = System.currentTimeMillis();
+            flashBirthtime = 0L;
         }
 
         public long getBirthtime() {
             return birthtime;
+        }
+
+        public void markFlashRendered() {
+            if (flashBirthtime == 0L) {
+                flashBirthtime = System.currentTimeMillis();
+            }
+        }
+
+        public boolean isFlashing(long time) {
+            return flashBirthtime != 0L && flashBirthtime > time - ScannerConfiguration.projectorFlashTimeout.get();
         }
 
         public int getCount() {

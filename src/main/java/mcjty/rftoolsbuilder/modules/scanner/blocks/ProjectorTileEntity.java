@@ -136,6 +136,11 @@ public class ProjectorTileEntity extends TickingTileEntity {
         return loadingClientData;
     }
 
+    private void refreshProjectionData() {
+        counter++;
+        shapeRenderer = null;
+    }
+
     private void onCardSlotUpdated() {
         if (isLoadingClientData()) {
             return;
@@ -147,7 +152,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
             updateProjecting();
             return;
         }
-        shapeRenderer = null;
+        refreshProjectionData();
         updateProjecting();
         setChanged();
         markDirtyClient();
@@ -194,7 +199,11 @@ public class ProjectorTileEntity extends TickingTileEntity {
         if (clientCounter != counter) {
             clientCounter = counter;
             RenderData data = ShapeRenderer.getRenderDataAndCreate(getShapeID());
+            data.clearRequest();
+            data.clearData();
+            data.setChecksum(Long.MIN_VALUE);
             data.setWantData(true);
+            shapeRenderer = null;
         }
     }
 
@@ -273,7 +282,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
             case OFF -> active = false;
             case SCAN -> {
                 if (pulse) {
-                    counter++;
+                    refreshProjectionData();
                     markDirtyClient();
                 }
             }
@@ -316,14 +325,14 @@ public class ProjectorTileEntity extends TickingTileEntity {
             case GRAYON -> {
                 if (!grayscale) {
                     grayscale = true;
-                    shapeRenderer = null;
+                    refreshProjectionData();
                     markDirtyClient();
                 }
             }
             case GRAYOFF -> {
                 if (grayscale) {
                     grayscale = false;
-                    shapeRenderer = null;
+                    refreshProjectionData();
                     markDirtyClient();
                 }
             }
@@ -426,6 +435,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
         } else {
             shapeRenderer.setShapeID(shapeID);
         }
+        shapeRenderer.setRefreshCounter(counter);
         return shapeRenderer;
     }
 
@@ -718,13 +728,13 @@ public class ProjectorTileEntity extends TickingTileEntity {
         boolean gs = params.get(PARAM_GRAY);
         if (grayscale != gs) {
             grayscale = gs;
-            shapeRenderer = null;
+            refreshProjectionData();
             changed = true;
         }
         boolean newRenderModels = params.get(PARAM_RENDERMODELS);
         if (renderBlockModels != newRenderModels) {
             renderBlockModels = newRenderModels;
-            shapeRenderer = null;
+            refreshProjectionData();
             changed = true;
         }
         if (changed) {

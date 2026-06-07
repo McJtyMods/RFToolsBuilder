@@ -5,6 +5,11 @@ import net.minecraftforge.common.ForgeConfigSpec;
 public class ScannerConfiguration {
     public static final String CATEGORY_SCANNER = "scanner";
 
+    public enum ProjectorCompressionCodec {
+        LEGACY_RLE,
+        PACKED_BITS
+    }
+
     public static ForgeConfigSpec.IntValue SCANNER_MAXENERGY; // TODO change these to longs once Configuration supports them
     public static ForgeConfigSpec.IntValue SCANNER_RECEIVEPERTICK;
     public static ForgeConfigSpec.IntValue SCANNER_PERTICK;
@@ -39,6 +44,9 @@ public class ScannerConfiguration {
     public static ForgeConfigSpec.IntValue clientRenderDataTimeout;
 
     public static ForgeConfigSpec.IntValue projectorFlashTimeout;
+    public static ForgeConfigSpec.BooleanValue projectorCompressionLogging;
+    public static ForgeConfigSpec.IntValue projectorCompressionLogInterval;
+    public static ForgeConfigSpec.EnumValue<ProjectorCompressionCodec> projectorCompressionCodec;
 
     public static ForgeConfigSpec.DoubleValue baseProjectorVolume;      // Use 0 to turn off projector sounds
 
@@ -139,6 +147,17 @@ public class ScannerConfiguration {
                 .comment("The amount of milliseconds that a scanline 'flash' will exist on the client")
                 .defineInRange("projectorFlashTimeout", 400,
                 10, 1000000);
+
+        projectorCompressionLogging = SERVER_BUILDER
+                .comment("Log aggregated statistics about projector preview packet compression. Intended as a diagnostic for scan/blockstate-heavy previews")
+                .define("projectorCompressionLogging", true);
+        projectorCompressionLogInterval = SERVER_BUILDER
+                .comment("How many projector preview planes to aggregate before logging one compression summary line")
+                .defineInRange("projectorCompressionLogInterval", 64,
+                1, 100000);
+        projectorCompressionCodec = SERVER_BUILDER
+                .comment("Compression codec to use for projector preview planes. LEGACY_RLE is the current path, PACKED_BITS uses palette-sized bit packing for comparison")
+                .defineEnum("projectorCompressionCodec", ProjectorCompressionCodec.LEGACY_RLE, ProjectorCompressionCodec.values());
 
         baseProjectorVolume = CLIENT_BUILDER
                 .comment("The volume for the projector sound (0.0 is off)")

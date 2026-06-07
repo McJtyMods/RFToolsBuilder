@@ -69,6 +69,7 @@ public class GuiProjector extends GenericGuiContainer<ProjectorTileEntity, Gener
         } else {
             shapeRenderer.setShapeID(tileEntity.getShapeID());
         }
+        shapeRenderer.setRefreshCounter(tileEntity.getCounter());
         return shapeRenderer;
     }
 

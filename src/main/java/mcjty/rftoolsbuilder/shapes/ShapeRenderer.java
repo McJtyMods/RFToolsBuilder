@@ -43,6 +43,7 @@ public class ShapeRenderer {
     private float zangle = 0.0f;
 
     private ShapeID shapeID;
+    private int refreshCounter = 0;
 
     private int waitForNewRequest = 0;
     private final ModelRenderCache modelRenderCache = new ModelRenderCache();
@@ -58,6 +59,10 @@ public class ShapeRenderer {
 
     public ShapeID getShapeID() {
         return shapeID;
+    }
+
+    public void setRefreshCounter(int refreshCounter) {
+        this.refreshCounter = refreshCounter;
     }
 
     public int getCount() {
@@ -308,6 +313,7 @@ public class ShapeRenderer {
         if (!stack.isEmpty()) {
             ShapeCardItem.getFormulaCheckClient(stack, crc);
         }
+        crc.add(refreshCounter);
         return crc.get();
     }
 
@@ -349,16 +355,9 @@ public class ShapeRenderer {
             long time = System.currentTimeMillis();
             for (RenderData.RenderPlane plane : data.getPlanes()) {
                 if (plane != null) {
-                    boolean flash = showScan && (plane.getBirthtime() > time- ScannerConfiguration.projectorFlashTimeout.get());
-                    if (flash) {
-                        needScanSound = true;
-                        RenderSystem.enableBlend();
-                        RenderSystem.blendFunc(GL11.GL_ONE, GL11.GL_ONE);
-                    }
                     renderPlaneImmediate(poseStack, buffer, plane, grayscale, false);
-                    if (flash) {
-                        RenderSystem.disableBlend();
-                        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                    if (showScan) {
+                        needScanSound |= renderFlashOverlay(poseStack, buffer, plane, grayscale, false, time);
                     }
                 }
             }
@@ -400,27 +399,34 @@ public class ShapeRenderer {
 
         Level level = Minecraft.getInstance().level;
         modelRenderCache.buildIfNeeded(data, level);
+        modelRenderCache.render(poseStack);
         long time = System.currentTimeMillis();
 
-        for (RenderData.RenderPlane plane : data.getPlanes()) {
+        RenderData.RenderPlane[] planes = data.getPlanes();
+        for (int i = 0; i < planes.length; i++) {
+            RenderData.RenderPlane plane = planes[i];
             if (plane == null) {
                 continue;
             }
-            boolean flash = showScan && (plane.getBirthtime() > time - ScannerConfiguration.projectorFlashTimeout.get());
-            if (flash) {
-                needScanSound = true;
-            }
-            if (flash) {
-                RenderSystem.enableBlend();
-                RenderSystem.blendFunc(GL11.GL_ONE, GL11.GL_ONE);
+            if (showScan && modelRenderCache.hasPlaneBuffers(i)) {
                 RenderSystem.setShader(GameRenderer::getPositionColorShader);
-                renderPlaneImmediate(poseStack, overlayBuffer, plane, false, false);
-                RenderSystem.disableBlend();
-                RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                needScanSound |= renderFlashOverlay(poseStack, overlayBuffer, plane, false, false, time);
             }
         }
-        modelRenderCache.render(poseStack);
         return needScanSound;
+    }
+
+    private boolean renderFlashOverlay(PoseStack poseStack, BufferBuilder buffer, RenderData.RenderPlane plane, boolean grayscale, boolean gui, long time) {
+        plane.markFlashRendered();
+        if (!plane.isFlashing(time)) {
+            return false;
+        }
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GL11.GL_ONE, GL11.GL_ONE);
+        renderPlaneImmediate(poseStack, buffer, plane, grayscale, gui);
+        RenderSystem.disableBlend();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        return true;
     }
 
     private static class ModelRenderCache {
@@ -587,6 +593,11 @@ public class ShapeRenderer {
             }
 
             VertexBuffer.unbind();
+        }
+
+        private boolean hasPlaneBuffers(int index) {
+            PlaneBuffers buffers = planeBuffers.get(index);
+            return buffers != null && (!buffers.layerBuffers.isEmpty() || buffers.fluidBuffer != null);
         }
 
         private void syncPlaneCount(int count) {
@@ -806,16 +817,9 @@ public class ShapeRenderer {
             long time = System.currentTimeMillis();
             for (RenderData.RenderPlane plane : data.getPlanes()) {
                 if (plane != null) {
-                    boolean flash = showScan && (plane.getBirthtime() > time- ScannerConfiguration.projectorFlashTimeout.get());
-                    if (flash) {
-                        needScanSound = true;
-                        RenderSystem.enableBlend();
-                        RenderSystem.blendFunc(GL11.GL_ONE, GL11.GL_ONE);
-                    }
                     renderPlaneImmediate(poseStack, buffer, plane, grayscale, true);
-                    if (flash) {
-                        RenderSystem.disableBlend();
-                        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                    if (showScan) {
+                        needScanSound |= renderFlashOverlay(poseStack, buffer, plane, grayscale, true, time);
                     }
                 }
             }
