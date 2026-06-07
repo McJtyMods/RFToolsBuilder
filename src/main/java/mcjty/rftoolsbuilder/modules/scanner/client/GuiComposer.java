@@ -125,12 +125,12 @@ public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, Generic
 
         ShapeModifier[] modifiers = tileEntity.getModifiers();
         for (int i = 0; i < ComposerTileEntity.SLOT_COUNT; i++) {
-            int y = 7 + i * 18;
-            ToggleButton flip = new ToggleButton().checkMarker(true).text("Flip").hint(6, y + 1, 35, 14).event(this::updateSettings);
+            int y = 9 + i * 17 + (i / 3) * 2;
+            ToggleButton flip = new ToggleButton().checkMarker(true).text("Flip").hint(9, y, 35, 14).event(this::updateSettings);
             flip.pressed(modifiers[i].isFlipY());
             flipButtons[i] = flip;
 
-            ChoiceLabel rotation = new ChoiceLabel().hint(45, y, 28, 14)
+            ChoiceLabel rotation = new ChoiceLabel().hint(46, y, 28, 14)
                     .choices(ShapeRotation.NONE.getCode(), ShapeRotation.X.getCode(), ShapeRotation.Y.getCode(), ShapeRotation.Z.getCode())
                     .event(choice -> updateSettings());
             rotation.choice(modifiers[i].getRotation().getCode());
