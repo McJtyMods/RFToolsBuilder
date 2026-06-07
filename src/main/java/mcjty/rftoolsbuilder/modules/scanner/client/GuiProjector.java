@@ -30,6 +30,7 @@ public class GuiProjector extends GenericGuiContainer<ProjectorTileEntity, Gener
     private static final int SIDEWIDTH = 80;
     private static final int PROJECTOR_WIDTH = 256;
     private static final int PROJECTOR_HEIGHT = 238;
+    private static final int PREVIEW_BUTTON_WIDTH = 39;
 
     private static final ResourceLocation SIDE_BACKGROUND = new ResourceLocation(RFToolsBuilder.MODID, "textures/gui/sidegui_projector.png");
     private static final ResourceLocation MAIN_BACKGROUND = new ResourceLocation(RFToolsBuilder.MODID, "textures/gui/projector.png");
@@ -80,15 +81,15 @@ public class GuiProjector extends GenericGuiContainer<ProjectorTileEntity, Gener
         Panel toplevel = new Panel().layout(new PositionalLayout());
 
         Panel sidePanel = new Panel().layout(new PositionalLayout()).background(SIDE_BACKGROUND);
-        sidePanel.bounds(leftPos/2, topPos/2, SIDEWIDTH, imageHeight);
+        sidePanel.bounds(0, 0, SIDEWIDTH, imageHeight);
         initSidePanel(sidePanel);
 
         Panel mainPanel = new Panel().layout(new PositionalLayout()).background(MAIN_BACKGROUND);
-        mainPanel.bounds(leftPos/2 + SIDEWIDTH, topPos/2, PROJECTOR_WIDTH, imageHeight);
+        mainPanel.bounds(SIDEWIDTH, 0, PROJECTOR_WIDTH, imageHeight);
         initMainPanel(mainPanel);
 
         toplevel.children(sidePanel, mainPanel);
-        toplevel.bounds(leftPos/2, topPos/2, imageWidth, imageHeight);
+        toplevel.bounds(leftPos, topPos, imageWidth, imageHeight);
         window = new Window(this, toplevel);
     }
 
@@ -105,7 +106,7 @@ public class GuiProjector extends GenericGuiContainer<ProjectorTileEntity, Gener
         sound.pressed(tileEntity.isSound());
         grayScale = new ToggleButton().checkMarker(true).text("Gray").tooltips("Enable grayscale mode").hint(42, 146, 39, 16).event(this::updateSettings);
         grayScale.pressed(tileEntity.isGrayscale());
-        renderModels = new ToggleButton().checkMarker(true).text("M").tooltips("Render baked block models in the world", "instead of solid projected cubes").hint(83, 200, 24, 16).event(this::updateSettings);
+        renderModels = new ToggleButton().checkMarker(true).text("M").tooltips("Render baked block models in the world", "instead of solid projected cubes").hint(42, 182, PREVIEW_BUTTON_WIDTH, 16).event(this::updateSettings);
         renderModels.pressed(tileEntity.isRenderBlockModels());
 
         panel.children(
@@ -116,9 +117,9 @@ public class GuiProjector extends GenericGuiContainer<ProjectorTileEntity, Gener
                 autoRotate, scanline, sound, grayScale, renderModels
         );
 
-        showAxis = ShapeGuiTools.createAxisButton(this, panel, 5, 200);
-        showOuter = ShapeGuiTools.createBoxButton(this, panel, 31, 200);
-        showScan = ShapeGuiTools.createScanButton(this, panel, 57, 200);
+        showAxis = ShapeGuiTools.createAxisButton(this, panel, 2, 164, PREVIEW_BUTTON_WIDTH);
+        showOuter = ShapeGuiTools.createBoxButton(this, panel, 42, 164, PREVIEW_BUTTON_WIDTH);
+        showScan = ShapeGuiTools.createScanButton(this, panel, 2, 182, PREVIEW_BUTTON_WIDTH);
     }
 
     private void initSidePanel(Panel panel) {

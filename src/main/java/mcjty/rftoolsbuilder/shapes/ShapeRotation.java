@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum ShapeRotation {
-    NONE("None"),
+    NONE("-"),
     X("X"),
     Y("Y"),
     Z("Z");
@@ -19,6 +19,7 @@ public enum ShapeRotation {
         for (ShapeRotation operation : ShapeRotation.values()) {
             MAP.put(operation.getCode(), operation);
         }
+        MAP.put("None", NONE);
     }
 
 

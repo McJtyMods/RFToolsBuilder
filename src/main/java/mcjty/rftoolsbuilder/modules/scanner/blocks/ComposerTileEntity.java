@@ -41,6 +41,10 @@ public class ComposerTileEntity extends TickingTileEntity {
     public static final int SLOT_OUT = 0;
     public static final int SLOT_TABS = 1;
     public static final int SLOT_GHOSTS = SLOT_TABS + SLOT_COUNT;
+    private static final int SIDE_PANEL_WIDTH = 80;
+    private static final int CARD_SLOT_X = SIDE_PANEL_WIDTH + 18;
+    private static final int MATERIAL_SLOT_X = SIDE_PANEL_WIDTH + 36;
+    private static final int PLAYER_SLOTS_X = SIDE_PANEL_WIDTH + 85;
 
     public static final List<Key<String>> PARAM_OPS = List.of(
             new Key<>("op0", Type.STRING), new Key<>("op1", Type.STRING), new Key<>("op2", Type.STRING),
@@ -57,11 +61,11 @@ public class ComposerTileEntity extends TickingTileEntity {
 
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> {
         ContainerFactory factory = new ContainerFactory(SLOT_GHOSTS + SLOT_COUNT)
-                .slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), SLOT_OUT, 18, 200)
-                .playerSlots(165, 142);
+                .slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), SLOT_OUT, CARD_SLOT_X, 200)
+                .playerSlots(PLAYER_SLOTS_X, 142);
         for (int i = 0; i < SLOT_COUNT; i++) {
-            factory.slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), SLOT_TABS + i, 18, 7 + i * 18);
-            factory.slot(specific(s -> true).in().out(), SLOT_GHOSTS + i, 36, 7 + i * 18);
+            factory.slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), SLOT_TABS + i, CARD_SLOT_X, 7 + i * 18);
+            factory.slot(specific(s -> true).in().out(), SLOT_GHOSTS + i, MATERIAL_SLOT_X, 7 + i * 18);
         }
         return factory;
     });

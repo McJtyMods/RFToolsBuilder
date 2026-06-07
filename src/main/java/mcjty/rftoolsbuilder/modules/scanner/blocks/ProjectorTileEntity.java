@@ -19,7 +19,6 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ProjectorOpcode;
 import mcjty.rftoolsbuilder.modules.scanner.ProjectorOperation;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
-import mcjty.rftoolsbuilder.modules.scanner.client.GuiProjector;
 import mcjty.rftoolsbuilder.shapes.RenderData;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
@@ -87,9 +86,12 @@ public class ProjectorTileEntity extends TickingTileEntity {
     public static final Key<Boolean> PARAM_RENDERMODELS = new Key<>("render_models", Type.BOOLEAN);
 
     public static final int SLOT_CARD = 0;
+    private static final int SIDE_PANEL_WIDTH = 80;
+    private static final int SHAPE_CARD_SLOT_X = SIDE_PANEL_WIDTH + 15;
+    private static final int PLAYER_SLOTS_X = SIDE_PANEL_WIDTH + 85;
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(1)
-            .slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), SLOT_CARD, 95, 7)
-            .playerSlots(165, 142));
+            .slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), SLOT_CARD, SHAPE_CARD_SLOT_X, 7)
+            .playerSlots(PLAYER_SLOTS_X, 142));
 
     @Cap(type = CapType.ITEMS_AUTOMATION)
     private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)

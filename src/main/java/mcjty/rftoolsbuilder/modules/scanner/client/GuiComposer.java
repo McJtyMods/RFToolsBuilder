@@ -69,15 +69,15 @@ public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, Generic
         Panel toplevel = new Panel().layout(new PositionalLayout());
 
         Panel sidePanel = new Panel().layout(new PositionalLayout()).background(SIDE_BACKGROUND);
-        sidePanel.bounds(leftPos / 2, topPos / 2, SIDEWIDTH, imageHeight);
+        sidePanel.bounds(0, 0, SIDEWIDTH, imageHeight);
         initSidePanel(sidePanel);
 
         Panel mainPanel = new Panel().layout(new PositionalLayout()).background(MAIN_BACKGROUND);
-        mainPanel.bounds(leftPos / 2 + SIDEWIDTH, topPos / 2, SHAPER_WIDTH, imageHeight);
+        mainPanel.bounds(SIDEWIDTH, 0, SHAPER_WIDTH, imageHeight);
         initMainPanel(mainPanel);
 
         toplevel.children(sidePanel, mainPanel);
-        toplevel.bounds(leftPos / 2, topPos / 2, imageWidth, imageHeight);
+        toplevel.bounds(leftPos, topPos, imageWidth, imageHeight);
         window = new Window(this, toplevel);
     }
 
@@ -115,18 +115,18 @@ public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, Generic
                 "Use middle click to reset rotation"
         };
         panel.children(
-                label("E").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xffff0000).tooltips(help).hint(5, 175, 15, 15),
-                label("W").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xffff0000).tooltips(help).hint(40, 175, 15, 15),
-                label("U").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xff00bb00).tooltips(help).hint(5, 190, 15, 15),
-                label("D").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xff00bb00).tooltips(help).hint(40, 190, 15, 15),
-                label("N").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xff0000ff).tooltips(help).hint(5, 205, 15, 15),
-                label("S").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xff0000ff).tooltips(help).hint(40, 205, 15, 15)
+                label("E").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xffff0000).tooltips(help).hint(10, 170, 15, 15),
+                label("W").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xffff0000).tooltips(help).hint(50, 170, 15, 15),
+                label("U").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xff00bb00).tooltips(help).hint(10, 185, 15, 15),
+                label("D").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xff00bb00).tooltips(help).hint(50, 185, 15, 15),
+                label("N").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xff0000ff).tooltips(help).hint(10, 200, 15, 15),
+                label("S").horizontalAlignment(HorizontalAlignment.ALIGN_LEFT).color(0xff0000ff).tooltips(help).hint(50, 200, 15, 15)
         );
 
         ShapeModifier[] modifiers = tileEntity.getModifiers();
         for (int i = 0; i < ComposerTileEntity.SLOT_COUNT; i++) {
             int y = 7 + i * 18;
-            ToggleButton flip = new ToggleButton().checkMarker(true).text("Flip").hint(6, y, 35, 16).event(this::updateSettings);
+            ToggleButton flip = new ToggleButton().checkMarker(true).text("Flip").hint(6, y + 1, 35, 14).event(this::updateSettings);
             flip.pressed(modifiers[i].isFlipY());
             flipButtons[i] = flip;
 
