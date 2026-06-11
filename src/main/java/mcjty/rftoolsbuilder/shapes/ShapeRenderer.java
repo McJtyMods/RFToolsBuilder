@@ -374,17 +374,17 @@ public class ShapeRenderer {
 
         RenderData data = getRenderDataAndCreate(shapeID);
 
+        long check = calculateChecksum(stack);
         if (data.isWantData() || waitForNewRequest > 0) {
             if (waitForNewRequest <= 0) {
                 // No positions, send a new request
-                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID));
+                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID, (int) check));
                 waitForNewRequest = 20;
                 data.setWantData(false);
             } else {
                 waitForNewRequest--;
             }
         } else {
-            long check = calculateChecksum(stack);
             if (!data.hasData() || check != data.getChecksum()) {
                 // Checksum failed, we want new data
                 data.setChecksum(check);
@@ -447,17 +447,17 @@ public class ShapeRenderer {
 
         RenderData data = getRenderDataAndCreate(shapeID);
 
+        long check = calculateChecksum(stack);
         if (data.isWantData() || waitForNewRequest > 0) {
             if (waitForNewRequest <= 0) {
                 // No positions, send a new request
-                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID));
+                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID, (int) check));
                 waitForNewRequest = 20;
                 data.setWantData(false);
             } else {
                 waitForNewRequest--;
             }
         } else {
-            long check = calculateChecksum(stack);
             if (!data.hasData() || check != data.getChecksum()) {
                 // Checksum failed, we want new data
                 data.setChecksum(check);

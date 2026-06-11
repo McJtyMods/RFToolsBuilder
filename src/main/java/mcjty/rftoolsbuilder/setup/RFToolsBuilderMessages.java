@@ -9,6 +9,9 @@ import mcjty.rftoolsbuilder.modules.builder.network.*;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketClickMover;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketSyncVehicleInformationToClient;
+import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
+import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnExtraData;
+import mcjty.rftoolsbuilder.modules.scanner.network.PacketReturnShapeData;
 import mcjty.rftoolsbuilder.modules.shield.network.PacketNotifyServerClientReady;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -37,17 +40,14 @@ public class RFToolsBuilderMessages {
         registrar.playToServer(PacketOpenBuilderGui.TYPE, PacketOpenBuilderGui.CODEC, PacketOpenBuilderGui::handle);
         registrar.playToServer(PacketNotifyServerClientReady.TYPE, PacketNotifyServerClientReady.CODEC, PacketNotifyServerClientReady::handle);
         registrar.playToServer(PacketClickMover.TYPE, PacketClickMover.CODEC, PacketClickMover::handle);
+        registrar.playToServer(PacketRequestShapeData.TYPE, PacketRequestShapeData.CODEC, PacketRequestShapeData::handle);
 
         registrar.playToClient(PacketOpenCardGuiFromBuilder.TYPE, PacketOpenCardGuiFromBuilder.CODEC, PacketOpenCardGuiFromBuilder::handle);
         registrar.playToClient(PacketChamberInfoReady.TYPE, PacketChamberInfoReady.CODEC, PacketChamberInfoReady::handle);
         registrar.playToClient(PacketSyncVehicleInformationToClient.TYPE, PacketSyncVehicleInformationToClient.CODEC, PacketSyncVehicleInformationToClient::handle);
         registrar.playToClient(PacketGrabbedEntitiesToClient.TYPE, PacketGrabbedEntitiesToClient.CODEC, PacketGrabbedEntitiesToClient::handle);
-
-        // @todo 1.21
-//        registrar.play(PacketRequestShapeData.class, PacketRequestShapeData::create, handler -> handler.server(PacketRequestShapeData::handle));
-//
-//        registrar.play(PacketReturnShapeData.class, PacketReturnShapeData::create, handler -> handler.client(PacketReturnShapeData::handle));
-//        registrar.play(PacketReturnExtraData.class, PacketReturnExtraData::create, handler -> handler.client(PacketReturnExtraData::handle));
+        registrar.playToClient(PacketReturnShapeData.TYPE, PacketReturnShapeData.CODEC, PacketReturnShapeData::handle);
+        registrar.playToClient(PacketReturnExtraData.TYPE, PacketReturnExtraData.CODEC, PacketReturnExtraData::handle);
     }
 
     public static void sendToServer(String command, @Nonnull TypedMap.Builder argumentBuilder) {

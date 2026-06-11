@@ -20,18 +20,24 @@ public class ShapeDataManagerServer {
         private ItemStack stack;
         private int offsetY;
         private IFormula formula;
+        private boolean optimizeRenderShell;
+        private int checksum;
 
-        public WorkUnit(ItemStack stack, int offsetY, IFormula formula, ServerPlayer player) {
+        public WorkUnit(ItemStack stack, int offsetY, IFormula formula, boolean optimizeRenderShell, int checksum, ServerPlayer player) {
             this.stack = stack;
             this.offsetY = offsetY;
             this.formula = formula;
+            this.optimizeRenderShell = optimizeRenderShell;
+            this.checksum = checksum;
             this.players.add(player);
         }
 
-        public void update(ItemStack stack, int offsetY, IFormula formula, ServerPlayer player) {
+        public void update(ItemStack stack, int offsetY, IFormula formula, boolean optimizeRenderShell, int checksum, ServerPlayer player) {
             this.stack = stack;
             this.offsetY = offsetY;
             this.formula = formula;
+            this.optimizeRenderShell = optimizeRenderShell;
+            this.checksum = checksum;
             if (!players.contains(player)) {
                 players.add(player);
             }
@@ -52,6 +58,14 @@ public class ShapeDataManagerServer {
         public IFormula getFormula() {
             return formula;
         }
+
+        public boolean isOptimizeRenderShell() {
+            return optimizeRenderShell;
+        }
+
+        public int getChecksum() {
+            return checksum;
+        }
     }
 
     private static class WorkQueue {
@@ -62,16 +76,16 @@ public class ShapeDataManagerServer {
     // Server-side
     private static final Map<ShapeID, WorkQueue> workQueues = new HashMap<>();
 
-    public static void pushWork(ShapeID shapeID, ItemStack stack, int offsetY, IFormula formula, ServerPlayer player) {
+    public static void pushWork(ShapeID shapeID, ItemStack stack, int offsetY, IFormula formula, boolean optimizeRenderShell, int checksum, ServerPlayer player) {
         WorkQueue queue = workQueues.get(shapeID);
         if (queue == null) {
             queue = new WorkQueue();
             workQueues.put(shapeID, queue);
         }
         if (queue.workingOn.containsKey(offsetY)) {
-            queue.workingOn.get(offsetY).update(stack, offsetY, formula, player);
+            queue.workingOn.get(offsetY).update(stack, offsetY, formula, optimizeRenderShell, checksum, player);
         } else {
-            WorkUnit unit = new WorkUnit(stack, offsetY, formula, player);
+            WorkUnit unit = new WorkUnit(stack, offsetY, formula, optimizeRenderShell, checksum, player);
             queue.workQueue.addLast(unit);
             queue.workingOn.put(offsetY, unit);
         }
@@ -89,7 +103,7 @@ public class ShapeDataManagerServer {
                 queue.workingOn.remove(unit.getOffsetY());
 
                 ItemStack card = unit.getStack();
-                boolean solid = ShapeCardItem.isSolid(card);
+                boolean solid = unit.isOptimizeRenderShell();
                 BlockPos dimension = ShapeCardItem.getDimension(card);
 
                 RLE positions = new RLE();
@@ -97,7 +111,7 @@ public class ShapeDataManagerServer {
                 int cnt = ShapeCardItem.getRenderPositions(card, solid, positions, statePalette, unit.getFormula(), unit.getOffsetY());
 
                 for (ServerPlayer player : unit.getPlayers()) {
-                    RFToolsBuilderMessages.sendToPlayer(PacketReturnShapeData.create(shapeID, positions, statePalette, dimension, cnt, unit.getOffsetY(), ""), player);
+                    RFToolsBuilderMessages.sendToPlayer(PacketReturnShapeData.create(shapeID, unit.getChecksum(), positions, statePalette, dimension, cnt, unit.getOffsetY(), ""), player);
                 }
                 if (cnt > 0) {
                     pertick -= dimension.getX() * dimension.getZ();

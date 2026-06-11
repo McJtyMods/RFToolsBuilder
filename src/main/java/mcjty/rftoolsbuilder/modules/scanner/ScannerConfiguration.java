@@ -5,6 +5,11 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class ScannerConfiguration {
     public static final String CATEGORY_SCANNER = "scanner";
 
+    public enum ProjectorCompressionCodec {
+        LEGACY_RLE,
+        PACKED_BITS
+    }
+
     public static ModConfigSpec.IntValue SCANNER_MAXENERGY; // TODO change these to longs once Configuration supports them
     public static ModConfigSpec.IntValue SCANNER_RECEIVEPERTICK;
     public static ModConfigSpec.IntValue SCANNER_PERTICK;
@@ -35,9 +40,13 @@ public class ScannerConfiguration {
 
     public static ModConfigSpec.IntValue surfaceAreaPerTick;
     public static ModConfigSpec.IntValue planeSurfacePerTick;
+    public static ModConfigSpec.IntValue projectorPlaneSendInterval;
     public static ModConfigSpec.IntValue clientRenderDataTimeout;
 
     public static ModConfigSpec.IntValue projectorFlashTimeout;
+    public static ModConfigSpec.BooleanValue projectorCompressionLogging;
+    public static ModConfigSpec.IntValue projectorCompressionLogInterval;
+    public static ModConfigSpec.EnumValue<ProjectorCompressionCodec> projectorCompressionCodec;
 
     public static ModConfigSpec.DoubleValue baseProjectorVolume;      // Use 0 to turn off projector sounds
 
@@ -125,6 +134,10 @@ public class ScannerConfiguration {
                 .comment("The amount of 'surface area' that the server will send to the client for the projector. Increasing this will increase the speed at which projections are ready but also increase the load for server and client")
                 .defineInRange("planeSurfacePerTick", 200*200,
                 100, 10000000);
+        projectorPlaneSendInterval = SERVER_BUILDER
+                .comment("How many ticks to wait before sending the next projector preview plane to clients. Increase this to spread setup load over time")
+                .defineInRange("projectorPlaneSendInterval", 5,
+                        1, 200);
         clientRenderDataTimeout = CLIENT_BUILDER
                 .comment("The amount of milliseconds before the client will remove shape render data that hasn't been used. Decreasing this will free memory faster at the cost of having to update shape renders more often")
                 .defineInRange("clientRenderDataTimeout", 10000,
@@ -134,6 +147,17 @@ public class ScannerConfiguration {
                 .comment("The amount of milliseconds that a scanline 'flash' will exist on the client")
                 .defineInRange("projectorFlashTimeout", 400,
                 10, 1000000);
+
+        projectorCompressionLogging = SERVER_BUILDER
+                .comment("Log aggregated statistics about projector preview packet compression. Intended as a diagnostic for scan/blockstate-heavy previews")
+                .define("projectorCompressionLogging", true);
+        projectorCompressionLogInterval = SERVER_BUILDER
+                .comment("How many projector preview planes to aggregate before logging one compression summary line")
+                .defineInRange("projectorCompressionLogInterval", 64,
+                        1, 100000);
+        projectorCompressionCodec = SERVER_BUILDER
+                .comment("Compression codec to use for projector preview planes. LEGACY_RLE is the previous path, PACKED_BITS uses palette-sized bit packing for comparison")
+                .defineEnum("projectorCompressionCodec", ProjectorCompressionCodec.LEGACY_RLE, ProjectorCompressionCodec.values());
 
         baseProjectorVolume = CLIENT_BUILDER
                 .comment("The volume for the projector sound (0.0 is off)")

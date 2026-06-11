@@ -1,10 +1,13 @@
 package mcjty.rftoolsbuilder.shapes;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
@@ -89,11 +92,14 @@ public class Scan {
         dirtyCounter = tagCompound.getInt("dirty");
     }
 
-    public void readFromNBTExternal(CompoundTag tagCompound) {
+    public void readFromNBTExternal(CompoundTag tagCompound, HolderLookup.Provider provider) {
         ListTag list = tagCompound.getList("scanpal", Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tc = list.getCompound(i);
-            BlockState state = null; // @todo 1.21 NBT NBTTools.readBlockState(tc);
+            BlockState state = NbtUtils.readBlockState(provider.lookupOrThrow(Registries.BLOCK), tc);
+            if (state == null) {
+                state = Blocks.STONE.defaultBlockState();
+            }
             materialPalette.add(state);
         }
         rledata = tagCompound.getByteArray("data");

@@ -63,7 +63,7 @@ public class RFToolsBuilder {
     private void setupModules(IEventBus bus, Dist dist) {
         modules.register(new BuilderModule(bus));
         modules.register(new ShieldModule(bus, dist));
-        modules.register(new ScannerModule());
+        modules.register(new ScannerModule(bus));
         modules.register(new MoverModule(bus, dist));
     }
 }

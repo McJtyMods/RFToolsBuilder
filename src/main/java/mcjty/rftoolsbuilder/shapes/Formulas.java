@@ -2,11 +2,10 @@ package mcjty.rftoolsbuilder.shapes;
 
 import mcjty.lib.varia.Check32;
 import mcjty.lib.varia.Tools;
+import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData.ShapeCardChild;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
+import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -67,10 +66,11 @@ public class Formulas {
         @Override
         public void getCheckSumClient(ItemStack tc, Check32 crc) {
             ShapeCardItem.getLocalChecksum(tc, crc);
-            // @todo composer
-//            int scanId = tc.getInt("scanid");
-//            crc.add(scanId);
-//            crc.add(ScanDataManagerClient.getScansClient().getScanDirtyCounterClient(scanId));
+            int scanId = ShapeCardItem.getScanId(tc);
+            crc.add(scanId);
+            if (scanId != 0) {
+                crc.add(ScanDataManagerClient.getScansClient().getScanDirtyCounterClient(scanId));
+            }
         }
 
         @Override
@@ -96,7 +96,7 @@ public class Formulas {
 
             palette.clear();
 
-            int scanId = 0; // @todo 1.21 card.getInt("scanid");
+            int scanId = ShapeCardItem.getScanId(card);
             if (scanId != 0) {
                 Scan scan = ScanDataManager.get(world).loadScan(world, scanId);
                 palette = new ArrayList<>(scan.getMaterialPalette());
@@ -209,22 +209,18 @@ public class Formulas {
                 return;
             }
 
-            ListTag children = new ListTag(); // @todo 1.21 card.getList("children", Tag.TAG_COMPOUND);
-            for (int i = 0 ; i < children.size() ; i++) {
-                CompoundTag childTag = children.getCompound(i);
-                IFormula formula = ShapeCardItem.createCorrectFormula(childTag);
+            for (ShapeCardChild child : ShapeCardItem.getChildren(card)) {
+                ItemStack childStack = child.stack();
+                IFormula formula = ShapeCardItem.createCorrectFormula(childStack);
 
-                String op = childTag.getString("mod_op");
-                ShapeOperation operation = ShapeOperation.getByName(op);
-                boolean flip = childTag.getBoolean("mod_flipy");
-                String rot = childTag.getString("mod_rot");
-                ShapeRotation rotation = ShapeRotation.getByName(rot);
-                modifiers.add(new ShapeModifier(operation, flip, rotation));
+                ShapeModifier modifier = ShapeCardItem.getModifier(childStack);
+                ShapeRotation rotation = modifier.getRotation();
+                modifiers.add(modifier);
 
-                BlockPos dim = BlockPos.ZERO;// @todo composer ShapeCardItem.getClampedDimension(childTag, ScannerConfiguration.maxScannerDimension.get());
-                BlockPos off = BlockPos.ZERO;// @todo composer ShapeCardItem.getClampedOffset(childTag, ScannerConfiguration.maxScannerOffset.get());
+                BlockPos dim = ShapeCardItem.getClampedDimension(childStack, ScannerConfiguration.maxScannerDimension.get());
+                BlockPos off = ShapeCardItem.getClampedOffset(childStack, ScannerConfiguration.maxScannerOffset.get());
                 BlockPos o = off.offset(offset);
-                formula.setup(world, thisCoord, dim, o, /* @todo 1.21 childTag*/ ItemStack.EMPTY);
+                formula.setup(world, thisCoord, dim, o, childStack);
                 formulas.add(formula);
 
                 dim = rotation.transformDimension(dim);
@@ -232,8 +228,8 @@ public class Formulas {
                 bounds.add(new Bounds(tl, tl.offset(dim), o));
 
                 BlockState state = null;
-                if (childTag.contains("ghost_block")) {
-                    Block block = Tools.getBlock(ResourceLocation.parse(childTag.getString("ghost_block")));
+                if (child.ghostBlock().isPresent()) {
+                    Block block = Tools.getBlock(child.ghostBlock().get());
                     if (block != null) {
                         state = block.defaultBlockState();
                     }
@@ -245,25 +241,22 @@ public class Formulas {
         @Override
         public void getCheckSumClient(ItemStack card, Check32 crc) {
             ShapeCardItem.getLocalChecksum(card, crc);
-            ListTag children = null;// @todo composer card.getList("children", Tag.TAG_COMPOUND);
-            for (int i = 0 ; i < children.size() ; i++) {
-                CompoundTag childTag = children.getCompound(i);
-                IFormula formula = ShapeCardItem.createCorrectFormula(childTag);
-                // @todo composer
-//                formula.getCheckSumClient(childTag, crc);
-                crc.add(childTag.getBoolean("mod_flipy") ? 1 : 0);
+            for (ShapeCardChild child : ShapeCardItem.getChildren(card)) {
+                ItemStack childStack = child.stack();
+                IFormula formula = ShapeCardItem.createCorrectFormula(childStack);
+                formula.getCheckSumClient(childStack, crc);
 
-                String rot = childTag.getString("mod_rot");
-                ShapeRotation rotation = ShapeRotation.getByName(rot);
+                ShapeModifier modifier = ShapeCardItem.getModifier(childStack);
+                crc.add(modifier.isFlipY() ? 1 : 0);
+
+                ShapeRotation rotation = modifier.getRotation();
                 crc.add(rotation.ordinal());
 
-                String op = childTag.getString("mod_op");
-                ShapeOperation operation = ShapeOperation.getByName(op);
+                ShapeOperation operation = modifier.getOperation();
                 crc.add(operation.ordinal());
 
-                if (childTag.contains("ghost_block")) {
-                    BlockState state = null;
-                    Block block = Tools.getBlock(ResourceLocation.parse(childTag.getString("ghost_block")));
+                if (child.ghostBlock().isPresent()) {
+                    Block block = Tools.getBlock(child.ghostBlock().get());
                     if (block != null) {
                         crc.add(Block.getId(block.defaultBlockState()));
                     }

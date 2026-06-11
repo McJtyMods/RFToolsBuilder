@@ -10,16 +10,25 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiShapeCard;
 import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData;
+import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData.ShapeCardChild;
+import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData.ShapeModifierData;
 import mcjty.rftoolsbuilder.shapes.IFormula;
+import mcjty.rftoolsbuilder.shapes.ScanDataManager;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeModifier;
+import mcjty.rftoolsbuilder.shapes.ShapeOperation;
+import mcjty.rftoolsbuilder.shapes.ShapeRotation;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
@@ -61,25 +70,9 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
                     parameter("dimension", this::getShapeDimension),
                     parameter("offset", this::getShapeOffset),
                     parameter("formulas", stack -> getShape(stack).isComposition(),
-                            stack -> {
-                        // @todo composer
-//                                CompoundTag card = stack.getTag();
-//                                if (card != null) {
-//                                    ListTag children = card.getList("children", net.minecraft.nbt.Tag.TAG_COMPOUND);
-//                                    return Integer.toString(children.size());
-//                                }
-                                return "<none>";
-                            }),
+                            stack -> Integer.toString(getChildren(stack).size())),
                     parameter("scan", stack -> getShape(stack).isScan(),
-                            stack -> {
-                        // @todo composer
-//                                CompoundTag card = stack.getTag();
-//                                if (card != null) {
-//                                    int scanid = card.getInt("scanid");
-//                                    return Integer.toString(scanid);
-//                                }
-                                return "<none>";
-                            })
+                            stack -> Integer.toString(getScanId(stack)))
             ));
 
     public static final int MAXIMUM_COUNT = 50000000;
@@ -195,32 +188,36 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
     }
 
     public static void setData(ItemStack card, int scanID) {
-        // @todo composer
-//        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.EMPTY);
-//        card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.withScanId(scanID));
+        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
+        card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.withScanId(scanID));
     }
 
     public static void setModifier(ItemStack card, ShapeModifier modifier) {
-        // @todo composer
-//        tag.putString("mod_op", modifier.getOperation().getCode());
-//        tag.putBoolean("mod_flipy", modifier.isFlipY());
-//        tag.putString("mod_rot", modifier.getRotation().getCode());
+        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
+        ShapeModifierData modifierData = new ShapeModifierData(
+                modifier.getOperation().getCode(),
+                modifier.isFlipY(),
+                modifier.getRotation().getCode());
+        card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.withModifier(modifierData));
     }
 
     public static void setGhostMaterial(ItemStack card, ItemStack materialGhost) {
-        // @todo composer
-//        if (materialGhost.isEmpty()) {
-//            tag.remove("ghost_block");
-//        } else {
-//            Block block = Block.byItem(materialGhost.getItem());
-//            tag.putString("ghost_block", Tools.getId(block).toString());
-//        }
+        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
+        if (materialGhost.isEmpty()) {
+            card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.withGhostBlock(Optional.empty()));
+        } else {
+            Block block = Block.byItem(materialGhost.getItem());
+            if (block == Blocks.AIR) {
+                card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.withGhostBlock(Optional.empty()));
+            } else {
+                card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.withGhostBlock(Optional.of(Tools.getId(block))));
+            }
+        }
     }
 
-    public static void setChildren(ItemStack card, ListTag list) {
-        // @todo composer
-//        CompoundTag tagCompound = card.getOrCreateTag();
-//        tagCompound.put("children", list);
+    public static void setChildren(ItemStack card, List<ShapeCardChild> children) {
+        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
+        card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.withChildren(children));
     }
 
     public static void setDimension(ItemStack card, int x, int y, int z) {
@@ -366,44 +363,40 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
     }
 
     public static IFormula createCorrectFormula(CompoundTag tagCompound) {
-        // @todo composer
-        return null;
-//        Shape shape = getShape(tagCompound);
-//        boolean solid = isSolid(tagCompound);
-//        IFormula formula = shape.getFormulaFactory().get();
-//        return formula.correctFormula(solid);
+        return Shape.SHAPE_BOX.getFormulaFactory().get();
+    }
+
+    public static IFormula createCorrectFormula(ItemStack stack) {
+        Shape shape = getShape(stack);
+        boolean solid = isSolid(stack);
+        IFormula formula = shape.getFormulaFactory().get();
+        return formula.correctFormula(solid);
     }
 
     public static int getScanId(ItemStack stack) {
-        return 0;
-        // @todo composer
-//        if (stack.isEmpty()) {
-//            return 0;
-//        }
-//        CompoundTag tagCompound = stack.getOrCreateTag();
-//        Shape shape = getShape(tagCompound);
-//        if (shape != Shape.SHAPE_SCAN) {
-//            return 0;
-//        }
-//        return tagCompound.getInt("scanid");
+        if (stack.isEmpty()) {
+            return 0;
+        }
+        Shape shape = getShape(stack);
+        if (shape != Shape.SHAPE_SCAN) {
+            return 0;
+        }
+        return stack.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT).scanId();
     }
 
     public static int getScanIdRecursive(ItemStack card) {
         Shape shape = getShape(card);
-        // @todo composer
-//        if (tagCompound.contains("scanid") && shape == Shape.SHAPE_SCAN) {
-//            return tagCompound.getInt("scanid");
-//        }
+        int scanId = getScanId(card);
+        if (scanId != 0) {
+            return scanId;
+        }
         if (shape == Shape.SHAPE_COMPOSITION) {
-            // See if there is a scan in the composition that has a scan id
-//            ListTag children = tagCompound.getList("children", net.minecraft.nbt.Tag.TAG_COMPOUND);
-//            for (int i = 0 ; i < children.size() ; i++) {
-//                CompoundTag childTag = children.getCompound(i);
-//                int id = getScanIdRecursive(childTag);
-//                if (id != 0) {
-//                    return id;
-//                }
-//            }
+            for (ShapeCardChild child : getChildren(card)) {
+                int id = getScanIdRecursive(child.stack());
+                if (id != 0) {
+                    return id;
+                }
+            }
         }
         return 0;
     }
@@ -415,23 +408,48 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
     }
 
     public static void getFormulaCheckClient(ItemStack stack, Check32 crc) {
-        // @todo composer
-//        Shape shape = getShape(stack);
-//        IFormula formula = shape.getFormulaFactory().get();
-//        formula.getCheckSumClient(stack.getTag(), crc);
+        Shape shape = getShape(stack);
+        IFormula formula = shape.getFormulaFactory().get();
+        formula.getCheckSumClient(stack, crc);
     }
 
     public static void getLocalChecksum(ItemStack card, Check32 crc) {
-        // @todo composer
-//        if (tagCompound == null) {
-//            return;
-//        }
-//        crc.add(getShape(tagCompound).ordinal());
-//        BlockPos dim = getDimension(tagCompound);
-//        crc.add(dim.getX());
-//        crc.add(dim.getY());
-//        crc.add(dim.getZ());
-//        crc.add(isSolid(tagCompound) ? 1 : 0);
+        if (card.isEmpty()) {
+            return;
+        }
+        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
+        crc.add(data.shape().ordinal());
+        BlockPos dim = data.dimensions().dimension();
+        crc.add(dim.getX());
+        crc.add(dim.getY());
+        crc.add(dim.getZ());
+        BlockPos offset = data.dimensions().offset();
+        crc.add(offset.getX());
+        crc.add(offset.getY());
+        crc.add(offset.getZ());
+        crc.add(data.solid() ? 1 : 0);
+        crc.add(data.scanId());
+    }
+
+    public static List<ShapeCardChild> getChildren(ItemStack card) {
+        return card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT).children();
+    }
+
+    public static ShapeModifier getModifier(ItemStack card) {
+        ShapeModifierData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT).modifier();
+        ShapeOperation operation = ShapeOperation.getByName(data.operation());
+        if (operation == null) {
+            operation = ShapeOperation.UNION;
+        }
+        ShapeRotation rotation = ShapeRotation.getByName(data.rotation());
+        if (rotation == null) {
+            rotation = ShapeRotation.NONE;
+        }
+        return new ShapeModifier(operation, data.flipY(), rotation);
+    }
+
+    public static Optional<ResourceLocation> getGhostBlock(ItemStack card) {
+        return card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT).ghostBlock();
     }
 
 
@@ -586,8 +604,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         int dz = clamped.getZ();
 
         formula = formula.correctFormula(solid);
-        // @todo composer
-//        formula.setup(world, new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), !stack.isEmpty() ? stack.getTag() : null);
+        formula.setup(world, new BlockPos(0, 0, 0), clamped, new BlockPos(0, 0, 0), stack);
 
         // For saving shape cards we need to do X/Z/Y (scanner order) instead of the usual Y/X/Z (render order)
         int cnt = 0;
@@ -625,7 +642,6 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         BlockPos tl = new BlockPos(xCoord - dx/2 + offset.getX(), yCoord - dy/2 + offset.getY(), zCoord - dz/2 + offset.getZ());
 
         formula = formula.correctFormula(solid);
-        // @todo composer
         formula.setup(worldObj, thisCoord, dimension, offset, shapeCard);
 
         for (int ox = 0 ; ox < dx ; ox++) {
@@ -681,9 +697,11 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
             writer.println("DIM:" + dimension.getX() + "," + dimension.getY() + "," + dimension.getZ());
             writer.println("OFF:" + offset.getX() + "," + offset.getY() + "," + offset.getZ());
             for (BlockState state : statePalette.getPalette()) {
-                String r = Tools.getId(state).toString();
-//                writer.println(r + "@" + state.getBlock().getMetaFromState(state));   // @todo 1.14 no more meta!
-                writer.println(r);
+                try {
+                    writer.println("NBT:" + encodeState(state));
+                } catch (IOException e) {
+                    writer.println(Tools.getId(state).toString());
+                }
             }
             writer.println("DATA");
 
@@ -696,7 +714,6 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         player.displayClientMessage(ComponentFactory.literal(ChatFormatting.GREEN + "Saved shape to file '" + file.getPath() + "'"), false);
     }
 
-    // @todo composer
     public static void load(Player player, ItemStack card, String filename) {
         if (!validFile(player, filename)) {
             return;
@@ -709,8 +726,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
             return;
         }
 
-        CompoundTag compound = new CompoundTag();// @todo composer
-        int scanId = compound.getInt("scanid");
+        int scanId = getScanId(card);
         if (scanId == 0) {
             player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "This card is not linked to scan data!"), false);
             return;
@@ -741,22 +757,23 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
             s = reader.readLine();
             StatePalette statePalette = new StatePalette();
             while (!"DATA".equals(s)) {
-                String[] split = StringUtils.split(s, '@');
-                Block block = Tools.getBlock(ResourceLocation.parse(split[0]));
-                int meta = Integer.parseInt(split[1]);
-                if (block == null) {
-                    player.displayClientMessage(ComponentFactory.literal(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);
-                    block = Blocks.STONE;
-                    meta = 0;
+                if (s.startsWith("NBT:")) {
+                    statePalette.add(decodeState(s.substring(4)));
+                } else {
+                    String[] split = StringUtils.split(s, '@');
+                    Block block = Tools.getBlock(ResourceLocation.parse(split[0]));
+                    if (block == null) {
+                        player.displayClientMessage(ComponentFactory.literal(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);
+                        block = Blocks.STONE;
+                    }
+                    statePalette.add(block.defaultBlockState());
                 }
-//                statePalette.add(block.getStateFromMeta(meta));
-                statePalette.add(block.defaultBlockState());  // @todo 1.14 no more meta!
                 s = reader.readLine();
             }
             s = reader.readLine();
             byte[] decoded = Base64.getDecoder().decode(s.getBytes());
 
-            setDataFromFile(scanId, card, dim, off, decoded, statePalette);
+            setDataFromFile(player.getCommandSenderWorld(), scanId, card, dim, off, decoded, statePalette);
         } catch (IOException e) {
             player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
             return;
@@ -770,14 +787,25 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         player.displayClientMessage(ComponentFactory.literal(ChatFormatting.GREEN + "Loaded shape from file '" + file.getPath() + "'"), false);
     }
 
-    private static void setDataFromFile(int scanId, ItemStack card, BlockPos dimension, BlockPos offset, byte[] data, StatePalette palette) {
-        // @todo 1.14 scanner
-//        ScanDataManager scans = ScanDataManager.get();
-//        scans.getOrCreateScan(scanId).setData(data, palette.getPalette(), dimension, offset);
-//        scans.save(scanId);
-//        ShapeCardItem.setDimension(card, dimension.getX(), dimension.getY(), dimension.getZ());
-//        ShapeCardItem.setOffset(card, offset.getX(), offset.getY(), offset.getZ());
-//        ShapeCardItem.setShape(card, Shape.SHAPE_SCAN, true);
+    private static void setDataFromFile(Level world, int scanId, ItemStack card, BlockPos dimension, BlockPos offset, byte[] data, StatePalette palette) {
+        ScanDataManager scans = ScanDataManager.get(world);
+        scans.getOrCreateScan(scanId).setData(data, palette.getPalette(), dimension, offset);
+        scans.save(world, scanId);
+        ShapeCardItem.setDimension(card, dimension.getX(), dimension.getY(), dimension.getZ());
+        ShapeCardItem.setOffset(card, offset.getX(), offset.getY(), offset.getZ());
+        ShapeCardItem.setShape(card, Shape.SHAPE_SCAN, true);
+    }
+
+    private static String encodeState(BlockState state) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        NbtIo.writeCompressed(NbtUtils.writeBlockState(state), output);
+        return Base64.getEncoder().encodeToString(output.toByteArray());
+    }
+
+    private static BlockState decodeState(String encoded) throws IOException {
+        byte[] decoded = Base64.getDecoder().decode(encoded);
+        CompoundTag tag = NbtIo.readCompressed(new ByteArrayInputStream(decoded), NbtAccounter.unlimitedHeap());
+        return NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), tag);
     }
 
 

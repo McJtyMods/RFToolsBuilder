@@ -27,6 +27,7 @@ public class ScanDataManagerClient {
         Scan scan = scans.get(id);
         if (scan == null) {
             scan = new Scan();
+            scans.put(id, scan);
         }
         return scan;
     }

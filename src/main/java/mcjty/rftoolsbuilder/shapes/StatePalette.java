@@ -35,10 +35,8 @@ public class StatePalette {
                 StatePalette palette = new StatePalette();
                 int size = buf.readVarInt();
                 for (int i = 0; i < size; i++) {
-                    int index = buf.readVarInt();
                     BlockState state = ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY).decode(buf);
-                    palette.palette.add(state);
-                    palette.paletteIndex.put(state, palette.palette.size());
+                    palette.add(state);
                 }
                 return palette;
             }
