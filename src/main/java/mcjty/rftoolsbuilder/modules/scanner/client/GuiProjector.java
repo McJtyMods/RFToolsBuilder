@@ -57,7 +57,7 @@ public class GuiProjector extends GenericGuiContainer<ProjectorTileEntity, Gener
     private final ProjectorTileEntity tileEntity;
 
     public GuiProjector(ProjectorTileEntity tileEntity, GenericContainer container, Inventory inventory) {
-        super(container, inventory, Component.literal("Projector"), ScannerModule.PROJECTOR.get().getManualEntry());
+        super(container, inventory, Component.literal("Projector"), ScannerModule.PROJECTOR.block().get().getManualEntry());
         this.tileEntity = tileEntity;
         imageWidth = SIDEWIDTH + PROJECTOR_WIDTH;
         imageHeight = PROJECTOR_HEIGHT;

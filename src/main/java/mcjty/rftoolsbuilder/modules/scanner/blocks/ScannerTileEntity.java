@@ -35,6 +35,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
@@ -58,7 +59,6 @@ public class ScannerTileEntity extends TickingTileEntity {
             .slot(specific(s -> true).in().out(), SLOT_MODIFIER, 55, 7)
             .playerSlots(85, 142));
 
-    @Cap(type = CapType.ITEMS_AUTOMATION)
     private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
             .itemValid((slot, stack) -> switch (slot) {
                 case SLOT_IN, SLOT_OUT -> stack.getItem() instanceof ShapeCardItem;
@@ -69,11 +69,14 @@ public class ScannerTileEntity extends TickingTileEntity {
             .onUpdate(this::handleSlotUpdate)
             .build();
 
+    @Cap(type = CapType.ITEMS_AUTOMATION)
+    private static final Function<ScannerTileEntity, GenericItemHandler> ITEM_CAP = tile -> tile.items;
+
     @Cap(type = CapType.CONTAINER)
-    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Scanner")
-            .containerSupplier(container(ScannerModule.CONTAINER_SCANNER, CONTAINER_FACTORY, this))
-            .itemHandler(() -> items)
-            .setupSync(this));
+    private static final Function<ScannerTileEntity, MenuProvider> SCREEN_CAP = tile -> new DefaultContainerProvider<GenericContainer>("Scanner")
+            .containerSupplier(container(ScannerModule.CONTAINER_SCANNER, CONTAINER_FACTORY, tile))
+            .itemHandler(() -> tile.items)
+            .setupSync(tile);
 
     private final Cached<Predicate<ItemStack>> filterCache = Cached.of(this::createFilterCache);
 

@@ -56,7 +56,7 @@ public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, Generic
     private final ComposerTileEntity tileEntity;
 
     public GuiComposer(ComposerTileEntity tileEntity, GenericContainer container, Inventory inventory) {
-        super(container, inventory, Component.literal("Composer"), ScannerModule.COMPOSER.get().getManualEntry());
+        super(container, inventory, Component.literal("Composer"), ScannerModule.COMPOSER.block().get().getManualEntry());
         this.tileEntity = tileEntity;
         imageWidth = SIDEWIDTH + SHAPER_WIDTH;
         imageHeight = SHAPER_HEIGHT;

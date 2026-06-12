@@ -32,6 +32,7 @@ import net.neoforged.neoforge.common.util.Lazy;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.container.SlotDefinition.specific;
@@ -73,7 +74,6 @@ public class ComposerTileEntity extends TickingTileEntity {
         return factory;
     });
 
-    @Cap(type = CapType.ITEMS_AUTOMATION)
     private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
             .itemValid((slot, stack) -> {
                 if (slot == SLOT_OUT || (slot >= SLOT_TABS && slot < SLOT_GHOSTS)) {
@@ -84,11 +84,14 @@ public class ComposerTileEntity extends TickingTileEntity {
             .onUpdate((slot, stack) -> markComposerDirty())
             .build();
 
+    @Cap(type = CapType.ITEMS_AUTOMATION)
+    private static final Function<ComposerTileEntity, GenericItemHandler> ITEM_CAP = tile -> tile.items;
+
     @Cap(type = CapType.CONTAINER)
-    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Composer")
-            .containerSupplier(container(ScannerModule.CONTAINER_COMPOSER, CONTAINER_FACTORY, this))
-            .itemHandler(() -> items)
-            .setupSync(this));
+    private static final Function<ComposerTileEntity, MenuProvider> SCREEN_CAP = tile -> new DefaultContainerProvider<GenericContainer>("Composer")
+            .containerSupplier(container(ScannerModule.CONTAINER_COMPOSER, CONTAINER_FACTORY, tile))
+            .itemHandler(() -> tile.items)
+            .setupSync(tile);
 
     private final ShapeModifier[] modifiers = new ShapeModifier[SLOT_COUNT];
     private boolean composeDirty = true;

@@ -40,7 +40,7 @@ public class GuiScanner extends GenericGuiContainer<ScannerTileEntity, GenericCo
     private final ScannerTileEntity tileEntity;
 
     public GuiScanner(ScannerTileEntity tileEntity, GenericContainer container, Inventory inventory) {
-        super(container, inventory, Component.literal("Scanner"), ScannerModule.SCANNER.get().getManualEntry());
+        super(container, inventory, Component.literal("Scanner"), ScannerModule.SCANNER.block().get().getManualEntry());
         this.tileEntity = tileEntity;
         imageWidth = SCANNER_WIDTH;
         imageHeight = SCANNER_HEIGHT;

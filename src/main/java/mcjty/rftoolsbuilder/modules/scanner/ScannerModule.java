@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.modules.scanner;
 
-import mcjty.lib.blocks.BaseBlock;
+import mcjty.lib.blocks.RBlock;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.datagen.DataGen;
 import mcjty.lib.datagen.Dob;
@@ -23,7 +23,6 @@ import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.common.NeoForge;
@@ -31,33 +30,37 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredItem;
 
 import java.util.function.Supplier;
 
 import static mcjty.lib.datagen.Dob.has;
-import static mcjty.rftoolsbuilder.RFToolsBuilder.tab;
-import static mcjty.rftoolsbuilder.setup.Registration.BLOCKS;
 import static mcjty.rftoolsbuilder.setup.Registration.CONTAINERS;
-import static mcjty.rftoolsbuilder.setup.Registration.ITEMS;
-import static mcjty.rftoolsbuilder.setup.Registration.TILES;
+import static mcjty.rftoolsbuilder.setup.Registration.RBLOCKS;
 
 public class ScannerModule implements IModule {
 
-    public static final DeferredBlock<BaseBlock> SCANNER = BLOCKS.register("scanner", ScannerBlock::new);
-    public static final DeferredItem<Item> SCANNER_ITEM = ITEMS.register("scanner", tab(() -> new BlockItem(SCANNER.get(), Registration.createStandardProperties())));
-    public static final Supplier<BlockEntityType<ScannerTileEntity>> TYPE_SCANNER = TILES.register("scanner", () -> BlockEntityType.Builder.of(ScannerTileEntity::new, SCANNER.get()).build(null));
+    public static final RBlock<ScannerBlock, BlockItem, ScannerTileEntity> SCANNER = RBLOCKS.registerBlock("scanner",
+            ScannerTileEntity.class,
+            ScannerBlock::new,
+            block -> new BlockItem(block.get(), Registration.createStandardProperties()),
+            ScannerTileEntity::new);
+    public static final Supplier<BlockEntityType<ScannerTileEntity>> TYPE_SCANNER = SCANNER.be();
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_SCANNER = CONTAINERS.register("scanner", GenericContainer::createContainerType);
 
-    public static final DeferredBlock<BaseBlock> COMPOSER = BLOCKS.register("composer", ComposerBlock::new);
-    public static final DeferredItem<Item> COMPOSER_ITEM = ITEMS.register("composer", tab(() -> new BlockItem(COMPOSER.get(), Registration.createStandardProperties())));
-    public static final Supplier<BlockEntityType<ComposerTileEntity>> TYPE_COMPOSER = TILES.register("composer", () -> BlockEntityType.Builder.of(ComposerTileEntity::new, COMPOSER.get()).build(null));
+    public static final RBlock<ComposerBlock, BlockItem, ComposerTileEntity> COMPOSER = RBLOCKS.registerBlock("composer",
+            ComposerTileEntity.class,
+            ComposerBlock::new,
+            block -> new BlockItem(block.get(), Registration.createStandardProperties()),
+            ComposerTileEntity::new);
+    public static final Supplier<BlockEntityType<ComposerTileEntity>> TYPE_COMPOSER = COMPOSER.be();
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_COMPOSER = CONTAINERS.register("composer", GenericContainer::createContainerType);
 
-    public static final DeferredBlock<BaseBlock> PROJECTOR = BLOCKS.register("projector", ProjectorBlock::new);
-    public static final DeferredItem<Item> PROJECTOR_ITEM = ITEMS.register("projector", tab(() -> new BlockItem(PROJECTOR.get(), Registration.createStandardProperties())));
-    public static final Supplier<BlockEntityType<ProjectorTileEntity>> TYPE_PROJECTOR = TILES.register("projector", () -> BlockEntityType.Builder.of(ProjectorTileEntity::new, PROJECTOR.get()).build(null));
+    public static final RBlock<ProjectorBlock, BlockItem, ProjectorTileEntity> PROJECTOR = RBLOCKS.registerBlock("projector",
+            ProjectorTileEntity.class,
+            ProjectorBlock::new,
+            block -> new BlockItem(block.get(), Registration.createStandardProperties()),
+            ProjectorTileEntity::new);
+    public static final Supplier<BlockEntityType<ProjectorTileEntity>> TYPE_PROJECTOR = PROJECTOR.be();
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_PROJECTOR = CONTAINERS.register("projector", GenericContainer::createContainerType);
 
     public ScannerModule(IEventBus bus) {
@@ -93,7 +96,7 @@ public class ScannerModule implements IModule {
                         .ironPickaxeTags()
                         .standardLoot()
                         .parentedItem("block/scanner")
-                        .blockState(p -> p.horizontalOrientedBlock(SCANNER.get(), p.frontBasedModel("scanner", p.modLoc("block/machinescanner"))))
+                        .blockState(p -> p.horizontalOrientedBlock(SCANNER.block().get(), p.frontBasedModel("scanner", p.modLoc("block/machinescanner"))))
                         .shaped(builder -> builder
                                         .define('M', VariousModule.MACHINE_FRAME.get())
                                         .define('q', Items.QUARTZ)
@@ -104,7 +107,7 @@ public class ScannerModule implements IModule {
                         .ironPickaxeTags()
                         .standardLoot()
                         .parentedItem("block/composer")
-                        .blockState(p -> p.horizontalOrientedBlock(COMPOSER.get(), p.frontBasedModel("composer", p.modLoc("block/machinecomposer"))))
+                        .blockState(p -> p.horizontalOrientedBlock(COMPOSER.block().get(), p.frontBasedModel("composer", p.modLoc("block/machinecomposer"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
                                         .define('P', Items.PAPER)
@@ -115,7 +118,7 @@ public class ScannerModule implements IModule {
                         .ironPickaxeTags()
                         .standardLoot()
                         .parentedItem("block/projector")
-                        .blockState(p -> p.horizontalOrientedBlock(PROJECTOR.get(), p.frontBasedModel("projector", p.modLoc("block/machineprojector"))))
+                        .blockState(p -> p.horizontalOrientedBlock(PROJECTOR.block().get(), p.frontBasedModel("projector", p.modLoc("block/machineprojector"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
                                         .define('X', VariousModule.INFUSED_DIAMOND.get())

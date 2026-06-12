@@ -45,6 +45,7 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.container.SlotDefinition.specific;
@@ -95,17 +96,19 @@ public class ProjectorTileEntity extends TickingTileEntity {
             .slot(specific(s -> s.getItem() instanceof ShapeCardItem).in().out(), SLOT_CARD, SHAPE_CARD_SLOT_X, 7)
             .playerSlots(PLAYER_SLOTS_X, 142));
 
-    @Cap(type = CapType.ITEMS_AUTOMATION)
     private final GenericItemHandler items = GenericItemHandler.create(this, CONTAINER_FACTORY)
             .itemValid((slot, stack) -> stack.getItem() instanceof ShapeCardItem)
             .onUpdate((slot, stack) -> onCardSlotUpdated())
             .build();
 
+    @Cap(type = CapType.ITEMS_AUTOMATION)
+    private static final Function<ProjectorTileEntity, GenericItemHandler> ITEM_CAP = tile -> tile.items;
+
     @Cap(type = CapType.CONTAINER)
-    private final Lazy<MenuProvider> screenHandler = Lazy.of(() -> new DefaultContainerProvider<GenericContainer>("Projector")
-            .containerSupplier(container(ScannerModule.CONTAINER_PROJECTOR, CONTAINER_FACTORY, this))
-            .itemHandler(() -> items)
-            .setupSync(this));
+    private static final Function<ProjectorTileEntity, MenuProvider> SCREEN_CAP = tile -> new DefaultContainerProvider<GenericContainer>("Projector")
+            .containerSupplier(container(ScannerModule.CONTAINER_PROJECTOR, CONTAINER_FACTORY, tile))
+            .itemHandler(() -> tile.items)
+            .setupSync(tile);
 
     private final ProjectorOperation[] operations = new ProjectorOperation[4];
     private ShapeRenderer shapeRenderer;
@@ -353,7 +356,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
     @Nullable
     private Direction getBlockOrientation() {
         BlockState state = level.getBlockState(worldPosition);
-        if (state.getBlock() == ScannerModule.PROJECTOR.get()) {
+        if (state.getBlock() == ScannerModule.PROJECTOR.block().get()) {
             return OrientationTools.getOrientationHoriz(state);
         }
         return null;
