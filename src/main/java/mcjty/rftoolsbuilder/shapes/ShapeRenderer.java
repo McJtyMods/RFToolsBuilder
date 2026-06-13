@@ -9,24 +9,41 @@ import mcjty.lib.varia.Check32;
 import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
+import mcjty.rftoolsbuilder.modules.scanner.client.DummyBlockGetter;
 import mcjty.rftoolsbuilder.modules.scanner.network.PacketRequestShapeData;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SectionBufferBuilderPack;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 public class ShapeRenderer {
 
@@ -43,6 +60,7 @@ public class ShapeRenderer {
     private ShapeID shapeID;
 
     private int waitForNewRequest = 0;
+    private final ModelRenderCache modelRenderCache = new ModelRenderCache();
 
 
     public ShapeRenderer(ShapeID shapeID) {
@@ -147,9 +165,13 @@ public class ShapeRenderer {
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
         RenderSystem.enableDepthTest();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
-        boolean doSound = renderFacesInWorld(poseStack, Tesselator.getInstance(), stack, scan, shape.isGrayscale(), shape.getScanId());
+        boolean doSound;
+        if (renderBlockModels) {
+            doSound = renderBlockModelsInWorld(poseStack, Tesselator.getInstance(), stack, scan);
+        } else {
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            doSound = renderFacesInWorld(poseStack, Tesselator.getInstance(), stack, scan, shape.isGrayscale(), shape.getScanId());
+        }
 
         RenderSystem.disableBlend();
         poseStack.popPose();
@@ -466,6 +488,398 @@ public class ShapeRenderer {
         }
 
         return needScanSound;
+    }
+
+    private boolean renderBlockModelsInWorld(PoseStack poseStack, Tesselator tessellator, ItemStack stack, boolean showScan) {
+        RenderData data = requestRenderData(stack);
+        if (data.getPlanes() == null) {
+            return false;
+        }
+
+        Level level = Minecraft.getInstance().level;
+        modelRenderCache.buildIfNeeded(data, level);
+        modelRenderCache.render(poseStack);
+
+        boolean needScanSound = false;
+        long time = System.currentTimeMillis();
+        RenderData.RenderPlane[] planes = data.getPlanes();
+        for (int i = 0; i < planes.length; i++) {
+            RenderData.RenderPlane plane = planes[i];
+            if (plane == null) {
+                continue;
+            }
+            boolean flash = false;
+            if (showScan && modelRenderCache.hasPlaneBuffers(i)) {
+                plane.markFlashRendered();
+                flash = plane.isFlashing(time);
+            }
+            if (flash) {
+                needScanSound = true;
+                RenderSystem.setShader(GameRenderer::getPositionColorShader);
+                GlStateManager._enableBlend();
+                GlStateManager._blendFunc(GL11.GL_ONE, GL11.GL_ONE);
+                renderPlaneImmediate(poseStack, tessellator, plane, false, false);
+                GlStateManager._disableBlend();
+                GlStateManager._blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            }
+        }
+        return needScanSound;
+    }
+
+    private static class ModelRenderCache {
+        private static final int PLANES_TO_BUILD_PER_FRAME = 1;
+
+        private static class PlaneBuffers {
+            private final Map<RenderType, VertexBuffer> layerBuffers = new HashMap<>();
+            @Nullable
+            private VertexBuffer fluidBuffer = null;
+
+            private void close() {
+                for (VertexBuffer buffer : layerBuffers.values()) {
+                    buffer.close();
+                }
+                layerBuffers.clear();
+                if (fluidBuffer != null) {
+                    fluidBuffer.close();
+                    fluidBuffer = null;
+                }
+            }
+        }
+
+        private final SectionBufferBuilderPack fixedBuffers = new SectionBufferBuilderPack();
+        private final Map<Integer, PlaneBuffers> planeBuffers = new HashMap<>();
+        private final Map<Integer, Long> knownBirthtimes = new HashMap<>();
+        private final Map<Integer, Map<BlockPos, BlockState>> planeBlockMaps = new HashMap<>();
+        private final Map<BlockPos, BlockState> blockMap = new HashMap<>();
+        private final Queue<Integer> pendingBuilds = new ArrayDeque<>();
+        private final Set<Integer> pendingBuildSet = new HashSet<>();
+        private int planeCount = -1;
+
+        private void buildIfNeeded(RenderData data, @Nullable Level level) {
+            if (level == null) {
+                return;
+            }
+            RenderData.RenderPlane[] planes = data.getPlanes();
+            if (planes == null) {
+                clearAll();
+                return;
+            }
+            syncPlaneCount(planes.length);
+
+            for (int i = 0; i < planes.length; i++) {
+                RenderData.RenderPlane plane = planes[i];
+                if (plane == null) {
+                    removePlane(i);
+                    continue;
+                }
+                long birthtime = plane.getBirthtime();
+                Long known = knownBirthtimes.get(i);
+                if (known == null || known != birthtime) {
+                    knownBirthtimes.put(i, birthtime);
+                    markPlaneDirty(i);
+                    markPlaneDirty(i - 1);
+                    markPlaneDirty(i + 1);
+                }
+            }
+
+            int built = 0;
+            while (built < PLANES_TO_BUILD_PER_FRAME && !pendingBuilds.isEmpty()) {
+                Integer index = pendingBuilds.poll();
+                if (index == null || !pendingBuildSet.remove(index)) {
+                    continue;
+                }
+                if (index < 0 || index >= planes.length) {
+                    continue;
+                }
+                RenderData.RenderPlane plane = planes[index];
+                if (plane == null) {
+                    removePlane(index);
+                    continue;
+                }
+                rebuildPlaneBuffers(level, index, plane);
+                built++;
+            }
+        }
+
+        private void render(PoseStack poseStack) {
+            if (planeBuffers.isEmpty()) {
+                return;
+            }
+            List<Integer> indices = new ArrayList<>(planeBuffers.keySet());
+            indices.sort(Integer::compareTo);
+            Matrix4f modelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix()).mul(poseStack.last().pose());
+
+            for (RenderType renderType : RenderType.chunkBufferLayers()) {
+                renderType.setupRenderState();
+                ShaderInstance shader = RenderSystem.getShader();
+                if (shader != null) {
+                    for (Integer index : indices) {
+                        PlaneBuffers buffers = planeBuffers.get(index);
+                        if (buffers == null) {
+                            continue;
+                        }
+                        VertexBuffer buffer = buffers.layerBuffers.get(renderType);
+                        if (buffer != null) {
+                            buffer.bind();
+                            buffer.drawWithShader(modelViewMatrix, RenderSystem.getProjectionMatrix(), shader);
+                        }
+                    }
+                }
+                renderType.clearRenderState();
+            }
+
+            boolean hasFluids = false;
+            for (Integer index : indices) {
+                PlaneBuffers buffers = planeBuffers.get(index);
+                if (buffers != null && buffers.fluidBuffer != null) {
+                    hasFluids = true;
+                    break;
+                }
+            }
+            if (hasFluids) {
+                RenderType.translucent().setupRenderState();
+                ShaderInstance shader = RenderSystem.getShader();
+                if (shader != null) {
+                    RenderSystem.enableDepthTest();
+                    RenderSystem.depthMask(false);
+                    RenderSystem.disableCull();
+                    for (Integer index : indices) {
+                        PlaneBuffers buffers = planeBuffers.get(index);
+                        if (buffers != null && buffers.fluidBuffer != null) {
+                            buffers.fluidBuffer.bind();
+                            buffers.fluidBuffer.drawWithShader(modelViewMatrix, RenderSystem.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+                        }
+                    }
+                    RenderSystem.depthMask(true);
+                    RenderSystem.enableCull();
+                }
+                RenderType.translucent().clearRenderState();
+            }
+
+            VertexBuffer.unbind();
+        }
+
+        private boolean hasPlaneBuffers(int index) {
+            PlaneBuffers buffers = planeBuffers.get(index);
+            return buffers != null && (!buffers.layerBuffers.isEmpty() || buffers.fluidBuffer != null);
+        }
+
+        private void syncPlaneCount(int count) {
+            if (planeCount != count) {
+                clearAll();
+                planeCount = count;
+            }
+        }
+
+        private void markPlaneDirty(int index) {
+            if (index < 0 || index >= planeCount) {
+                return;
+            }
+            if (pendingBuildSet.add(index)) {
+                pendingBuilds.add(index);
+            }
+        }
+
+        private void removePlane(int index) {
+            knownBirthtimes.remove(index);
+            pendingBuildSet.remove(index);
+
+            Map<BlockPos, BlockState> oldPlaneMap = planeBlockMaps.remove(index);
+            if (oldPlaneMap != null) {
+                for (BlockPos pos : oldPlaneMap.keySet()) {
+                    blockMap.remove(pos);
+                }
+            }
+
+            PlaneBuffers oldBuffers = planeBuffers.remove(index);
+            if (oldBuffers != null) {
+                oldBuffers.close();
+            }
+        }
+
+        private void clearAll() {
+            for (PlaneBuffers buffers : planeBuffers.values()) {
+                buffers.close();
+            }
+            planeBuffers.clear();
+            knownBirthtimes.clear();
+            planeBlockMaps.clear();
+            blockMap.clear();
+            pendingBuilds.clear();
+            pendingBuildSet.clear();
+            planeCount = -1;
+        }
+
+        private void rebuildPlaneBuffers(Level level, int index, RenderData.RenderPlane plane) {
+            Map<BlockPos, BlockState> newPlaneMap = extractPlaneBlocks(plane);
+            Map<BlockPos, BlockState> oldPlaneMap = planeBlockMaps.put(index, newPlaneMap);
+            if (oldPlaneMap != null) {
+                for (BlockPos pos : oldPlaneMap.keySet()) {
+                    blockMap.remove(pos);
+                }
+            }
+            blockMap.putAll(newPlaneMap);
+
+            PlaneBuffers oldBuffers = planeBuffers.remove(index);
+            if (oldBuffers != null) {
+                oldBuffers.close();
+            }
+
+            PlaneBuffers buffersForPlane = new PlaneBuffers();
+            DummyBlockGetter blockGetter = new DummyBlockGetter(level.registryAccess(), blockMap);
+            BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
+            RandomSource random = RandomSource.create(42L);
+            PoseStack buildingPoseStack = new PoseStack();
+            Map<RenderType, BufferBuilder> builders = new HashMap<>();
+
+            ModelBlockRenderer.enableCaching();
+            try {
+                for (Map.Entry<BlockPos, BlockState> entry : newPlaneMap.entrySet()) {
+                    BlockPos pos = entry.getKey();
+                    BlockState state = entry.getValue();
+                    if (state.getRenderShape() != RenderShape.MODEL) {
+                        continue;
+                    }
+                    BakedModel model = blockRenderer.getBlockModel(state);
+                    ModelData modelData = blockGetter.getModelData(pos);
+                    modelData = model.getModelData(blockGetter, pos, state, modelData);
+                    random.setSeed(state.getSeed(pos));
+                    for (RenderType renderType : model.getRenderTypes(state, random, modelData)) {
+                        BufferBuilder builder = getOrBeginLayer(builders, renderType);
+                        buildingPoseStack.pushPose();
+                        buildingPoseStack.translate(pos.getX(), pos.getY(), pos.getZ());
+                        blockRenderer.renderBatched(state, pos, blockGetter, buildingPoseStack, builder, true, random, modelData, renderType);
+                        buildingPoseStack.popPose();
+                    }
+                }
+            } finally {
+                ModelBlockRenderer.clearCache();
+            }
+
+            for (Map.Entry<RenderType, BufferBuilder> entry : builders.entrySet()) {
+                MeshData meshData = entry.getValue().build();
+                if (meshData != null) {
+                    VertexBuffer layerBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+                    layerBuffer.bind();
+                    layerBuffer.upload(meshData);
+                    VertexBuffer.unbind();
+                    buffersForPlane.layerBuffers.put(entry.getKey(), layerBuffer);
+                }
+            }
+            fixedBuffers.clearAll();
+
+            buildFluidBuffer(buffersForPlane, newPlaneMap);
+            planeBuffers.put(index, buffersForPlane);
+        }
+
+        private BufferBuilder getOrBeginLayer(Map<RenderType, BufferBuilder> builders, RenderType renderType) {
+            BufferBuilder builder = builders.get(renderType);
+            if (builder == null) {
+                builder = new BufferBuilder(fixedBuffers.buffer(renderType), VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
+                builders.put(renderType, builder);
+            }
+            return builder;
+        }
+
+        private static Map<BlockPos, BlockState> extractPlaneBlocks(RenderData.RenderPlane plane) {
+            Map<BlockPos, BlockState> states = new HashMap<>();
+            int y = plane.getY();
+            for (RenderData.RenderStrip strip : plane.getStrips()) {
+                int z = plane.getStartz();
+                int x = strip.getX();
+                for (Pair<Integer, BlockState> pair : strip.getData()) {
+                    int cnt = pair.getKey();
+                    BlockState state = pair.getValue();
+                    if (state != null) {
+                        for (int c = 0; c < cnt; c++) {
+                            states.put(new BlockPos(x, y, z + c), state);
+                        }
+                    }
+                    z += cnt;
+                }
+            }
+            return states;
+        }
+
+        private void buildFluidBuffer(PlaneBuffers buffersForPlane, Map<BlockPos, BlockState> planeMap) {
+            BufferBuilder builder = new BufferBuilder(new ByteBufferBuilder(262144), VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            boolean hasFluids = false;
+
+            for (Map.Entry<BlockPos, BlockState> entry : planeMap.entrySet()) {
+                BlockPos pos = entry.getKey();
+                BlockState state = entry.getValue();
+                if (state.getFluidState().isEmpty()) {
+                    continue;
+                }
+                hasFluids = true;
+                addFluidBlock(builder, blockMap, pos, state);
+            }
+
+            MeshData meshData = builder.build();
+            if (hasFluids && meshData != null) {
+                VertexBuffer fluidBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+                fluidBuffer.bind();
+                fluidBuffer.upload(meshData);
+                VertexBuffer.unbind();
+                buffersForPlane.fluidBuffer = fluidBuffer;
+            }
+        }
+
+        private void addFluidBlock(BufferBuilder builder, Map<BlockPos, BlockState> blockMap, BlockPos pos, BlockState state) {
+            float height = state.getFluidState().isSource() ? 1.0f : 0.875f;
+            float r = 0.25f;
+            float g = 0.45f;
+            float b = 1.0f;
+            float a = 0.7f;
+
+            if (isFluidFaceVisible(blockMap, pos, Direction.UP)) {
+                builder.addVertex(pos.getX(), pos.getY() + height, pos.getZ() + 1).setColor(r, g, b, a);
+                builder.addVertex(pos.getX() + 1, pos.getY() + height, pos.getZ() + 1).setColor(r, g, b, a);
+                builder.addVertex(pos.getX() + 1, pos.getY() + height, pos.getZ()).setColor(r, g, b, a);
+                builder.addVertex(pos.getX(), pos.getY() + height, pos.getZ()).setColor(r, g, b, a);
+            }
+            if (isFluidFaceVisible(blockMap, pos, Direction.DOWN)) {
+                builder.addVertex(pos.getX(), pos.getY(), pos.getZ()).setColor(r, g, b, a);
+                builder.addVertex(pos.getX() + 1, pos.getY(), pos.getZ()).setColor(r, g, b, a);
+                builder.addVertex(pos.getX() + 1, pos.getY(), pos.getZ() + 1).setColor(r, g, b, a);
+                builder.addVertex(pos.getX(), pos.getY(), pos.getZ() + 1).setColor(r, g, b, a);
+            }
+            if (isFluidFaceVisible(blockMap, pos, Direction.NORTH)) {
+                builder.addVertex(pos.getX() + 1, pos.getY() + height, pos.getZ()).setColor(r, g, b, a);
+                builder.addVertex(pos.getX() + 1, pos.getY(), pos.getZ()).setColor(r, g, b, a);
+                builder.addVertex(pos.getX(), pos.getY(), pos.getZ()).setColor(r, g, b, a);
+                builder.addVertex(pos.getX(), pos.getY() + height, pos.getZ()).setColor(r, g, b, a);
+            }
+            if (isFluidFaceVisible(blockMap, pos, Direction.SOUTH)) {
+                builder.addVertex(pos.getX() + 1, pos.getY(), pos.getZ() + 1).setColor(r, g, b, a);
+                builder.addVertex(pos.getX() + 1, pos.getY() + height, pos.getZ() + 1).setColor(r, g, b, a);
+                builder.addVertex(pos.getX(), pos.getY() + height, pos.getZ() + 1).setColor(r, g, b, a);
+                builder.addVertex(pos.getX(), pos.getY(), pos.getZ() + 1).setColor(r, g, b, a);
+            }
+            if (isFluidFaceVisible(blockMap, pos, Direction.WEST)) {
+                builder.addVertex(pos.getX(), pos.getY(), pos.getZ() + 1).setColor(r, g, b, a);
+                builder.addVertex(pos.getX(), pos.getY() + height, pos.getZ() + 1).setColor(r, g, b, a);
+                builder.addVertex(pos.getX(), pos.getY() + height, pos.getZ()).setColor(r, g, b, a);
+                builder.addVertex(pos.getX(), pos.getY(), pos.getZ()).setColor(r, g, b, a);
+            }
+            if (isFluidFaceVisible(blockMap, pos, Direction.EAST)) {
+                builder.addVertex(pos.getX() + 1, pos.getY(), pos.getZ()).setColor(r, g, b, a);
+                builder.addVertex(pos.getX() + 1, pos.getY() + height, pos.getZ()).setColor(r, g, b, a);
+                builder.addVertex(pos.getX() + 1, pos.getY() + height, pos.getZ() + 1).setColor(r, g, b, a);
+                builder.addVertex(pos.getX() + 1, pos.getY(), pos.getZ() + 1).setColor(r, g, b, a);
+            }
+        }
+
+        private boolean isFluidFaceVisible(Map<BlockPos, BlockState> blockMap, BlockPos pos, Direction direction) {
+            BlockState neighbor = blockMap.get(pos.relative(direction));
+            if (neighbor == null) {
+                return true;
+            }
+            if (!neighbor.getFluidState().isEmpty()) {
+                return false;
+            }
+            return !neighbor.canOcclude();
+        }
     }
 
     private boolean renderFacesForGui(PoseStack poseStack, Tesselator tessellator,
