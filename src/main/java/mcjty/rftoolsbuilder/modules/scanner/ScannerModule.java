@@ -94,7 +94,7 @@ public class ScannerModule implements IModule {
         dataGen.add(
                 Dob.blockBuilder(SCANNER)
                         .ironPickaxeTags()
-                        .standardLoot()
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
                         .parentedItem("block/scanner")
                         .blockState(p -> p.horizontalOrientedBlock(SCANNER.block().get(), p.frontBasedModel("scanner", p.modLoc("block/machinescanner"))))
                         .shaped(builder -> builder
@@ -105,7 +105,7 @@ public class ScannerModule implements IModule {
                                 "XoX", "qMq", "XrX"),
                 Dob.blockBuilder(COMPOSER)
                         .ironPickaxeTags()
-                        .standardLoot()
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
                         .parentedItem("block/composer")
                         .blockState(p -> p.horizontalOrientedBlock(COMPOSER.block().get(), p.frontBasedModel("composer", p.modLoc("block/machinecomposer"))))
                         .shaped(builder -> builder
@@ -116,7 +116,7 @@ public class ScannerModule implements IModule {
                                 "PQP", "QFQ", "PQP"),
                 Dob.blockBuilder(PROJECTOR)
                         .ironPickaxeTags()
-                        .standardLoot()
+                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get())
                         .parentedItem("block/projector")
                         .blockState(p -> p.horizontalOrientedBlock(PROJECTOR.block().get(), p.frontBasedModel("projector", p.modLoc("block/machineprojector"))))
                         .shaped(builder -> builder

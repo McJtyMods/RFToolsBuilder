@@ -25,6 +25,7 @@ import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.InteractionHand;
@@ -527,6 +528,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
+        items.load(tag, "items", provider);
         verticalOffset = tag.contains("offs") ? tag.getFloat("offs") : .2f;
         scale = tag.contains("scale") ? tag.getFloat("scale") : .01f;
         angle = tag.getFloat("angle");
@@ -555,6 +557,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
     @Override
     protected void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        items.save(tag, "items", provider);
         tag.putFloat("offs", verticalOffset);
         tag.putFloat("scale", scale);
         tag.putFloat("angle", angle);
@@ -580,6 +583,18 @@ public class ProjectorTileEntity extends TickingTileEntity {
             }
             tag.put("op_" + facing.getName(), tc);
         }
+    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentInput input) {
+        super.applyImplicitComponents(input);
+        items.applyImplicitComponents(input.get(mcjty.lib.setup.Registration.ITEM_INVENTORY));
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+        super.collectImplicitComponents(builder);
+        items.collectImplicitComponents(builder);
     }
 
     @Override

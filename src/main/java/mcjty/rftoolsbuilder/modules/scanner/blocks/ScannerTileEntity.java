@@ -25,6 +25,7 @@ import mcjty.rftoolsbuilder.shapes.ScanDataManager;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.MenuProvider;
@@ -271,6 +272,7 @@ public class ScannerTileEntity extends TickingTileEntity {
     @Override
     protected void loadAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
+        items.load(tag, "items", provider);
         scanId = tag.getInt("scanid");
         if (tag.contains("scandimx")) {
             dataDim = new BlockPos(tag.getInt("scandimx"), tag.getInt("scandimy"), tag.getInt("scandimz"));
@@ -281,6 +283,7 @@ public class ScannerTileEntity extends TickingTileEntity {
     @Override
     protected void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        items.save(tag, "items", provider);
         tag.putInt("scanid", scanId);
         tag.putInt("scandimx", dataDim.getX());
         tag.putInt("scandimy", dataDim.getY());
@@ -304,6 +307,18 @@ public class ScannerTileEntity extends TickingTileEntity {
         tag.putInt("scanoffy", dataOffset.getY());
         tag.putInt("scanoffz", dataOffset.getZ());
         tag.putInt("progress", progressBusy);
+    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentInput input) {
+        super.applyImplicitComponents(input);
+        items.applyImplicitComponents(input.get(mcjty.lib.setup.Registration.ITEM_INVENTORY));
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+        super.collectImplicitComponents(builder);
+        items.collectImplicitComponents(builder);
     }
 
     @Override

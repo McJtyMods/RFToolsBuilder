@@ -21,6 +21,7 @@ import mcjty.rftoolsbuilder.shapes.ShapeOperation;
 import mcjty.rftoolsbuilder.shapes.ShapeRotation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.MenuProvider;
@@ -155,6 +156,7 @@ public class ComposerTileEntity extends TickingTileEntity {
     @Override
     protected void loadAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
+        items.load(tag, "items", provider);
         ListTag list = tag.getList("ops", net.minecraft.nbt.Tag.TAG_COMPOUND);
         for (int i = 0; i < Math.min(SLOT_COUNT, list.size()); i++) {
             CompoundTag tc = list.getCompound(i);
@@ -174,6 +176,7 @@ public class ComposerTileEntity extends TickingTileEntity {
     @Override
     protected void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        items.save(tag, "items", provider);
         ListTag list = new ListTag();
         for (ShapeModifier modifier : modifiers) {
             CompoundTag tc = new CompoundTag();
@@ -183,6 +186,18 @@ public class ComposerTileEntity extends TickingTileEntity {
             list.add(tc);
         }
         tag.put("ops", list);
+    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentInput input) {
+        super.applyImplicitComponents(input);
+        items.applyImplicitComponents(input.get(mcjty.lib.setup.Registration.ITEM_INVENTORY));
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+        super.collectImplicitComponents(builder);
+        items.collectImplicitComponents(builder);
     }
 
     @Override
