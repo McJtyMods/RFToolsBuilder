@@ -14,11 +14,13 @@ import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
@@ -69,10 +71,17 @@ public class ShapeRenderer {
         return data;
     }
 
-    public static void setRenderData(ShapeID id, @Nullable RenderData.RenderPlane plane, int offsetY, int dy, String msg) {
+    public static void setRenderData(ShapeID id, int checksum, @Nullable RenderData.RenderPlane plane, int offsetY, int dy, String msg) {
         RenderData data = getRenderDataAndCreate(id);
+        if (data.getChecksum() != checksum) {
+            return;
+        }
         data.setPlaneData(plane, offsetY, dy);
         data.previewMessage = msg;
+        data.markRequestProgress();
+        if (offsetY >= dy - 1) {
+            data.clearRequest();
+        }
     }
 
     public void initView(int dx, int dy) {
@@ -128,40 +137,27 @@ public class ShapeRenderer {
         }
     }
 
-    // @todo 1.15: this needs rewriting
-    public boolean renderShapeInWorld(ItemStack stack, double x, double y, double z, float offset, float scale, float angle,
-                                      boolean scan, ShapeID shape) {
-//        GlStateManager._pushMatrix();
-//        GlStateManager._translatef((float) x + 0.5F, (float) y + 1F + offset, (float) z + 0.5F);
-//        GlStateManager._scalef(scale, scale, scale);
-//        GlStateManager._rotatef(angle, 0, 1, 0);
-//
-////        net.minecraft.client.renderer.RenderHelper.disableStandardItemLighting();
-//        Minecraft.getInstance().gameRenderer.lightTexture().turnOffLightLayer();
-//        GlStateManager._disableBlend();
-//        GlStateManager._enableCull();
-//        GlStateManager._disableLighting();
-//        GlStateManager._disableTexture();
-//
-//        Tesselator tessellator = Tesselator.getInstance();
-//        BufferBuilder buffer = tessellator.getBuilder();
-//        boolean doSound = renderFacesInWorld(buffer, stack, scan, shape.isGrayscale(), shape.getScanId());
-//
-//        GlStateManager._enableTexture();
-//        GlStateManager._disableBlend();
-//        GlStateManager._enableLighting();
-////        RenderHelper.enableStandardItemLighting();
-//        Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
-//
-//        GlStateManager._popMatrix();
-//        return doSound;
-        return false;
+    public boolean renderShapeInWorld(PoseStack poseStack, ItemStack stack, float offset, float scale, float angle,
+                                      boolean scan, ShapeID shape, boolean renderBlockModels) {
+        poseStack.pushPose();
+        poseStack.translate(.5f, 1.0f + offset, .5f);
+        poseStack.scale(scale, scale, scale);
+        RenderHelper.rotateYP(poseStack, angle);
+
+        RenderSystem.disableBlend();
+        RenderSystem.enableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+        boolean doSound = renderFacesInWorld(poseStack, Tesselator.getInstance(), stack, scan, shape.isGrayscale(), shape.getScanId());
+
+        RenderSystem.disableBlend();
+        poseStack.popPose();
+        return doSound;
     }
 
     public void renderShape(GuiGraphics graphics, IShapeParentGui gui, ItemStack stack, int x, int y, boolean showAxis, boolean showOuter, boolean showScan, boolean showGuidelines) {
         PoseStack matrixStack = graphics.pose();
-        setupScissor(gui);
-
         matrixStack.pushPose();
 
         matrixStack.translate(dx, dy, 200);
@@ -172,17 +168,18 @@ public class ShapeRenderer {
 
         RenderSystem.disableBlend();
         RenderSystem.disableCull();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
 //        RenderSystem.disableLighting();
 
         Tesselator tessellator = Tesselator.getInstance();
 
-        GL11.glEnable(GL11.GL_SCISSOR_TEST);
+        setupScissor(gui);
 
-        renderFacesForGui(tessellator, stack, showScan, false, -1);
+        renderFacesForGui(matrixStack, tessellator, stack, showScan, false, -1);
         BlockPos dimension = ShapeCardItem.getDimension(stack);
-        renderHelpers(tessellator, dimension.getX(), dimension.getY(), dimension.getZ(), showAxis, showOuter);
+        renderHelpers(matrixStack, tessellator, dimension.getX(), dimension.getY(), dimension.getZ(), showAxis, showOuter);
 
-        GL11.glDisable(GL11.GL_SCISSOR_TEST);
+        RenderSystem.disableScissor();
 
         matrixStack.popPose();
 
@@ -195,6 +192,7 @@ public class ShapeRenderer {
             buffer.addVertex(x - 39, y + 195, 0).setColor(0f, 0.8f, 0f, 1f);
             buffer.addVertex(x - 62, y + 210, 0).setColor(0f, 0f, 1f, 1f);
             buffer.addVertex(x - 39, y + 210, 0).setColor(0f, 0f, 1f, 1f);
+            drawIfNotEmpty(buffer);
         }
 
         RenderSystem.disableBlend();
@@ -207,14 +205,14 @@ public class ShapeRenderer {
 
     }
 
-    private void renderHelpers(Tesselator tessellator, int xlen, int ylen, int zlen, boolean showAxis, boolean showOuter) {
+    private void renderHelpers(PoseStack poseStack, Tesselator tessellator, int xlen, int ylen, int zlen, boolean showAxis, boolean showOuter) {
         // X, Y, Z axis
         if (showAxis) {
-            ShapeRenderer.renderAxis(tessellator, xlen/2, ylen/2, zlen/2);
+            ShapeRenderer.renderAxis(poseStack, tessellator, xlen/2, ylen/2, zlen/2);
         }
 
         if (showOuter) {
-            ShapeRenderer.renderOuterBox(tessellator, xlen, ylen, zlen);
+            ShapeRenderer.renderOuterBox(poseStack, tessellator, xlen, ylen, zlen);
         }
     }
 
@@ -242,6 +240,21 @@ public class ShapeRenderer {
         offset = prev;
     }
 
+    private static void drawIfNotEmpty(BufferBuilder buffer) {
+        MeshData meshData = buffer.build();
+        if (meshData != null) {
+            BufferUploader.drawWithShader(meshData);
+        }
+    }
+
+    private static void add(Matrix4f matrix, BufferBuilder buffer, double x, double y, double z) {
+        buffer.addVertex(matrix, (float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z)).setColor(1f, 1f, 1f, 1f);
+    }
+
+    private static void add(Matrix4f matrix, BufferBuilder buffer, double x, double y, double z, float r, float g, float b, float a) {
+        buffer.addVertex(matrix, (float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z)).setColor(r, g, b, a);
+    }
+
     private static void add(BufferBuilder buffer, double x, double y, double z) {
         buffer.addVertex((float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z)).setColor(1f, 1f, 1f, 1f);
     }
@@ -250,9 +263,10 @@ public class ShapeRenderer {
         buffer.addVertex((float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z)).setColor(r, g, b, a);
     }
 
-    static void renderOuterBox(Tesselator tessellator, int xlen, int ylen, int zlen) {
+    static void renderOuterBox(PoseStack poseStack, Tesselator tessellator, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(1.0f);
         BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        Matrix4f matrix = poseStack.last().pose();
         Vec3 origOffset = setOffset(.5, .5, .5);
         int xleft = -xlen / 2;
         int xright = xlen / 2 + (xlen & 1);
@@ -261,33 +275,33 @@ public class ShapeRenderer {
         int zsouth = -zlen / 2;
         int znorth = zlen / 2 + (zlen & 1);
 
-        add(buffer, xleft, ybot, zsouth);
-        add(buffer, xright, ybot, zsouth);
-        add(buffer, xleft, ybot, zsouth);
-        add(buffer, xleft, ytop, zsouth);
-        add(buffer, xleft, ybot, zsouth);
-        add(buffer, xleft, ybot, znorth);
-        add(buffer, xright, ytop, znorth);
-        add(buffer, xleft, ytop, znorth);
-        add(buffer, xright, ytop, znorth);
-        add(buffer, xright, ybot, znorth);
-        add(buffer, xright, ytop, znorth);
-        add(buffer, xright, ytop, zsouth);
-        add(buffer, xright, ybot, zsouth);
-        add(buffer, xright, ybot, znorth);
-        add(buffer, xright, ybot, zsouth);
-        add(buffer, xright, ytop, zsouth);
-        add(buffer, xleft, ytop, zsouth);
-        add(buffer, xright, ytop, zsouth);
-        add(buffer, xleft, ytop, zsouth);
-        add(buffer, xleft, ytop, znorth);
-        add(buffer, xleft, ytop, znorth);
-        add(buffer, xleft, ybot, znorth);
-        add(buffer, xleft, ybot, znorth);
-        add(buffer, xright, ybot, znorth);
+        add(matrix, buffer, xleft, ybot, zsouth);
+        add(matrix, buffer, xright, ybot, zsouth);
+        add(matrix, buffer, xleft, ybot, zsouth);
+        add(matrix, buffer, xleft, ytop, zsouth);
+        add(matrix, buffer, xleft, ybot, zsouth);
+        add(matrix, buffer, xleft, ybot, znorth);
+        add(matrix, buffer, xright, ytop, znorth);
+        add(matrix, buffer, xleft, ytop, znorth);
+        add(matrix, buffer, xright, ytop, znorth);
+        add(matrix, buffer, xright, ybot, znorth);
+        add(matrix, buffer, xright, ytop, znorth);
+        add(matrix, buffer, xright, ytop, zsouth);
+        add(matrix, buffer, xright, ybot, zsouth);
+        add(matrix, buffer, xright, ybot, znorth);
+        add(matrix, buffer, xright, ybot, zsouth);
+        add(matrix, buffer, xright, ytop, zsouth);
+        add(matrix, buffer, xleft, ytop, zsouth);
+        add(matrix, buffer, xright, ytop, zsouth);
+        add(matrix, buffer, xleft, ytop, zsouth);
+        add(matrix, buffer, xleft, ytop, znorth);
+        add(matrix, buffer, xleft, ytop, znorth);
+        add(matrix, buffer, xleft, ybot, znorth);
+        add(matrix, buffer, xleft, ybot, znorth);
+        add(matrix, buffer, xright, ybot, znorth);
 
         restoreOffset(origOffset);
-//        tessellator.end();        // @todo 1.21
+        drawIfNotEmpty(buffer);
     }
 
     static void renderOuterBoxInGui(Tesselator tessellator, int xlen, int ylen, int zlen) {
@@ -327,7 +341,7 @@ public class ShapeRenderer {
         add(buffer, xright, ybot, znorth);
 
         restoreOffset(origOffset);
-//        tessellator.end();    // @todo 1.21
+        drawIfNotEmpty(buffer);
     }
 
     static void renderAxisInGui(Tesselator tessellator, int xlen, int ylen, int zlen) {
@@ -341,21 +355,22 @@ public class ShapeRenderer {
         add(buffer, 0, 0, 0, 0f, 0f, 1f, 1f);
         add(buffer, 0, 0, zlen, 0f, 0f, 1f, 1f);
         restoreOffset(origOffset);
-//        tessellator.end();        // @todo 1.21 right?
+        drawIfNotEmpty(buffer);
     }
 
-    static void renderAxis(Tesselator tessellator, int xlen, int ylen, int zlen) {
+    static void renderAxis(PoseStack poseStack, Tesselator tessellator, int xlen, int ylen, int zlen) {
         RenderSystem.lineWidth(2.5f);
         BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        Matrix4f matrix = poseStack.last().pose();
         Vec3 origOffset = setOffset(.5, .5, .5);
-        add(buffer, 0, 0, 0, 1f, 0f, 0f, 1f);
-        add(buffer, xlen, 0, 0, 1f, 0f, 0f, 1f);
-        add(buffer, 0, 0, 0, 0f, 1f, 0f, 1f);
-        add(buffer, 0, ylen, 0, 0f, 1f, 0f, 1f);
-        add(buffer, 0, 0, 0, 0f, 0f, 1f, 1f);
-        add(buffer, 0, 0, zlen, 0f, 0f, 1f, 1f);
+        add(matrix, buffer, 0, 0, 0, 1f, 0f, 0f, 1f);
+        add(matrix, buffer, xlen, 0, 0, 1f, 0f, 0f, 1f);
+        add(matrix, buffer, 0, 0, 0, 0f, 1f, 0f, 1f);
+        add(matrix, buffer, 0, ylen, 0, 0f, 1f, 0f, 1f);
+        add(matrix, buffer, 0, 0, 0, 0f, 0f, 1f, 1f);
+        add(matrix, buffer, 0, 0, zlen, 0f, 0f, 1f, 1f);
         restoreOffset(origOffset);
-//        tessellator.end();    // @todo 1.21 right?
+        drawIfNotEmpty(buffer);
     }
 
     private int calculateChecksum(ItemStack stack) {
@@ -368,47 +383,58 @@ public class ShapeRenderer {
 
     private int extraDataCounter = 0;
 
-    // @todo 1.15 in world version
-    private boolean renderFacesInWorld(final Tesselator tesselator,
-                                       ItemStack stack, boolean showScan, boolean grayscale, int scanId) {
-
+    private RenderData requestRenderData(ItemStack stack) {
         RenderData data = getRenderDataAndCreate(shapeID);
+        int check = calculateChecksum(stack);
+        if (check != data.getChecksum()) {
+            data.clearRequest();
+            data.clearData();
+            data.setChecksum(check);
+            data.setWantData(true);
+        } else if (data.isRequestTimedOut()) {
+            data.clearRequest();
+            data.setWantData(true);
+        }
 
-        long check = calculateChecksum(stack);
-        if (data.isWantData() || waitForNewRequest > 0) {
+        if ((data.isWantData() || !data.hasData()) && !data.isRequestInFlight()) {
             if (waitForNewRequest <= 0) {
-                // No positions, send a new request
-                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID, (int) check));
+                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID, check));
                 waitForNewRequest = 20;
                 data.setWantData(false);
+                data.markRequestSent();
             } else {
                 waitForNewRequest--;
             }
-        } else {
-            if (!data.hasData() || check != data.getChecksum()) {
-                // Checksum failed, we want new data
-                data.setChecksum(check);
-                data.setWantData(true);
-            }
         }
+        return data;
+    }
+
+    // @todo 1.15 in world version
+    private boolean renderFacesInWorld(PoseStack poseStack, final Tesselator tesselator,
+                                       ItemStack stack, boolean showScan, boolean grayscale, int scanId) {
+
+        RenderData data = requestRenderData(stack);
 
         boolean needScanSound = false;
         if (data.getPlanes() != null) {
             long time = System.currentTimeMillis();
             for (RenderData.RenderPlane plane : data.getPlanes()) {
                 if (plane != null) {
-                    if (plane.isDirty()) {
-                        createRenderData(plane, data, grayscale);
-                        plane.markClean();
+                    renderPlaneImmediate(poseStack, tesselator, plane, grayscale, false);
+                    boolean flash = false;
+                    if (showScan) {
+                        plane.markFlashRendered();
+                        flash = plane.isFlashing(time);
                     }
-                    boolean flash = showScan && (plane.getBirthtime() > time- ScannerConfiguration.projectorFlashTimeout.get());
                     if (flash) {
                         needScanSound = true;
                         GlStateManager._enableBlend();
                         GlStateManager._blendFunc(GL11.GL_ONE, GL11.GL_ONE);
 //                        GlStateManager.colorMask(false, false, true, true);
                     }
-                    plane.render();
+                    if (flash) {
+                        renderPlaneImmediate(poseStack, tesselator, plane, grayscale, false);
+                    }
                     if (flash) {
                         GlStateManager._disableBlend();
                         GlStateManager._blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -434,7 +460,7 @@ public class ShapeRenderer {
                 BeaconType type = beacon.getType();
 //                GlStateManager._translatef(x, y, z); // @todo 1.18
                 RenderData.RenderElement element = getBeaconElement(tesselator, type, beacon.isDoBeacon());
-                element.render();
+                element.render(new PoseStack());
 //                GlStateManager._translatef(-x, -y, -z);
             }
         }
@@ -442,45 +468,30 @@ public class ShapeRenderer {
         return needScanSound;
     }
 
-    private boolean renderFacesForGui(Tesselator tessellator,
+    private boolean renderFacesForGui(PoseStack poseStack, Tesselator tessellator,
                                       ItemStack stack, boolean showScan, boolean grayscale, int scanId) {
 
-        RenderData data = getRenderDataAndCreate(shapeID);
-
-        long check = calculateChecksum(stack);
-        if (data.isWantData() || waitForNewRequest > 0) {
-            if (waitForNewRequest <= 0) {
-                // No positions, send a new request
-                RFToolsBuilderMessages.sendToServer(PacketRequestShapeData.create(stack, shapeID, (int) check));
-                waitForNewRequest = 20;
-                data.setWantData(false);
-            } else {
-                waitForNewRequest--;
-            }
-        } else {
-            if (!data.hasData() || check != data.getChecksum()) {
-                // Checksum failed, we want new data
-                data.setChecksum(check);
-                data.setWantData(true);
-            }
-        }
+        RenderData data = requestRenderData(stack);
 
         boolean needScanSound = false;
         if (data.getPlanes() != null) {
             long time = System.currentTimeMillis();
             for (RenderData.RenderPlane plane : data.getPlanes()) {
                 if (plane != null) {
-                    if (plane.isDirty()) {
-                        createRenderData(plane, data, grayscale);
-                        plane.markClean();
+                    renderPlaneImmediate(poseStack, tessellator, plane, grayscale, true);
+                    boolean flash = false;
+                    if (showScan) {
+                        plane.markFlashRendered();
+                        flash = plane.isFlashing(time);
                     }
-                    boolean flash = showScan && (plane.getBirthtime() > time- ScannerConfiguration.projectorFlashTimeout.get());
                     if (flash) {
                         needScanSound = true;
                         RenderSystem.enableBlend();
                         RenderSystem.blendFunc(GL11.GL_ONE, GL11.GL_ONE);
                     }
-                    plane.render();
+                    if (flash) {
+                        renderPlaneImmediate(poseStack, tessellator, plane, grayscale, true);
+                    }
                     if (flash) {
                         RenderSystem.disableBlend();
                         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -505,12 +516,63 @@ public class ShapeRenderer {
                 BeaconType type = beacon.getType();
 //                RenderSystem.translatef(x, y, z); // @todo 1.18
                 RenderData.RenderElement element = getBeaconElement(tessellator, type, beacon.isDoBeacon());
-                element.render();
+                element.render(poseStack);
 //                RenderSystem.translatef(-x, -y, -z);
             }
         }
 
         return needScanSound;
+    }
+
+    private void renderPlaneImmediate(PoseStack poseStack, Tesselator tessellator, RenderData.RenderPlane plane, boolean grayscale, boolean gui) {
+        Matrix4f matrix = poseStack.last().pose();
+        Map<BlockState, ShapeBlockInfo> palette = new HashMap<>();
+
+        int y = plane.getY();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+        for (RenderData.RenderStrip strip : plane.getStrips()) {
+            int z = plane.getStartz();
+            int x = strip.getX();
+            List<Pair<Integer, BlockState>> columnData = strip.getData();
+            for (int i = 0; i < columnData.size(); i++) {
+                Pair<Integer, BlockState> pair = columnData.get(i);
+                int cnt = pair.getKey();
+                BlockState state = pair.getValue();
+                if (state != null) {
+                    Vec3 origOffset = setOffset(x, y, z);
+                    ShapeBlockInfo info = ShapeBlockInfo.getBlockInfo(palette, state);
+                    ShapeBlockInfo.Col col = info.getCol();
+                    float r = col.getR();
+                    float g = col.getG();
+                    float b = col.getB();
+                    if (grayscale) {
+                        float a = 0.21f * r + 0.72f * g + 0.07f * b;
+                        r = g = b = a;
+                    }
+                    ShapeBlockInfo.IBlockRender bd = info.getRender();
+                    if (bd == null) {
+                        addSideFullTextureU(matrix, buffer, cnt, r * .8f, g * .8f, b * .8f, gui);
+                        addSideFullTextureD(matrix, buffer, cnt, r * .8f, g * .8f, b * .8f, gui);
+                        if (strip.isEmptyAt(i - 1, palette)) {
+                            addSideFullTextureN(matrix, buffer, cnt, r * 1.2f, g * 1.2f, b * 1.2f, gui);
+                        }
+                        if (strip.isEmptyAt(i + 1, palette)) {
+                            addSideFullTextureS(matrix, buffer, cnt, r * 1.2f, g * 1.2f, b * 1.2f, gui);
+                        }
+                        addSideFullTextureW(matrix, buffer, cnt, r, g, b, gui);
+                        addSideFullTextureE(matrix, buffer, cnt, r, g, b, gui);
+                    } else {
+                        for (int c = 0; c < cnt; c++) {
+                            bd.render(buffer, c, r, g, b);
+                        }
+                    }
+                    restoreOffset(origOffset);
+                }
+                z += cnt;
+            }
+        }
+        drawIfNotEmpty(buffer);
     }
 
     private void createRenderData(RenderData.RenderPlane plane, RenderData data, boolean grayscale) {
@@ -522,8 +584,10 @@ public class ShapeRenderer {
         int offsety = plane.getOffsety();
 
         data.createRenderList(offsety);
-        // @todo 1.21 VBO
-//        RenderData.vboBuffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = RenderData.vboBuffer;
+        if (buffer == null) {
+            return;
+        }
 
         for (RenderData.RenderStrip strip : plane.getStrips()) {
             int z = plane.getStartz();
@@ -549,19 +613,19 @@ public class ShapeRenderer {
                     }
                     ShapeBlockInfo.IBlockRender bd = info.getRender();
                     if (bd == null) {
-                        addSideFullTextureU(RenderData.vboBuffer, cnt, r * .8f, g * .8f, b * .8f);
-                        addSideFullTextureD(RenderData.vboBuffer, cnt, r * .8f, g * .8f, b * .8f);
+                        addSideFullTextureU(buffer, cnt, r * .8f, g * .8f, b * .8f);
+                        addSideFullTextureD(buffer, cnt, r * .8f, g * .8f, b * .8f);
                         if (strip.isEmptyAt(i - 1, palette)) {
-                            addSideFullTextureN(RenderData.vboBuffer, cnt, r * 1.2f, g * 1.2f, b * 1.2f);
+                            addSideFullTextureN(buffer, cnt, r * 1.2f, g * 1.2f, b * 1.2f);
                         }
                         if (strip.isEmptyAt(i + 1, palette)) {
-                            addSideFullTextureS(RenderData.vboBuffer, cnt, r * 1.2f, g * 1.2f, b * 1.2f);
+                            addSideFullTextureS(buffer, cnt, r * 1.2f, g * 1.2f, b * 1.2f);
                         }
-                        addSideFullTextureW(RenderData.vboBuffer, cnt, r, g, b);
-                        addSideFullTextureE(RenderData.vboBuffer, cnt, r, g, b);
+                        addSideFullTextureW(buffer, cnt, r, g, b);
+                        addSideFullTextureE(buffer, cnt, r, g, b);
                     } else {
                         for (int c = 0 ; c < cnt ; c++) {
-                            bd.render(RenderData.vboBuffer, c, r, g, b);
+                            bd.render(buffer, c, r, g, b);
                         }
                     }
 
@@ -600,7 +664,10 @@ public class ShapeRenderer {
             elements[type.ordinal()] = new RenderData.RenderElement();
             elements[type.ordinal()].createRenderList();
             RenderSystem.lineWidth(3);
-            BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            BufferBuilder buffer = RenderData.vboBuffer;
+            if (buffer == null) {
+                return elements[type.ordinal()];
+            }
             float r = type.getR();
             float g = type.getG();
             float b = type.getB();
@@ -645,7 +712,7 @@ public class ShapeRenderer {
         int sw = 161 * mc.getWindow().getScreenWidth() / xScale;
         int sh = 130 * mc.getWindow().getScreenHeight() / yScale;
 
-        GL11.glScissor(sx, sy, sw, sh);
+        RenderSystem.enableScissor(sx, sy, sw, sh);
     }
 
     public static void addSideFullTextureD(BufferBuilder buffer, int cnt, float r, float g, float b) {
@@ -656,12 +723,28 @@ public class ShapeRenderer {
         buffer.addVertex(0, 0, cnt).setColor(r, g, b, a);
     }
 
+    public static void addSideFullTextureD(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
+        buffer.addVertex(matrix, (float) offset.x, (float) offset.y, (float) offset.z).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) offset.y, (float) offset.z).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) offset.y, (float) (cnt + offset.z)).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) offset.x, (float) offset.y, (float) (cnt + offset.z)).setColor(r, g, b, a);
+    }
+
     public static void addSideFullTextureU(BufferBuilder buffer, int cnt, float r, float g, float b) {
         float a = 0.5f;
         buffer.addVertex(0, 1, cnt).setColor(r, g, b, a);
         buffer.addVertex(1, 1, cnt).setColor(r, g, b, a);
         buffer.addVertex(1, 1, 0).setColor(r, g, b, a);
         buffer.addVertex(0, 1, 0).setColor(r, g, b, a);
+    }
+
+    public static void addSideFullTextureU(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
+        buffer.addVertex(matrix, (float) offset.x, (float) (1 + offset.y), (float) (cnt + offset.z)).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) (cnt + offset.z)).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) offset.z).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) offset.x, (float) (1 + offset.y), (float) offset.z).setColor(r, g, b, a);
     }
 
     public static void addSideFullTextureE(BufferBuilder buffer, int cnt, float r, float g, float b) {
@@ -672,12 +755,28 @@ public class ShapeRenderer {
         buffer.addVertex(1, 0, cnt).setColor(r, g, b, a);
     }
 
+    public static void addSideFullTextureE(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) offset.y, (float) offset.z).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) offset.z).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) (cnt + offset.z)).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) offset.y, (float) (cnt + offset.z)).setColor(r, g, b, a);
+    }
+
     public static void addSideFullTextureW(BufferBuilder buffer, int cnt, float r, float g, float b) {
         float a = 0.5f;
         buffer.addVertex(0, 0, cnt).setColor(r, g, b, a);
         buffer.addVertex(0, 1, cnt).setColor(r, g, b, a);
         buffer.addVertex(0, 1, 0).setColor(r, g, b, a);
         buffer.addVertex(0, 0, 0).setColor(r, g, b, a);
+    }
+
+    public static void addSideFullTextureW(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
+        buffer.addVertex(matrix, (float) offset.x, (float) offset.y, (float) (cnt + offset.z)).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) offset.x, (float) (1 + offset.y), (float) (cnt + offset.z)).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) offset.x, (float) (1 + offset.y), (float) offset.z).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) offset.x, (float) offset.y, (float) offset.z).setColor(r, g, b, a);
     }
 
     public static void addSideFullTextureN(BufferBuilder buffer, int cnt, float r, float g, float b) {
@@ -688,12 +787,28 @@ public class ShapeRenderer {
         buffer.addVertex(0, 1, 0).setColor(r, g, b, a);
     }
 
+    public static void addSideFullTextureN(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) offset.z).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) offset.y, (float) offset.z).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) offset.x, (float) offset.y, (float) offset.z).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) offset.x, (float) (1 + offset.y), (float) offset.z).setColor(r, g, b, a);
+    }
+
     public static void addSideFullTextureS(BufferBuilder buffer, int cnt, float r, float g, float b) {
         float a = 0.5f;
         buffer.addVertex(1, 0, cnt).setColor(r, g, b, a);
         buffer.addVertex(1, 1, cnt).setColor(r, g, b, a);
         buffer.addVertex(0, 1, cnt).setColor(r, g, b, a);
         buffer.addVertex(0, 0, cnt).setColor(r, g, b, a);
+    }
+
+    public static void addSideFullTextureS(Matrix4f matrix, BufferBuilder buffer, int cnt, float r, float g, float b, boolean gui) {
+        float a = gui ? 0.9f : 0.5f;
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) offset.y, (float) (cnt + offset.z)).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) (1 + offset.x), (float) (1 + offset.y), (float) (cnt + offset.z)).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) offset.x, (float) (1 + offset.y), (float) (cnt + offset.z)).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) offset.x, (float) offset.y, (float) (cnt + offset.z)).setColor(r, g, b, a);
     }
 
 

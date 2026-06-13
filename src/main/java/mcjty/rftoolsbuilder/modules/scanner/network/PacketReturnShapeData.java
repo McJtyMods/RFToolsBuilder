@@ -249,9 +249,7 @@ public record PacketReturnShapeData(ShapeID shapeID, int checksum, @Nullable byt
     public void handle(IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             RenderData.RenderPlane plane = decodePlane();
-            ShapeRenderer.setRenderData(shapeID, plane, offsetY, dimension.getY(), msg);
-            RenderData data = ShapeRenderer.getRenderDataAndCreate(shapeID);
-            data.setChecksum(checksum);
+            ShapeRenderer.setRenderData(shapeID, checksum, plane, offsetY, dimension.getY(), msg);
         });
     }
 

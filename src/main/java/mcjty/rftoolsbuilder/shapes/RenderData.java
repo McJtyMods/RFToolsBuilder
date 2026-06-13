@@ -1,7 +1,15 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -12,20 +20,25 @@ import java.util.Map;
 
 public class RenderData {
 
-    public static BufferBuilder vboBuffer = null;// @todo 1.21 new BufferBuilder(2097152);
+    private static final Tesselator VBO_TESSELATOR = new Tesselator(2 * 1024 * 1024);
+    public static BufferBuilder vboBuffer = null;
 
     private RenderPlane[] planes = null;
     public String previewMessage = "";
     private long touchTime = 0;
     private long checksum = -1;
     private boolean wantData = true;
+    private boolean requestInFlight = false;
+    private long requestSentAt = 0L;
+
+    private static final long REQUEST_TIMEOUT_MS = 5000L;
 
     public boolean hasData() {
         if (planes == null) {
             return false;
         }
         for (RenderPlane plane : planes) {
-            if (plane != null && plane.vbo != null) {
+            if (plane != null) {
                 return true;
             }
         }
@@ -61,19 +74,57 @@ public class RenderData {
         this.wantData = wantData;
     }
 
+    public boolean isRequestInFlight() {
+        return requestInFlight;
+    }
+
+    public void markRequestSent() {
+        requestInFlight = true;
+        requestSentAt = System.currentTimeMillis();
+    }
+
+    public void clearRequest() {
+        requestInFlight = false;
+        requestSentAt = 0L;
+    }
+
+    public void markRequestProgress() {
+        if (requestInFlight) {
+            requestSentAt = System.currentTimeMillis();
+        }
+    }
+
+    public boolean isRequestTimedOut() {
+        return requestInFlight && requestSentAt + REQUEST_TIMEOUT_MS < System.currentTimeMillis();
+    }
+
+    public void clearData() {
+        cleanup();
+        planes = null;
+        previewMessage = "";
+    }
+
     public RenderPlane[] getPlanes() {
         return planes;
     }
 
     public void setPlaneData(@Nullable RenderPlane plane, int offsetY, int dy) {
+        if (dy <= 0) {
+            clearData();
+            return;
+        }
+        if (offsetY < 0 || offsetY >= dy) {
+            return;
+        }
         if (planes == null) {
             planes = new RenderPlane[dy];
         } else if (planes.length != dy) {
-            cleanup();
+            clearData();
             planes = new RenderPlane[dy];
         }
         if (plane == null) {
         } else if (planes[offsetY] == null) {
+            plane.markUpdated();
             planes[offsetY] = plane;
         } else {
             planes[offsetY].refreshData(plane);
@@ -118,41 +169,45 @@ public class RenderData {
 //    }
 
     public static class RenderElement {
-        protected com.mojang.blaze3d.vertex.VertexBuffer vbo;
+        protected VertexBuffer vbo;
+        protected boolean valid = false;
 
         public void cleanup() {
             if (vbo != null) {
                 vbo.close();
                 vbo = null;
             }
+            valid = false;
         }
 
-        public void render() {
-            if (vbo != null) {
-                // @todo 1.18
-//                vbo.bind();
-//                GlStateManager._enableClientState(GL11.GL_VERTEX_ARRAY);
-//                GlStateManager._vertexPointer(3, GL11.GL_FLOAT, 16, 0);
-//                GlStateManager._enableClientState(GL11.GL_COLOR_ARRAY);
-//                GlStateManager._colorPointer(4, GL11.GL_UNSIGNED_BYTE, 16, 12);
-//                vbo.draw(IDENTITY, GL11.GL_QUADS);
-//                vbo.unbind();
-//                GlStateManager._disableClientState(GL11.GL_COLOR_ARRAY);
-//                GlStateManager._disableClientState(GL11.GL_VERTEX_ARRAY);
+        public void render(PoseStack poseStack) {
+            if (vbo != null && valid) {
+                vbo.bind();
+                vbo.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+                VertexBuffer.unbind();
             }
         }
 
         public void createRenderList() {
-            // @todo 1.18
-//            vbo = new com.mojang.blaze3d.vertex.VertexBuffer(DefaultVertexFormat.POSITION_COLOR);
+            cleanup();
+            vbo = new VertexBuffer(VertexBuffer.Usage.STATIC);
+            vboBuffer = VBO_TESSELATOR.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         }
 
         public void performRenderToList() {
-//            vboBuffer.end();
-//            vboBuffer.reset();
-            // @todo 1.19
-//            vbo.upload(vboBuffer);
-//            vboBuffer.clear();
+            valid = false;
+            if (vboBuffer == null) {
+                return;
+            }
+            MeshData meshData = vboBuffer.build();
+            if (meshData != null && vbo != null) {
+                vbo.bind();
+                vbo.upload(meshData);
+                VertexBuffer.unbind();
+                valid = true;
+            }
+            VBO_TESSELATOR.clear();
+            vboBuffer = null;
         }
     }
 
@@ -165,6 +220,7 @@ public class RenderData {
         private boolean dirty = true;
         private int count = 0;
         private long birthtime;
+        private long flashBirthtime = 0L;
 
         public RenderPlane(RenderStrip[] strips, int y, int offsety, int startz, int count) {
             this.strips = strips;
@@ -181,13 +237,28 @@ public class RenderData {
             this.offsety = other.offsety;
             this.startz = other.startz;
             this.count = other.count;
-            this.dirty = true;
-            birthtime = System.currentTimeMillis();
+            markUpdated();
             super.cleanup();
+        }
+
+        public void markUpdated() {
+            dirty = true;
+            birthtime = System.currentTimeMillis();
+            flashBirthtime = 0L;
         }
 
         public long getBirthtime() {
             return birthtime;
+        }
+
+        public void markFlashRendered() {
+            if (flashBirthtime == 0L) {
+                flashBirthtime = System.currentTimeMillis();
+            }
+        }
+
+        public boolean isFlashing(long time) {
+            return flashBirthtime != 0L && flashBirthtime > time - ScannerConfiguration.projectorFlashTimeout.get();
         }
 
         public int getCount() {

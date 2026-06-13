@@ -534,8 +534,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
 
         ItemStack stack = getStackToEdit();
         if (!stack.isEmpty()) {
-            // @todo 1.18 DISABLED FOR NOW
-//            getShapeRenderer().renderShape(matrixStack, this, stack, guiLeft, guiTop, true, true, true, false);
+            getShapeRenderer().renderShape(graphics, this, stack, guiLeft, guiTop, true, true, false, false);
         }
 
         List<String> tooltips = window.getTooltips();

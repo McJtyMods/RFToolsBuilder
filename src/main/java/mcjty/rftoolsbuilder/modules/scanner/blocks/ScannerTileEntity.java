@@ -292,7 +292,10 @@ public class ScannerTileEntity extends TickingTileEntity {
 
     @Override
     public void saveClientDataToNBT(CompoundTag tag, HolderLookup.Provider provider) {
-        tag.put("render", getRenderStack().save(provider, new CompoundTag()));
+        ItemStack render = getRenderStack();
+        if (!render.isEmpty()) {
+            tag.put("render", render.save(provider, new CompoundTag()));
+        }
         tag.putInt("scanid", scanId);
         tag.putInt("scandimx", dataDim.getX());
         tag.putInt("scandimy", dataDim.getY());

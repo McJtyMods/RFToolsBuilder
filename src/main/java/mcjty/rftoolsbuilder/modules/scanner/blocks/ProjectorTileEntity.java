@@ -206,7 +206,8 @@ public class ProjectorTileEntity extends TickingTileEntity {
         if (clientCounter != counter) {
             clientCounter = counter;
             RenderData data = ShapeRenderer.getRenderDataAndCreate(getShapeID());
-            data.cleanup();
+            data.clearRequest();
+            data.clearData();
             data.setChecksum(Long.MIN_VALUE);
             data.setWantData(true);
             shapeRenderer = null;
@@ -589,7 +590,10 @@ public class ProjectorTileEntity extends TickingTileEntity {
 
     @Override
     public void saveClientDataToNBT(CompoundTag tag, HolderLookup.Provider provider) {
-        tag.put("card", getRenderStack().save(provider, new CompoundTag()));
+        ItemStack card = getRenderStack();
+        if (!card.isEmpty()) {
+            tag.put("card", card.save(provider, new CompoundTag()));
+        }
         tag.putBoolean("projecting", projecting);
         tag.putBoolean("active", active);
         tag.putFloat("offs", verticalOffset);
