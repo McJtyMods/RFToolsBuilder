@@ -228,13 +228,26 @@ public class ShapeRenderer {
     }
 
     private void renderHelpers(PoseStack poseStack, Tesselator tessellator, int xlen, int ylen, int zlen, boolean showAxis, boolean showOuter) {
-        // X, Y, Z axis
-        if (showAxis) {
-            ShapeRenderer.renderAxis(poseStack, tessellator, xlen/2, ylen/2, zlen/2);
+        if (!showAxis && !showOuter) {
+            return;
         }
 
-        if (showOuter) {
-            ShapeRenderer.renderOuterBox(poseStack, tessellator, xlen, ylen, zlen);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.disableCull();
+        RenderSystem.disableDepthTest();
+
+        // X, Y, Z axis
+        try {
+            if (showAxis) {
+                ShapeRenderer.renderAxis(poseStack, tessellator, Math.max(1, xlen/2), Math.max(1, ylen/2), Math.max(1, zlen/2));
+            }
+
+            if (showOuter) {
+                ShapeRenderer.renderOuterBox(poseStack, tessellator, xlen, ylen, zlen);
+            }
+        } finally {
+            RenderSystem.enableDepthTest();
+            RenderSystem.enableCull();
         }
     }
 
@@ -286,10 +299,9 @@ public class ShapeRenderer {
     }
 
     static void renderOuterBox(PoseStack poseStack, Tesselator tessellator, int xlen, int ylen, int zlen) {
-        RenderSystem.lineWidth(1.0f);
-        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         Matrix4f matrix = poseStack.last().pose();
-        Vec3 origOffset = setOffset(.5, .5, .5);
+        double thickness = .08;
         int xleft = -xlen / 2;
         int xright = xlen / 2 + (xlen & 1);
         int ybot = -ylen / 2;
@@ -297,32 +309,21 @@ public class ShapeRenderer {
         int zsouth = -zlen / 2;
         int znorth = zlen / 2 + (zlen & 1);
 
-        add(matrix, buffer, xleft, ybot, zsouth);
-        add(matrix, buffer, xright, ybot, zsouth);
-        add(matrix, buffer, xleft, ybot, zsouth);
-        add(matrix, buffer, xleft, ytop, zsouth);
-        add(matrix, buffer, xleft, ybot, zsouth);
-        add(matrix, buffer, xleft, ybot, znorth);
-        add(matrix, buffer, xright, ytop, znorth);
-        add(matrix, buffer, xleft, ytop, znorth);
-        add(matrix, buffer, xright, ytop, znorth);
-        add(matrix, buffer, xright, ybot, znorth);
-        add(matrix, buffer, xright, ytop, znorth);
-        add(matrix, buffer, xright, ytop, zsouth);
-        add(matrix, buffer, xright, ybot, zsouth);
-        add(matrix, buffer, xright, ybot, znorth);
-        add(matrix, buffer, xright, ybot, zsouth);
-        add(matrix, buffer, xright, ytop, zsouth);
-        add(matrix, buffer, xleft, ytop, zsouth);
-        add(matrix, buffer, xright, ytop, zsouth);
-        add(matrix, buffer, xleft, ytop, zsouth);
-        add(matrix, buffer, xleft, ytop, znorth);
-        add(matrix, buffer, xleft, ytop, znorth);
-        add(matrix, buffer, xleft, ybot, znorth);
-        add(matrix, buffer, xleft, ybot, znorth);
-        add(matrix, buffer, xright, ybot, znorth);
+        addBox(matrix, buffer, xleft, ybot, zsouth, xright, ybot + thickness, zsouth + thickness, 1f, 1f, 1f, 1f);
+        addBox(matrix, buffer, xleft, ytop - thickness, zsouth, xright, ytop, zsouth + thickness, 1f, 1f, 1f, 1f);
+        addBox(matrix, buffer, xleft, ybot, znorth - thickness, xright, ybot + thickness, znorth, 1f, 1f, 1f, 1f);
+        addBox(matrix, buffer, xleft, ytop - thickness, znorth - thickness, xright, ytop, znorth, 1f, 1f, 1f, 1f);
 
-        restoreOffset(origOffset);
+        addBox(matrix, buffer, xleft, ybot, zsouth, xleft + thickness, ytop, zsouth + thickness, 1f, 1f, 1f, 1f);
+        addBox(matrix, buffer, xright - thickness, ybot, zsouth, xright, ytop, zsouth + thickness, 1f, 1f, 1f, 1f);
+        addBox(matrix, buffer, xleft, ybot, znorth - thickness, xleft + thickness, ytop, znorth, 1f, 1f, 1f, 1f);
+        addBox(matrix, buffer, xright - thickness, ybot, znorth - thickness, xright, ytop, znorth, 1f, 1f, 1f, 1f);
+
+        addBox(matrix, buffer, xleft, ybot, zsouth, xleft + thickness, ybot + thickness, znorth, 1f, 1f, 1f, 1f);
+        addBox(matrix, buffer, xright - thickness, ybot, zsouth, xright, ybot + thickness, znorth, 1f, 1f, 1f, 1f);
+        addBox(matrix, buffer, xleft, ytop - thickness, zsouth, xleft + thickness, ytop, znorth, 1f, 1f, 1f, 1f);
+        addBox(matrix, buffer, xright - thickness, ytop - thickness, zsouth, xright, ytop, znorth, 1f, 1f, 1f, 1f);
+
         drawIfNotEmpty(buffer);
     }
 
@@ -381,18 +382,37 @@ public class ShapeRenderer {
     }
 
     static void renderAxis(PoseStack poseStack, Tesselator tessellator, int xlen, int ylen, int zlen) {
-        RenderSystem.lineWidth(2.5f);
-        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         Matrix4f matrix = poseStack.last().pose();
-        Vec3 origOffset = setOffset(.5, .5, .5);
-        add(matrix, buffer, 0, 0, 0, 1f, 0f, 0f, 1f);
-        add(matrix, buffer, xlen, 0, 0, 1f, 0f, 0f, 1f);
-        add(matrix, buffer, 0, 0, 0, 0f, 1f, 0f, 1f);
-        add(matrix, buffer, 0, ylen, 0, 0f, 1f, 0f, 1f);
-        add(matrix, buffer, 0, 0, 0, 0f, 0f, 1f, 1f);
-        add(matrix, buffer, 0, 0, zlen, 0f, 0f, 1f, 1f);
-        restoreOffset(origOffset);
+        double thickness = .12;
+        addBox(matrix, buffer, -xlen, -thickness, -thickness, xlen, thickness, thickness, 1f, 0f, 0f, 1f);
+        addBox(matrix, buffer, -thickness, -ylen, -thickness, thickness, ylen, thickness, 0f, 1f, 0f, 1f);
+        addBox(matrix, buffer, -thickness, -thickness, -zlen, thickness, thickness, zlen, 0f, 0f, 1f, 1f);
         drawIfNotEmpty(buffer);
+    }
+
+    private static void addBox(Matrix4f matrix, BufferBuilder buffer,
+                               double x1, double y1, double z1,
+                               double x2, double y2, double z2,
+                               float r, float g, float b, float a) {
+        addQuad(matrix, buffer, x1, y1, z1, x2, y1, z1, x2, y1, z2, x1, y1, z2, r, g, b, a);
+        addQuad(matrix, buffer, x1, y2, z2, x2, y2, z2, x2, y2, z1, x1, y2, z1, r, g, b, a);
+        addQuad(matrix, buffer, x2, y1, z1, x2, y2, z1, x2, y2, z2, x2, y1, z2, r, g, b, a);
+        addQuad(matrix, buffer, x1, y1, z2, x1, y2, z2, x1, y2, z1, x1, y1, z1, r, g, b, a);
+        addQuad(matrix, buffer, x2, y2, z1, x2, y1, z1, x1, y1, z1, x1, y2, z1, r, g, b, a);
+        addQuad(matrix, buffer, x2, y1, z2, x2, y2, z2, x1, y2, z2, x1, y1, z2, r, g, b, a);
+    }
+
+    private static void addQuad(Matrix4f matrix, BufferBuilder buffer,
+                                double x1, double y1, double z1,
+                                double x2, double y2, double z2,
+                                double x3, double y3, double z3,
+                                double x4, double y4, double z4,
+                                float r, float g, float b, float a) {
+        buffer.addVertex(matrix, (float) x1, (float) y1, (float) z1).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) x2, (float) y2, (float) z2).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) x3, (float) y3, (float) z3).setColor(r, g, b, a);
+        buffer.addVertex(matrix, (float) x4, (float) y4, (float) z4).setColor(r, g, b, a);
     }
 
     private int calculateChecksum(ItemStack stack) {
