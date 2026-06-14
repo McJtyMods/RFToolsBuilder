@@ -202,10 +202,11 @@ public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, Generic
 
     @Override
     protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+        drawWindow(graphics);
+
         ItemStack stack = menu.getSlot(ComposerTileEntity.SLOT_OUT).getItem();
         if (!stack.isEmpty()) {
             getShapeRenderer().renderShape(graphics, this, stack, getPreviewLeft(), getPreviewTop(), showAxis.isPressed(), showOuter.isPressed(), showScan.isPressed(), true);
         }
-        drawWindow(graphics);
     }
 }
