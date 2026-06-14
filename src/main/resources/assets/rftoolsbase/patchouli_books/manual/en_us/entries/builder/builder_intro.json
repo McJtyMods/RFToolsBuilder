@@ -2,6 +2,9 @@
   "name": "Introduction",
   "icon": "minecraft:experience_bottle",
   "category": "rftoolsbase:category_rftoolsbuilder_builder",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:builder": 0
+  },
   "sortnum": 10,
   "pages": [
     {

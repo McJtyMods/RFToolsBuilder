@@ -1,0 +1,15 @@
+{
+  "name": "Mover",
+  "icon": "rftoolsbuilder:mover",
+  "category": "rftoolsbase:category_rftoolsbuilder_mover",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:mover": 0
+  },
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "text",
+      "text": "Documentation for the Mover will be expanded later."
+    }
+  ]
+}

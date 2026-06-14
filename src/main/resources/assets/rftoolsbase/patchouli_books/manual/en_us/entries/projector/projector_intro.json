@@ -1,0 +1,15 @@
+{
+  "name": "Projector",
+  "icon": "rftoolsbuilder:projector",
+  "category": "rftoolsbase:category_rftoolsbuilder_projector",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:projector": 0
+  },
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "text",
+      "text": "Documentation for the Projector will be expanded later."
+    }
+  ]
+}

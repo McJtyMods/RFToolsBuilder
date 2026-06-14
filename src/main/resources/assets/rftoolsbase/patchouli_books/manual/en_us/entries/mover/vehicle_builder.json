@@ -1,0 +1,15 @@
+{
+  "name": "Vehicle Builder",
+  "icon": "rftoolsbuilder:vehicle_builder",
+  "category": "rftoolsbase:category_rftoolsbuilder_mover",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:vehicle_builder": 0
+  },
+  "sortnum": 30,
+  "pages": [
+    {
+      "type": "text",
+      "text": "Documentation for the Vehicle Builder will be expanded later."
+    }
+  ]
+}

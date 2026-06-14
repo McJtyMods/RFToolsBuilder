@@ -1,0 +1,7 @@
+{
+  "name": "Mover",
+  "description": "Blocks for building and controlling moving vehicles",
+  "parent": "rftoolsbase:category_rftoolsbuilder",
+  "icon": "rftoolsbuilder:mover_controller",
+  "sortnum": 50
+}

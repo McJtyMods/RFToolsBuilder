@@ -1,0 +1,15 @@
+{
+  "name": "Chamber Details",
+  "icon": "rftoolsbuilder:space_chamber_controller",
+  "category": "rftoolsbase:category_rftoolsbuilder_builder",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:space_chamber_controller": 0
+  },
+  "sortnum": 30,
+  "pages": [
+    {
+      "type": "text",
+      "text": "Documentation for the Chamber Details screen will be expanded later."
+    }
+  ]
+}

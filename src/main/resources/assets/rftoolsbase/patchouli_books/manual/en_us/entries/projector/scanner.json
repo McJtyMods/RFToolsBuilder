@@ -1,0 +1,15 @@
+{
+  "name": "Scanner",
+  "icon": "rftoolsbuilder:scanner",
+  "category": "rftoolsbase:category_rftoolsbuilder_projector",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:scanner": 0
+  },
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "text",
+      "text": "Documentation for the Scanner will be expanded later."
+    }
+  ]
+}

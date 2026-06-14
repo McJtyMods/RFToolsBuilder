@@ -1,0 +1,15 @@
+{
+  "name": "Composer",
+  "icon": "rftoolsbuilder:composer",
+  "category": "rftoolsbase:category_rftoolsbuilder_projector",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:composer": 0
+  },
+  "sortnum": 30,
+  "pages": [
+    {
+      "type": "text",
+      "text": "Documentation for the Composer will be expanded later."
+    }
+  ]
+}

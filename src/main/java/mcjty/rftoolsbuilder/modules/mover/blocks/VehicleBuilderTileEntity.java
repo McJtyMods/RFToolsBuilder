@@ -86,7 +86,7 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
                 .tileEntitySupplier(VehicleBuilderTileEntity::new)
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
-                .manualEntry(ManualHelper.create("rftoolsbuilder:todo"))
+                .manualEntry(ManualHelper.create("rftoolsbuilder:mover/vehicle_builder"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header()));
     }

@@ -1,0 +1,15 @@
+{
+  "name": "Mover Controller",
+  "icon": "rftoolsbuilder:mover_controller",
+  "category": "rftoolsbase:category_rftoolsbuilder_mover",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:mover_controller": 0
+  },
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "text",
+      "text": "Documentation for the Mover Controller will be expanded later."
+    }
+  ]
+}
