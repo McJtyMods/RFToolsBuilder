@@ -247,10 +247,10 @@ public class GuiProjector extends GenericGuiContainer<ProjectorTileEntity, Gener
         }
         sound.enabled(scanline.isPressed());
 
+        drawWindow(graphics, partialTicks, mouseX, mouseY);
         ItemStack stack = tileEntity.getRenderStack();
         if (!stack.isEmpty()) {
             getShapeRenderer().renderShape(graphics, this, stack, getPreviewLeft(), getPreviewTop(), showAxis.isPressed(), showOuter.isPressed(), showScan.isPressed(), false);
         }
-        drawWindow(graphics, partialTicks, mouseX, mouseY);
     }
 }

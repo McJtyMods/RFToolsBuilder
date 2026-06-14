@@ -136,10 +136,10 @@ public class GuiScanner extends GenericGuiContainer<ScannerTileEntity, GenericCo
         int progress = tileEntity.getScanProgress();
         progressLabel.text(progress >= 0 ? progress + "%" : "");
 
+        drawWindow(graphics, partialTicks, mouseX, mouseY);
         ItemStack stack = tileEntity.getRenderStack();
         if (!stack.isEmpty()) {
             getShapeRenderer().renderShape(graphics, this, stack, getPreviewLeft(), getPreviewTop(), showAxis.isPressed(), showOuter.isPressed(), showScan.isPressed(), false);
         }
-        drawWindow(graphics, partialTicks, mouseX, mouseY);
     }
 }

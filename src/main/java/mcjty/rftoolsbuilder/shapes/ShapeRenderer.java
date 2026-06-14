@@ -218,6 +218,8 @@ public class ShapeRenderer {
         }
 
         RenderSystem.disableBlend();
+        RenderSystem.disableDepthTest();
+        RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
 //        RenderHelper.turnBackOn();    // @todo 1.18
 
         RenderData data = ShapeDataManagerClient.getRenderData(shapeID);
