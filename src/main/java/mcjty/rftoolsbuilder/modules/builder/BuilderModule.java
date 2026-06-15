@@ -9,6 +9,7 @@ import mcjty.lib.modules.IModule;
 import mcjty.lib.setup.DeferredBlock;
 import mcjty.lib.setup.DeferredItem;
 import mcjty.rftoolsbase.modules.various.VariousModule;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerBlock;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
@@ -44,6 +45,7 @@ public class BuilderModule implements IModule {
     public static final DeferredBlock<SupportBlock> SUPPORT = BLOCKS.register("support_block", SupportBlock::new);
 
     public static final DeferredBlock<BaseBlock> SPACE_CHAMBER = BLOCKS.register("space_chamber", () -> new BaseBlock(new BlockBuilder()
+        .manualEntry(ManualHelper.create("rftoolsbuilder:builder/space_chambers"))
         .properties(BlockBehaviour.Properties.of()
                 .strength(2.0f)
                 .sound(SoundType.METAL)

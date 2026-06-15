@@ -9,7 +9,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "Documentation for the Mover will be expanded later."
+      "text": "A Mover marks a position where a vehicle can move to.$(br2)Use a $(l:rftoolsbase:mover/mover_controller)Mover Controller$(/l) to discover and connect Movers into a movement network."
     }
   ]
 }

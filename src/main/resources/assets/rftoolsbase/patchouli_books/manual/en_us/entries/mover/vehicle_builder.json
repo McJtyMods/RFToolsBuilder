@@ -9,7 +9,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "Documentation for the Vehicle Builder will be expanded later."
+      "text": "The Vehicle Builder creates vehicles from space chambers.$(br2)Build a correctly formed chamber first, then use the Vehicle Builder to turn that chamber into a vehicle."
     }
   ]
 }

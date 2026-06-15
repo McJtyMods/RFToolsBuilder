@@ -9,7 +9,11 @@
   "pages": [
     {
       "type": "text",
-      "text": "Documentation for the Mover Controller will be expanded later."
+      "text": "The Mover Controller connects Movers together. Place it adjacent to one Mover, then use it to find other connected Movers."
+    },
+    {
+      "type": "text",
+      "text": "Two Movers are connected when they are within 128 blocks of each other in one of the cardinal directions."
     }
   ]
 }

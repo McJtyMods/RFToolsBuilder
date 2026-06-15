@@ -4,6 +4,7 @@ import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.varia.SoundTools;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import net.minecraft.core.BlockPos;
@@ -33,7 +34,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
                         .noOcclusion())
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .tileEntitySupplier(SpaceChamberControllerTileEntity::new)
-//                .manualEntry(ManualHelper.create("rftoolsbuilder:builder/builder_intro"))
+                .manualEntry(ManualHelper.create("rftoolsbuilder:builder/space_chambers"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(),
                         parameter("channel", SpaceChamberControllerBlock::getChannelDescription)

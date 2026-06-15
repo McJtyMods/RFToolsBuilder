@@ -2,8 +2,10 @@ package mcjty.rftoolsbuilder.modules.builder.items;
 
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.crafting.INBTPreservingIngredient;
+import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.tooltips.ITooltipSettings;
 import mcjty.lib.varia.*;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
@@ -89,6 +91,18 @@ public class ShapeCardItem extends Item implements INBTPreservingIngredient, ITo
     public ShapeCardItem(ShapeCardType type) {
         super(RFToolsBuilder.setup.defaultProperties().stacksTo(1).defaultDurability(0));
         this.type = type;
+    }
+
+    @Override
+    public ManualEntry getManualEntry() {
+        return switch (type) {
+            case CARD_VOID -> ManualHelper.create("rftoolsbuilder:shape_cards/shape_card_def_void");
+            case CARD_QUARRY, CARD_QUARRY_CLEAR, CARD_QUARRY_CLEAR_SILK, CARD_QUARRY_CLEAR_FORTUNE, CARD_QUARRY_FORTUNE, CARD_QUARRY_SILK ->
+                    ManualHelper.create("rftoolsbuilder:shape_cards/shape_card_def_quarry");
+            case CARD_PUMP, CARD_PUMP_CLEAR -> ManualHelper.create("rftoolsbuilder:shape_cards/shape_card_pump");
+            case CARD_PUMP_LIQUID -> ManualHelper.create("rftoolsbuilder:shape_cards/shape_card_liquid");
+            default -> ManualHelper.create("rftoolsbuilder:shape_cards/shape_card_def");
+        };
     }
 
     public boolean isDisabledInConfig() {

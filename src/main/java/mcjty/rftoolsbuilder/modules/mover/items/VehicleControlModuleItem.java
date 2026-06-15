@@ -1,11 +1,13 @@
 package mcjty.rftoolsbuilder.modules.mover.items;
 
 import mcjty.lib.crafting.INBTPreservingIngredient;
+import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.ModuleTools;
 import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbase.api.screens.IModuleGuiBuilder;
 import mcjty.rftoolsbase.tools.GenericModuleItem;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
@@ -43,6 +45,11 @@ public class VehicleControlModuleItem extends GenericModuleItem implements INBTP
 
     public VehicleControlModuleItem() {
         super(Registration.createStandardProperties().stacksTo(1));
+    }
+
+    @Override
+    public ManualEntry getManualEntry() {
+        return ManualHelper.create("rftoolsbuilder:mover/vehicle_modules");
     }
 
     @Nonnull

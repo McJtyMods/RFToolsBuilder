@@ -2,11 +2,39 @@
   "name": "Quarry Card",
   "icon": "rftoolsbuilder:shape_card_quarry",
   "category": "rftoolsbase:category_rftoolsbuilder_shape_cards",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:shape_card_quarry": 1,
+    "rftoolsbuilder:shape_card_quarry_clear": 2,
+    "rftoolsbuilder:shape_card_quarry_silk": 3,
+    "rftoolsbuilder:shape_card_quarry_fortune": 4,
+    "rftoolsbuilder:shape_card_quarry_clear_silk": 3,
+    "rftoolsbuilder:shape_card_quarry_clear_fortune": 4
+  },
   "sortnum": 20,
   "pages": [
     {
       "type": "text",
-      "text": "The Quarry Card describes a shape for the Builder. In addition to the shape you can also specify that you want to void certain blocks. There are a few variants of this shape card (clearing/non-clearing, fortune, and silk-touch)"
+      "text": "The Quarry Card makes the Builder mine all blocks in the selected area. Normal quarry cards replace mined blocks with the configured filler block."
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:shape_card_quarry"
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:shape_card_quarry_clear"
+    },
+    {
+      "type": "text",
+      "text": "Clear variants leave air instead of filler. Silk Touch variants preserve blocks, while Fortune variants improve drops where possible."
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:shape_card_quarry_silk"
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:shape_card_quarry_fortune"
     }
   ]
 }

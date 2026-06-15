@@ -1,0 +1,41 @@
+{
+  "name": "Vehicle Modules",
+  "icon": "rftoolsbuilder:vehicle_control_module",
+  "category": "rftoolsbase:category_rftoolsbuilder_mover",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:vehicle_control_module": 1,
+    "rftoolsbuilder:vehicle_status_module": 2,
+    "rftoolsbuilder:mover_control": 3,
+    "rftoolsbuilder:mover_control2": 3,
+    "rftoolsbuilder:mover_control3": 3,
+    "rftoolsbuilder:mover_control4": 3,
+    "rftoolsbuilder:mover_status": 4
+  },
+  "sortnum": 50,
+  "pages": [
+    {
+      "type": "text",
+      "text": "Vehicle modules are screen modules for interacting with a Mover Controller. Use a module on a Mover Controller to bind it."
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:vehicle_control_module"
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:vehicle_status_module"
+    },
+    {
+      "type": "text",
+      "text": "The control module can send a vehicle to a selected Mover. The status module displays vehicle information on an RFTools screen."
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:mover_control"
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:mover_status"
+    }
+  ]
+}

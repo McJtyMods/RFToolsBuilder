@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.modules.mover.blocks;
 
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.builder.BlockBuilder;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -24,6 +25,7 @@ public class MoverControlBlock extends BaseBlock {
     public MoverControlBlock(int page) {
         super(new BlockBuilder()
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
+                .manualEntry(ManualHelper.create("rftoolsbuilder:mover/vehicle_modules"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(), gold()));
         this.page = page;

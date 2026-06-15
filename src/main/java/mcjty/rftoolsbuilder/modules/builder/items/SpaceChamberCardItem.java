@@ -1,9 +1,11 @@
 package mcjty.rftoolsbuilder.modules.builder.items;
 
 import mcjty.lib.builder.TooltipBuilder;
+import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.tooltips.ITooltipSettings;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.Tools;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
@@ -58,6 +60,11 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
 
     public SpaceChamberCardItem() {
         super(RFToolsBuilder.setup.defaultProperties().stacksTo(1).defaultDurability(0));
+    }
+
+    @Override
+    public ManualEntry getManualEntry() {
+        return ManualHelper.create("rftoolsbuilder:builder/space_chambers");
     }
 
     @Override

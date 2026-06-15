@@ -1,14 +1,30 @@
 {
-  "rftoolsbuilder.entry.shield_advanced": "Advanced",
-  "rftoolsbuilder.page.shield_advanced0": "",
   "name": "Advanced",
-  "icon": "minecraft:nether_star",
+  "icon": "rftoolsbuilder:red_shield_template_block",
   "category": "rftoolsbase:category_rftoolsbuilder_shield",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:blue_shield_template_block": 0,
+    "rftoolsbuilder:red_shield_template_block": 0,
+    "rftoolsbuilder:green_shield_template_block": 0,
+    "rftoolsbuilder:yellow_shield_template_block": 0
+  },
   "sortnum": 20,
   "pages": [
     {
       "type": "text",
-      "text": "Some advanced usages @todo"
+      "text": "A Shield Projector can form a shield from nearby template blocks, or from a Shape Card inserted in the GUI. Shaped shields ignore template blocks."
+    },
+    {
+      "type": "text",
+      "text": "Visibility modes are Invisible, Shield, Transparent, Solid, and Mimic. Mimic uses the block inserted in the mimic slot as the shield texture."
+    },
+    {
+      "type": "text",
+      "text": "Filters decide what happens to entities: pass, block, damage, or block and damage. Filter types include All, Passive, Hostile, Item, and Player."
+    },
+    {
+      "type": "text",
+      "text": "Filter order matters. Move specific rules above broad rules so named players or item rules are handled before a general All rule."
     }
   ]
 }

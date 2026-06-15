@@ -2,11 +2,22 @@
   "name": "Default Shape Card",
   "icon": "rftoolsbuilder:shape_card_def",
   "category": "rftoolsbase:category_rftoolsbuilder_shape_cards",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:shape_card_def": 1
+  },
   "sortnum": 10,
   "pages": [
     {
       "type": "text",
-      "text": "The Default Shape Card is used for building (by the Builder) or describing a shape for the Shield Projector"
+      "text": "The Default Shape Card stores a shape, size, offset, and solid or hollow mode. Use it in the Builder to place blocks or in the Shield Projector to define a shaped shield."
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:shape_card_def"
+    },
+    {
+      "type": "text",
+      "text": "Right-click the card to edit shapes such as box, sphere, cylinder, cone, torus, prism, scan, or composition. Sneak-use can help select positions in the world."
     }
   ]
 }

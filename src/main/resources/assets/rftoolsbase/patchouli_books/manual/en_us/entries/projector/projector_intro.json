@@ -9,7 +9,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "Documentation for the Projector will be expanded later."
+      "text": "The Projector projects the contents of a Shape Card into the world.$(br2)Use it to preview or visualize a shape before using it in another machine."
     }
   ]
 }

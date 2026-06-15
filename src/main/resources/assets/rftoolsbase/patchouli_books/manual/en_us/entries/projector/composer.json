@@ -9,7 +9,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "Documentation for the Composer will be expanded later."
+      "text": "The Composer combines several Shape Cards into one.$(br2)Each input shape can be added, subtracted, or intersected, letting you build more complex shapes from simpler cards."
     }
   ]
 }

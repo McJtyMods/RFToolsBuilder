@@ -2,11 +2,18 @@
   "name": "Liquid Card",
   "icon": "rftoolsbuilder:shape_card_liquid",
   "category": "rftoolsbase:category_rftoolsbuilder_shape_cards",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:shape_card_liquid": 1
+  },
   "sortnum": 40,
   "pages": [
     {
       "type": "text",
-      "text": "The Liquid Card can be used to place liquids by the Builder"
+      "text": "The Liquid Card makes the Builder place fluid into the selected shape. Provide fluid through a tank connected to the Builder."
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:shape_card_liquid"
     }
   ]
 }

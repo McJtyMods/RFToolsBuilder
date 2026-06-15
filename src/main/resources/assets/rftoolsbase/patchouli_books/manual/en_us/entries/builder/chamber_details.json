@@ -9,7 +9,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "Documentation for the Chamber Details screen will be expanded later."
+      "text": "The Chamber Details screen shows what is inside a selected space chamber.$(br2)Right click with a Space Card to open an overview of all blocks and entities that are currently in that chamber."
     }
   ]
 }

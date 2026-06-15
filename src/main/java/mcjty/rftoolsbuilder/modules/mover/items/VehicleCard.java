@@ -1,9 +1,11 @@
 package mcjty.rftoolsbuilder.modules.mover.items;
 
 import mcjty.lib.builder.TooltipBuilder;
+import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.tooltips.ITooltipSettings;
 import mcjty.lib.varia.NBTTools;
 import mcjty.lib.varia.Tools;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -45,6 +47,11 @@ public class VehicleCard extends Item implements ITooltipSettings {
 
     public VehicleCard() {
         super(Registration.createStandardProperties().stacksTo(1));
+    }
+
+    @Override
+    public ManualEntry getManualEntry() {
+        return ManualHelper.create("rftoolsbuilder:mover/vehicle_cards");
     }
 
     public static String getVehicleName(ItemStack stack) {
