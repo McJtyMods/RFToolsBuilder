@@ -128,7 +128,7 @@ public class MoverTileEntity extends TickingTileEntity {
         return new BaseBlock(new BlockBuilder()
                 .tileEntitySupplier(MoverTileEntity::new)
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
-                .manualEntry(ManualHelper.create("rftoolsbuilder:todo"))
+                .manualEntry(ManualHelper.create("rftoolsbuilder:mover/mover"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(), gold())) {
             @Override

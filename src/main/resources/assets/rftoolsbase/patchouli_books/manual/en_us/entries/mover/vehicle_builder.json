@@ -1,0 +1,15 @@
+{
+  "name": "Vehicle Builder",
+  "icon": "rftoolsbuilder:vehicle_builder",
+  "category": "rftoolsbase:category_rftoolsbuilder_mover",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:vehicle_builder": 0
+  },
+  "sortnum": 30,
+  "pages": [
+    {
+      "type": "text",
+      "text": "The Vehicle Builder creates vehicles from space chambers.$(br2)Build a correctly formed chamber first, then use the Vehicle Builder to turn that chamber into a vehicle."
+    }
+  ]
+}

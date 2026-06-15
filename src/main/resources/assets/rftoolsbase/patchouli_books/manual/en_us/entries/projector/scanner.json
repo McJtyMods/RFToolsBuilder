@@ -1,0 +1,19 @@
+{
+  "name": "Scanner",
+  "icon": "rftoolsbuilder:scanner",
+  "category": "rftoolsbase:category_rftoolsbuilder_projector",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:scanner": 0
+  },
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "text",
+      "text": "The Scanner scans a section of the world and stores the result in a Shape Card."
+    },
+    {
+      "type": "text",
+      "text": "Put an input Shape Card in the top-left slot. It controls the size and offset of the area to scan.$(br2)Press $(thing)Scan$() to write the result to the Shape Card in the bottom-left slot."
+    }
+  ]
+}

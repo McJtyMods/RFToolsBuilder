@@ -1,0 +1,15 @@
+{
+  "name": "Mover",
+  "icon": "rftoolsbuilder:mover",
+  "category": "rftoolsbase:category_rftoolsbuilder_mover",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:mover": 0
+  },
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "text",
+      "text": "A Mover marks a position where a vehicle can move to.$(br2)Use a $(l:rftoolsbase:mover/mover_controller)Mover Controller$(/l) to discover and connect Movers into a movement network."
+    }
+  ]
+}

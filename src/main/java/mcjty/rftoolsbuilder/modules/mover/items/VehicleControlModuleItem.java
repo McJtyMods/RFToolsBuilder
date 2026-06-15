@@ -15,6 +15,8 @@ import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import mcjty.rftoolsbuilder.setup.Registration;
+import mcjty.lib.gui.ManualEntry;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponentType;
@@ -163,4 +165,10 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
     public Collection<DataComponentType<?>> getComponentsToPreserve() {
         return List.of(MoverModule.MODULE_VEHICLECONTROL_DATA.get());
     }
+
+    @Override
+    public ManualEntry getManualEntry() {
+        return ManualHelper.create("rftoolsbuilder:mover/vehicle_modules");
+    }
+
 }

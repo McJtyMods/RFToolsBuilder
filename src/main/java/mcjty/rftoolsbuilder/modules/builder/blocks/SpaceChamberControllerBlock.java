@@ -8,6 +8,7 @@ import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import mcjty.rftoolsbuilder.modules.builder.data.ChamberControllerData;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -34,7 +35,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
                         .noOcclusion())
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .tileEntitySupplier(SpaceChamberControllerTileEntity::new)
-//                .manualEntry(ManualHelper.create("rftoolsbase:builder/builder_intro"))
+                .manualEntry(ManualHelper.create("rftoolsbuilder:builder/space_chambers"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(),
                         parameter("channel", SpaceChamberControllerBlock::getChannelDescription)

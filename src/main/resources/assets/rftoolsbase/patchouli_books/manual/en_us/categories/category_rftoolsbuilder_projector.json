@@ -1,0 +1,7 @@
+{
+  "name": "Scanner and Projector",
+  "description": "Blocks for scanning, composing, and projecting shapes",
+  "parent": "rftoolsbase:category_rftoolsbuilder",
+  "icon": "rftoolsbuilder:scanner",
+  "sortnum": 40
+}

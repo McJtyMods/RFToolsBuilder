@@ -1,0 +1,15 @@
+{
+  "name": "Chamber Details",
+  "icon": "rftoolsbuilder:space_chamber_controller",
+  "category": "rftoolsbase:category_rftoolsbuilder_builder",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:space_chamber_controller": 0
+  },
+  "sortnum": 30,
+  "pages": [
+    {
+      "type": "text",
+      "text": "The Chamber Details screen shows what is inside a selected space chamber.$(br2)Right click with a Space Card to open an overview of all blocks and entities that are currently in that chamber."
+    }
+  ]
+}

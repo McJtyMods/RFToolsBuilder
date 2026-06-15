@@ -1,0 +1,37 @@
+{
+  "name": "Space Chambers",
+  "icon": "rftoolsbuilder:space_chamber_card",
+  "category": "rftoolsbase:category_rftoolsbuilder_builder",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:space_chamber": 1,
+    "rftoolsbuilder:space_chamber_controller": 2,
+    "rftoolsbuilder:space_chamber_card": 3
+  },
+  "sortnum": 25,
+  "pages": [
+    {
+      "type": "text",
+      "text": "A space chamber marks a volume that the Builder or Vehicle Builder can copy or move. Use chamber blocks and one controller to define the chamber."
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:space_chamber"
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:space_chamber_controller"
+    },
+    {
+      "type": "text",
+      "text": "Sneak-right-click the controller with a Space Card to store its channel. Right-click the card in air to inspect chamber contents."
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:space_chamber_card"
+    },
+    {
+      "type": "text",
+      "text": "Support Blocks are temporary helper blocks used by scans and builds. They are intentionally lightweight and can be cleared when no longer needed."
+    }
+  ]
+}

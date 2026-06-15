@@ -19,6 +19,8 @@ import mcjty.rftoolsbuilder.shapes.ShapeModifier;
 import mcjty.rftoolsbuilder.shapes.ShapeOperation;
 import mcjty.rftoolsbuilder.shapes.ShapeRotation;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
+import mcjty.lib.gui.ManualEntry;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -813,4 +815,17 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         String[] split = StringUtils.split(s, ',');
         return new BlockPos(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
     }
+
+    @Override
+    public ManualEntry getManualEntry() {
+        return switch (type) {
+            case CARD_VOID -> ManualHelper.create("rftoolsbuilder:shape_cards/shape_card_def_void");
+            case CARD_QUARRY, CARD_QUARRY_CLEAR, CARD_QUARRY_CLEAR_SILK, CARD_QUARRY_CLEAR_FORTUNE, CARD_QUARRY_FORTUNE, CARD_QUARRY_SILK ->
+                    ManualHelper.create("rftoolsbuilder:shape_cards/shape_card_def_quarry");
+            case CARD_PUMP, CARD_PUMP_CLEAR -> ManualHelper.create("rftoolsbuilder:shape_cards/shape_card_pump");
+            case CARD_PUMP_LIQUID -> ManualHelper.create("rftoolsbuilder:shape_cards/shape_card_liquid");
+            default -> ManualHelper.create("rftoolsbuilder:shape_cards/shape_card_def");
+        };
+    }
+
 }

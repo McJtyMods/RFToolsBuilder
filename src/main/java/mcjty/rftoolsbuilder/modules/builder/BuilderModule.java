@@ -24,6 +24,7 @@ import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.resources.ResourceLocation;
@@ -58,6 +59,7 @@ public class BuilderModule implements IModule {
     public static final DeferredBlock<SupportBlock> SUPPORT = BLOCKS.register("support_block", SupportBlock::new);
 
     public static final DeferredBlock<BaseBlock> SPACE_CHAMBER = BLOCKS.register("space_chamber", () -> new BaseBlock(new BlockBuilder()
+            .manualEntry(ManualHelper.create("rftoolsbuilder:builder/space_chambers"))
         .properties(BlockBehaviour.Properties.of()
                 .strength(2.0f)
                 .sound(SoundType.METAL)

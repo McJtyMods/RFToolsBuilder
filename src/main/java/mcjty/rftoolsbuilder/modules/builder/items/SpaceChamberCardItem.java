@@ -10,6 +10,8 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiChamberDetails;
 import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData;
+import mcjty.lib.gui.ManualEntry;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -116,6 +118,12 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
         if (world.isClientSide) {
             GuiChamberDetails.open();
         }
+    }
+
+
+    @Override
+    public ManualEntry getManualEntry() {
+        return ManualHelper.create("rftoolsbuilder:builder/space_chambers");
     }
 
 }

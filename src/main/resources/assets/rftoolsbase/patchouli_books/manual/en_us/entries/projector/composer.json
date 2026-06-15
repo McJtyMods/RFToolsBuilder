@@ -1,0 +1,15 @@
+{
+  "name": "Composer",
+  "icon": "rftoolsbuilder:composer",
+  "category": "rftoolsbase:category_rftoolsbuilder_projector",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:composer": 0
+  },
+  "sortnum": 30,
+  "pages": [
+    {
+      "type": "text",
+      "text": "The Composer combines several Shape Cards into one.$(br2)Each input shape can be added, subtracted, or intersected, letting you build more complex shapes from simpler cards."
+    }
+  ]
+}

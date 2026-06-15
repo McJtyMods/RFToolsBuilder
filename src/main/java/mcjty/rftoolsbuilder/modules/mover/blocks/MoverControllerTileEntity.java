@@ -76,7 +76,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
                 .tileEntitySupplier(MoverControllerTileEntity::new)
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
-                .manualEntry(ManualHelper.create("rftoolsbuilder:todo"))
+                .manualEntry(ManualHelper.create("rftoolsbuilder:mover/mover_controller"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))
                 .infoShift(header(), gold()));
     }

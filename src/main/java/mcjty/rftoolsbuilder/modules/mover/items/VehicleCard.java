@@ -6,6 +6,8 @@ import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.data.VehicleData;
 import mcjty.rftoolsbuilder.setup.Registration;
+import mcjty.lib.gui.ManualEntry;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -128,6 +130,12 @@ public class VehicleCard extends Item implements ITooltipSettings {
         return new BlockPos(min.getX() + ((current >> 20) & 0x3f),
                 min.getY() + ((current >> 10) & 0x3f),
                 min.getZ() + (current & 0x3f));
+    }
+
+
+    @Override
+    public ManualEntry getManualEntry() {
+        return ManualHelper.create("rftoolsbuilder:mover/vehicle_cards");
     }
 
 }

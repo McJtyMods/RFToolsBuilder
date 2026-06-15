@@ -1,0 +1,19 @@
+{
+  "name": "Mover Controller",
+  "icon": "rftoolsbuilder:mover_controller",
+  "category": "rftoolsbase:category_rftoolsbuilder_mover",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:mover_controller": 0
+  },
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "text",
+      "text": "The Mover Controller connects Movers together. Place it adjacent to one Mover, then use it to find other connected Movers."
+    },
+    {
+      "type": "text",
+      "text": "Two Movers are connected when they are within 128 blocks of each other in one of the cardinal directions."
+    }
+  ]
+}

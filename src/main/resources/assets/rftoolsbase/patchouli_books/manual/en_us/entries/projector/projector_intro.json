@@ -1,0 +1,15 @@
+{
+  "name": "Projector",
+  "icon": "rftoolsbuilder:projector",
+  "category": "rftoolsbase:category_rftoolsbuilder_projector",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:projector": 0
+  },
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "text",
+      "text": "The Projector projects the contents of a Shape Card into the world.$(br2)Use it to preview or visualize a shape before using it in another machine."
+    }
+  ]
+}

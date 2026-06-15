@@ -2,11 +2,27 @@
   "name": "Pump Card",
   "icon": "rftoolsbuilder:shape_card_pump",
   "category": "rftoolsbase:category_rftoolsbuilder_shape_cards",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:shape_card_pump": 1,
+    "rftoolsbuilder:shape_card_pump_clear": 2
+  },
   "sortnum": 50,
   "pages": [
     {
       "type": "text",
-      "text": "The Pump Card can be used to pump quarries by the Builder"
+      "text": "The Pump Card makes the Builder collect fluids from the selected area. The pumped fluid must be stored in a tank connected to the Builder."
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:shape_card_pump"
+    },
+    {
+      "type": "text",
+      "text": "The normal Pump Card replaces removed fluid with the configured filler. The clearing variant leaves empty space instead."
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:shape_card_pump_clear"
     }
   ]
 }

@@ -1,0 +1,23 @@
+{
+  "name": "Vehicle Cards",
+  "icon": "rftoolsbuilder:vehicle_card",
+  "category": "rftoolsbase:category_rftoolsbuilder_mover",
+  "extra_recipe_mappings": {
+    "rftoolsbuilder:vehicle_card": 1
+  },
+  "sortnum": 40,
+  "pages": [
+    {
+      "type": "text",
+      "text": "A Vehicle Card stores the blocks that make up a vehicle. The Vehicle Builder fills the card from a valid space chamber."
+    },
+    {
+      "type": "crafting",
+      "recipe": "rftoolsbuilder:vehicle_card"
+    },
+    {
+      "type": "text",
+      "text": "Insert the card in a Mover to place the vehicle at that node. The Mover Controller can then move the vehicle between connected Movers."
+    }
+  ]
+}
