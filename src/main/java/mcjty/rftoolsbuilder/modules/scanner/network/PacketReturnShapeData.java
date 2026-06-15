@@ -74,112 +74,6 @@ public record PacketReturnShapeData(ShapeID shapeID, int checksum, @Nullable byt
         }
     }
 
-    private record CodecFamilyStats(EncodedPayload best, int encodedBytes, int deflatedBytes, long prepNanos, int bitsPerValue) {
-    }
-
-    private static class CompressionLog {
-        private static long planeCount = 0;
-        private static long totalRawBytes = 0;
-        private static long totalLegacyBytes = 0;
-        private static long totalLegacyDeflatedBytes = 0;
-        private static long totalPackedBytes = 0;
-        private static long totalPackedDeflatedBytes = 0;
-        private static long totalWireBytes = 0;
-        private static long legacyDeflatedCount = 0;
-        private static long packedCount = 0;
-        private static long packedDeflatedCount = 0;
-        private static long totalLegacyPrepNanos = 0;
-        private static long totalPackedPrepNanos = 0;
-        private static long totalPaletteSize = 0;
-        private static long totalPackedBits = 0;
-        private static final long[] wins = new long[PositionCodec.values().length];
-
-        private static synchronized void record(int rawBytes, int paletteSize, CodecFamilyStats legacy, CodecFamilyStats packed, EncodedPayload best) {
-            if (!ScannerConfiguration.projectorCompressionLogging.get()) {
-                return;
-            }
-            planeCount++;
-            totalRawBytes += rawBytes;
-            totalWireBytes += best.wireSize();
-            if (legacy != null) {
-                totalLegacyBytes += legacy.encodedBytes();
-                totalLegacyPrepNanos += legacy.prepNanos();
-                if (legacy.deflatedBytes() >= 0) {
-                    totalLegacyDeflatedBytes += legacy.deflatedBytes();
-                    legacyDeflatedCount++;
-                }
-            }
-            if (packed != null) {
-                totalPackedBytes += packed.encodedBytes();
-                totalPackedPrepNanos += packed.prepNanos();
-                totalPaletteSize += paletteSize;
-                totalPackedBits += packed.bitsPerValue();
-                packedCount++;
-                if (packed.deflatedBytes() >= 0) {
-                    totalPackedDeflatedBytes += packed.deflatedBytes();
-                    packedDeflatedCount++;
-                }
-            }
-            wins[best.codec().ordinal()]++;
-
-            int interval = Math.max(1, ScannerConfiguration.projectorCompressionLogInterval.get());
-            if ((planeCount % interval) != 0) {
-                return;
-            }
-
-            long avgRaw = totalRawBytes / planeCount;
-            long avgLegacy = totalLegacyBytes / planeCount;
-            long avgLegacyDeflate = legacyDeflatedCount == 0 ? -1 : totalLegacyDeflatedBytes / legacyDeflatedCount;
-            long avgPacked = packedCount == 0 ? -1 : totalPackedBytes / packedCount;
-            long avgPackedDeflate = packedDeflatedCount == 0 ? -1 : totalPackedDeflatedBytes / packedDeflatedCount;
-            long avgWire = totalWireBytes / planeCount;
-            long avgLegacyPrep = totalLegacyPrepNanos / planeCount / 1000L;
-            long avgPackedPrep = packedCount == 0 ? -1 : totalPackedPrepNanos / packedCount / 1000L;
-            long avgPalette = packedCount == 0 ? -1 : totalPaletteSize / packedCount;
-            long avgBits = packedCount == 0 ? -1 : totalPackedBits / packedCount;
-            double savingsVsRaw = totalRawBytes == 0 ? 0.0 : (100.0 * (totalRawBytes - totalWireBytes)) / totalRawBytes;
-
-            RFToolsBuilder.setup.getLogger().info(
-                    "Projector compression over {} planes using {}: avg raw={}B, avg legacy={}B, avg legacy+deflate={}B, avg packed={}B, avg packed+deflate={}B, avg chosen wire={}B, avg palette={}, avg bits={}, savings vs raw={}%, avg prep[legacy={}us, packed={}us], wins[legacy={}, legacy+deflate={}, packed={}, packed+deflate={}]",
-                    planeCount,
-                    ScannerConfiguration.projectorCompressionCodec.get(),
-                    avgRaw,
-                    avgLegacy,
-                    avgLegacyDeflate < 0 ? "n/a" : Long.toString(avgLegacyDeflate),
-                    avgPacked < 0 ? "n/a" : Long.toString(avgPacked),
-                    avgPackedDeflate < 0 ? "n/a" : Long.toString(avgPackedDeflate),
-                    avgWire,
-                    avgPalette < 0 ? "n/a" : Long.toString(avgPalette),
-                    avgBits < 0 ? "n/a" : Long.toString(avgBits),
-                    String.format("%.1f", savingsVsRaw),
-                    avgLegacyPrep,
-                    avgPackedPrep < 0 ? "n/a" : Long.toString(avgPackedPrep),
-                    wins[PositionCodec.RLE.ordinal()],
-                    wins[PositionCodec.RLE_DEFLATE.ordinal()],
-                    wins[PositionCodec.PACKED_BITS.ordinal()],
-                    wins[PositionCodec.PACKED_BITS_DEFLATE.ordinal()]
-            );
-
-            planeCount = 0;
-            totalRawBytes = 0;
-            totalLegacyBytes = 0;
-            totalLegacyDeflatedBytes = 0;
-            totalPackedBytes = 0;
-            totalPackedDeflatedBytes = 0;
-            totalWireBytes = 0;
-            legacyDeflatedCount = 0;
-            packedCount = 0;
-            packedDeflatedCount = 0;
-            totalLegacyPrepNanos = 0;
-            totalPackedPrepNanos = 0;
-            totalPaletteSize = 0;
-            totalPackedBits = 0;
-            for (int i = 0; i < wins.length; i++) {
-                wins[i] = 0;
-            }
-        }
-    }
-
     @Override
     public void write(FriendlyByteBuf buf) {
         shapeID.toBytes(buf);
@@ -431,7 +325,6 @@ public record PacketReturnShapeData(ShapeID shapeID, int checksum, @Nullable byt
 
     private static EncodedPayload encodePositions(RLE positions, StatePalette statePalette, BlockPos dimension) {
         ProjectorCompressionCodec selectedCodec = ScannerConfiguration.projectorCompressionCodec.get();
-        boolean compareCodecs = ScannerConfiguration.projectorCompressionLogging.get();
         byte[] rle = positions.getData();
         if (rle.length == 0) {
             return new EncodedPayload(PositionCodec.RLE, rle, 0);
@@ -440,49 +333,35 @@ public record PacketReturnShapeData(ShapeID shapeID, int checksum, @Nullable byt
         int rawLength = dimension.getX() * dimension.getZ();
         int paletteSize = statePalette == null ? 0 : statePalette.getPalette().size();
 
-        CodecFamilyStats legacy = encodeLegacyFamily(rle);
-        CodecFamilyStats packed = null;
-        if (compareCodecs || selectedCodec == ProjectorCompressionCodec.PACKED_BITS) {
-            packed = encodePackedFamily(rle, rawLength, paletteSize);
-        }
-
-        EncodedPayload best = switch (selectedCodec) {
-            case LEGACY_RLE -> legacy.best();
-            case PACKED_BITS -> packed == null ? legacy.best() : packed.best();
+        return switch (selectedCodec) {
+            case LEGACY_RLE -> encodeLegacyFamily(rle);
+            case PACKED_BITS -> encodePackedFamily(rle, rawLength, paletteSize);
         };
-        CompressionLog.record(rawLength, paletteSize, legacy, packed, best);
-        return best;
     }
 
-    private static CodecFamilyStats encodeLegacyFamily(byte[] rle) {
-        long start = System.nanoTime();
+    private static EncodedPayload encodeLegacyFamily(byte[] rle) {
         EncodedPayload best = new EncodedPayload(PositionCodec.RLE, rle, rle.length);
 
-        int deflatedBytes = -1;
         if (rle.length >= COMPRESSION_MIN_BYTES) {
             byte[] packed = compress(rle);
-            deflatedBytes = packed.length;
             if (packed.length + COMPRESSION_MIN_GAIN < rle.length) {
                 best = pickBest(best, new EncodedPayload(PositionCodec.RLE_DEFLATE, packed, rle.length));
             }
         }
-        return new CodecFamilyStats(best, rle.length, deflatedBytes, System.nanoTime() - start, 8);
+        return best;
     }
 
-    private static CodecFamilyStats encodePackedFamily(byte[] rle, int rawLength, int paletteSize) {
-        long start = System.nanoTime();
+    private static EncodedPayload encodePackedFamily(byte[] rle, int rawLength, int paletteSize) {
         byte[] packed = packPositions(rle, rawLength, paletteSize);
         EncodedPayload best = new EncodedPayload(PositionCodec.PACKED_BITS, packed, packed.length);
 
-        int deflatedBytes = -1;
         if (packed.length >= COMPRESSION_MIN_BYTES) {
             byte[] deflated = compress(packed);
-            deflatedBytes = deflated.length;
             if (deflated.length + COMPRESSION_MIN_GAIN < packed.length) {
                 best = pickBest(best, new EncodedPayload(PositionCodec.PACKED_BITS_DEFLATE, deflated, packed.length));
             }
         }
-        return new CodecFamilyStats(best, packed.length, deflatedBytes, System.nanoTime() - start, packed[0] & 0xff);
+        return best;
     }
 
     private static byte[] packPositions(byte[] rle, int rawLength, int paletteSize) {
