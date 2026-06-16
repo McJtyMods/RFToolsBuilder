@@ -1,3 +1,8 @@
+1.21-7.0.5:
+- Updated and expanded the Patchouli manual documentation
+- Added the new Scanner, Projector, and Composer
+- The Scanner, Projector, and Composer are still beta and may have bugs
+
 1.21-7.0.4:
 - Fixed a rendering bug with the shape card user interface for the voiding buttons
 
