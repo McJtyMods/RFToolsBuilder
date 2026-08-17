@@ -154,6 +154,9 @@ public class Formulas {
         }
 
         private boolean isInsideInternal(int index) {
+            if (index < 0 || index >= data.length) {
+                return false;
+            }
             if (data[index] == 0) {
                 return false;
             } else {

@@ -45,7 +45,7 @@ public record PacketRequestShapeData(ItemStack card, ShapeID shapeID, int checks
             boolean optimizeRenderShell = shapeID.isSolid();
             BlockPos dimension = ShapeCardItem.getDimension(card);
 
-            BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 256), Math.min(dimension.getZ(), 512));
+            BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 4096), Math.min(dimension.getZ(), 512));
             int dy = clamped.getY();
             ItemStack copy = card.copy();
 
