@@ -1,3 +1,6 @@
+1.20-6.0.10:
+- Fixed a crash in the scanner in some rare situations
+
 1.20-6.0.9:
 - Various Patchouli documentation updates and fixes
 - Added the new Scanner, Projector, and Composer. These are still beta and might have bugs
