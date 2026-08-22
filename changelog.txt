@@ -1,5 +1,6 @@
 1.21-7.0.6:
 - Fixed a crash in the scanner in some rare situations
+- 'derrickmehaffy' fixed a bug in the shape card on servers when manually selecting the corners with a dimension that exceeds 512
 
 1.21-7.0.5:
 - Updated and expanded the Patchouli manual documentation
