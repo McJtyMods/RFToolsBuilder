@@ -104,7 +104,9 @@ public class ShapeDataManagerServer {
 
                 ItemStack card = unit.getStack();
                 boolean solid = unit.isOptimizeRenderShell();
-                BlockPos dimension = ShapeCardItem.getDimension(card);
+                // Must match the clamp getRenderPositions() generates with, or the packet
+                // describes a plane larger than the RLE actually contains.
+                BlockPos dimension = ShapeCardItem.getShapeDataDimension(card);
 
                 RLE positions = new RLE();
                 StatePalette statePalette = new StatePalette();

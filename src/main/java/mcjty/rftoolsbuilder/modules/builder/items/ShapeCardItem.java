@@ -470,6 +470,20 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         return new BlockPos(clampDimension(dimension.getX(), maximum), clampDimension(dimension.getY(), maximum), clampDimension(dimension.getZ(), maximum));
     }
 
+    // Shape preview and saved shape data are generated from a dimension clamped to these
+    // limits. Every site that generates, sizes or decodes that data has to agree on the
+    // clamp, otherwise the producer and the consumer disagree about how big a plane is.
+    public static final int MAX_SHAPE_DATA_HORIZONTAL = 512;
+    public static final int MAX_SHAPE_DATA_VERTICAL = 4096;
+
+    public static BlockPos getShapeDataDimension(ItemStack card) {
+        BlockPos dimension = getDimension(card);
+        return new BlockPos(
+                clampDimension(dimension.getX(), MAX_SHAPE_DATA_HORIZONTAL),
+                clampDimension(dimension.getY(), MAX_SHAPE_DATA_VERTICAL),
+                clampDimension(dimension.getZ(), MAX_SHAPE_DATA_HORIZONTAL));
+    }
+
     private static int clampDimension(int o, int maximum) {
         if (o > maximum) {
             o = maximum;
@@ -561,8 +575,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
     }
 
     public static int getRenderPositions(ItemStack stack, boolean solid, RLE positions, StatePalette statePalette, IFormula formula, int oy) {
-        BlockPos dimension = ShapeCardItem.getDimension(stack);
-        BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 4096), Math.min(dimension.getZ(), 512));
+        BlockPos clamped = getShapeDataDimension(stack);
 
         int dx = clamped.getX();
         int dy = clamped.getY();
@@ -597,8 +610,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
 
     // Used for saving
     public static int getDataPositions(Level world, ItemStack stack, Shape shape, boolean solid, RLE positions, StatePalette statePalette) {
-        BlockPos dimension = ShapeCardItem.getDimension(stack);
-        BlockPos clamped = new BlockPos(Math.min(dimension.getX(), 512), Math.min(dimension.getY(), 4096), Math.min(dimension.getZ(), 512));
+        BlockPos clamped = getShapeDataDimension(stack);
 
         IFormula formula = shape.getFormulaFactory().get();
         int dx = clamped.getX();
