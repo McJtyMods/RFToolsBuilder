@@ -31,7 +31,6 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
-
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,7 +48,7 @@ public class MoverRenderer {
     public static final int LINES_SUPPORTED = 7;
 
     public static float getPartialTicks() {
-        return Minecraft.getInstance().getFrameTimeNs(); // @todo 1.21 is this right? getFrameTime();
+        return Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
     }
 
     public static void actualRender(MoverTileEntity mover, @NotNull GuiGraphics graphics, Vec3 cameraPos, ItemStack card, Vec3 current, Vec3 offset,
