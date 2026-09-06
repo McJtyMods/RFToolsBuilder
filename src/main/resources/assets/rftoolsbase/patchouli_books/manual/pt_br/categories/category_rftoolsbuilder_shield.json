@@ -1,0 +1,7 @@
+{
+  "name": "Projetor de Escudo",
+  "description": "O Projetor de Escudo pode proteger áreas e também eliminar mobs.",
+  "parent": "rftoolsbase:category_rftoolsbuilder",
+  "icon": "rftoolsbuilder:shield_block1",
+  "sortnum": 30
+}

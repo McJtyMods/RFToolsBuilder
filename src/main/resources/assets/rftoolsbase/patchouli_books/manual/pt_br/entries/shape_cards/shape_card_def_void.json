@@ -1,0 +1,12 @@
+{
+  "name": "Cartão Vazio",
+  "icon": "rftoolsbuilder:shape_card_void",
+  "category": "rftoolsbase:category_rftoolsbuilder_shape_cards",
+  "sortnum": 30,
+  "pages": [
+    {
+      "type": "text",
+      "text": "Com o Cartão Vazio você pode eliminar áreas com o Construtor."
+    }
+  ]
+}

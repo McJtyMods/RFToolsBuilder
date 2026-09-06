@@ -1,0 +1,12 @@
+{
+  "name": "Introdução",
+  "icon": "minecraft:experience_bottle",
+  "category": "rftoolsbase:category_rftoolsbuilder_builder",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "text",
+      "text": "O Construtor é um bloco versátil que pode minerar, construir, bombear, coletar XP e itens, entre outras funções. Use um dos cartões de forma para controlar o que deve ser feito."
+    }
+  ]
+}

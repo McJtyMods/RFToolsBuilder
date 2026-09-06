@@ -1,0 +1,12 @@
+{
+  "name": "Alvo",
+  "icon": "minecraft:compass",
+  "category": "rftoolsbase:category_rftoolsbuilder_builder",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "text",
+      "text": "Existem várias maneiras de controlar a área que o Construtor irá afetar. ... @todo"
+    }
+  ]
+}

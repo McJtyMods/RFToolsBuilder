@@ -1,0 +1,12 @@
+{
+  "name": "Cartão de Forma Padrão",
+  "icon": "rftoolsbuilder:shape_card_def",
+  "category": "rftoolsbase:category_rftoolsbuilder_shape_cards",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "text",
+      "text": "O Cartão de Forma Padrão é usado para construir (pelo Construtor) ou descrever uma forma para o Projetor de Escudo."
+    }
+  ]
+}

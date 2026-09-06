@@ -1,0 +1,7 @@
+{
+  "name": "Construtor",
+  "description": "O Construtor é um bloco muito versátil para construir, minerar ou coletar.",
+  "parent": "rftoolsbase:category_rftoolsbuilder",
+  "icon": "rftoolsbuilder:builder",
+  "sortnum": 20
+}

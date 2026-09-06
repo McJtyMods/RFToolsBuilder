@@ -1,0 +1,7 @@
+{
+  "name": "Cartões de Forma",
+  "description": "Cartões de Forma são itens que representam uma determinada forma. Eles podem ser usados pelo Builder e pelo Projetor de Escudo.",
+  "parent": "rftoolsbase:category_rftoolsbuilder",
+  "icon": "rftoolsbuilder:shape_card_def",
+  "sortnum": 10
+}
