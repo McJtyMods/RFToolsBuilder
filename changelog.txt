@@ -1,3 +1,6 @@
+1.21-7.0.7:
+- The mover, vehicle builder, and mover controller where not available in JEI or the creative inventory. This has been fixed
+
 1.21-7.0.6:
 - Fixed a crash in the scanner in some rare situations
 - 'derrickmehaffy' fixed a bug in the shape card on servers when manually selecting the corners with a dimension that exceeds 512
