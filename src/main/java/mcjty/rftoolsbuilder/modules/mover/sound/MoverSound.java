@@ -14,7 +14,7 @@ import net.minecraft.world.phys.Vec3;
 public class MoverSound extends AbstractTickableSoundInstance {
 
     public MoverSound(SoundEvent event, Level world, BlockPos pos) {
-        super(event, SoundSource.BLOCKS, world.random);
+        super(event, SoundSource.BLOCKS, world.getRandom());
         this.world = world;
         this.pos = pos;
         this.x = pos.getX();

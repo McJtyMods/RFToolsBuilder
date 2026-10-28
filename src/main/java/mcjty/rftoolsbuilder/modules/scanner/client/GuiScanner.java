@@ -15,20 +15,21 @@ import mcjty.rftoolsbuilder.shapes.IShapeParentGui;
 import mcjty.rftoolsbuilder.shapes.ShapeGuiTools;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class GuiScanner extends GenericGuiContainer<ScannerTileEntity, GenericContainer> implements IShapeParentGui {
 
     private static final int SCANNER_WIDTH = 256;
     private static final int SCANNER_HEIGHT = 238;
-    private static final ResourceLocation BACKGROUND = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "textures/gui/scanner.png");
+    private static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "textures/gui/scanner.png");
 
     private ShapeRenderer shapeRenderer;
     private ToggleButton showAxis;
@@ -42,8 +43,7 @@ public class GuiScanner extends GenericGuiContainer<ScannerTileEntity, GenericCo
     public GuiScanner(ScannerTileEntity tileEntity, GenericContainer container, Inventory inventory) {
         super(container, inventory, Component.literal("Scanner"), ScannerModule.SCANNER.block().get().getManualEntry());
         this.tileEntity = tileEntity;
-        imageWidth = SCANNER_WIDTH;
-        imageHeight = SCANNER_HEIGHT;
+        setWindowDimensions(SCANNER_WIDTH, SCANNER_HEIGHT);
     }
 
     public static void register(RegisterMenuScreensEvent event) {
@@ -93,7 +93,7 @@ public class GuiScanner extends GenericGuiContainer<ScannerTileEntity, GenericCo
     }
 
     private ShapeRenderer getShapeRenderer() {
-        ShapeID id = new ShapeID(net.minecraft.world.level.Level.OVERWORLD, null, tileEntity.getScanId(), false, true);
+        ShapeID id = new ShapeID(Level.OVERWORLD, null, tileEntity.getScanId(), false, true);
         if (shapeRenderer == null || !id.equals(shapeRenderer.getShapeID())) {
             shapeRenderer = new ShapeRenderer(id);
             shapeRenderer.initView(getPreviewLeft(), topPos + 100);
@@ -102,8 +102,9 @@ public class GuiScanner extends GenericGuiContainer<ScannerTileEntity, GenericCo
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        boolean result = super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        double mouseX = event.x(), mouseY = event.y(); int button = ShapeRenderer.mouseButtonIndex(event.button());
+        boolean result = super.mouseDragged(event, dragX, dragY);
         boolean[] buttons = new boolean[3];
         if (button >= 0 && button < buttons.length) {
             buttons[button] = true;
@@ -130,7 +131,7 @@ public class GuiScanner extends GenericGuiContainer<ScannerTileEntity, GenericCo
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(@NotNull GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
         offsetLabel.text("Off: " + BlockPosTools.toString(tileEntity.getDataOffset()));
         dimensionLabel.text("Dim: " + BlockPosTools.toString(tileEntity.getDataDim()));
         int progress = tileEntity.getScanProgress();

@@ -1,6 +1,5 @@
 package mcjty.rftoolsbuilder.modules.builder.items;
 
-import mcjty.lib.varia.ComponentFactory;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.shapes.Shape;
@@ -13,7 +12,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,9 +32,9 @@ public enum ShapeCardType {
             "a shield of that shape or in the builder to",
             "actually build the shape"}) {
         @Override
-        public void addHudLog(List<String> list, IItemHandler inventory) {
+        public void addHudLog(List<String> list, ResourceHandler<ItemResource> inventory) {
             list.add("    Shape card");
-            ItemStack shapeCard = inventory.getStackInSlot(BuilderTileEntity.SLOT_TAB);
+            ItemStack shapeCard = ItemUtil.getStack(inventory, BuilderTileEntity.SLOT_TAB);
             if (!shapeCard.isEmpty()) {
                 Shape shape = ShapeCardItem.getShape(shapeCard);
                 if (shape != null) {
@@ -175,7 +176,7 @@ public enum ShapeCardType {
         return rfNeeded.get();
     }
 
-    public void addHudLog(List<String> list, IItemHandler inventoryHelper) {
+    public void addHudLog(List<String> list, ResourceHandler<ItemResource> inventoryHelper) {
         if(hudLogEntry != null) {
             list.add(hudLogEntry);
         }
@@ -185,11 +186,11 @@ public enum ShapeCardType {
     }
 
     public void addInformation(List<Component> list) {
-        List<MutableComponent> info = Arrays.stream(information.get()).map(a -> ComponentFactory.literal(ChatFormatting.WHITE.toString() + a)).collect(Collectors.toList());
+        List<MutableComponent> info = Arrays.stream(information.get()).map(a -> Component.literal(ChatFormatting.WHITE.toString() + a)).collect(Collectors.toList());
         list.addAll(info);
-        list.add(ComponentFactory.literal(ChatFormatting.GREEN + "Max area: " + BuilderConfiguration.maxBuilderDimension.get() + "x" + Math.min(256, BuilderConfiguration.maxBuilderDimension.get()) + "x" + BuilderConfiguration.maxBuilderDimension.get()));
-        list.add(ComponentFactory.literal(ChatFormatting.GREEN + "Base cost: " + rfNeeded.get() + " RF/t per block"));
-        list.add(ComponentFactory.literal(ChatFormatting.GREEN + (this == CARD_SHAPE ? "(final cost depends on infusion level)" : "(final cost depends on infusion level and block hardness)")));
+        list.add(Component.literal(ChatFormatting.GREEN + "Max area: " + BuilderConfiguration.maxBuilderDimension.get() + "x" + Math.min(256, BuilderConfiguration.maxBuilderDimension.get()) + "x" + BuilderConfiguration.maxBuilderDimension.get()));
+        list.add(Component.literal(ChatFormatting.GREEN + "Base cost: " + rfNeeded.get() + " RF/t per block"));
+        list.add(Component.literal(ChatFormatting.GREEN + (this == CARD_SHAPE ? "(final cost depends on infusion level)" : "(final cost depends on infusion level and block hardness)")));
     }
 
     public boolean handleSingleBlock(BuilderTileEntity te, int rfNeeded, BlockPos srcPos, BlockState srcState, BlockState pickState) {

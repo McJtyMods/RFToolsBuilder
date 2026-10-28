@@ -1,16 +1,9 @@
 {
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
-    "G": {
-      "tag": "c:glass_blocks"
-    },
-    "l": {
-      "tag": "c:dyes/yellow"
-    },
-    "w": {
-      "tag": "minecraft:wool"
-    }
+    "G": "#c:glass_blocks",
+    "l": "#c:dyes/yellow",
+    "w": "#minecraft:wool"
   },
   "pattern": [
     "www",

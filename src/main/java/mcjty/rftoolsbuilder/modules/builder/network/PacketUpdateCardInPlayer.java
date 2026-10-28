@@ -5,7 +5,7 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -13,7 +13,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record PacketUpdateCardInPlayer(ItemStack stack) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "updatecard_player");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "updatecard_player");
     public static final Type<PacketUpdateCardInPlayer> TYPE = new Type<>(ID);
 
     public static final StreamCodec<RegistryFriendlyByteBuf, PacketUpdateCardInPlayer> CODEC = StreamCodec.composite(

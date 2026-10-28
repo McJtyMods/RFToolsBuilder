@@ -1,9 +1,14 @@
 package mcjty.rftoolsbuilder.modules.builder.items;
 
+import java.io.*;
+import java.util.*;
+import java.util.function.Consumer;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.crafting.IComponentsToPreserve;
+import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.tooltips.ITooltipSettings;
 import mcjty.lib.varia.*;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
@@ -19,29 +24,26 @@ import mcjty.rftoolsbuilder.shapes.ShapeModifier;
 import mcjty.rftoolsbuilder.shapes.ShapeOperation;
 import mcjty.rftoolsbuilder.shapes.ShapeRotation;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
-import mcjty.lib.gui.ManualEntry;
-import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -51,11 +53,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.apache.commons.lang3.StringUtils;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.*;
-import java.util.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData.*;
@@ -79,8 +78,8 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
 
     public static final int MAXIMUM_COUNT = 50000000;
 
-    public ShapeCardItem(ShapeCardType type) {
-        super(RFToolsBuilder.setup.defaultProperties().stacksTo(1).durability(0));
+    public ShapeCardItem(Item.Properties properties, ShapeCardType type) {
+        super(properties.stacksTo(1));
         this.type = type;
     }
 
@@ -117,12 +116,12 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         return BlockPosTools.toString(getOffset(itemStack));
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level world = context.getLevel();
         Player player = context.getPlayer();
-        if (!world.isClientSide && player != null) {
+        if (!world.isClientSide() && player != null) {
             InteractionHand hand = context.getHand();
             BlockPos pos = context.getClickedPos();
             ItemStack stack = context.getItemInHand();
@@ -271,10 +270,12 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
 
 
     @Override
-    public void appendHoverText(@Nonnull ItemStack itemStack, TooltipContext context, @Nonnull List<Component> list, @Nonnull TooltipFlag flag) {
-        super.appendHoverText(itemStack, context, list, flag);
+    public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay display, Consumer<Component> consumer, TooltipFlag flag) {
+        List<Component> list = new ArrayList<>();
+        super.appendHoverText(itemStack, context, display, consumer, flag);
         // Use custom RL so that we don't have to duplicate the translation for every shape card
-        tooltipBuilder.get().makeTooltip(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "shape_card"), itemStack, list, flag);
+        tooltipBuilder.get().makeTooltip(Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "shape_card"), itemStack, list, flag);
+        list.forEach(consumer);
     }
 
     /**
@@ -450,7 +451,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         return new ShapeModifier(operation, data.flipY(), rotation);
     }
 
-    public static Optional<ResourceLocation> getGhostBlock(ItemStack card) {
+    public static Optional<Identifier> getGhostBlock(ItemStack card) {
         return card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT).ghostBlock();
     }
 
@@ -511,15 +512,15 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         return o;
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public InteractionResultHolder<ItemStack> use(Level world, Player player, @Nonnull InteractionHand hand) {
+    public InteractionResult use(Level world, Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (world.isClientSide) {
+        if (world.isClientSide()) {
             GuiShapeCard.open(false);
-            return new InteractionResultHolder<>(InteractionResult.SUCCESS, stack);
+            return InteractionResult.SUCCESS;
         }
-        return new InteractionResultHolder<>(InteractionResult.SUCCESS, stack);
+        return InteractionResult.SUCCESS;
     }
 
     public static BlockPos getMinCorner(BlockPos thisCoord, BlockPos dimension, BlockPos offset) {
@@ -544,7 +545,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         if (chunk == null) {
             return true;
         } else {
-            return chunk.x == (x>>4);
+            return chunk.x() == (x>>4);
         }
     }
 
@@ -552,7 +553,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         if (chunk == null) {
             return true;
         } else {
-            return chunk.z == (z>>4);
+            return chunk.z() == (z>>4);
         }
     }
 
@@ -680,7 +681,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
 
     private static boolean validFile(Player player, String filename) {
         if (filename.contains("\\") || filename.contains("/") || filename.contains(":")) {
-            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "Invalid filename '" + filename + "'! Cannot be a path!"), false);
+            player.sendSystemMessage(Component.literal(ChatFormatting.RED + "Invalid filename '" + filename + "'! Cannot be a path!"));
             return false;
         }
         return true;
@@ -699,7 +700,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
 
         RLE positions = new RLE();
         StatePalette statePalette = new StatePalette();
-        int cnt = getDataPositions(player.getCommandSenderWorld(), card, shape, solid, positions, statePalette);
+        int cnt = getDataPositions(player.level(), card, shape, solid, positions, statePalette);
 
         byte[] data = positions.getData();
 
@@ -722,10 +723,10 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
             byte[] encoded = Base64.getEncoder().encode(data);
             writer.write(new String(encoded));
         } catch (FileNotFoundException e) {
-            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "Cannot write to file '" + filename + "'!"), false);
+            player.sendSystemMessage(Component.literal(ChatFormatting.RED + "Cannot write to file '" + filename + "'!"));
             return;
         }
-        player.displayClientMessage(ComponentFactory.literal(ChatFormatting.GREEN + "Saved shape to file '" + file.getPath() + "'"), false);
+        player.sendSystemMessage(Component.literal(ChatFormatting.GREEN + "Saved shape to file '" + file.getPath() + "'"));
     }
 
     public static void load(Player player, ItemStack card, String filename) {
@@ -736,13 +737,13 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         Shape shape = ShapeCardItem.getShape(card);
 
         if (shape != Shape.SHAPE_SCAN) {
-            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "To load a file into this card you need a linked 'scan' type card!"), false);
+            player.sendSystemMessage(Component.literal(ChatFormatting.RED + "To load a file into this card you need a linked 'scan' type card!"));
             return;
         }
 
         int scanId = getScanId(card);
         if (scanId == 0) {
-            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "This card is not linked to scan data!"), false);
+            player.sendSystemMessage(Component.literal(ChatFormatting.RED + "This card is not linked to scan data!"));
             return;
         }
 
@@ -753,18 +754,18 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
             String s = reader.readLine();
             if (!"SHAPE".equals(s)) {
-                player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.sendSystemMessage(Component.literal(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"));
                 return;
             }
             s = reader.readLine();
             if (!s.startsWith("DIM:")) {
-                player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.sendSystemMessage(Component.literal(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"));
                 return;
             }
             BlockPos dim = parse(s.substring(4));
             s = reader.readLine();
             if (!s.startsWith("OFF:")) {
-                player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"), false);
+                player.sendSystemMessage(Component.literal(ChatFormatting.RED + "This does not appear to be a valid shapecard file!"));
                 return;
             }
             BlockPos off = parse(s.substring(4));
@@ -775,9 +776,9 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
                     statePalette.add(decodeState(s.substring(4)));
                 } else {
                     String[] split = StringUtils.split(s, '@');
-                    Block block = Tools.getBlock(ResourceLocation.parse(split[0]));
+                    Block block = Tools.getBlock(Identifier.parse(split[0]));
                     if (block == null) {
-                        player.displayClientMessage(ComponentFactory.literal(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"), false);
+                        player.sendSystemMessage(Component.literal(ChatFormatting.YELLOW + "Could not find block '" + split[0] + "'!"));
                         block = Blocks.STONE;
                     }
                     statePalette.add(block.defaultBlockState());
@@ -787,18 +788,18 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
             s = reader.readLine();
             byte[] decoded = Base64.getDecoder().decode(s.getBytes());
 
-            setDataFromFile(player.getCommandSenderWorld(), scanId, card, dim, off, decoded, statePalette);
+            setDataFromFile(player.level(), scanId, card, dim, off, decoded, statePalette);
         } catch (IOException e) {
-            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "Cannot read from file '" + filename + "'!"), false);
+            player.sendSystemMessage(Component.literal(ChatFormatting.RED + "Cannot read from file '" + filename + "'!"));
             return;
         } catch (NullPointerException e) {
-            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "File '" + filename + "' is too short!"), false);
+            player.sendSystemMessage(Component.literal(ChatFormatting.RED + "File '" + filename + "' is too short!"));
             return;
         } catch (ArrayIndexOutOfBoundsException e) {
-            player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "File '" + filename + "' contains invalid entries!"), false);
+            player.sendSystemMessage(Component.literal(ChatFormatting.RED + "File '" + filename + "' contains invalid entries!"));
             return;
         }
-        player.displayClientMessage(ComponentFactory.literal(ChatFormatting.GREEN + "Loaded shape from file '" + file.getPath() + "'"), false);
+        player.sendSystemMessage(Component.literal(ChatFormatting.GREEN + "Loaded shape from file '" + file.getPath() + "'"));
     }
 
     private static void setDataFromFile(Level world, int scanId, ItemStack card, BlockPos dimension, BlockPos offset, byte[] data, StatePalette palette) {
@@ -819,7 +820,7 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
     private static BlockState decodeState(String encoded) throws IOException {
         byte[] decoded = Base64.getDecoder().decode(encoded);
         CompoundTag tag = NbtIo.readCompressed(new ByteArrayInputStream(decoded), NbtAccounter.unlimitedHeap());
-        return NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), tag);
+        return NbtUtils.readBlockState(BuiltInRegistries.BLOCK, tag);
     }
 
 

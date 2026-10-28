@@ -1,10 +1,12 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
+import java.util.List;
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -28,10 +30,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ShieldingBlock extends Block implements EntityBlock {
 
@@ -49,13 +49,13 @@ public class ShieldingBlock extends Block implements EntityBlock {
 
     public static final VoxelShape COLLISION_SHAPE = Shapes.box(0.002, 0.002, 0.002, 0.998, 0.998, 0.998);
 
-    public ShieldingBlock() {
-        super(BlockBehaviour.Properties.of()
+    public ShieldingBlock(BlockBehaviour.Properties properties) {
+        super(properties
                 .forceSolidOn()
                 .sound(SoundType.GLASS)
                 .noOcclusion()
                 .isRedstoneConductor((state, world, pos) -> false)
-                .pushReaction(PushReaction.BLOCK)
+                .pushReaction(PushReaction.IMMOVEABLE)
                 .strength(-1.0F, 3600000.0F)
                 .noLootTable());
         registerDefaultState(defaultBlockState()
@@ -78,7 +78,7 @@ public class ShieldingBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected void createBlockStateDefinition(@Nonnull StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(@NotNull StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(BLOCKED_ITEMS, BLOCKED_HOSTILE, BLOCKED_PASSIVE, BLOCKED_PLAYERS,
                 DAMAGE_ITEMS, DAMAGE_HOSTILE, DAMAGE_PASSIVE, DAMAGE_PLAYERS,
@@ -86,18 +86,18 @@ public class ShieldingBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public int getLightBlock(BlockState state, @Nonnull BlockGetter world, @Nonnull BlockPos pos) {
-        return state.getValue(FLAG_OPAQUE) ? 0 : 255;
+    public int getLightDampening(BlockState state) {
+        return state.getValue(FLAG_OPAQUE) ? 0 : 15;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return state.getValue(RENDER_MODE) == ShieldRenderingMode.INVISIBLE ? RenderShape.INVISIBLE : RenderShape.MODEL;
     }
 
     @Override
-    public float getShadeBrightness(@Nonnull BlockState state, @Nonnull BlockGetter worldIn, @Nonnull BlockPos pos) {
+    public float getShadeBrightness(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos) {
         return super.getShadeBrightness(state, worldIn, pos);
     }
 
@@ -106,9 +106,9 @@ public class ShieldingBlock extends Block implements EntityBlock {
         return false;
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public VoxelShape getShape(@Nonnull BlockState state, BlockGetter world, @Nonnull BlockPos pos, @Nonnull CollisionContext context) {
+    public VoxelShape getShape(@NotNull BlockState state, BlockGetter world, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof ShieldingTileEntity) {
             BlockState mimic = ((ShieldingTileEntity) te).getMimic();
@@ -124,9 +124,9 @@ public class ShieldingBlock extends Block implements EntityBlock {
     }
 
 
-    @Nonnull
+    @NotNull
     @Override
-    public VoxelShape getInteractionShape(@Nonnull BlockState state, BlockGetter world, @Nonnull BlockPos pos) {
+    public VoxelShape getInteractionShape(@NotNull BlockState state, BlockGetter world, @NotNull BlockPos pos) {
         BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof ShieldingTileEntity) {
             BlockState mimic = ((ShieldingTileEntity) te).getMimic();
@@ -141,17 +141,10 @@ public class ShieldingBlock extends Block implements EntityBlock {
         }
     }
 
-    @Nonnull
     @Override
-    public VoxelShape getOcclusionShape(@Nonnull BlockState state, BlockGetter world, @Nonnull BlockPos pos) {
-        BlockEntity te = world.getBlockEntity(pos);
-        if (te instanceof ShieldingTileEntity) {
-            BlockState mimic = ((ShieldingTileEntity) te).getMimic();
-            if (mimic != null) {
-                return mimic.getOcclusionShape(world, pos);
-            }
-        }
-        return super.getOcclusionShape(state, world, pos);
+    public VoxelShape getOcclusionShape(BlockState state) {
+        // Mimic geometry is position-dependent, so it must not occlude neighbors.
+        return Shapes.empty();
     }
 
     public static boolean isHostile(Entity entity) {
@@ -173,9 +166,9 @@ public class ShieldingBlock extends Block implements EntityBlock {
         return !(entity instanceof LivingEntity);
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public VoxelShape getCollisionShape(BlockState state, @Nonnull BlockGetter world, @Nonnull BlockPos pos, CollisionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, @NotNull BlockGetter world, @NotNull BlockPos pos, CollisionContext context) {
         if (context instanceof EntityCollisionContext ctxt) {
             Entity entity = ctxt.getEntity();
             if (state.getValue(BLOCKED_HOSTILE)) {
@@ -252,12 +245,12 @@ public class ShieldingBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public boolean skipRendering(@Nonnull BlockState state, BlockState adjacentBlockState, @Nonnull Direction side) {
+    public boolean skipRendering(@NotNull BlockState state, BlockState adjacentBlockState, @NotNull Direction side) {
         return adjacentBlockState.getBlock() == this ? true : super.skipRendering(state, adjacentBlockState, side);
     }
 
     @Override
-    public void entityInside(@Nonnull BlockState state, @Nonnull Level world, @Nonnull BlockPos pos, @Nonnull Entity entity) {
+    public void entityInside(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull Entity entity, InsideBlockEffectApplier effects, boolean precise) {
         if (!(entity instanceof LivingEntity)) {
             if (!state.getValue(BLOCKED_ITEMS)) {
                 // Items should be able to pass through. We just move the entity to below this block.
@@ -288,7 +281,7 @@ public class ShieldingBlock extends Block implements EntityBlock {
         Boolean dmgPlayer = state.getValue(DAMAGE_PLAYERS);
         Boolean dmgItems = state.getValue(DAMAGE_ITEMS);
 
-        if ((!dmgHostile && !dmgPassive && !dmgPlayer && !dmgItems) || world.isClientSide || world.getGameTime() % 10 != 0) {     // @todo 1.14 was getTotalWorldTime()
+        if ((!dmgHostile && !dmgPassive && !dmgPlayer && !dmgItems) || world.isClientSide() || world.getGameTime() % 10 != 0) {     // @todo 1.14 was getTotalWorldTime()
             return;
         }
 
@@ -321,7 +314,7 @@ public class ShieldingBlock extends Block implements EntityBlock {
         }
     }
 
-    private boolean checkEntityDamage(@Nonnull ShieldProjectorTileEntity shieldTileEntity, String filterName) {
+    private boolean checkEntityDamage(@NotNull ShieldProjectorTileEntity shieldTileEntity, String filterName) {
         List<ShieldFilter<?>> filters = shieldTileEntity.getFilters();
         for (ShieldFilter<?> filter : filters) {
             if (DefaultFilter.ID.equals(filter.getFilterName())) {
@@ -333,7 +326,7 @@ public class ShieldingBlock extends Block implements EntityBlock {
         return false;
     }
 
-    private boolean checkPlayerDamage(@Nonnull ShieldProjectorTileEntity shieldTileEntity, Player entity) {
+    private boolean checkPlayerDamage(@NotNull ShieldProjectorTileEntity shieldTileEntity, Player entity) {
         List<ShieldFilter<?>> filters = shieldTileEntity.getFilters();
         for (ShieldFilter<?> filter : filters) {
             if (DefaultFilter.ID.equals(filter.getFilterName())) {

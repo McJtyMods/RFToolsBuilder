@@ -20,11 +20,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class RFToolsBuilderMessages {
 
@@ -50,7 +50,7 @@ public class RFToolsBuilderMessages {
         registrar.playToClient(PacketReturnExtraData.TYPE, PacketReturnExtraData.CODEC, PacketReturnExtraData::handle);
     }
 
-    public static void sendToServer(String command, @Nonnull TypedMap.Builder argumentBuilder) {
+    public static void sendToServer(String command, @NotNull TypedMap.Builder argumentBuilder) {
         Networking.sendToServer(new PacketSendServerCommand(RFToolsBuilder.MODID, command, argumentBuilder.build()));
     }
 
@@ -58,7 +58,7 @@ public class RFToolsBuilderMessages {
         Networking.sendToServer(new PacketSendServerCommand(RFToolsBuilder.MODID, command, TypedMap.EMPTY));
     }
 
-    public static void sendToClient(Player player, String command, @Nonnull TypedMap.Builder argumentBuilder) {
+    public static void sendToClient(Player player, String command, @NotNull TypedMap.Builder argumentBuilder) {
         Networking.sendToPlayer(new PacketSendClientCommand(RFToolsBuilder.MODID, command, argumentBuilder.build()), player);
     }
 
@@ -71,11 +71,11 @@ public class RFToolsBuilderMessages {
     }
 
     public static <T extends CustomPacketPayload> void sendToServer(T packet) {
-        PacketDistributor.sendToServer(packet);
+        ClientPacketDistributor.sendToServer(packet);
     }
 
     public static <T extends CustomPacketPayload> void sendToChunk(T packet, ServerLevel level, BlockPos pos) {
-        PacketDistributor.sendToPlayersTrackingChunk(level, new ChunkPos(pos), packet);
+        PacketDistributor.sendToPlayersTrackingChunk(level, new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4), packet);
     }
 
     public static <T extends CustomPacketPayload> void sendToChunk(T packet, LevelChunk chunk) {

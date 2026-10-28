@@ -14,20 +14,24 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.1.4'
+    id 'net.neoforged.gradle.userdev' version '7.1.39'
 }
 
 apply plugin: 'com.hypherionmc.modutils.modpublisher'
 
-if (project.file('../gradletools.gradle').exists()) {
-    apply from: '../gradletools.gradle'
+// Use the matching workspace script for standalone and integrated builds.
+def sharedTools = [rootProject.file('gradletools.gradle'),
+                   file('../Multi_neo/gradletools.gradle'),
+                   file('../gradletools.gradle')].find { it.isFile() }
+if (sharedTools != null) {
+    apply from: sharedTools
 } else {
-    apply from: 'https://raw.githubusercontent.com/McJtyMods/MultiWorkspace/1.21_neo/gradletools.gradle'
+    apply from: 'https://raw.githubusercontent.com/McJtyMods/MultiWorkspace/26.3_neo/gradletools.gradle'
 }
 
 group = "com.github.mcjty"
-archivesBaseName = "rftoolsbuilder"
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+base.archivesName = "rftoolsbuilder"
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 if (System.getenv('BUILD_NUMBER') != null) {
     version += "-${System.getenv('BUILD_NUMBER')}"
@@ -48,6 +52,14 @@ dependencies {
     jei()
     mcjtylib()
     rftoolsbase()
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
 }
 
 modpublisher(['the-one-probe'], ['mcjtylib', 'rftools-base'], ['the-one-probe'], ['mcjtylib', 'rftools-base'], [])
+
+// Exercise scan batches larger than Minecraft's single-buffer vertex limit.
+tasks.named('test') {
+    useJUnitPlatform()
+    maxHeapSize = '1G'
+}

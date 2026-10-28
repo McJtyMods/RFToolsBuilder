@@ -2,10 +2,8 @@ package mcjty.rftoolsbuilder.modules.mover.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import mcjty.lib.varia.CompositeStreamCodec;
 import mcjty.rftoolsbuilder.modules.builder.blocks.RotateMode;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 public record VehicleBuilderData(RotateMode rotate) {

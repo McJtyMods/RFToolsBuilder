@@ -2,7 +2,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:shape_card_quarry"
+        "recipes": "rftoolsbuilder:shape_card_quarry"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

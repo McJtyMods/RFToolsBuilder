@@ -1,13 +1,17 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
+import com.mojang.serialization.MapCodec;
+import java.util.function.Supplier;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RBlock;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.datagen.DataGen;
 import mcjty.lib.datagen.Dob;
+import mcjty.lib.items.BaseBlockItem;
 import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbase.modules.various.VariousModule;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerBlock;
@@ -24,17 +28,15 @@ import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
 import mcjty.rftoolsbuilder.setup.Config;
 import mcjty.rftoolsbuilder.setup.Registration;
-import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -47,9 +49,8 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
-import java.util.function.Supplier;
-
 import static mcjty.lib.datagen.Dob.has;
+import static mcjty.lib.setup.Registration.ITEM_INFUSABLE;
 import static mcjty.rftoolsbuilder.RFToolsBuilder.MODID;
 import static mcjty.rftoolsbuilder.RFToolsBuilder.tab;
 import static mcjty.rftoolsbuilder.setup.Registration.*;
@@ -58,41 +59,41 @@ public class BuilderModule implements IModule {
 
     public static final DeferredBlock<SupportBlock> SUPPORT = BLOCKS.register("support_block", SupportBlock::new);
 
-    public static final DeferredBlock<BaseBlock> SPACE_CHAMBER = BLOCKS.register("space_chamber", () -> new BaseBlock(new BlockBuilder()
+    public static final DeferredBlock<BaseBlock> SPACE_CHAMBER = BLOCKS.register("space_chamber", properties -> new BaseBlock(new BlockBuilder()
             .manualEntry(ManualHelper.create("rftoolsbuilder:builder/space_chambers"))
-        .properties(BlockBehaviour.Properties.of()
+        .properties(properties
                 .strength(2.0f)
                 .sound(SoundType.METAL)
                 .noOcclusion())));
-    public static final DeferredItem<Item> SPACE_CHAMBER_ITEM = ITEMS.register("space_chamber", tab(() -> new BlockItem(SPACE_CHAMBER.get(), Registration.createStandardProperties())));
+    public static final DeferredItem<Item> SPACE_CHAMBER_ITEM = ITEMS.register("space_chamber", tab(properties -> new BaseBlockItem(SPACE_CHAMBER.get(), properties.useBlockDescriptionPrefix())));
 
     public static final DeferredBlock<SpaceChamberControllerBlock> SPACE_CHAMBER_CONTROLLER = BLOCKS.register("space_chamber_controller", SpaceChamberControllerBlock::new);
-    public static final DeferredItem<Item> SPACE_CHAMBER_CONTROLLER_ITEM = ITEMS.register("space_chamber_controller", tab(() -> new BlockItem(SPACE_CHAMBER_CONTROLLER.get(), Registration.createStandardProperties())));
-    public static final Supplier<BlockEntityType<SpaceChamberControllerTileEntity>> TYPE_SPACE_CHAMBER_CONTROLLER = TILES.register("space_chamber_controller", () -> BlockEntityType.Builder.of(SpaceChamberControllerTileEntity::new, SPACE_CHAMBER_CONTROLLER.get()).build(null));
+    public static final DeferredItem<Item> SPACE_CHAMBER_CONTROLLER_ITEM = ITEMS.register("space_chamber_controller", tab(properties -> new BaseBlockItem(SPACE_CHAMBER_CONTROLLER.get(), properties.useBlockDescriptionPrefix())));
+    public static final Supplier<BlockEntityType<SpaceChamberControllerTileEntity>> TYPE_SPACE_CHAMBER_CONTROLLER = TILES.register("space_chamber_controller", () -> new BlockEntityType<>(SpaceChamberControllerTileEntity::new, SPACE_CHAMBER_CONTROLLER.get()));
 
     public static final DeferredItem<Item> SPACE_CHAMBER_CARD = ITEMS.register("space_chamber_card", tab(SpaceChamberCardItem::new));
 
     public static final RBlock<BaseBlock, BlockItem, BuilderTileEntity> BUILDER = RBLOCKS.registerBlock("builder",
             BuilderTileEntity.class,
             BuilderTileEntity::createBlock,
-            block -> new BlockItem(block.get(), createStandardProperties()),
+            (block, properties) -> new BaseBlockItem(block.get(), properties.useBlockDescriptionPrefix()),
             BuilderTileEntity::new
     );
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_BUILDER = CONTAINERS.register("builder", GenericContainer::createContainerType);
 
     public static final DeferredItem<Item> SUPER_HARVESTING_TOOL = ITEMS.register("superharvestingtool", SuperHarvestingTool::new);
 
-    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_DEF = ITEMS.register("shape_card_def", tab(() -> new ShapeCardItem(ShapeCardType.CARD_SHAPE)));
-    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_LIQUID = ITEMS.register("shape_card_liquid", tab(() -> new ShapeCardItem(ShapeCardType.CARD_PUMP_LIQUID)));
-    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_PUMP = ITEMS.register("shape_card_pump", tab(() -> new ShapeCardItem(ShapeCardType.CARD_PUMP)));
-    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_PUMP_CLEAR = ITEMS.register("shape_card_pump_clear", tab(() -> new ShapeCardItem(ShapeCardType.CARD_PUMP_CLEAR)));
-    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY = ITEMS.register("shape_card_quarry", tab(() -> new ShapeCardItem(ShapeCardType.CARD_QUARRY)));
-    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_CLEAR = ITEMS.register("shape_card_quarry_clear", tab(() -> new ShapeCardItem(ShapeCardType.CARD_QUARRY_CLEAR)));
-    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_CLEAR_FORTUNE = ITEMS.register("shape_card_quarry_clear_fortune", tab(() -> new ShapeCardItem(ShapeCardType.CARD_QUARRY_CLEAR_FORTUNE)));
-    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_CLEAR_SILK = ITEMS.register("shape_card_quarry_clear_silk", tab(() -> new ShapeCardItem(ShapeCardType.CARD_QUARRY_CLEAR_SILK)));
-    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_FORTUNE = ITEMS.register("shape_card_quarry_fortune", tab(() -> new ShapeCardItem(ShapeCardType.CARD_QUARRY_FORTUNE)));
-    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_SILK = ITEMS.register("shape_card_quarry_silk", tab(() -> new ShapeCardItem(ShapeCardType.CARD_QUARRY_SILK)));
-    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_VOID = ITEMS.register("shape_card_void", tab(() -> new ShapeCardItem(ShapeCardType.CARD_VOID)));
+    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_DEF = ITEMS.register("shape_card_def", tab(properties -> new ShapeCardItem(properties, ShapeCardType.CARD_SHAPE)));
+    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_LIQUID = ITEMS.register("shape_card_liquid", tab(properties -> new ShapeCardItem(properties, ShapeCardType.CARD_PUMP_LIQUID)));
+    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_PUMP = ITEMS.register("shape_card_pump", tab(properties -> new ShapeCardItem(properties, ShapeCardType.CARD_PUMP)));
+    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_PUMP_CLEAR = ITEMS.register("shape_card_pump_clear", tab(properties -> new ShapeCardItem(properties, ShapeCardType.CARD_PUMP_CLEAR)));
+    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY = ITEMS.register("shape_card_quarry", tab(properties -> new ShapeCardItem(properties, ShapeCardType.CARD_QUARRY)));
+    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_CLEAR = ITEMS.register("shape_card_quarry_clear", tab(properties -> new ShapeCardItem(properties, ShapeCardType.CARD_QUARRY_CLEAR)));
+    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_CLEAR_FORTUNE = ITEMS.register("shape_card_quarry_clear_fortune", tab(properties -> new ShapeCardItem(properties, ShapeCardType.CARD_QUARRY_CLEAR_FORTUNE)));
+    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_CLEAR_SILK = ITEMS.register("shape_card_quarry_clear_silk", tab(properties -> new ShapeCardItem(properties, ShapeCardType.CARD_QUARRY_CLEAR_SILK)));
+    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_FORTUNE = ITEMS.register("shape_card_quarry_fortune", tab(properties -> new ShapeCardItem(properties, ShapeCardType.CARD_QUARRY_FORTUNE)));
+    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_QUARRY_SILK = ITEMS.register("shape_card_quarry_silk", tab(properties -> new ShapeCardItem(properties, ShapeCardType.CARD_QUARRY_SILK)));
+    public static final DeferredItem<ShapeCardItem> SHAPE_CARD_VOID = ITEMS.register("shape_card_void", tab(properties -> new ShapeCardItem(properties, ShapeCardType.CARD_VOID)));
 
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ShapeCardData>> ITEM_SHAPECARD_DATA = COMPONENTS.registerComponentType(
             "shapecard_data",
@@ -102,7 +103,7 @@ public class BuilderModule implements IModule {
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<BuilderData>> BUILDER_DATA = ATTACHMENT_TYPES.register(
             "builder_data", () -> AttachmentType.builder(() -> BuilderData.DEFAULT)
-                    .serialize(BuilderData.CODEC)
+                    .serialize(MapCodec.assumeMapUnsafe(BuilderData.CODEC))
                     .build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<BuilderData>> ITEM_BUILDER_DATA = COMPONENTS.registerComponentType(
             "builder_data",
@@ -112,7 +113,7 @@ public class BuilderModule implements IModule {
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<ChamberControllerData>> CHAMBER_DATA = ATTACHMENT_TYPES.register(
             "chamber_data", () -> AttachmentType.builder(() -> ChamberControllerData.DEFAULT)
-                    .serialize(ChamberControllerData.CODEC)
+                    .serialize(MapCodec.assumeMapUnsafe(ChamberControllerData.CODEC))
                     .build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ChamberControllerData>> ITEM_CHAMBER_DATA = COMPONENTS.registerComponentType(
             "chamber_data",
@@ -130,7 +131,7 @@ public class BuilderModule implements IModule {
     }
 
     private void onRegisterTicketController(RegisterTicketControllersEvent event) {
-        RFToolsBuilder.setup.ticketController = new TicketController(ResourceLocation.fromNamespaceAndPath(MODID, "builder"));
+        RFToolsBuilder.setup.ticketController = new TicketController(Identifier.fromNamespaceAndPath(MODID, "builder"));
         event.register(RFToolsBuilder.setup.ticketController);
     }
 
@@ -154,7 +155,7 @@ public class BuilderModule implements IModule {
         dataGen.add(
                 Dob.blockBuilder(BUILDER)
                         .ironPickaxeTags()
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), ITEM_BUILDER_DATA.get())
+                        .standardLoot(ITEM_INFUSABLE.get(), ITEM_BUILDER_DATA.get())
                         .parentedItem("block/builder")
                         .blockState(p -> p.horizontalOrientedBlock(BUILDER.block().get(), p.frontBasedModel("builder", p.modLoc("block/machinebuilder"))))
                         .shaped(builder -> builder
@@ -184,23 +185,23 @@ public class BuilderModule implements IModule {
                         .ironPickaxeTags()
                         .blockState(DataGenHelper::generateSupportModel),
                 Dob.itemBuilder(SPACE_CHAMBER_CARD)
-                        .generatedItem("item/spacechambercarditem")
+                        .generatedItem("rftoolsbuilder:item/spacechambercarditem")
                         .shaped(builder -> builder
                                         .unlockedBy("glass", has(Items.GLASS)),
                                 " B ", "rir", " B "),
                 Dob.itemBuilder(SHAPE_CARD_DEF)
-                        .generatedItem("item/shapecarditem")
+                        .generatedItem("rftoolsbuilder:item/shapecarditem")
                         .shaped(builder -> builder
                                         .unlockedBy("iron_ingot", has(Items.IRON_INGOT)),
                                 "pBp", "rir", "pBp"),
                 Dob.itemBuilder(SHAPE_CARD_LIQUID)
-                        .generatedItem("item/shapecardliquiditem")
+                        .generatedItem("rftoolsbuilder:item/shapecardliquiditem")
                         .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_DEF.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "rWr", "iMi", "rLr"),
                 Dob.itemBuilder(SHAPE_CARD_PUMP)
-                        .generatedItem("item/shapecardpumpitem")
+                        .generatedItem("rftoolsbuilder:item/shapecardpumpitem")
                         .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_DEF.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
@@ -210,13 +211,13 @@ public class BuilderModule implements IModule {
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "DDD", "DMD", "DDD"),
                 Dob.itemBuilder(SHAPE_CARD_PUMP_CLEAR)
-                        .generatedItem("item/shapecardpumpclearitem")
+                        .generatedItem("rftoolsbuilder:item/shapecardpumpclearitem")
                         .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_PUMP.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "GGG", "GMG", "GGG"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY)
-                        .generatedItem("item/shapecardquarryitem")
+                        .generatedItem("rftoolsbuilder:item/shapecardquarryitem")
                         .shapedComponentPreserve(builder -> builder
                                         .define('P', Items.DIAMOND_PICKAXE)
                                         .define('S', Items.DIAMOND_SHOVEL)
@@ -228,25 +229,25 @@ public class BuilderModule implements IModule {
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "DDD", "DMD", "DDD"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY_CLEAR)
-                        .generatedItem("item/shapecardcquarryitem")
+                        .generatedItem("rftoolsbuilder:item/shapecardcquarryitem")
                         .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_QUARRY.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "GGG", "GMG", "GGG"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY_CLEAR_FORTUNE)
-                        .generatedItem("item/shapecardcfortuneitem")
+                        .generatedItem("rftoolsbuilder:item/shapecardcfortuneitem")
                         .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_QUARRY_FORTUNE.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "GGG", "GMG", "GGG"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY_CLEAR_SILK)
-                        .generatedItem("item/shapecardcsilkitem")
+                        .generatedItem("rftoolsbuilder:item/shapecardcsilkitem")
                         .shapedComponentPreserve(builder -> builder
                                         .define('M', SHAPE_CARD_QUARRY_SILK.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "GGG", "GMG", "GGG"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY_FORTUNE)
-                        .generatedItem("item/shapecardfortuneitem")
+                        .generatedItem("rftoolsbuilder:item/shapecardfortuneitem")
                         .shapedComponentPreserve(builder -> builder
                                         .define('s', VariousModule.DIMENSIONALSHARD.get())
                                         .define('n', Items.GHAST_TEAR)
@@ -258,7 +259,7 @@ public class BuilderModule implements IModule {
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "DDD", "DMD", "DDD"),
                 Dob.itemBuilder(SHAPE_CARD_QUARRY_SILK)
-                        .generatedItem("item/shapecardsilkitem")
+                        .generatedItem("rftoolsbuilder:item/shapecardsilkitem")
                         .shapedComponentPreserve(builder -> builder
                                         .define('s', VariousModule.DIMENSIONALSHARD.get())
                                         .define('n', Items.NETHER_STAR)
@@ -270,7 +271,7 @@ public class BuilderModule implements IModule {
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "DDD", "DMD", "DDD"),
                 Dob.itemBuilder(SHAPE_CARD_VOID)
-                        .generatedItem("item/shapecardvoiditem")
+                        .generatedItem("rftoolsbuilder:item/shapecardvoiditem")
                         .shapedComponentPreserve(builder -> builder
                                         .define('x', Tags.Items.DYES_BLACK)
                                         .define('M', SHAPE_CARD_DEF.get())

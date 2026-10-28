@@ -1,9 +1,9 @@
 package mcjty.rftoolsbuilder.modules.mover.items;
 
+import net.minecraft.network.chat.Component;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.lib.varia.BlockPosTools;
-import mcjty.lib.varia.ComponentFactory;
 import mcjty.lib.varia.CompositeStreamCodec;
 import mcjty.lib.varia.LevelTools;
 import mcjty.rftoolsbase.api.screens.IScreenDataHelper;
@@ -16,7 +16,6 @@ import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -194,7 +193,7 @@ public record VehicleControlScreenModule(GlobalPos pos, String line, String move
                 });
             } else {
                 if (player != null) {
-                    player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "Module is not linked to mover controller!"), false);
+                    player.sendSystemMessage(Component.literal(ChatFormatting.RED + "Module is not linked to mover controller!"));
                 }
             }
         }

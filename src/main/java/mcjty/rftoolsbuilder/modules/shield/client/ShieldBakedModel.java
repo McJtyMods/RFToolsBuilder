@@ -1,47 +1,45 @@
 package mcjty.rftoolsbuilder.modules.shield.client;
 
+import java.util.*;
 import mcjty.lib.client.AbstractDynamicBakedModel;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
-import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
 import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingTileEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.ChunkRenderTypeSet;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import org.jetbrains.annotations.NotNull;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
+import org.jetbrains.annotations.Nullable;
 
 public class ShieldBakedModel extends AbstractDynamicBakedModel {
 
-    public static final ResourceLocation TEXTURE_TRANSPARENT = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shield/shieldtransparent");
-    public static final ResourceLocation TEXTURE_FULL = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shield/shieldfull");
+    public static final Identifier TEXTURE_TRANSPARENT = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shield/shieldtransparent");
+    public static final Identifier TEXTURE_FULL = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shield/shieldfull");
 
-    private static Map<ShieldTexture, TextureAtlasSprite[]> shields;
-    private static TextureAtlasSprite shieldtransparent;
-    private static TextureAtlasSprite shieldfull;
+    private Map<ShieldTexture, TextureAtlasSprite[]> shields;
+    private TextureAtlasSprite shieldtransparent;
+    private TextureAtlasSprite shieldfull;
 
-    private static void initTextures() {
+    private synchronized void initTextures() {
         if (shields == null) {
             shields = new HashMap<>();
             for (ShieldTexture texture : ShieldTexture.values()) {
                 TextureAtlasSprite[] sprites = new TextureAtlasSprite[4];
-                sprites[0] = getTexture(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield0"));
-                sprites[1] = getTexture(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield1"));
-                sprites[2] = getTexture(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield2"));
-                sprites[3] = getTexture(ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield3"));
+                sprites[0] = getTexture(Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield0"));
+                sprites[1] = getTexture(Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield1"));
+                sprites[2] = getTexture(Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield2"));
+                sprites[3] = getTexture(Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield3"));
                 shields.put(texture, sprites);
             }
             shieldtransparent = getTexture(TEXTURE_TRANSPARENT);
@@ -50,25 +48,38 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
     }
 
     @Override
-    @NotNull
-    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand, @NotNull ModelData extraData, @Nullable RenderType renderType) {
+    public void collectParts(BlockAndTintGetter world, BlockPos pos,
+            BlockState state, RandomSource random, List<BlockStateModelPart> parts) {
+        var modelData = world.getModelData(pos);
+        ShieldRenderData renderData = modelData.get(ShieldingTileEntity.RENDER_DATA);
+        if (renderData == null) {
+            renderData = ShieldingTileEntity.DEFAULT_RENDER_DATA;
+        }
         initTextures();
         ShieldRenderingMode mode = state.getValue(ShieldingBlock.RENDER_MODE);
-        return switch (mode) {
-            case INVISIBLE -> Collections.emptyList();
-            case SHIELD -> getQuadsShield(side, extraData);
-            case MIMIC -> getQuadsMimic(state, side, rand, extraData, renderType);
-            case TRANSP -> getQuadsTextured(side, shieldtransparent, extraData);
-            case SOLID -> getQuadsTextured(side, shieldfull, extraData);
-        };
+        if (mode == ShieldRenderingMode.INVISIBLE) return;
+        if (mode == ShieldRenderingMode.MIMIC) {
+            BlockState mimic = modelData.get(ShieldingTileEntity.MIMIC);
+            if (mimic != null && !(mimic.getBlock() instanceof ShieldingBlock)) {
+                Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(mimic).collectParts(world, pos, mimic, random, parts);
+            }
+            return;
+        }
+        QuadCollection.Builder quads = new QuadCollection.Builder();
+        for (Direction side : Direction.values()) {
+            List<BakedQuad> faces = mode == ShieldRenderingMode.SHIELD ? getQuadsShield(side, pos, renderData)
+                    : getQuadsTextured(side, mode == ShieldRenderingMode.TRANSP ? shieldtransparent : shieldfull, renderData);
+            // Directional faces let the renderer apply ShieldingBlock.skipRendering.
+            faces.forEach(quad -> quads.addCulledFace(side, quad));
+        }
+        parts.add(new SimpleModelWrapper(quads.build(), true, particleMaterial()));
     }
 
-    private List<BakedQuad> getQuadsShield(@Nullable Direction side, ModelData extraData) {
+    private List<BakedQuad> getQuadsShield(@Nullable Direction side, BlockPos pos, ShieldRenderData renderData) {
         List<BakedQuad> quads = new ArrayList<>();
         if (side != null) {
-            Integer iconTopdown = extraData.get(ShieldingTileEntity.ICON_TOPDOWN);
-            Integer iconSide = extraData.get(ShieldingTileEntity.ICON_SIDE);
-            ShieldRenderData renderData = extraData.get(ShieldingTileEntity.RENDER_DATA);
+            Integer iconTopdown = (pos.getZ() & 1) * 2 + (pos.getX() & 1);
+            Integer iconSide = (pos.getY() & 1) * 2 + ((pos.getX() + pos.getZ()) & 1);
             if (renderData == null) {
                 return quads;
             }
@@ -89,10 +100,9 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
         return quads;
     }
 
-    private List<BakedQuad> getQuadsTextured(@Nullable Direction side, TextureAtlasSprite texture, ModelData extraData) {
+    private List<BakedQuad> getQuadsTextured(@Nullable Direction side, TextureAtlasSprite texture, ShieldRenderData renderData) {
         List<BakedQuad> quads = new ArrayList<>();
         if (side != null) {
-            ShieldRenderData renderData = extraData.get(ShieldingTileEntity.RENDER_DATA);
             if (renderData == null) {
                 return quads;
             }
@@ -113,51 +123,9 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
     }
 
 
-    private List<BakedQuad> getQuadsMimic(@Nullable BlockState state, @Nullable Direction side, @Nonnull RandomSource rand, ModelData extraData,
-                                          @Nullable RenderType renderType) {
-        BlockState camo = extraData.get(ShieldingTileEntity.MIMIC);
-        if (camo == null) {
-            return Collections.emptyList();
-        }
-
-        // @todo 1.15
-//        BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
-//        if (layer != null && !camo.getBlock().canRenderInLayer(camo, layer)) { // always render in the null layer or the block-breaking textures don't show up
-//            return Collections.emptyList();
-//        }
-        BakedModel model = getModel(camo);
-        try {
-            return model.getQuads(state, side, rand, ModelData.EMPTY, renderType);
-        } catch (Exception e) {
-            return Collections.emptyList();
-        }
-    }
-
-    private BakedModel getModel(@Nonnull BlockState facadeState) {
-        initTextures();
-        return Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(facadeState);
-    }
-
-    private static final ChunkRenderTypeSet RT_TRANSLUCENT = ChunkRenderTypeSet.of(RenderType.translucent());
-    private static final ChunkRenderTypeSet RT_CUTOUT = ChunkRenderTypeSet.of(RenderType.cutout());
-    private static final ChunkRenderTypeSet RT_SOLID = ChunkRenderTypeSet.of(RenderType.solid());
-
     @Override
-    @Nonnull
-    public ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData data) {
-        if (state.getBlock() == ShieldModule.SHIELDING_SOLID.get()) {
-            return RT_SOLID;
-        } else if (state.getBlock() == ShieldModule.SHIELDING_TRANSLUCENT.get()) {
-            return RT_TRANSLUCENT;
-        } else {
-            return RT_CUTOUT;
-        }
-    }
-
-    @Nonnull
-    @Override
-    public TextureAtlasSprite getParticleIcon() {
+    public Material.Baked particleMaterial() {
         initTextures();
-        return shieldfull;
+        return new Material.Baked(shieldfull, false);
     }
 }

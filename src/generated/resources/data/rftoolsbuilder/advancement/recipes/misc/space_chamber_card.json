@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:space_chamber_card"
+        "recipes": "rftoolsbuilder:space_chamber_card"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:space_chamber_controller"
+        "recipes": "rftoolsbuilder:space_chamber_controller"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

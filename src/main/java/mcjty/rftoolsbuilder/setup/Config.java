@@ -24,7 +24,7 @@ public class Config {
         CLIENT_CONFIG = CLIENT_BUILDER.build();
 
         mod.registerConfig(ModConfig.Type.CLIENT, CLIENT_CONFIG);
-        mod.registerConfig(ModConfig.Type.SERVER, SERVER_CONFIG);
+        mod.registerConfig(ModConfig.Type.SYNCED, SERVER_CONFIG, "rftoolsbuilder-server.toml");
     }
 
     private static void setupGeneralConfig() {

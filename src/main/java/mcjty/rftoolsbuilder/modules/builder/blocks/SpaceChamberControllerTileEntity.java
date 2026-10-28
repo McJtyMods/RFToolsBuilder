@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.blocks;
 
+import com.mojang.serialization.MapCodec;
 import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.varia.BlockPosTools;
 import mcjty.lib.varia.Logging;
@@ -7,14 +8,16 @@ import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import mcjty.rftoolsbuilder.modules.builder.data.ChamberControllerData;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
-import javax.annotation.Nonnull;
 
 public class SpaceChamberControllerTileEntity extends GenericTileEntity {
 
@@ -141,16 +144,33 @@ public class SpaceChamberControllerTileEntity extends GenericTileEntity {
     }
 
     @Override
-    public void loadAdditional(CompoundTag tagCompound, HolderLookup.Provider provider) {
-        super.loadAdditional(tagCompound, provider);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        CompoundTag tagCompound = input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        HolderLookup.Provider provider = input.lookup();
+
         minCorner = BlockPosTools.read(tagCompound, "minCorner");
         maxCorner = BlockPosTools.read(tagCompound, "maxCorner");
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag tagCompound, HolderLookup.Provider provider) {
-        super.saveAdditional(tagCompound, provider);
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        CompoundTag tagCompound = new CompoundTag();
+        HolderLookup.Provider provider = level != null ? level.registryAccess() : RegistryAccess.EMPTY;
+
         BlockPosTools.write(tagCompound, "minCorner", minCorner);
         BlockPosTools.write(tagCompound, "maxCorner", maxCorner);
+        output.store(MapCodec.assumeMapUnsafe(CompoundTag.CODEC), tagCompound);
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null && !level.isClientSide() && getChannel() != -1) {
+            var repository = SpaceChamberRepository.get(level);
+            repository.deleteChannel(getChannel());
+            repository.save();
+        }
+        super.preRemoveSideEffects(pos, state);
     }
 }

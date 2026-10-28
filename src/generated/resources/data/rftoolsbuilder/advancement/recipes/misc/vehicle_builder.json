@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:vehicle_builder"
+        "recipes": "rftoolsbuilder:vehicle_builder"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

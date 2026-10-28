@@ -4,7 +4,6 @@ import mcjty.lib.varia.Check32;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 

@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:shape_card_def"
+        "recipes": "rftoolsbuilder:shape_card_def"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

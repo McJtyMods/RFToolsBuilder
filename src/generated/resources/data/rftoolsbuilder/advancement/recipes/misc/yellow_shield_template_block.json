@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:yellow_shield_template_block"
+        "recipes": "rftoolsbuilder:yellow_shield_template_block"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

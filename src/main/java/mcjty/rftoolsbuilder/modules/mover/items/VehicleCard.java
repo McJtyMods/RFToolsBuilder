@@ -1,26 +1,26 @@
 package mcjty.rftoolsbuilder.modules.mover.items;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import mcjty.lib.builder.TooltipBuilder;
+import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.tooltips.ITooltipSettings;
 import mcjty.lib.varia.Tools;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.data.VehicleData;
-import mcjty.rftoolsbuilder.setup.Registration;
-import mcjty.lib.gui.ManualEntry;
-import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.util.Lazy;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.jetbrains.annotations.Nullable;
 
 import static mcjty.lib.builder.TooltipBuilder.parameter;
 
@@ -39,8 +39,8 @@ public class VehicleCard extends Item implements ITooltipSettings {
                     parameter("destination", VehicleCard::isMoving, VehicleCard::getDesiredDestinationName),
                     parameter("contents", VehicleCard::getContentsDescription)));
 
-    public VehicleCard() {
-        super(Registration.createStandardProperties().stacksTo(1));
+    public VehicleCard(Item.Properties properties) {
+        super(properties.stacksTo(1));
     }
 
     public static String getVehicleName(ItemStack stack) {
@@ -58,9 +58,11 @@ public class VehicleCard extends Item implements ITooltipSettings {
     }
 
     @Override
-    public void appendHoverText(@Nonnull ItemStack itemStack, TooltipContext context, @Nonnull List<Component> list, @Nonnull TooltipFlag flag) {
-        super.appendHoverText(itemStack, context, list, flag);
+    public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay display, Consumer<Component> consumer, TooltipFlag flag) {
+        List<Component> list = new ArrayList<>();
+        super.appendHoverText(itemStack, context, display, consumer, flag);
         tooltipBuilder.get().makeTooltip(Tools.getId(this), itemStack, list, flag);
+        list.forEach(consumer);
     }
 
     public static void storeVehicleInCard(ItemStack vehicleCard, Map<BlockState, List<Integer>> blocks, String vehicleName) {

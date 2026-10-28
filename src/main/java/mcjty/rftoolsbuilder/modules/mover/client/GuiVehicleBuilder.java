@@ -7,14 +7,14 @@ import mcjty.lib.gui.widgets.Button;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.VehicleBuilderTileEntity;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEntity, GenericContainer> {
 
@@ -30,7 +30,7 @@ public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEnt
 
     @Override
     public void init() {
-        window = new Window(this, getBE(), ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/vehicle_builder.gui"));
+        window = new Window(this, getBE(), Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/vehicle_builder.gui"));
         super.init();
         initializeFields();
     }
@@ -50,7 +50,7 @@ public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEnt
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int x, int y) {
+    protected void renderBg(@NotNull GuiGraphicsExtractor graphics, float partialTicks, int x, int y) {
         updateFields();
         drawWindow(graphics, partialTicks, x, y);
     }

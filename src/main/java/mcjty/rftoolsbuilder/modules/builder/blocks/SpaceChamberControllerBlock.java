@@ -4,14 +4,15 @@ import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.varia.SoundTools;
+import mcjty.rftoolsbase.tools.ManualHelper;
+import mcjty.rftoolsbase.tools.RegistryProperties;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.SpaceChamberRepository;
 import mcjty.rftoolsbuilder.modules.builder.data.ChamberControllerData;
-import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -20,16 +21,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 
 public class SpaceChamberControllerBlock extends BaseBlock {
 
-    public SpaceChamberControllerBlock() {
-        super(new BlockBuilder()
-                .properties(BlockBehaviour.Properties.of()
+    public SpaceChamberControllerBlock(BlockBehaviour.Properties properties) {
+        super(new BlockBuilder().properties(RegistryProperties.block(properties))
+                .properties(properties
                         .strength(2.0f)
                         .sound(SoundType.METAL)
                         .noOcclusion())
@@ -58,8 +58,8 @@ public class SpaceChamberControllerBlock extends BaseBlock {
 
     @Override
     protected boolean wrenchUse(Level level, BlockPos pos, Direction side, Player player) {
-        if (level.isClientSide) {
-            SoundEvent pling = SoundTools.findSound(ResourceLocation.fromNamespaceAndPath("minecraft", "block.note_block.bell"));
+        if (level.isClientSide()) {
+            SoundEvent pling = SoundTools.findSound(Identifier.fromNamespaceAndPath("minecraft", "block.note_block.bell"));
             level.playSound(player, pos, pling, SoundSource.BLOCKS, 1.0f, 1.0f);
         } else {
             SpaceChamberControllerTileEntity chamberControllerTileEntity = (SpaceChamberControllerTileEntity) level.getBlockEntity(pos);
@@ -69,9 +69,9 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     }
 
     @Override
-    public void onPlace(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull BlockState state2, boolean p_220082_5_) {
+    public void onPlace(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state2, boolean p_220082_5_) {
         super.onPlace(state, level, pos, state2, p_220082_5_);
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(level);
             SpaceChamberControllerTileEntity te = (SpaceChamberControllerTileEntity) level.getBlockEntity(pos);
             if (te.getChannel() == -1) {
@@ -84,16 +84,5 @@ public class SpaceChamberControllerBlock extends BaseBlock {
         }
     }
 
-    @Override
-    public void onRemove(@Nonnull BlockState state, @Nonnull Level world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
-        if (!world.isClientSide) {
-            SpaceChamberRepository chamberRepository = SpaceChamberRepository.get(world);
-            SpaceChamberControllerTileEntity te = (SpaceChamberControllerTileEntity) world.getBlockEntity(pos);
-            if (te.getChannel() != -1) {
-                chamberRepository.deleteChannel(te.getChannel());
-                chamberRepository.save();
-            }
-        }
-        super.onRemove(state, world, pos, newstate, isMoving);
-    }
+
 }

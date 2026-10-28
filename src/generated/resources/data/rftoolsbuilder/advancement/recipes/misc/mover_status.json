@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:mover_status"
+        "recipes": "rftoolsbuilder:mover_status"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

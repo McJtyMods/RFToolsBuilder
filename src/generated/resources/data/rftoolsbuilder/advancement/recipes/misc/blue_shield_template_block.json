@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:blue_shield_template_block"
+        "recipes": "rftoolsbuilder:blue_shield_template_block"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

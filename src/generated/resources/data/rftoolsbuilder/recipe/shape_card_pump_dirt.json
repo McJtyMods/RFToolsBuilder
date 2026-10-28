@@ -1,15 +1,9 @@
 {
   "type": "mcjtylib:copy_components",
   "recipe": {
-    "type": "minecraft:crafting_shaped",
-    "category": "misc",
     "key": {
-      "D": {
-        "item": "minecraft:dirt"
-      },
-      "M": {
-        "item": "rftoolsbuilder:shape_card_pump_clear"
-      }
+      "D": "minecraft:dirt",
+      "M": "rftoolsbuilder:shape_card_pump_clear"
     },
     "pattern": [
       "DDD",
@@ -17,7 +11,6 @@
       "DDD"
     ],
     "result": {
-      "count": 1,
       "id": "rftoolsbuilder:shape_card_pump"
     }
   }

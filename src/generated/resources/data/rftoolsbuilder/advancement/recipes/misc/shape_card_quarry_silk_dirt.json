@@ -2,7 +2,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:shape_card_quarry_silk_dirt"
+        "recipes": "rftoolsbuilder:shape_card_quarry_silk_dirt"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

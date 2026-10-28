@@ -12,12 +12,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 public class ShaperTools {
 
     public static void requestExtraShapeData(Player player, int scanId) {
-        ScanExtraData extraData = ScanDataManager.get(player.getCommandSenderWorld()).getExtraData(scanId);
+        ScanExtraData extraData = ScanDataManager.get(player.level()).getExtraData(scanId);
         RFToolsBuilderMessages.sendToPlayer(PacketReturnExtraData.create(scanId, extraData), player);
     }
 
     public static void requestLocatorEnergyConsumption(Player player, BlockPos pos) {
-        Level world = player.getCommandSenderWorld();
+        Level world = player.level();
         BlockEntity te = world.getBlockEntity(pos);
         // @todo 1.14 locator
 //        if (te instanceof LocatorTileEntity) {
@@ -28,7 +28,7 @@ public class ShaperTools {
     }
 
     public static void requestScanDirty(Player player, int scanId) {
-        int counter = ScanDataManager.get(player.getCommandSenderWorld()).loadScan(player.getCommandSenderWorld(), scanId).getDirtyCounter();
+        int counter = ScanDataManager.get(player.level()).loadScan(player.level(), scanId).getDirtyCounter();
         RFToolsBuilderMessages.sendToClient(player, ClientCommandHandler.CMD_RETURN_SCAN_DIRTY,
                 TypedMap.builder().put(ClientCommandHandler.PARAM_SCANID, scanId).put(ClientCommandHandler.PARAM_COUNTER, counter));
     }

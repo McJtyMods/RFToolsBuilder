@@ -3,8 +3,6 @@ package mcjty.rftoolsbuilder.shapes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.codec.StreamDecoder;
-import net.minecraft.network.codec.StreamEncoder;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.modules.mover.client;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.Collections;
@@ -12,9 +12,10 @@ public class ClientSetup {
 
     public static void initClient() {
         NeoForge.EVENT_BUS.addListener(MoverRenderer::onCameraSetup);
+        NeoForge.EVENT_BUS.addListener(MoverRenderer::submitMovers);
     }
 
-    public static List<ResourceLocation> onTextureStitch() {
+    public static List<Identifier> onTextureStitch() {
         return Collections.singletonList(BLACK);
     }
 

@@ -1,27 +1,16 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexBuffer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class RenderData {
 
-    private static final Tesselator VBO_TESSELATOR = new Tesselator(2 * 1024 * 1024);
-    public static BufferBuilder vboBuffer = null;
 
     private RenderPlane[] planes = null;
     public String previewMessage = "";
@@ -150,65 +139,8 @@ public class RenderData {
         }
     }
 
-    public void createRenderList(int y) {
-        if (planes != null) {
-            planes[y].createRenderList();
-        }
-    }
-
-    public void performRenderToList(int y) {
-        if (planes != null) {
-            planes[y].performRenderToList();
-        }
-    }
-
-//    private static final Matrix4f IDENTITY = new Matrix4f();
-//
-//    static {
-//        IDENTITY.setIdentity();
-//    }
-
     public static class RenderElement {
-        protected VertexBuffer vbo;
-        protected boolean valid = false;
-
-        public void cleanup() {
-            if (vbo != null) {
-                vbo.close();
-                vbo = null;
-            }
-            valid = false;
-        }
-
-        public void render(PoseStack poseStack) {
-            if (vbo != null && valid) {
-                vbo.bind();
-                vbo.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-                VertexBuffer.unbind();
-            }
-        }
-
-        public void createRenderList() {
-            cleanup();
-            vbo = new VertexBuffer(VertexBuffer.Usage.STATIC);
-            vboBuffer = VBO_TESSELATOR.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        }
-
-        public void performRenderToList() {
-            valid = false;
-            if (vboBuffer == null) {
-                return;
-            }
-            MeshData meshData = vboBuffer.build();
-            if (meshData != null && vbo != null) {
-                vbo.bind();
-                vbo.upload(meshData);
-                VertexBuffer.unbind();
-                valid = true;
-            }
-            VBO_TESSELATOR.clear();
-            vboBuffer = null;
-        }
+        public void cleanup() { }
     }
 
     // A render plane is a horizonal plane of data. It is made out of strips

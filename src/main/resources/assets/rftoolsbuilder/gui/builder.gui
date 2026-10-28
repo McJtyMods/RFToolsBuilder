@@ -271,7 +271,7 @@
         button('level','Y: stop') {
             channel('restart')
             hint(81,31,45,13)
-            tooltips('Current level the builder is at','�ePress to restart!')
+            tooltips('Current level the builder is at','§ePress to restart!')
         }
         imagechoicelabel('redstone') {
             hint(106,46,16,16)

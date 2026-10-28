@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:mover_control2"
+        "recipes": "rftoolsbuilder:mover_control2"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

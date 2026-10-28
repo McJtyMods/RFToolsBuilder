@@ -1,33 +1,29 @@
 package mcjty.rftoolsbuilder.modules.scanner.client;
 
-import net.minecraft.client.Minecraft;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LightChunk;
 import net.minecraft.world.level.chunk.LightChunkGetter;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Fluids;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class DummyBlockGetter implements BlockAndTintGetter {
 
     private final RegistryAccess access;
-    private final transient Map<BlockPos, BlockEntity> teCache = new HashMap<>();
     private final Map<BlockPos, BlockState> states;
     private final BlockState air;
     private final LevelLightEngine lightEngine;
@@ -72,8 +68,8 @@ public class DummyBlockGetter implements BlockAndTintGetter {
     }
 
     @Override
-    public float getShade(Direction direction, boolean b) {
-        return 1.0f;
+    public CardinalLighting cardinalLighting() {
+        return CardinalLighting.DEFAULT;
     }
 
     @Override
@@ -83,17 +79,16 @@ public class DummyBlockGetter implements BlockAndTintGetter {
 
     @Override
     public int getBlockTint(BlockPos pos, ColorResolver color) {
-        var plains = access.registryOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
-        return color.getColor(plains, pos.getX(), pos.getZ());
+        var plains = access.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
+        return color.getColor(plains.value(), pos.getX(), pos.getZ());
     }
 
     @Nullable
     @Override
     public BlockEntity getBlockEntity(BlockPos pos) {
-        BlockState state = getBlockState(pos);
-        if (state.getBlock() instanceof EntityBlock) {
-            return teCache.computeIfAbsent(pos.immutable(), p -> ((EntityBlock) state.getBlock()).newBlockEntity(pos, state));
-        }
+        // Scans contain block states, not block entity data or a backing Level.
+        // Synthetic entities have no level and can crash dynamic models that query
+        // capabilities or other world-dependent data. Let models use their fallback.
         return null;
     }
 
@@ -113,12 +108,12 @@ public class DummyBlockGetter implements BlockAndTintGetter {
     }
 
     @Override
-    public int getMinBuildHeight() {
+    public int getMinY() {
         return 0;   // @todo check?
     }
 
     @Override
-    public int getBrightness(net.minecraft.world.level.LightLayer lightLayer, BlockPos pos) {
+    public int getBrightness(LightLayer lightLayer, BlockPos pos) {
         return 15;
     }
 

@@ -7,12 +7,12 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record PacketReturnExtraData(int scanId, ScanExtraData data) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "returnextradata");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "returnextradata");
     public static final CustomPacketPayload.Type<PacketReturnExtraData> TYPE = new Type<>(ID);
 
     public static final StreamCodec<FriendlyByteBuf, PacketReturnExtraData> CODEC = StreamCodec.composite(

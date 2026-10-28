@@ -2,7 +2,7 @@ package mcjty.rftoolsbuilder.modules.builder;
 
 import com.google.common.collect.Lists;
 import mcjty.lib.varia.Tools;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.ModConfigSpec;
@@ -181,11 +181,11 @@ public class BuilderConfiguration {
         if (quarryReplaceBlock == null) {
             int index = quarryReplace.get().indexOf(' ');
             if(index == -1) {
-                quarryReplaceBlock = Tools.getBlock(ResourceLocation.parse(quarryReplace.get())).defaultBlockState();
+                quarryReplaceBlock = Tools.getBlock(Identifier.parse(quarryReplace.get())).defaultBlockState();
             } else {
                 // @todo 1.14
 //                try {
-//                    quarryReplaceBlock = CommandBase.convertArgToBlockState(ForgeRegistries.BLOCKS.getValue(ResourceLocation.fromNamespaceAndPath(quarryReplace.get().substring(0, index))), quarryReplace.get().substring(index + 1));
+//                    quarryReplaceBlock = CommandBase.convertArgToBlockState(ForgeRegistries.BLOCKS.getValue(Identifier.fromNamespaceAndPath(quarryReplace.get().substring(0, index))), quarryReplace.get().substring(index + 1));
 //                } catch (NumberInvalidException | InvalidBlockStateException e) {
 //                    Logging.logError("Invalid builder quarry replace block: " + quarryReplace, e);
 //                }

@@ -2,14 +2,13 @@ package mcjty.rftoolsbuilder.modules.builder.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import mcjty.lib.varia.CompositeStreamCodec;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ import java.util.Set;
 
 public record ShapeCardData(int channel, ShapeCardDimensions dimensions, boolean tagMatching, boolean solid,
                             Set<String> voiding, Shape shape, int scanId, ShapeModifierData modifier,
-                            Optional<ResourceLocation> ghostBlock, List<ShapeCardChild> children) {
+                            Optional<Identifier> ghostBlock, List<ShapeCardChild> children) {
 
     public static final int MODE_NONE = 0;
     public static final int MODE_CORNER1 = 1;
@@ -45,17 +44,17 @@ public record ShapeCardData(int channel, ShapeCardDimensions dimensions, boolean
                 ShapeModifierData::new);
     }
 
-    public record ShapeCardChild(ItemStack stack, ShapeModifierData modifier, Optional<ResourceLocation> ghostBlock) {
+    public record ShapeCardChild(ItemStack stack, ShapeModifierData modifier, Optional<Identifier> ghostBlock) {
         public static final Codec<ShapeCardChild> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ItemStack.CODEC.fieldOf("stack").forGetter(ShapeCardChild::stack),
                 ShapeModifierData.CODEC.optionalFieldOf("modifier", ShapeModifierData.DEFAULT).forGetter(ShapeCardChild::modifier),
-                ResourceLocation.CODEC.optionalFieldOf("ghostBlock").forGetter(ShapeCardChild::ghostBlock)
+                Identifier.CODEC.optionalFieldOf("ghostBlock").forGetter(ShapeCardChild::ghostBlock)
         ).apply(instance, ShapeCardChild::new));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, ShapeCardChild> STREAM_CODEC = StreamCodec.composite(
                 ItemStack.STREAM_CODEC, ShapeCardChild::stack,
                 ShapeModifierData.STREAM_CODEC, ShapeCardChild::modifier,
-                ByteBufCodecs.optional(ResourceLocation.STREAM_CODEC), ShapeCardChild::ghostBlock,
+                ByteBufCodecs.optional(Identifier.STREAM_CODEC), ShapeCardChild::ghostBlock,
                 ShapeCardChild::new);
     }
 
@@ -89,7 +88,7 @@ public record ShapeCardData(int channel, ShapeCardDimensions dimensions, boolean
             Shape.CODEC.fieldOf("shape").forGetter(ShapeCardData::shape),
             Codec.INT.optionalFieldOf("scanId", 0).forGetter(ShapeCardData::scanId),
             ShapeModifierData.CODEC.optionalFieldOf("modifier", ShapeModifierData.DEFAULT).forGetter(ShapeCardData::modifier),
-            ResourceLocation.CODEC.optionalFieldOf("ghostBlock").forGetter(ShapeCardData::ghostBlock),
+            Identifier.CODEC.optionalFieldOf("ghostBlock").forGetter(ShapeCardData::ghostBlock),
             ShapeCardChild.CODEC.listOf().optionalFieldOf("children", List.of()).forGetter(ShapeCardData::children)
     ).apply(instance, (channel, dimensions, tagMatching, solid, voiding, shape, scanId, modifier, ghostBlock, children) ->
             new ShapeCardData(channel, dimensions, tagMatching, solid, new HashSet<>(voiding), shape, scanId, modifier, ghostBlock, List.copyOf(children))));
@@ -107,7 +106,7 @@ public record ShapeCardData(int channel, ShapeCardDimensions dimensions, boolean
                 Shape.STREAM_CODEC.encode(buf, data.shape);
                 buf.writeVarInt(data.scanId);
                 ShapeModifierData.STREAM_CODEC.encode(buf, data.modifier);
-                buf.writeOptional(data.ghostBlock, (b, value) -> b.writeResourceLocation(value));
+                buf.writeOptional(data.ghostBlock, (b, value) -> b.writeIdentifier(value));
                 buf.writeVarInt(data.children.size());
                 for (ShapeCardChild child : data.children) {
                     ShapeCardChild.STREAM_CODEC.encode(buf, child);
@@ -126,7 +125,7 @@ public record ShapeCardData(int channel, ShapeCardDimensions dimensions, boolean
                 Shape shape = Shape.STREAM_CODEC.decode(buf);
                 int scanId = buf.readVarInt();
                 ShapeModifierData modifier = ShapeModifierData.STREAM_CODEC.decode(buf);
-                Optional<ResourceLocation> ghostBlock = buf.readOptional(b -> b.readResourceLocation());
+                Optional<Identifier> ghostBlock = buf.readOptional(b -> b.readIdentifier());
                 int childSize = buf.readVarInt();
                 List<ShapeCardChild> children = new ArrayList<>(childSize);
                 for (int i = 0; i < childSize; i++) {
@@ -199,7 +198,7 @@ public record ShapeCardData(int channel, ShapeCardDimensions dimensions, boolean
         return new ShapeCardData(channel, dimensions, tagMatching, solid, voiding, shape, scanId, modifier, ghostBlock, children);
     }
 
-    public ShapeCardData withGhostBlock(Optional<ResourceLocation> ghostBlock) {
+    public ShapeCardData withGhostBlock(Optional<Identifier> ghostBlock) {
         return new ShapeCardData(channel, dimensions, tagMatching, solid, voiding, shape, scanId, modifier, ghostBlock, children);
     }
 

@@ -1,9 +1,9 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class ShapeDataManagerClient {
         return renderDataMap.get(shapeID);
     }
 
-    @Nonnull
+    @NotNull
     public static RenderData getRenderDataAndCreate(ShapeID shapeID) {
         RenderData data = renderDataMap.get(shapeID);
         if (data == null) {
@@ -31,9 +31,8 @@ public class ShapeDataManagerClient {
         return data;
     }
 
-    // @todo 1.20 correct?
-    public static void cleanupOldRenderers(RenderLevelStageEvent event) {
-        // @todo 1.15 is this still the correct way?
+    // Expire unused previews on client ticks, independently of render stages.
+    public static void cleanupOldRenderers(ClientTickEvent.Post event) {
         cleanupCounter--;
         if (cleanupCounter >= 0) {
             return;

@@ -1,19 +1,18 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
+import java.util.HashMap;
+import java.util.Map;
 import mcjty.lib.varia.BlockPosTools;
 import mcjty.lib.varia.LevelTools;
 import mcjty.lib.worlddata.AbstractWorldData;
+import mcjty.rftoolsbase.tools.LegacyWorldData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
-
-import javax.annotation.Nonnull;
-import java.util.HashMap;
-import java.util.Map;
+import org.jetbrains.annotations.NotNull;
 
 public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberRepository> {
 
@@ -27,22 +26,23 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
     }
 
     public SpaceChamberRepository(CompoundTag tag) {
-        ListTag lst = tag.getList("channels", Tag.TAG_COMPOUND);
+        ListTag lst = tag.getListOrEmpty("channels");
         for (int i = 0 ; i < lst.size() ; i++) {
-            CompoundTag tc = lst.getCompound(i);
-            int channel = tc.getInt("channel");
+            CompoundTag tc = lst.getCompoundOrEmpty(i);
+            int channel = tc.getIntOr("channel", 0);
 
             SpaceChamberChannel value = new SpaceChamberChannel();
-            value.setDimension(LevelTools.getId(tc.getString("dimension")));
+            value.setDimension(LevelTools.getId(tc.getStringOr("dimension", "")));
             value.setMinCorner(BlockPosTools.read(tc, "minCorner"));
             value.setMaxCorner(BlockPosTools.read(tc, "maxCorner"));
             channels.put(channel, value);
         }
-        lastId = tag.getInt("lastId");
+        lastId = tag.getIntOr("lastId", 0);
     }
 
     public static SpaceChamberRepository get(Level world) {
-        return getData(world, SpaceChamberRepository::new, SpaceChamberRepository::new, SPACECHAMBER_CHANNELS_NAME);
+        return LegacyWorldData.get(world, SpaceChamberRepository::new, SpaceChamberRepository::new,
+                "rftoolsbuilder:space_chambers", SPACECHAMBER_CHANNELS_NAME);
     }
 
     public SpaceChamberChannel getOrCreateChannel(int id) {
@@ -67,14 +67,14 @@ public class SpaceChamberRepository extends AbstractWorldData<SpaceChamberReposi
         return lastId;
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public CompoundTag save(@Nonnull CompoundTag tagCompound, HolderLookup.Provider provider) {
+    public CompoundTag save(@NotNull CompoundTag tagCompound, HolderLookup.Provider provider) {
         ListTag lst = new ListTag();
         for (Map.Entry<Integer, SpaceChamberChannel> entry : channels.entrySet()) {
             CompoundTag tc = new CompoundTag();
             tc.putInt("channel", entry.getKey());
-            tc.putString("dimension", entry.getValue().getDimension().location().toString());
+            tc.putString("dimension", entry.getValue().getDimension().identifier().toString());
             BlockPosTools.write(tc, "minCorner", entry.getValue().getMinCorner());
             BlockPosTools.write(tc, "maxCorner", entry.getValue().getMaxCorner());
             lst.add(tc);

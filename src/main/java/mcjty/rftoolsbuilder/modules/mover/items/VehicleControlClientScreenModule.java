@@ -7,8 +7,8 @@ import mcjty.rftoolsbase.api.screens.ITextRenderHelper;
 import mcjty.rftoolsbase.api.screens.ModuleRenderInfo;
 import mcjty.rftoolsbase.tools.ScreenTextHelper;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
@@ -30,7 +30,7 @@ public class VehicleControlClientScreenModule implements IClientScreenModule<Veh
     }
 
     @Override
-    public void render(GuiGraphics graphics, MultiBufferSource buffer, IModuleRenderHelper renderHelper, Font fontRenderer, int currenty, VehicleControlScreenModule.EmptyData screenData, ModuleRenderInfo renderInfo) {
+    public void render(GuiGraphicsExtractor graphics, SubmitNodeCollector buffer, IModuleRenderHelper renderHelper, Font fontRenderer, int currenty, VehicleControlScreenModule.EmptyData screenData, ModuleRenderInfo renderInfo) {
         VehicleControlScreenModule data = VehicleControlModuleItem.data(renderInfo.moduleStack);
         int xoffset;
         int buttonWidth;
@@ -47,8 +47,7 @@ public class VehicleControlClientScreenModule implements IClientScreenModule<Veh
 
         boolean act = activated;
 
-        RenderHelper.drawBeveledBox(graphics, buffer, xoffset - 5, currenty, 130 - 7, currenty + 12, act ? 0xff333333 : 0xffeeeeee, act ? 0xffeeeeee : 0xff333333, 0xff666666,
-                renderInfo.getLightmapValue());
+        RenderHelper.drawBeveledBox(graphics, xoffset - 5, currenty, 130 - 7, currenty + 12, act ? 0xff333333 : 0xffeeeeee, act ? 0xffeeeeee : 0xff333333, 0xff666666);
         buttonCache.setup(data.getButton(), buttonWidth, renderInfo);
         buttonCache.renderText(graphics, buffer, xoffset -10 + (act ? 1 : 0), currenty + 2, data.getButtonColor(), renderInfo);
     }

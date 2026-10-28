@@ -2,7 +2,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:shape_card_liquid"
+        "recipes": "rftoolsbuilder:shape_card_liquid"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

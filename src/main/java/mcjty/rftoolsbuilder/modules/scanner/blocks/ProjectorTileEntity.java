@@ -1,5 +1,10 @@
 package mcjty.rftoolsbuilder.modules.scanner.blocks;
 
+import com.mojang.serialization.MapCodec;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.bindings.GuiValue;
 import mcjty.lib.blockcommands.Command;
@@ -22,34 +27,36 @@ import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
 import mcjty.rftoolsbuilder.shapes.RenderData;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
+import mcjty.rftoolsbuilder.tools.BuilderSerialization;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Prediction;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.util.Lazy;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
+import org.jetbrains.annotations.Nullable;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.container.SlotDefinition.specific;
+import static mcjty.lib.setup.Registration.ITEM_INVENTORY;
 
 public class ProjectorTileEntity extends TickingTileEntity {
 
@@ -153,7 +160,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
         if (isLoadingClientData()) {
             return;
         }
-        if (level != null && level.isClientSide) {
+        if (level != null && level.isClientSide()) {
             if (shapeRenderer != null && !getShapeID().equals(shapeRenderer.getShapeID())) {
                 shapeRenderer = null;
             }
@@ -219,27 +226,27 @@ public class ProjectorTileEntity extends TickingTileEntity {
         ItemStack held = player.getItemInHand(hand);
         if (player.isCrouching()) {
             if (!held.isEmpty() && held.getItem() instanceof ShapeCardItem) {
-                if (!level.isClientSide) {
+                if (!level.isClientSide()) {
                     ItemStack previous = items.getStackInSlot(SLOT_CARD);
                     ItemStack inserted = held.copyWithCount(1);
                     items.setStackInSlot(SLOT_CARD, inserted);
                     held.shrink(1);
                     if (!previous.isEmpty()) {
                         if (!player.addItem(previous)) {
-                            player.drop(previous, false);
+                            player.drop(previous, false, Prediction.SERVER_ONLY);
                         }
                     }
                 }
-                return InteractionResult.sidedSuccess(level.isClientSide);
+                return InteractionResult.SUCCESS;
             }
             if (held.isEmpty()) {
                 ItemStack card = items.getStackInSlot(SLOT_CARD);
                 if (!card.isEmpty()) {
-                    if (!level.isClientSide) {
+                    if (!level.isClientSide()) {
                         player.setItemInHand(hand, card);
                         items.setStackInSlot(SLOT_CARD, ItemStack.EMPTY);
                     }
-                    return InteractionResult.sidedSuccess(level.isClientSide);
+                    return InteractionResult.SUCCESS;
                 }
             }
         }
@@ -369,7 +376,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
         int power = level.getSignal(p, side);
         if (power == 0) {
             BlockState blockState = level.getBlockState(p);
-            if (blockState.getBlock() instanceof RedStoneWireBlock) {
+            if (blockState.getBlock() instanceof RedstoneWireBlock) {
                 power = level.hasNeighborSignal(p) ? 15 : 0;
             }
         }
@@ -526,37 +533,43 @@ public class ProjectorTileEntity extends TickingTileEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        CompoundTag tag = input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        HolderLookup.Provider provider = input.lookup();
+
         items.load(tag, "items", provider);
-        verticalOffset = tag.contains("offs") ? tag.getFloat("offs") : .2f;
-        scale = tag.contains("scale") ? tag.getFloat("scale") : .01f;
-        angle = tag.getFloat("angle");
-        autoRotate = tag.getBoolean("rot");
-        scanline = !tag.contains("scan") || tag.getBoolean("scan");
-        sound = !tag.contains("sound") || tag.getBoolean("sound");
-        grayscale = tag.getBoolean("grayscale");
-        renderBlockModels = tag.getBoolean("render_models");
-        projecting = tag.getBoolean("projecting");
-        active = !tag.contains("active") || tag.getBoolean("active");
-        counter = tag.getInt("counter");
+        verticalOffset = tag.contains("offs") ? tag.getFloatOr("offs", 0.0f) : .2f;
+        scale = tag.contains("scale") ? tag.getFloatOr("scale", 0.0f) : .01f;
+        angle = tag.getFloatOr("angle", 0.0f);
+        autoRotate = tag.getBooleanOr("rot", false);
+        scanline = !tag.contains("scan") || tag.getBooleanOr("scan", false);
+        sound = !tag.contains("sound") || tag.getBooleanOr("sound", false);
+        grayscale = tag.getBooleanOr("grayscale", false);
+        renderBlockModels = tag.getBooleanOr("render_models", false);
+        projecting = tag.getBooleanOr("projecting", false);
+        active = !tag.contains("active") || tag.getBooleanOr("active", false);
+        counter = tag.getIntOr("counter", 0);
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             String key = "op_" + facing.getName();
             if (tag.contains(key)) {
                 int index = facing.get2DDataValue();
-                CompoundTag tc = tag.getCompound(key);
+                CompoundTag tc = tag.getCompoundOrEmpty(key);
                 ProjectorOperation op = operations[index];
-                op.setOpcodeOn(ProjectorOpcode.getByCode(tc.getString("on")));
-                op.setOpcodeOff(ProjectorOpcode.getByCode(tc.getString("off")));
-                op.setValueOn(tc.contains("von") ? tc.getDouble("von") : null);
-                op.setValueOff(tc.contains("voff") ? tc.getDouble("voff") : null);
+                op.setOpcodeOn(ProjectorOpcode.getByCode(tc.getStringOr("on", "")));
+                op.setOpcodeOff(ProjectorOpcode.getByCode(tc.getStringOr("off", "")));
+                op.setValueOn(tc.contains("von") ? tc.getDoubleOr("von", 0.0) : null);
+                op.setValueOff(tc.contains("voff") ? tc.getDoubleOr("voff", 0.0) : null);
             }
         }
     }
 
     @Override
-    protected void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        CompoundTag tag = new CompoundTag();
+        HolderLookup.Provider provider = level != null ? level.registryAccess() : RegistryAccess.EMPTY;
+
         items.save(tag, "items", provider);
         tag.putFloat("offs", verticalOffset);
         tag.putFloat("scale", scale);
@@ -583,12 +596,13 @@ public class ProjectorTileEntity extends TickingTileEntity {
             }
             tag.put("op_" + facing.getName(), tc);
         }
+        output.store(MapCodec.assumeMapUnsafe(CompoundTag.CODEC), tag);
     }
 
     @Override
-    protected void applyImplicitComponents(DataComponentInput input) {
+    protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        items.applyImplicitComponents(input.get(mcjty.lib.setup.Registration.ITEM_INVENTORY));
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
     }
 
     @Override
@@ -598,16 +612,10 @@ public class ProjectorTileEntity extends TickingTileEntity {
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider provider) {
-        super.handleUpdateTag(tag, provider);
-        loadClientDataFromNBT(tag, provider);
-    }
-
-    @Override
     public void saveClientDataToNBT(CompoundTag tag, HolderLookup.Provider provider) {
         ItemStack card = getRenderStack();
         if (!card.isEmpty()) {
-            tag.put("card", card.save(provider, new CompoundTag()));
+            tag.put("card", BuilderSerialization.saveItem(card, provider));
         }
         tag.putBoolean("projecting", projecting);
         tag.putBoolean("active", active);
@@ -640,29 +648,29 @@ public class ProjectorTileEntity extends TickingTileEntity {
     public void loadClientDataFromNBT(CompoundTag tag, HolderLookup.Provider provider) {
         ShapeID oldShapeId = getShapeID();
         loadingClientData = true;
-        items.setStackInSlot(SLOT_CARD, ItemStack.parseOptional(provider, tag.getCompound("card")));
+        items.setStackInSlot(SLOT_CARD, BuilderSerialization.loadItem(provider, tag.getCompoundOrEmpty("card")));
         loadingClientData = false;
-        projecting = tag.getBoolean("projecting");
-        active = !tag.contains("active") || tag.getBoolean("active");
-        verticalOffset = tag.contains("offs") ? tag.getFloat("offs") : .2f;
-        scale = tag.contains("scale") ? tag.getFloat("scale") : .01f;
-        angle = tag.getFloat("angle");
-        autoRotate = tag.getBoolean("rot");
-        scanline = !tag.contains("scan") || tag.getBoolean("scan");
-        sound = !tag.contains("sound") || tag.getBoolean("sound");
-        grayscale = tag.getBoolean("grayscale");
-        renderBlockModels = tag.getBoolean("render_models");
-        counter = tag.getInt("counter");
+        projecting = tag.getBooleanOr("projecting", false);
+        active = !tag.contains("active") || tag.getBooleanOr("active", false);
+        verticalOffset = tag.contains("offs") ? tag.getFloatOr("offs", 0.0f) : .2f;
+        scale = tag.contains("scale") ? tag.getFloatOr("scale", 0.0f) : .01f;
+        angle = tag.getFloatOr("angle", 0.0f);
+        autoRotate = tag.getBooleanOr("rot", false);
+        scanline = !tag.contains("scan") || tag.getBooleanOr("scan", false);
+        sound = !tag.contains("sound") || tag.getBooleanOr("sound", false);
+        grayscale = tag.getBooleanOr("grayscale", false);
+        renderBlockModels = tag.getBooleanOr("render_models", false);
+        counter = tag.getIntOr("counter", 0);
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             String key = "op_" + facing.getName();
             if (tag.contains(key)) {
                 int index = facing.get2DDataValue();
-                CompoundTag tc = tag.getCompound(key);
+                CompoundTag tc = tag.getCompoundOrEmpty(key);
                 ProjectorOperation op = operations[index];
-                op.setOpcodeOn(ProjectorOpcode.getByCode(tc.getString("on")));
-                op.setOpcodeOff(ProjectorOpcode.getByCode(tc.getString("off")));
-                op.setValueOn(tc.contains("von") ? tc.getDouble("von") : null);
-                op.setValueOff(tc.contains("voff") ? tc.getDouble("voff") : null);
+                op.setOpcodeOn(ProjectorOpcode.getByCode(tc.getStringOr("on", "")));
+                op.setOpcodeOff(ProjectorOpcode.getByCode(tc.getStringOr("off", "")));
+                op.setValueOn(tc.contains("von") ? tc.getDoubleOr("von", 0.0) : null);
+                op.setValueOff(tc.contains("voff") ? tc.getDoubleOr("voff", 0.0) : null);
             }
         }
         if (!Objects.equals(oldShapeId, getShapeID())) {
@@ -766,5 +774,16 @@ public class ProjectorTileEntity extends TickingTileEntity {
 
     public GenericItemHandler getItems() {
         return items;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null && !level.isClientSide()) {
+            var handler = getItems();
+            for (int slot = 0; slot < handler.getSlots(); slot++) {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), handler.getStackInSlot(slot));
+            }
+        }
+        super.preRemoveSideEffects(pos, state);
     }
 }

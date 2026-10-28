@@ -2,7 +2,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:shield_block3"
+        "recipes": "rftoolsbuilder:shield_block3"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

@@ -2,7 +2,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "rftoolsbuilder:shape_card_quarry_clear_silk"
+        "recipes": "rftoolsbuilder:shape_card_quarry_clear_silk"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

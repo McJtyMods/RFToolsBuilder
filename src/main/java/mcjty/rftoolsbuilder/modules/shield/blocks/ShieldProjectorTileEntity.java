@@ -1,5 +1,9 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
+import com.mojang.serialization.MapCodec;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.IntStream;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.information.IPowerInformation;
 import mcjty.lib.api.infusable.DefaultInfusable;
@@ -36,6 +40,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -43,9 +49,8 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -69,19 +74,20 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.util.Lazy;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.IntStream;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.container.SlotDefinition.generic;
 import static mcjty.lib.container.SlotDefinition.specific;
+import static mcjty.lib.setup.Registration.ITEM_ENERGY;
+import static mcjty.lib.setup.Registration.ITEM_INFUSABLE;
+import static mcjty.lib.setup.Registration.ITEM_INVENTORY;
 import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingBlock.*;
 
 public class ShieldProjectorTileEntity extends TickingTileEntity implements ISmartWrenchSelector {
@@ -202,7 +208,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         this.rfPerTick = rfPerTick;
         energyStorage = new GenericEnergyStorage(this, true, getConfigMaxEnergy(), getConfigRfPerTick());    }
 
-    @Nonnull
+    @NotNull
     public GenericEnergyStorage getEnergyStorage() {
         return energyStorage;
     }
@@ -242,12 +248,12 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider provider) {
+    public void onDataPacket(Connection net, ValueInput input) {
         int shieldColor = getShieldColor();
         int oldColor = shieldColor;
         ShieldTexture oldTexture = getShieldTexture();
-        super.onDataPacket(net, packet, provider);
-        if (oldColor != shieldColor || oldTexture != getShieldTexture()) {
+        super.onDataPacket(net, input);
+        if (oldColor != getShieldColor() || oldTexture != getShieldTexture()) {
             renderData = null;
             // @todo this doesn't help to automatically update the color
             BlockState state = level.getBlockState(worldPosition);
@@ -344,7 +350,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         updateTimeout = 10;
     }
 
-    @Nonnull
+    @NotNull
     private BlockState getStateFromItem(ItemStack stack) {
         Item item = stack.getItem();
         if (item instanceof BlockItem blockItem) {
@@ -524,7 +530,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     public static ItemStack createEnchantedItem(Level level, Item item, ResourceKey<Enchantment> effectId, int amount) {
         ItemStack stack = new ItemStack(item);
         ItemEnchantments.Mutable enchant = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-        Optional<Holder.Reference<Enchantment>> holder = level.registryAccess().registryOrThrow(Registries.ENCHANTMENT).getHolder(effectId);
+        Optional<Holder.Reference<Enchantment>> holder = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(effectId);
         enchant.set(holder.get(), amount);
         EnchantmentHelper.setEnchantments(stack, enchant.toImmutable());
         return stack;
@@ -667,7 +673,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     private boolean findTemplateState() {
         for (Direction dir : OrientationTools.DIRECTION_VALUES) {
             BlockPos p = getBlockPos().relative(dir);
-            if (p.getY() >= level.getMinBuildHeight() && p.getY() < level.getMaxBuildHeight()) {
+            if (p.getY() >= level.getMinY() && p.getY() < level.getMaxY() + 1) {
                 BlockState state = getLevel().getBlockState(p);
                 if (state.getBlock() instanceof ShieldTemplateBlock) {
                     templateState = state;
@@ -768,8 +774,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             }
         }
 
-        // To force an update set it to air first
-        level.setBlockAndUpdate(pp, Blocks.AIR.defaultBlockState());
+        // Keep existing block entities when only their render data changes.
         level.setBlock(pp, shielding, Block.UPDATE_NEIGHBORS);
 
         BlockEntity te = getLevel().getBlockEntity(pp);
@@ -782,6 +787,9 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             }
             shieldingTE.setShieldProjector(worldPosition);
         }
+        // Send the final block state and block entity data after initialization, even
+        // when the state itself is unchanged (for example after a color change).
+        level.sendBlockUpdated(pp, oldState, shielding, Block.UPDATE_CLIENTS);
     }
 
     public void decomposeShield() {
@@ -796,11 +804,11 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             pp.set(cx, cy, cz);
             Block block = getLevel().getBlockState(pp).getBlock();
             if (getLevel().isEmptyBlock(pp) || block instanceof ShieldingBlock) {
-                getLevel().setBlock(new BlockPos(pp), templateState, Block.UPDATE_CLIENTS);
+                getLevel().setBlock(pp.immutable(), templateState, Block.UPDATE_CLIENTS);
             } else if (!templateState.isAir()) {
                 if (!isShapedShield()) {
                     // No room, just spawn the block
-                    Containers.dropItemStack(getLevel(), cx, cy, cz, templateState.getBlock().getCloneItemStack(getLevel(), new BlockPos(cx, cy, cz), templateState));
+                    Containers.dropItemStack(getLevel(), cx, cy, cz, templateState.getBlock().getCloneItemStack(getLevel(), new BlockPos(cx, cy, cz), templateState, false, null));
                 }
             }
         }
@@ -841,7 +849,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     private void addToTodoStraight(Map<BlockPos, BlockState> coordinateSet, Deque<BlockPos> todo, BlockPos coordinate, BlockState templateState) {
         for (Direction dir : OrientationTools.DIRECTION_VALUES) {
             BlockPos pp = coordinate.relative(dir);
-            if (pp.getY() >= level.getMinBuildHeight() && pp.getY() < level.getMaxBuildHeight()) {
+            if (pp.getY() >= level.getMinY() && pp.getY() < level.getMaxY() + 1) {
                 if (!coordinateSet.containsKey(pp)) {
                     BlockState state = getLevel().getBlockState(pp);
                     if (state == templateState) {
@@ -863,7 +871,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             for (int yy = y - 1; yy <= y + 1; yy++) {
                 for (int zz = z - 1; zz <= z + 1; zz++) {
                     if (xx != x || yy != y || zz != z) {
-                        if (yy >= getLevel().getMinBuildHeight() && yy < getLevel().getMaxBuildHeight()) {
+                        if (yy >= getLevel().getMinY() && yy < getLevel().getMaxY() + 1) {
                             c.set(xx, yy, zz);
                             if (!coordinateSet.containsKey(c)) {
                                 BlockState state = getLevel().getBlockState(c);
@@ -912,12 +920,12 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
 
     @Override
     public void loadClientDataFromNBT(CompoundTag tagCompound, HolderLookup.Provider provider) {
-        powerLevel = tagCompound.getByte("powered");
-        shieldComposed = tagCompound.getBoolean("composed");
-        shieldActive = tagCompound.getBoolean("active");
-        powerTimeout = tagCompound.getInt("powerTimeout");
+        powerLevel = tagCompound.getByteOr("powered", (byte) 0);
+        shieldComposed = tagCompound.getBooleanOr("composed", false);
+        shieldActive = tagCompound.getBooleanOr("active", false);
+        powerTimeout = tagCompound.getIntOr("powerTimeout", 0);
         if (tagCompound.contains("templateColor")) {
-            int templateColor = tagCompound.getInt("templateColor");
+            int templateColor = tagCompound.getIntOr("templateColor", 0);
             ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
             switch (color) {
                 case BLUE -> templateState = ShieldModule.TEMPLATE_BLUE.get().defaultBlockState();
@@ -956,19 +964,22 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        CompoundTag tag = input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        HolderLookup.Provider provider = input.lookup();
+
         energyStorage.load(tag, "energy", provider);
         items.load(tag, "items", provider);
         infusable.load(tag, "infusable");
 
         // @todo 1.21 NBT
-        shieldComposed = tag.getBoolean("composed");
-        shieldActive = tag.getBoolean("active");
-        powerTimeout = tag.getInt("powerTimeout");
+        shieldComposed = tag.getBooleanOr("composed", false);
+        shieldActive = tag.getBooleanOr("active", false);
+        powerTimeout = tag.getIntOr("powerTimeout", 0);
         if (!isShapedShield()) {
             if (tag.contains("templateColor")) {
-                int templateColor = tag.getInt("templateColor");
+                int templateColor = tag.getIntOr("templateColor", 0);
                 ShieldTemplateBlock.TemplateColor color = ShieldTemplateBlock.TemplateColor.values()[templateColor];
                 switch (color) {
                     case BLUE -> templateState = ShieldModule.TEMPLATE_BLUE.get().defaultBlockState();
@@ -986,7 +997,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         shieldBlocks.clear();
         blockStateTable.clear();
         if (tag.contains("relcoordsNew")) {
-            byte[] byteArray = tag.getByteArray("relcoordsNew");
+            byte[] byteArray = tag.getByteArray("relcoordsNew").orElseGet(() -> new byte[0]);
             int j = 0;
             for (int i = 0; i < byteArray.length / 8; i++) {
                 short dx = bytesToShort(byteArray[j + 0], byteArray[j + 1]);
@@ -997,12 +1008,12 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 shieldBlocks.add(new RelCoordinateShield(dx, dy, dz, st));
             }
 
-            ListTag list = tag.getList("gstates", Tag.TAG_COMPOUND);
+            ListTag list = tag.getListOrEmpty("gstates");
             for (Tag inbt : list) {
                 CompoundTag tc = (CompoundTag) inbt;
-                String b = tc.getString("b");
-                int m = tc.getInt("m");
-                Block block = Tools.getBlock(ResourceLocation.parse(b));
+                String b = tc.getStringOr("b", "");
+                int m = tc.getIntOr("m", 0);
+                Block block = Tools.getBlock(Identifier.parse(b));
                 if (block == null) {
                     block = Blocks.STONE;
                     m = 0;
@@ -1011,7 +1022,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 blockStateTable.add(state);
             }
         } else {
-            byte[] byteArray = tag.getByteArray("relcoords");
+            byte[] byteArray = tag.getByteArray("relcoords").orElseGet(() -> new byte[0]);
             int j = 0;
             for (int i = 0; i < byteArray.length / 6; i++) {
                 short dx = bytesToShort(byteArray[j + 0], byteArray[j + 1]);
@@ -1024,11 +1035,11 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     @Override
-    protected void applyImplicitComponents(DataComponentInput input) {
+    protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        energyStorage.applyImplicitComponents(input.get(Registration.ITEM_ENERGY));
-        items.applyImplicitComponents(input.get(Registration.ITEM_INVENTORY));
-        infusable.applyImplicitComponents(input.get(Registration.ITEM_INFUSABLE));
+        energyStorage.applyImplicitComponents(input.get(ITEM_ENERGY));
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
+        infusable.applyImplicitComponents(input.get(ITEM_INFUSABLE));
         ShieldData shieldData = input.get(ShieldModule.ITEM_SHIELD_DATA);
         if (shieldData != null) {
             setData(ShieldModule.SHIELD_DATA, shieldData);
@@ -1045,8 +1056,11 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        CompoundTag tag = new CompoundTag();
+        HolderLookup.Provider provider = level != null ? level.registryAccess() : RegistryAccess.EMPTY;
+
         energyStorage.save(tag, "energy", provider);
         items.save(tag, "items", provider);
         infusable.save(tag, "infusable");
@@ -1079,6 +1093,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             list.add(tc);
         }
         tag.put("gstates", list);
+        output.store(MapCodec.assumeMapUnsafe(CompoundTag.CODEC), tag);
     }
 
     public static final Key<Integer> PARAM_ACTION = new Key<>("action", Type.INTEGER);
@@ -1104,7 +1119,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             (te, player, params) -> te.getFilters(),
             (te, player, params, list) -> GuiShield.storeFiltersForClient(list));
 
-    @Nonnull
+    @NotNull
     private IPowerInformation createPowerInfo() {
         return new IPowerInformation() {
             @Override
@@ -1132,5 +1147,13 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
                 return shieldActive ? "active" : "idle";
             }
         };
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null && !level.isClientSide() && isShieldComposed()) {
+            composeDecomposeShield(false);
+        }
+        super.preRemoveSideEffects(pos, state);
     }
 }

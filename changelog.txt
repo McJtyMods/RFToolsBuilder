@@ -1,3 +1,15 @@
+26.3-10.0.0:
+- Ported to Minecraft 26.3 with NeoForge
+- Fixed scanners causing broken blocks to remain visible on clients in the same chunk
+- Fixed scan previews and projectors crashing with dynamic block models such as XNet connectors
+- Builder previews are 75% transparent and hide internal faces
+
+26.2-9.0.0:
+- Ported RFToolsBuilder from 26.1.2 to Minecraft 26.2 with NeoForge, McJtyLib, and RFToolsBase
+
+26.1.2-8.0.0:
+- Ported RFToolsBuilder to Minecraft 26.1.2 with NeoForge, Java 25, McJtyLib, and RFToolsBase
+
 1.21-7.0.7:
 - The mover, vehicle builder, and mover controller where not available in JEI or the creative inventory. This has been fixed
 

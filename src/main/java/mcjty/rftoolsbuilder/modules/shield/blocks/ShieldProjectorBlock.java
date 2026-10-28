@@ -1,5 +1,9 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.function.Supplier;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RotationType;
 import mcjty.lib.builder.BlockBuilder;
@@ -7,6 +11,7 @@ import mcjty.lib.crafting.IComponentsToPreserve;
 import mcjty.lib.varia.Logging;
 import mcjty.rftoolsbase.modules.various.items.SmartWrenchItem;
 import mcjty.rftoolsbase.tools.ManualHelper;
+import mcjty.rftoolsbase.tools.RegistryProperties;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import net.minecraft.ChatFormatting;
@@ -14,6 +19,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -23,22 +29,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 
 public class ShieldProjectorBlock extends BaseBlock implements IComponentsToPreserve {
 
-    public ShieldProjectorBlock(BlockEntityType.BlockEntitySupplier<BlockEntity> te, Supplier<Integer> max) {
-        super(new BlockBuilder()
+    public ShieldProjectorBlock(BlockBehaviour.Properties properties, BlockEntityType.BlockEntitySupplier<BlockEntity> te, Supplier<Integer> max) {
+        super(new BlockBuilder().properties(RegistryProperties.block(properties))
                 .manualEntry(ManualHelper.create("rftoolsbase:shield/shield_intro"))
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
@@ -70,7 +71,7 @@ public class ShieldProjectorBlock extends BaseBlock implements IComponentsToPres
 
 
     @Override
-    public void setPlacedBy(@Nonnull Level world, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nullable LivingEntity placer, @Nonnull ItemStack stack) {
+    public void setPlacedBy(@NotNull Level world, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, @NotNull ItemStack stack) {
 // @todo 1.14
         //        restoreBlockFromNBT(world, pos, stack);
         super.setPlacedBy(world, pos, state, placer, stack);
@@ -78,8 +79,8 @@ public class ShieldProjectorBlock extends BaseBlock implements IComponentsToPres
     }
 
     @Override
-    public void attack(@Nonnull BlockState state, Level world, @Nonnull BlockPos pos, @Nonnull Player player) {
-        if (!world.isClientSide) {
+    public void attack(@NotNull BlockState state, Level world, @NotNull BlockPos pos, @NotNull Player player) {
+        if (!world.isClientSide()) {
             composeDecomposeShield(world, pos, true);
             // @todo achievements
 //            Achievements.trigger(playerIn, Achievements.shieldSafety);
@@ -96,7 +97,7 @@ public class ShieldProjectorBlock extends BaseBlock implements IComponentsToPres
 
     @Override
     protected boolean wrenchSneakSelect(Level world, BlockPos pos, Player player) {
-        if (!world.isClientSide) {
+        if (!world.isClientSide()) {
             Optional<GlobalPos> currentBlock = SmartWrenchItem.getCurrentBlock(player.getItemInHand(InteractionHand.MAIN_HAND));
             if (!currentBlock.isPresent()) {
                 SmartWrenchItem.setCurrentBlock(player.getItemInHand(InteractionHand.MAIN_HAND), GlobalPos.of(world.dimension(), pos));
@@ -110,7 +111,7 @@ public class ShieldProjectorBlock extends BaseBlock implements IComponentsToPres
     }
 
     private void composeDecomposeShield(Level world, BlockPos pos, boolean ctrl) {
-        if (!world.isClientSide) {
+        if (!world.isClientSide()) {
             BlockEntity te = world.getBlockEntity(pos);
             if (te instanceof ShieldProjectorTileEntity) {
                 ((ShieldProjectorTileEntity)te).composeDecomposeShield(ctrl);
@@ -118,22 +119,16 @@ public class ShieldProjectorBlock extends BaseBlock implements IComponentsToPres
         }
     }
 
-    @Override
-    public void onRemove(@Nonnull BlockState state, @Nonnull Level world, @Nonnull BlockPos pos, @Nonnull BlockState newstate, boolean isMoving) {
-        if (newstate.getBlock() != this) {
-            removeShield(world, pos);
-        }
-        super.onRemove(state, world, pos, newstate, isMoving);
-    }
+
 
     @Override
-    public void destroy(@Nonnull LevelAccessor world, @Nonnull BlockPos pos, @Nonnull BlockState state) {
+    public void destroy(@NotNull LevelAccessor world, @NotNull BlockPos pos, @NotNull BlockState state) {
         removeShield(world, pos);
         super.destroy(world, pos, state);
     }
 
     @Override
-    public void wasExploded(@Nonnull Level world, @Nonnull BlockPos pos, @Nonnull Explosion explosionIn) {
+    public void wasExploded(@NotNull ServerLevel world, @NotNull BlockPos pos, @NotNull Explosion explosionIn) {
         removeShield(world, pos);
         super.wasExploded(world, pos, explosionIn);
     }
