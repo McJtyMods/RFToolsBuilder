@@ -2,28 +2,29 @@ package mcjty.rftoolsbuilder.modules.mover.blocks;
 
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.builder.BlockBuilder;
-import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbase.tools.ManualHelper;
+import mcjty.rftoolsbase.tools.RegistryProperties;
+import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
-
-import javax.annotation.Nullable;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import org.jetbrains.annotations.Nullable;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 
 public class MoverControlBlock extends BaseBlock {
 
-    public static final DirectionProperty HORIZ_FACING = DirectionProperty.create("horizfacing", Direction.Plane.HORIZONTAL);
+    public static final EnumProperty<Direction> HORIZ_FACING = EnumProperty.create("horizfacing", Direction.class, Direction.Plane.HORIZONTAL);
     private final int page;
 
-    public MoverControlBlock(int page) {
-        super(new BlockBuilder()
+    public MoverControlBlock(BlockBehaviour.Properties properties, int page) {
+        super(new BlockBuilder().properties(RegistryProperties.block(properties))
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .manualEntry(ManualHelper.create("rftoolsbuilder:mover/vehicle_modules"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))

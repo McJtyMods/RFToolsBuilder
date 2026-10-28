@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.mover.blocks;
 
+import com.mojang.serialization.MapCodec;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -13,6 +14,8 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 public class InvisibleMoverBE extends BlockEntity {
@@ -24,8 +27,8 @@ public class InvisibleMoverBE extends BlockEntity {
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider provider) {
-        loadInt(pkt.getTag(), provider);
+    public void onDataPacket(Connection net, ValueInput input) {
+        loadInt(input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new), input.lookup());
     }
 
     @Nullable
@@ -50,19 +53,26 @@ public class InvisibleMoverBE extends BlockEntity {
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        CompoundTag tag = input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        HolderLookup.Provider provider = input.lookup();
+
         loadInt(tag, provider);
     }
 
     private void loadInt(CompoundTag tag, HolderLookup.Provider provider) {
-        originalState = NbtUtils.readBlockState(provider.lookup(Registries.BLOCK).get(), tag.getCompound("originalState"));
+        originalState = NbtUtils.readBlockState(provider.lookup(Registries.BLOCK).get(), tag.getCompoundOrEmpty("originalState"));
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        CompoundTag tag = new CompoundTag();
+        HolderLookup.Provider provider = level != null ? level.registryAccess() : RegistryAccess.EMPTY;
+
         saveInt(tag);
+        output.store(MapCodec.assumeMapUnsafe(CompoundTag.CODEC), tag);
     }
 
     private CompoundTag saveInt(CompoundTag tag) {

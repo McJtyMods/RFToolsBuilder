@@ -13,11 +13,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.zip.DataFormatException;
@@ -29,7 +29,7 @@ public record PacketReturnShapeData(ShapeID shapeID, int checksum, @Nullable byt
                                     StatePalette statePalette, BlockPos dimension, int count,
                                     int offsetY, String msg) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "returnshapedata");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "returnshapedata");
     public static final CustomPacketPayload.Type<PacketReturnShapeData> TYPE = new Type<>(ID);
     private static final int COMPRESSION_MIN_BYTES = 256;
     private static final int COMPRESSION_MIN_GAIN = 32;

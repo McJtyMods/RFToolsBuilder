@@ -1,5 +1,10 @@
 package mcjty.rftoolsbuilder.modules.mover.blocks;
 
+import com.mojang.serialization.MapCodec;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.bindings.GuiValue;
 import mcjty.lib.bindings.Value;
@@ -18,6 +23,7 @@ import mcjty.lib.typed.Type;
 import mcjty.lib.varia.OrientationTools;
 import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbase.tools.ManualHelper;
+import mcjty.rftoolsbase.tools.RegistryProperties;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.client.MoverRenderer;
@@ -28,11 +34,15 @@ import mcjty.rftoolsbuilder.modules.mover.network.PacketClickMover;
 import mcjty.rftoolsbuilder.modules.mover.network.PacketSyncVehicleInformationToClient;
 import mcjty.rftoolsbuilder.modules.mover.sound.MoverSoundController;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
+import mcjty.rftoolsbuilder.tools.BuilderSerialization;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
@@ -41,24 +51,22 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import org.jetbrains.annotations.Nullable;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.lib.container.SlotDefinition.specific;
+import static mcjty.lib.setup.Registration.ITEM_INVENTORY;
 
 public class MoverTileEntity extends TickingTileEntity {
 
@@ -124,8 +132,8 @@ public class MoverTileEntity extends TickingTileEntity {
     // Neighbouring movers
     private final Map<Direction, BlockPos> network = new EnumMap<>(Direction.class);
 
-    public static BaseBlock createBlock() {
-        return new BaseBlock(new BlockBuilder()
+    public static BaseBlock createBlock(BlockBehaviour.Properties properties) {
+        return new BaseBlock(new BlockBuilder().properties(RegistryProperties.block(properties))
                 .tileEntitySupplier(MoverTileEntity::new)
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .manualEntry(ManualHelper.create("rftoolsbuilder:mover/mover"))
@@ -320,28 +328,26 @@ public class MoverTileEntity extends TickingTileEntity {
                 logic.tryMoveVehicleClientEntities(partialTicks);
 
             }, this::isMoverThere);
-            DelayedRenderer.addRender(worldPosition, (poseStack, cameraVec, renderType) -> {
-                MoverRenderer.delayedRenderer(this, vehicle, poseStack, cameraVec, renderType);
-            }, this::isMoverThere);
+            MoverRenderer.addMover(this, vehicle);
         } else if (renderCopyTimer > 0) {
             renderCopyTimer--;
         }
     }
 
     @NotNull
-    private Boolean isMoverThere(Level level, BlockPos pos) {
-        if (level.getBlockEntity(pos) instanceof MoverTileEntity mover) {
+    public Boolean isMoverThere(Level level, BlockPos pos) {
+        if (level == this.level && level.getBlockEntity(pos) == this) {
             // renderCopyTimer is used to 'linger' the rendering to avoid flickering
             if (renderCopyTimer > 0) {
                 return true;
             }
-            return !mover.getCard().isEmpty();
+            return !getCard().isEmpty();
         }
         return false;
     }
 
 
-    @Nonnull
+    @NotNull
     public Map<BlockPos, MoverTileEntity> traverseAndCollect() {
         Map<BlockPos, MoverTileEntity> alreadyHandled = new HashMap<>();
         alreadyHandled.put(worldPosition, this);
@@ -714,35 +720,41 @@ public class MoverTileEntity extends TickingTileEntity {
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        CompoundTag tag = input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        HolderLookup.Provider provider = input.lookup();
+
         items.load(tag, "items", provider);
 
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             if (tag.contains(direction.name())) {
-                NbtUtils.readBlockPos(tag, direction.name()).ifPresent(p -> {
+                tag.read(direction.name(), BlockPos.CODEC).ifPresent(p -> {
                     addConnection(direction, p);
                 });
             }
         }
         logic.load(tag);
-        int[] controller = tag.getIntArray("controller");
+        int[] controller = tag.getIntArray("controller").orElseGet(() -> new int[0]);
         if (controller.length >= 3) {
             this.controller = new BlockPos(controller[0], controller[1], controller[2]);
         } else {
             this.controller = null;
         }
-        offset = new BlockPos(tag.getInt("offsetX"), tag.getInt("offsetY"), tag.getInt("offsetZ"));
+        offset = new BlockPos(tag.getIntOr("offsetX", 0), tag.getIntOr("offsetY", 0), tag.getIntOr("offsetZ", 0));
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        CompoundTag tag = new CompoundTag();
+        HolderLookup.Provider provider = level != null ? level.registryAccess() : RegistryAccess.EMPTY;
+
         items.save(tag, "items", provider);
 
         for (Direction direction : OrientationTools.DIRECTION_VALUES) {
             if (network.containsKey(direction)) {
-                tag.put(direction.name(), NbtUtils.writeBlockPos(network.get(direction)));
+                tag.put(direction.name(), BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, network.get(direction)).getOrThrow());
             }
         }
         logic.save(tag);
@@ -752,12 +764,13 @@ public class MoverTileEntity extends TickingTileEntity {
         tag.putInt("offsetX", offset.getX());
         tag.putInt("offsetY", offset.getY());
         tag.putInt("offsetZ", offset.getZ());
+        output.store(MapCodec.assumeMapUnsafe(CompoundTag.CODEC), tag);
     }
 
     @Override
-    protected void applyImplicitComponents(DataComponentInput input) {
+    protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        items.applyImplicitComponents(input.get(Registration.ITEM_INVENTORY));
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
         MoverData moverData = input.get(MoverModule.ITEM_MOVER_DATA);
         if (moverData != null) {
             setData(MoverModule.MOVER_DATA, moverData);
@@ -776,7 +789,7 @@ public class MoverTileEntity extends TickingTileEntity {
         ItemStack card = items.getStackInSlot(SLOT_VEHICLE_CARD);
         if (!card.isEmpty()) {
             CompoundTag tag = new CompoundTag();
-            Tag tg = card.save(provider, tag);
+            Tag tg = BuilderSerialization.saveItem(card, provider);
             tagCompound.put("card", tg);
         }
         logic.saveClientDataToNBT(tagCompound);
@@ -790,16 +803,16 @@ public class MoverTileEntity extends TickingTileEntity {
 
     @Override
     public void loadClientDataFromNBT(CompoundTag tagCompound, HolderLookup.Provider provider) {
-        CompoundTag tag = tagCompound.getCompound("card");
-        items.setStackInSlot(SLOT_VEHICLE_CARD, ItemStack.parseOptional(provider, tag));
+        CompoundTag tag = tagCompound.getCompoundOrEmpty("card");
+        items.setStackInSlot(SLOT_VEHICLE_CARD, BuilderSerialization.loadItem(provider, tag));
         logic.loadClientDataFromNBT(tagCompound);
-        int[] controller = tagCompound.getIntArray("controller");
+        int[] controller = tagCompound.getIntArray("controller").orElseGet(() -> new int[0]);
         if (controller.length >= 3) {
             this.controller = new BlockPos(controller[0], controller[1], controller[2]);
         } else {
             this.controller = null;
         }
-        offset = new BlockPos(tagCompound.getInt("offsetX"), tagCompound.getInt("offsetY"), tagCompound.getInt("offsetZ"));
+        offset = new BlockPos(tagCompound.getIntOr("offsetX", 0), tagCompound.getIntOr("offsetY", 0), tagCompound.getIntOr("offsetZ", 0));
     }
 
     public void setOffset(int x, int y, int z) {

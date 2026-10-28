@@ -1,7 +1,9 @@
 {
-  "parent": "minecraft:block/cube_all",
-  "render_type": "minecraft:translucent",
+  "parent": "rftoolsbuilder:block/support_block",
   "textures": {
-    "all": "rftoolsbuilder:block/supportblock"
+    "all": {
+      "force_translucent": true,
+      "sprite": "rftoolsbuilder:block/supportblock"
+    }
   }
 }

@@ -1,5 +1,7 @@
 package mcjty.rftoolsbuilder.modules.builder.blocks;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
@@ -7,16 +9,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.TransparentBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-public class SupportBlock extends Block {
+public class SupportBlock extends TransparentBlock {
 
     public enum SupportStatus implements StringRepresentable {
         STATUS_OK("ok"),
@@ -43,7 +44,7 @@ public class SupportBlock extends Block {
             return name;
         }
 
-        @Nonnull
+        @NotNull
         @Override
         public String getSerializedName() {
             return name;
@@ -52,13 +53,13 @@ public class SupportBlock extends Block {
 
     public static final EnumProperty<SupportStatus> STATUS = EnumProperty.create("status", SupportStatus.class);
 
-    public SupportBlock() {
-        super(Properties.of().replaceable().noOcclusion().isRedstoneConductor((state, world, pos) -> false));
+    public SupportBlock(BlockBehaviour.Properties properties) {
+        super(properties.replaceable().noOcclusion().isRedstoneConductor((state, world, pos) -> false));
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult result) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             // Find all connected blocks and remove them.
             Deque<BlockPos> todo = new ArrayDeque<>();
             todo.add(pos);
@@ -85,26 +86,6 @@ public class SupportBlock extends Block {
             }
         }
     }
-
-    // @todo 1.14
-//    @SideOnly(Side.CLIENT)
-//    @Override
-//    public boolean shouldSideBeRendered(BlockState blockState, IBlockReader blockAccess, BlockPos pos, Direction side) {
-//        BlockState state = blockAccess.getBlockState(pos);
-//        Block block = state.getBlock();
-//        BlockState state2 = blockAccess.getBlockState(pos.offset(side));
-//        Block block2 = state2.getBlock();
-//        if (block.getMetaFromState(state) != block2.getMetaFromState(state2)) {
-//            return true;
-//        }
-//
-//        if (block2 == this) {
-//            return false;
-//        }
-//
-//        return block2 != this && super.shouldSideBeRendered(blockState, blockAccess, pos, side);
-//    }
-
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

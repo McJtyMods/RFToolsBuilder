@@ -3,7 +3,7 @@ package mcjty.rftoolsbuilder.compat.rftoolsutility;
 import mcjty.rftoolsbase.api.screens.IScreenModuleRegistry;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleControlScreenModule;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 public class RFToolsSupport {

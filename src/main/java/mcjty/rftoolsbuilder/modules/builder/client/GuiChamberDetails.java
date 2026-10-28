@@ -1,5 +1,8 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.RenderHelper;
 import mcjty.lib.gui.GuiItemScreen;
@@ -7,25 +10,23 @@ import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.gui.Window;
 import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.widgets.*;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.setup.CommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import mcjty.rftoolsbase.tools.ManualHelper;
+import mcjty.rftoolsbuilder.tools.BuilderSerialization;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static mcjty.lib.gui.widgets.Widgets.*;
 
@@ -104,7 +105,7 @@ public class GuiChamberDetails extends GuiItemScreen {
             if (stacks.containsKey(bm)) {
                 stack = stacks.get(bm);
             } else {
-                stack = bm.getBlock().getCloneItemStack(Minecraft.getInstance().level, BlockPos.ZERO, bm);
+                stack = bm.getBlock().getCloneItemStack(Minecraft.getInstance().level, BlockPos.ZERO, bm, false, null);
                 if (stack.isEmpty()) {
                     stack = new ItemStack(bm.getBlock(), 0);
                 }
@@ -132,7 +133,6 @@ public class GuiChamberDetails extends GuiItemScreen {
         }
 
         int totalCostEntities = 0;
-        RenderHelper.rot += .5f;
         for (Map.Entry<String, Integer> entry : entities.entrySet()) {
             String id = entry.getKey();
             int count = entry.getValue();
@@ -143,10 +143,10 @@ public class GuiChamberDetails extends GuiItemScreen {
             Entity entity = null;
             if (realEntities.containsKey(id)) {
                 CompoundTag tag = realEntities.get(id);
-                EntityType<?> value = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
+                EntityType<?> value = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse(id));
 
-                entity = value.create(minecraft.level);
-                entity.load(tag);
+                entity = value.create(minecraft.level, EntitySpawnReason.LOAD);
+                entity.load(BuilderSerialization.input(tag, minecraft.level.registryAccess()));
                 entityName = entity.getDisplayName().getString();
                 if (entity instanceof ItemEntity entityItem) {
                     if (!entityItem.getItem().isEmpty()) {
@@ -155,8 +155,8 @@ public class GuiChamberDetails extends GuiItemScreen {
                     }
                 }
             } else {
-                EntityType<?> value = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
-                entity = value.create(minecraft.level);
+                EntityType<?> value = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse(id));
+                entity = value.create(minecraft.level, EntitySpawnReason.LOAD);
                 entityName = entity.getDisplayName().getString();
             }
 
@@ -189,12 +189,12 @@ public class GuiChamberDetails extends GuiItemScreen {
     }
 
     @Override
-    protected void renderInternal(GuiGraphics graphics, int pMouseX, int pMouseY, float partialTick) {
+    protected void renderInternal(GuiGraphicsExtractor graphics, int pMouseX, int pMouseY, float partialTick) {
         populateLists();
         drawWindow(graphics, pMouseX, pMouseY, partialTick);
     }
 
     public static void open() {
-        Minecraft.getInstance().setScreen(new GuiChamberDetails());
+        Minecraft.getInstance().gui.setScreen(new GuiChamberDetails());
     }
 }

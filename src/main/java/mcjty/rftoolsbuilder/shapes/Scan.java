@@ -89,21 +89,21 @@ public class Scan {
     }
 
     public void readFromNBT(CompoundTag tagCompound) {
-        dirtyCounter = tagCompound.getInt("dirty");
+        dirtyCounter = tagCompound.getIntOr("dirty", 0);
     }
 
     public void readFromNBTExternal(CompoundTag tagCompound, HolderLookup.Provider provider) {
-        ListTag list = tagCompound.getList("scanpal", Tag.TAG_COMPOUND);
+        ListTag list = tagCompound.getListOrEmpty("scanpal");
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag tc = list.getCompound(i);
+            CompoundTag tc = list.getCompoundOrEmpty(i);
             BlockState state = NbtUtils.readBlockState(provider.lookupOrThrow(Registries.BLOCK), tc);
             if (state == null) {
                 state = Blocks.STONE.defaultBlockState();
             }
             materialPalette.add(state);
         }
-        rledata = tagCompound.getByteArray("data");
-        dataDim = new BlockPos(tagCompound.getInt("scandimx"), tagCompound.getInt("scandimy"), tagCompound.getInt("scandimz"));
-        dataOffset = new BlockPos(tagCompound.getInt("scanoffx"), tagCompound.getInt("scanoffy"), tagCompound.getInt("scanoffz"));
+        rledata = tagCompound.getByteArray("data").orElseGet(() -> new byte[0]);
+        dataDim = new BlockPos(tagCompound.getIntOr("scandimx", 0), tagCompound.getIntOr("scandimy", 0), tagCompound.getIntOr("scandimz", 0));
+        dataOffset = new BlockPos(tagCompound.getIntOr("scanoffx", 0), tagCompound.getIntOr("scanoffy", 0), tagCompound.getIntOr("scanoffz", 0));
     }
 }

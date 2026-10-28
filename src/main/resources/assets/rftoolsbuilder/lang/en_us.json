@@ -44,6 +44,7 @@
   "item.rftoolsbuilder.vehicle_status_module": "Vehicle Status Module",
   "itemGroup.rftoolsbuilder": "RFTools Builder",
 
+  "key.category.rftoolsbuilder.keys": "RFTools Builder",
   "key.unmountVehicle": "Unmount Vehicle",
 
   "message.rftoolsbuilder.shiftmessage": "<Press Shift>",

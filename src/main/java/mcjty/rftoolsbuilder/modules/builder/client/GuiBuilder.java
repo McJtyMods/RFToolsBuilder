@@ -6,6 +6,8 @@ import mcjty.lib.gui.Window;
 import mcjty.lib.gui.widgets.Button;
 import mcjty.lib.gui.widgets.EnergyBar;
 import mcjty.lib.gui.widgets.ImageChoiceLabel;
+import mcjty.lib.typed.TypedMap;
+import mcjty.lib.varia.CapabilityTools;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.AnchorMode;
@@ -14,16 +16,15 @@ import mcjty.rftoolsbuilder.modules.builder.data.BuilderData;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenCardGui;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.items.IItemHandler;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity.SLOT_TAB;
 import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity.getCurrentLevelClientSide;
@@ -44,7 +45,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
 
     @Override
     public void init() {
-        window = new Window(this, getBE(), ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/builder.gui"));
+        window = new Window(this, getBE(), Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/builder.gui"));
         super.init();
 
         initializeFields();
@@ -76,7 +77,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         currentLevel.text("Y: " + (cury == -1 ? "stop" : cury));
 
         BuilderTileEntity tileEntity = getBE();
-        IItemHandler capability = this.minecraft.level.getCapability(Capabilities.ItemHandler.BLOCK, tileEntity.getBlockPos(), null);
+        IItemHandler capability = CapabilityTools.itemHandler(this.minecraft.level.getCapability(Capabilities.Item.BLOCK, tileEntity.getBlockPos(), null));
         ItemStack card = capability == null ? ItemStack.EMPTY : capability.getStackInSlot(SLOT_TAB);
         if (card.isEmpty()) {
             window.setFlag("!validcard");
@@ -104,7 +105,8 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         updateAnchorSettings(AnchorMode.values()[index]);
         BuilderData data = getBE().getData(BuilderModule.BUILDER_DATA.get()).withAnchor(AnchorMode.values()[index]);
         getBE().setData(BuilderModule.BUILDER_DATA.get(), data);
-        window.syncDataToServer(BuilderModule.BUILDER_DATA.get(), getBE());
+        window.sendServerCommand(BuilderTileEntity.CMD_ANCHOR,
+                TypedMap.builder().put(BuilderTileEntity.PARAM_ANCHOR, index).build());
     }
 
     private void updateAnchorSettings(AnchorMode index) {
@@ -119,13 +121,13 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
 
     private boolean isShapeCard() {
         BuilderTileEntity tileEntity = getBE();
-        IItemHandler capability = tileEntity.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, tileEntity.getBlockPos(), null);
+        IItemHandler capability = CapabilityTools.itemHandler(tileEntity.getLevel().getCapability(Capabilities.Item.BLOCK, tileEntity.getBlockPos(), null));
         ItemStack card = capability == null ? ItemStack.EMPTY : capability.getStackInSlot(SLOT_TAB);
         return !card.isEmpty() && card.getItem() instanceof ShapeCardItem;
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(@NotNull GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
         updateFields();
         drawWindow(graphics, partialTicks, mouseX, mouseY);
     }

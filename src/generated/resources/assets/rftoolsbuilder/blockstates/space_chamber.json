@@ -1,6 +1,21 @@
 {
   "variants": {
-    "": {
+    "facing=down": {
+      "model": "rftoolsbuilder:block/space_chamber"
+    },
+    "facing=east": {
+      "model": "rftoolsbuilder:block/space_chamber"
+    },
+    "facing=north": {
+      "model": "rftoolsbuilder:block/space_chamber"
+    },
+    "facing=south": {
+      "model": "rftoolsbuilder:block/space_chamber"
+    },
+    "facing=up": {
+      "model": "rftoolsbuilder:block/space_chamber"
+    },
+    "facing=west": {
       "model": "rftoolsbuilder:block/space_chamber"
     }
   }

@@ -1,16 +1,9 @@
 {
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
-    "T": {
-      "item": "minecraft:redstone_torch"
-    },
-    "X": {
-      "item": "rftoolsbuilder:space_chamber"
-    },
-    "o": {
-      "tag": "c:ender_pearls"
-    }
+    "T": "minecraft:redstone_torch",
+    "X": "rftoolsbuilder:space_chamber",
+    "o": "#c:ender_pearls"
   },
   "pattern": [
     " o ",
@@ -18,7 +11,6 @@
     " o "
   ],
   "result": {
-    "count": 1,
     "id": "rftoolsbuilder:space_chamber_controller"
   }
 }

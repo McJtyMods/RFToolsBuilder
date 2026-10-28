@@ -9,7 +9,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 /// ID to identify a shape for a player/projector/scanner/...
@@ -41,7 +41,7 @@ public final class ShapeID {
         ResourceKey<Level> dim = Level.OVERWORLD;
         BlockPos p = null;
         if (buf.readBoolean()) {
-            dim = LevelTools.getId(buf.readResourceLocation());
+            dim = LevelTools.getId(buf.readIdentifier());
             p = buf.readBlockPos();
         }
         scanId = buf.readInt();
@@ -56,7 +56,7 @@ public final class ShapeID {
             buf.writeBoolean(false);
         } else {
             buf.writeBoolean(true);
-            buf.writeResourceLocation(getDimension().location());
+            buf.writeIdentifier(getDimension().identifier());
             buf.writeBlockPos(getPos());
         }
         buf.writeInt(scanId);

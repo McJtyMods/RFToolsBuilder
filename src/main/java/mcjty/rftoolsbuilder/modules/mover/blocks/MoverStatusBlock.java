@@ -2,25 +2,26 @@ package mcjty.rftoolsbuilder.modules.mover.blocks;
 
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.builder.BlockBuilder;
-import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbase.tools.ManualHelper;
+import mcjty.rftoolsbase.tools.RegistryProperties;
+import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.rftoolsbuilder.modules.mover.blocks.MoverControlBlock.HORIZ_FACING;
 
 public class MoverStatusBlock extends BaseBlock {
 
-    public MoverStatusBlock() {
-        super(new BlockBuilder()
+    public MoverStatusBlock(BlockBehaviour.Properties properties) {
+        super(new BlockBuilder().properties(RegistryProperties.block(properties))
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .manualEntry(ManualHelper.create("rftoolsbuilder:mover/vehicle_modules"))
                 .info(key("message.rftoolsbuilder.shiftmessage"))

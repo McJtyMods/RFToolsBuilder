@@ -1,5 +1,9 @@
 package mcjty.rftoolsbuilder.modules.mover.blocks;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import mcjty.lib.varia.SafeClientTools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,18 +18,14 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class InvisibleMoverBlock extends Block implements EntityBlock {
 
@@ -36,8 +36,8 @@ public class InvisibleMoverBlock extends Block implements EntityBlock {
     // Same data indexed by the position of the mover
     private final Map<BlockPos, List<MD>> dataByMover = new HashMap<>();
 
-    public InvisibleMoverBlock() {
-        super(Properties.of().noLootTable().strength(-1.0F, 3600000.0F).noOcclusion().randomTicks());
+    public InvisibleMoverBlock(BlockBehaviour.Properties properties) {
+        super(properties.noLootTable().strength(-1.0F, 3600000.0F).noOcclusion().randomTicks());
     }
 
     @Nullable
@@ -96,12 +96,12 @@ public class InvisibleMoverBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public void attack(@Nonnull BlockState state, Level level, @Nonnull BlockPos pos, @Nonnull Player player) {
+    public void attack(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player) {
         activate(level, pos);
     }
 
     private void activate(Level level, BlockPos pos) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             MD data = dataByControl.get(pos);
             if (data != null) {
                 HitResult mouseOver = SafeClientTools.getClientMouseOver();

@@ -1,22 +1,23 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import mcjty.lib.varia.ComponentFactory;
 import mcjty.lib.varia.LevelTools;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.worlddata.AbstractWorldData;
+import mcjty.rftoolsbase.tools.LegacyWorldData;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
-
-import javax.annotation.Nonnull;
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
+import org.jetbrains.annotations.NotNull;
 
 public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
 
@@ -34,15 +35,15 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
 
     public ScanDataManager(CompoundTag tag) {
         scans.clear();
-        ListTag lst = tag.getList("scans", Tag.TAG_COMPOUND);
+        ListTag lst = tag.getListOrEmpty("scans");
         for (int i = 0; i < lst.size(); i++) {
-            CompoundTag tc = lst.getCompound(i);
-            int id = tc.getInt("scan");
+            CompoundTag tc = lst.getCompoundOrEmpty(i);
+            int id = tc.getIntOr("scan", 0);
             Scan scan = new Scan();
             scan.readFromNBT(tc);
             scans.put(id, scan);
         }
-        lastId = tag.getInt("lastId");
+        lastId = tag.getIntOr("lastId", 0);
     }
 
     public void save(Level w, int scanId) {
@@ -77,10 +78,11 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
     }
 
     public static ScanDataManager get(Level world) {
-        return getData(world, ScanDataManager::new, ScanDataManager::new, SCANDATA_NETWORK_NAME);
+        return LegacyWorldData.get(world, ScanDataManager::new, ScanDataManager::new,
+                "rftoolsbuilder:scans", SCANDATA_NETWORK_NAME);
     }
 
-    @Nonnull
+    @NotNull
     public Scan getOrCreateScan(int id) {
         Scan scan = scans.get(id);
         if (scan == null) {
@@ -90,7 +92,7 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
         return scan;
     }
 
-    @Nonnull
+    @NotNull
     public Scan loadScan(Level w, int id) {
         Level world = LevelTools.getOverworld(w);
         Scan scan = scans.get(id);
@@ -114,18 +116,18 @@ public class ScanDataManager extends AbstractWorldData<ScanDataManager> {
     }
 
     public static void listScans(Player sender) {
-        ScanDataManager scans = get(sender.getCommandSenderWorld());
+        ScanDataManager scans = get(sender.level());
         for (Map.Entry<Integer, Scan> entry : scans.scans.entrySet()) {
             Integer scanid = entry.getKey();
-            scans.loadScan(sender.getCommandSenderWorld(), scanid);
+            scans.loadScan(sender.level(), scanid);
             Scan scan = entry.getValue();
             BlockPos dim = scan.getDataDim();
             if (dim == null) {
-                sender.sendSystemMessage(ComponentFactory.literal(
+                sender.sendSystemMessage(Component.literal(
                         ChatFormatting.YELLOW + "Scan: " + ChatFormatting.WHITE + scanid +
                                 ChatFormatting.RED + "   Invalid"));
             } else {
-                sender.sendSystemMessage(ComponentFactory.literal(
+                sender.sendSystemMessage(Component.literal(
                         ChatFormatting.YELLOW + "Scan: " + ChatFormatting.WHITE + scanid +
                                 ChatFormatting.YELLOW + "   Dim: " + ChatFormatting.WHITE + dim.getX() + "," + dim.getY() + "," + dim.getZ() +
                                 ChatFormatting.YELLOW + "   Size: " + ChatFormatting.WHITE + scan.getRledata().length + " bytes"));

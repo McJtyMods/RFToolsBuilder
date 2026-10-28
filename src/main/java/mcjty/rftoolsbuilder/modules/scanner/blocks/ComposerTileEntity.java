@@ -1,5 +1,9 @@
 package mcjty.rftoolsbuilder.modules.scanner.blocks;
 
+import com.mojang.serialization.MapCodec;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.ServerCommand;
@@ -12,6 +16,8 @@ import mcjty.lib.tileentity.TickingTileEntity;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
+import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
+import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData;
 import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData.ShapeCardChild;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
@@ -21,22 +27,24 @@ import mcjty.rftoolsbuilder.shapes.ShapeOperation;
 import mcjty.rftoolsbuilder.shapes.ShapeRotation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.common.util.Lazy;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
+import org.jetbrains.annotations.NotNull;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.container.SlotDefinition.specific;
+import static mcjty.lib.setup.Registration.ITEM_INVENTORY;
 
 public class ComposerTileEntity extends TickingTileEntity {
 
@@ -142,8 +150,8 @@ public class ComposerTileEntity extends TickingTileEntity {
             ShapeCardItem.setModifier(childStack, modifiers[i]);
             ShapeCardItem.setGhostMaterial(childStack, items.getStackInSlot(SLOT_GHOSTS + i));
             children.add(new ShapeCardChild(childStack, childStack.getOrDefault(
-                    mcjty.rftoolsbuilder.modules.builder.BuilderModule.ITEM_SHAPECARD_DATA.get(),
-                    mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData.DEFAULT).modifier(),
+                    BuilderModule.ITEM_SHAPECARD_DATA.get(),
+                    ShapeCardData.DEFAULT).modifier(),
                     ShapeCardItem.getGhostBlock(childStack)));
         }
         ShapeCardItem.setChildren(output, children);
@@ -154,28 +162,34 @@ public class ComposerTileEntity extends TickingTileEntity {
     }
 
     @Override
-    protected void loadAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        CompoundTag tag = input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        HolderLookup.Provider provider = input.lookup();
+
         items.load(tag, "items", provider);
-        ListTag list = tag.getList("ops", net.minecraft.nbt.Tag.TAG_COMPOUND);
+        ListTag list = tag.getListOrEmpty("ops");
         for (int i = 0; i < Math.min(SLOT_COUNT, list.size()); i++) {
-            CompoundTag tc = list.getCompound(i);
-            ShapeOperation operation = ShapeOperation.getByName(tc.getString("mod_op"));
+            CompoundTag tc = list.getCompoundOrEmpty(i);
+            ShapeOperation operation = ShapeOperation.getByName(tc.getStringOr("mod_op", ""));
             if (operation == null) {
                 operation = ShapeOperation.UNION;
             }
-            ShapeRotation rotation = ShapeRotation.getByName(tc.getString("mod_rot"));
+            ShapeRotation rotation = ShapeRotation.getByName(tc.getStringOr("mod_rot", ""));
             if (rotation == null) {
                 rotation = ShapeRotation.NONE;
             }
-            modifiers[i] = new ShapeModifier(operation, tc.getBoolean("mod_flipy"), rotation);
+            modifiers[i] = new ShapeModifier(operation, tc.getBooleanOr("mod_flipy", false), rotation);
         }
         composeDirty = true;
     }
 
     @Override
-    protected void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        CompoundTag tag = new CompoundTag();
+        HolderLookup.Provider provider = level != null ? level.registryAccess() : RegistryAccess.EMPTY;
+
         items.save(tag, "items", provider);
         ListTag list = new ListTag();
         for (ShapeModifier modifier : modifiers) {
@@ -186,12 +200,13 @@ public class ComposerTileEntity extends TickingTileEntity {
             list.add(tc);
         }
         tag.put("ops", list);
+        output.store(MapCodec.assumeMapUnsafe(CompoundTag.CODEC), tag);
     }
 
     @Override
-    protected void applyImplicitComponents(DataComponentInput input) {
+    protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        items.applyImplicitComponents(input.get(mcjty.lib.setup.Registration.ITEM_INVENTORY));
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
     }
 
     @Override
@@ -215,18 +230,18 @@ public class ComposerTileEntity extends TickingTileEntity {
 
     @Override
     public void loadClientDataFromNBT(CompoundTag tag, HolderLookup.Provider provider) {
-        ListTag list = tag.getList("ops", net.minecraft.nbt.Tag.TAG_COMPOUND);
+        ListTag list = tag.getListOrEmpty("ops");
         for (int i = 0; i < Math.min(SLOT_COUNT, list.size()); i++) {
-            CompoundTag tc = list.getCompound(i);
-            ShapeOperation operation = ShapeOperation.getByName(tc.getString("mod_op"));
+            CompoundTag tc = list.getCompoundOrEmpty(i);
+            ShapeOperation operation = ShapeOperation.getByName(tc.getStringOr("mod_op", ""));
             if (operation == null) {
                 operation = ShapeOperation.UNION;
             }
-            ShapeRotation rotation = ShapeRotation.getByName(tc.getString("mod_rot"));
+            ShapeRotation rotation = ShapeRotation.getByName(tc.getStringOr("mod_rot", ""));
             if (rotation == null) {
                 rotation = ShapeRotation.NONE;
             }
-            modifiers[i] = new ShapeModifier(operation, tc.getBoolean("mod_flipy"), rotation);
+            modifiers[i] = new ShapeModifier(operation, tc.getBooleanOr("mod_flipy", false), rotation);
         }
     }
 
@@ -251,5 +266,16 @@ public class ComposerTileEntity extends TickingTileEntity {
 
     public GenericItemHandler getItems() {
         return items;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null && !level.isClientSide()) {
+            var handler = getItems();
+            for (int slot = 0; slot < handler.getSlots(); slot++) {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), handler.getStackInSlot(slot));
+            }
+        }
+        super.preRemoveSideEffects(pos, state);
     }
 }

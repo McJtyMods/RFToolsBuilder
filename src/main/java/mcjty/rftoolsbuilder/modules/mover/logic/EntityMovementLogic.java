@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.mover.logic;
 
+import java.util.*;
 import mcjty.lib.varia.SafeClientTools;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
@@ -7,6 +8,7 @@ import mcjty.rftoolsbuilder.modules.mover.network.PacketGrabbedEntitiesToClient;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -18,9 +20,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
-
-import javax.annotation.Nonnull;
-import java.util.*;
 
 public class EntityMovementLogic {
 
@@ -231,8 +230,8 @@ public class EntityMovementLogic {
         Level level = mover.getLevel();
         BlockPos worldPosition = mover.getBlockPos();
         PacketGrabbedEntitiesToClient packet = PacketGrabbedEntitiesToClient.create(worldPosition, grabbedEntities.keySet());
-        ChunkPos cp = new ChunkPos(worldPosition);
-        RFToolsBuilderMessages.sendToChunk(packet, level.getChunk(cp.x, cp.z));
+        ChunkPos cp = new ChunkPos(worldPosition.getX() >> 4, worldPosition.getZ() >> 4);
+        RFToolsBuilderMessages.sendToChunk(packet, level.getChunk(cp.x(), cp.z()));
     }
 
     private AABB getVehicleAABB() {
@@ -341,35 +340,35 @@ public class EntityMovementLogic {
 
     public void load(CompoundTag tagCompound) {
         if (tagCompound.contains("source")) {
-            source = NbtUtils.readBlockPos(tagCompound, "source").orElse(null);
+            source = tagCompound.read("source", BlockPos.CODEC).orElse(null);
         } else {
             source = null;
         }
         if (tagCompound.contains("destination")) {
-            destination = NbtUtils.readBlockPos(tagCompound, "destination").orElse(null);
+            destination = tagCompound.read("destination", BlockPos.CODEC).orElse(null);
         } else {
             destination = null;
         }
-        starttick = tagCompound.getLong("starttick");
-        totalDist = tagCompound.getFloat("totalDist");
+        starttick = tagCompound.getLongOr("starttick", 0L);
+        totalDist = tagCompound.getFloatOr("totalDist", 0.0f);
     }
 
     public void loadClientDataFromNBT(CompoundTag tagCompound) {
         if (tagCompound.contains("destination")) {
-            destination = NbtUtils.readBlockPos(tagCompound, "destination").orElse(null);
+            destination = tagCompound.read("destination", BlockPos.CODEC).orElse(null);
         } else {
             destination = null;
         }
-        starttick = tagCompound.getLong("starttick");
-        totalDist = tagCompound.getFloat("totalDist");
+        starttick = tagCompound.getLongOr("starttick", 0L);
+        totalDist = tagCompound.getFloatOr("totalDist", 0.0f);
     }
 
-    public void save(@Nonnull CompoundTag tagCompound) {
+    public void save(@NotNull CompoundTag tagCompound) {
         if (source != null) {
-            tagCompound.put("source", NbtUtils.writeBlockPos(source));
+            tagCompound.put("source", BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, source).getOrThrow());
         }
         if (destination != null) {
-            tagCompound.put("destination", NbtUtils.writeBlockPos(destination));
+            tagCompound.put("destination", BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, destination).getOrThrow());
         }
         tagCompound.putLong("starttick", starttick);
         tagCompound.putFloat("totalDist", totalDist);
@@ -379,7 +378,7 @@ public class EntityMovementLogic {
         tagCompound.putLong("starttick", starttick);
         tagCompound.putFloat("totalDist", totalDist);
         if (destination != null) {
-            tagCompound.put("destination", NbtUtils.writeBlockPos(destination));
+            tagCompound.put("destination", BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, destination).getOrThrow());
         }
     }
 

@@ -1,21 +1,11 @@
 {
   "type": "mcjtylib:copy_components",
   "recipe": {
-    "type": "minecraft:crafting_shaped",
-    "category": "misc",
     "key": {
-      "M": {
-        "item": "rftoolsbuilder:shield_block3"
-      },
-      "O": {
-        "item": "minecraft:obsidian"
-      },
-      "n": {
-        "item": "minecraft:nether_star"
-      },
-      "s": {
-        "item": "rftoolsbase:dimensionalshard"
-      }
+      "M": "rftoolsbuilder:shield_block3",
+      "O": "minecraft:obsidian",
+      "n": "minecraft:nether_star",
+      "s": "rftoolsbase:dimensionalshard"
     },
     "pattern": [
       "nOs",
@@ -23,7 +13,6 @@
       "sOn"
     ],
     "result": {
-      "count": 1,
       "id": "rftoolsbuilder:shield_block4"
     }
   }

@@ -3,25 +3,25 @@ package mcjty.rftoolsbuilder.modules.mover;
 import mcjty.lib.datagen.BaseBlockStateProvider;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControlBlock;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
-import net.neoforged.neoforge.client.model.generators.ModelBuilder;
-import net.neoforged.neoforge.client.model.generators.ModelFile;
+import mcjty.lib.datagen.model.BlockModelBuilder;
+
+import mcjty.lib.datagen.model.ModelFile;
 
 import static mcjty.lib.datagen.BaseBlockStateProvider.RFTOOLSBASE_SIDE;
 import static mcjty.lib.datagen.BaseBlockStateProvider.RFTOOLSBASE_TOP;
-import static net.neoforged.neoforge.client.model.generators.ModelProvider.BLOCK_FOLDER;
+import static mcjty.lib.datagen.model.ModelProvider.BLOCK_FOLDER;
 
 public class DataGenHelper {
 
     public static void create24Model(BaseBlockStateProvider provider, Block block, String modelPrefix, String txt) {
-        ModelFile model0 = controlModuleBlock(provider, modelPrefix + "0", provider.modLoc(txt), 0, ModelBuilder.FaceRotation.ZERO);
-        ModelFile model90 = controlModuleBlock(provider, modelPrefix + "90", provider.modLoc(txt), 0, ModelBuilder.FaceRotation.CLOCKWISE_90);
-        ModelFile model180 = controlModuleBlock(provider, modelPrefix + "180", provider.modLoc(txt), 0, ModelBuilder.FaceRotation.UPSIDE_DOWN);
-        ModelFile model270 = controlModuleBlock(provider, modelPrefix + "270", provider.modLoc(txt), 0, ModelBuilder.FaceRotation.COUNTERCLOCKWISE_90);
+        ModelFile model0 = controlModuleBlock(provider, modelPrefix + "0", provider.modLoc(txt), 0, BlockModelBuilder.FaceRotation.ZERO);
+        ModelFile model90 = controlModuleBlock(provider, modelPrefix + "90", provider.modLoc(txt), 0, BlockModelBuilder.FaceRotation.CLOCKWISE_90);
+        ModelFile model180 = controlModuleBlock(provider, modelPrefix + "180", provider.modLoc(txt), 0, BlockModelBuilder.FaceRotation.UPSIDE_DOWN);
+        ModelFile model270 = controlModuleBlock(provider, modelPrefix + "270", provider.modLoc(txt), 0, BlockModelBuilder.FaceRotation.COUNTERCLOCKWISE_90);
         provider.orientedBlock(block, (blockState, bld) -> {
             ModelFile model = getModelOriented24(model0, model90, model180, model270, blockState);
             bld.modelFile(model);
@@ -53,7 +53,7 @@ public class DataGenHelper {
         };
     }
 
-    public static ModelFile controlModuleBlock(BaseBlockStateProvider provider, String modelName, ResourceLocation texture, int offset, ModelBuilder.FaceRotation faceRotation) {
+    public static ModelFile controlModuleBlock(BaseBlockStateProvider provider, String modelName, Identifier texture, int offset, BlockModelBuilder.FaceRotation faceRotation) {
         BlockModelBuilder model = provider.models().getBuilder(BLOCK_FOLDER + "/" + modelName)
                 .parent(provider.models().getExistingFile(provider.mcLoc("block")));
         model.element().from(0, 0, offset).to(16, 16, 16)

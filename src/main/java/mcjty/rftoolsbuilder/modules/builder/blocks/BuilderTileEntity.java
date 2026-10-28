@@ -1,6 +1,10 @@
 package mcjty.rftoolsbuilder.modules.builder.blocks;
 
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.api.infusable.DefaultInfusable;
 import mcjty.lib.api.infusable.IInfusable;
@@ -17,11 +21,14 @@ import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
 import mcjty.lib.setup.Registration;
 import mcjty.lib.tileentity.*;
+import mcjty.lib.typed.Key;
+import mcjty.lib.typed.Type;
 import mcjty.lib.typed.TypedMap;
 import mcjty.lib.varia.*;
 import mcjty.rftoolsbase.api.client.IHudSupport;
 import mcjty.rftoolsbase.modules.filter.items.FilterModuleItem;
 import mcjty.rftoolsbase.tools.ManualHelper;
+import mcjty.rftoolsbase.tools.RegistryProperties;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.BlockInformation;
@@ -36,20 +43,23 @@ import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.setup.ClientCommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.shapes.Shape;
+import mcjty.rftoolsbuilder.tools.BuilderSerialization;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.*;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -64,10 +74,13 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
@@ -78,6 +91,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.SpecialPlantable;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -86,17 +100,16 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.Pair;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.lib.setup.Registration.BASE_BE_DATA;
+import static mcjty.lib.setup.Registration.ITEM_ENERGY;
+import static mcjty.lib.setup.Registration.ITEM_INFUSABLE;
+import static mcjty.lib.setup.Registration.ITEM_INVENTORY;
 import static mcjty.rftoolsbase.modules.hud.Hud.COMMAND_GETHUDLOG;
 import static mcjty.rftoolsbuilder.modules.builder.blocks.AnchorMode.*;
 import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderMode.*;
@@ -106,7 +119,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     public static final int SLOT_TAB = 0;
     public static final int SLOT_FILTER = 1;
 
-    public static final ResourceLocation DONT_REMOVE_ME = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "dontremoveme");
+    public static final Identifier DONT_REMOVE_ME = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "dontremoveme");
     public static final TagKey<Block> DONT_REMOVE_ME_TAG = TagTools.createBlockTagKey(DONT_REMOVE_ME);
 
     public static final Lazy<ContainerFactory> CONTAINER_FACTORY = Lazy.of(() -> new ContainerFactory(2)
@@ -192,8 +205,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
 
-    public static BaseBlock createBlock() {
-        return new BaseBlock(new BlockBuilder()
+    public static BaseBlock createBlock(BlockBehaviour.Properties properties) {
+        return new BaseBlock(new BlockBuilder().properties(RegistryProperties.block(properties))
                 .tileEntitySupplier(BuilderTileEntity::new)
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
@@ -370,7 +383,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     public BuilderData clearSupportBlocks(BuilderData data) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             // Don't do anything on the client.
             return data;
         }
@@ -500,7 +513,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     public void setSupportMode(boolean supportMode) {
         BuilderData data = getData(BuilderModule.BUILDER_DATA);
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             if (supportMode) {
                 data = makeSupportBlocks(data);
             } else {
@@ -534,15 +547,17 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
         if (isShapeCard()) {
             // If there is a shape card we modify it for the new settings.
-            ItemStack shapeCard = items.getStackInSlot(SLOT_TAB);
+            ItemStack shapeCard = items.getStackInSlot(SLOT_TAB).copy();
             BlockPos dimension = ShapeCardItem.getDimension(shapeCard);
-            BlockPos minBox = positionBox(dimension);
+            BlockPos minBox = positionBox(dimension, data.anchor());
             int dx = dimension.getX();
             int dy = dimension.getY();
             int dz = dimension.getZ();
 
             BlockPos offset = new BlockPos(minBox.getX() + (int) Math.ceil(dx / 2), minBox.getY() + (int) Math.ceil(dy / 2), minBox.getZ() + (int) Math.ceil(dz / 2));
             ShapeCardItem.setOffset(shapeCard, offset.getX(), offset.getY(), offset.getZ());
+            items.setStackInSlot(SLOT_TAB, shapeCard);
+            data = calculateBoxShaped(data.withScan(null));
         }
 
         if (data.flags().supportMode() && !level.isClientSide()) {
@@ -552,7 +567,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     // Give a dimension, return a min coordinate of the box right in front of the builder
-    private BlockPos positionBox(BlockPos dimension) {
+    private BlockPos positionBox(BlockPos dimension, AnchorMode anchor) {
         BlockState state = level.getBlockState(getBlockPos());
         Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
         int spanX = dimension.getX();
@@ -561,7 +576,6 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         int x = 0;
         int y;
         int z = 0;
-        AnchorMode anchor = getAnchor();
         y = -((anchor == ANCHOR_NE || anchor == ANCHOR_NW) ? spanY - 1 : 0);
         switch (direction) {
             case SOUTH -> {
@@ -610,7 +624,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (o != n) {
             BuilderData data = getData(BuilderModule.BUILDER_DATA);
             if (hasLoopMode() || (n && data.scan() == null)) {
-                if (!level.isClientSide) {
+                if (!level.isClientSide()) {
                     data = restartScan(data);
                     setData(BuilderModule.BUILDER_DATA, data);
                 }
@@ -635,20 +649,20 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         AnchorMode anchor = data.anchor();
         switch (direction) {
             case SOUTH -> {
-                projDx = xCoord + Direction.NORTH.getNormal().getX() - minCorner.getX() - ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanX : 0);
-                projDz = zCoord + Direction.NORTH.getNormal().getZ() - minCorner.getZ() - spanZ;
+                projDx = xCoord + Direction.NORTH.getStepX() - minCorner.getX() - ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanX : 0);
+                projDz = zCoord + Direction.NORTH.getStepZ() - minCorner.getZ() - spanZ;
             }
             case NORTH -> {
-                projDx = xCoord + Direction.SOUTH.getNormal().getX() - minCorner.getX() - spanX + ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanX : 0);
-                projDz = zCoord + Direction.SOUTH.getNormal().getZ() - minCorner.getZ();
+                projDx = xCoord + Direction.SOUTH.getStepX() - minCorner.getX() - spanX + ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanX : 0);
+                projDz = zCoord + Direction.SOUTH.getStepZ() - minCorner.getZ();
             }
             case WEST -> {
-                projDx = xCoord + Direction.EAST.getNormal().getX() - minCorner.getX();
-                projDz = zCoord + Direction.EAST.getNormal().getZ() - minCorner.getZ() - ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanZ : 0);
+                projDx = xCoord + Direction.EAST.getStepX() - minCorner.getX();
+                projDz = zCoord + Direction.EAST.getStepZ() - minCorner.getZ() - ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanZ : 0);
             }
             case EAST -> {
-                projDx = xCoord + Direction.WEST.getNormal().getX() - minCorner.getX() - spanX;
-                projDz = zCoord + Direction.WEST.getNormal().getZ() - minCorner.getZ() - spanZ + ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanZ : 0);
+                projDx = xCoord + Direction.WEST.getStepX() - minCorner.getX() - spanX;
+                projDz = zCoord + Direction.WEST.getStepZ() - minCorner.getZ() - spanZ + ((anchor == ANCHOR_NE || anchor == ANCHOR_SE) ? spanZ : 0);
             }
             case DOWN, UP -> {
             }
@@ -760,7 +774,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             int z = data.scan().getZ();
             double sqradius = 30 * 30;
             for (ServerPlayer player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
-                if (Objects.equals(player.getCommandSenderWorld().dimension(), level.dimension())) {
+                if (Objects.equals(player.level().dimension(), level.dimension())) {
                     double d0 = x - player.getX();
                     double d1 = y - player.getY();
                     double d2 = z - player.getZ();
@@ -831,7 +845,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (bottles > 0) {
             if (insertItem(new ItemStack(Items.EXPERIENCE_BOTTLE, bottles)).isEmpty()) {
                 collectXP = collectXP % 7;
-                orb.kill();
+                orb.discard();
                 energyStorage.consumeEnergy(rfNeeded);
             } else {
                 collectXP = 0;
@@ -857,7 +871,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
         energyStorage.consumeEnergy(rfNeeded);
 
-        item.kill();
+        item.discard();
         stack = insertItem(stack);
         if (!stack.isEmpty()) {
             BlockPos position = item.blockPosition();
@@ -878,8 +892,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         BlockPos minCorner = ShapeCardItem.getMinCorner(getBlockPos(), dimension, offset);
         BlockPos maxCorner = ShapeCardItem.getMaxCorner(getBlockPos(), dimension, offset);
 
-        int minHeight = level.getMinBuildHeight();
-        int maxHeight = level.getMaxBuildHeight();
+        int minHeight = level.getMinY();
+        int maxHeight = level.getMaxY() + 1;
         if (minCorner.getY() < minHeight) {
             minCorner = new BlockPos(minCorner.getX(), minHeight, minCorner.getZ());
         } else if (minCorner.getY() > maxHeight) {
@@ -1133,7 +1147,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (!state.getBlock().canEntityDestroy(state, world, pos, player)) {
             return skip(data, "Cannot destroy!\nAre fake players\nallowed?");
         }
-        BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
+        BreakBlockEvent event = new BreakBlockEvent(world, pos, state, player);
         NeoForge.EVENT_BUS.post(event);
         if (event.isCanceled()) {
             return skip(data, "Break was canceled!");
@@ -1145,7 +1159,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (!state.getBlock().canEntityDestroy(state, world, pos, player)) {
             return false;
         }
-        BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
+        BreakBlockEvent event = new BreakBlockEvent(world, pos, state, player);
         NeoForge.EVENT_BUS.post(event);
         return !event.isCanceled();
     }
@@ -1155,17 +1169,17 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private static ItemStack getHarvesterTool(Level level, boolean silk, int fortune) {
-        Registry<Enchantment> enchantments = level.registryAccess().registryOrThrow(Registries.ENCHANTMENT);
+        Registry<Enchantment> enchantments = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
         if (silk) {
             if (TOOL_SILK == null || TOOL_SILK.isEmpty()) {
                 TOOL_SILK = new ItemStack(BuilderModule.SUPER_HARVESTING_TOOL.get());
-                TOOL_SILK.enchant(enchantments.getHolderOrThrow(Enchantments.SILK_TOUCH), 1);
+                TOOL_SILK.enchant(enchantments.getOrThrow(Enchantments.SILK_TOUCH), 1);
             }
             return TOOL_SILK;
         } else if (fortune > 0) {
             if (TOOL_FORTUNE == null || TOOL_FORTUNE.isEmpty()) {
                 TOOL_FORTUNE = new ItemStack(BuilderModule.SUPER_HARVESTING_TOOL.get());
-                TOOL_FORTUNE.enchant(enchantments.getHolderOrThrow(Enchantments.FORTUNE), fortune);
+                TOOL_FORTUNE.enchant(enchantments.getOrThrow(Enchantments.FORTUNE), fortune);
             }
             return TOOL_FORTUNE;
 
@@ -1214,7 +1228,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                     if (filterCache.get() != null) {
                         boolean match;
                         try {
-                            match = filterCache.get().test(block.getCloneItemStack(level, srcPos, srcState));
+                            match = filterCache.get().test(block.getCloneItemStack(level, srcPos, srcState, false, null));
                         } catch (Exception e) {
                             // In case block.getItem() fails (like can happen for banner blocks because the getItem()
                             // for that fails on servers due to calling a client-side method)
@@ -1276,7 +1290,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
 
             Fluid fluid = stack.getFluid();
-            if (fluid.getFluidType().isVaporizedOnPlacement(level, srcPos, stack) && level.dimensionType().ultraWarm()) {
+            if (fluid.getFluidType().isVaporizedOnPlacement(level, srcPos, stack) && level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, srcPos)) {
                 fluid.getFluidType().onVaporize(null, level, srcPos, stack);
             } else {
                 // We assume here the liquid is placable.
@@ -1378,7 +1392,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
                     if (filterCache.get() != null) {
-                        boolean match = filterCache.get().test(block.getCloneItemStack(level, srcPos, srcState));
+                        boolean match = filterCache.get().test(block.getCloneItemStack(level, srcPos, srcState, false, null));
                         if (!match) {
                             energyStorage.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get()));
                             return skip(data);   // Skip this
@@ -1452,7 +1466,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
         } else {
             Block block = state.getBlock();
-            ItemStack srcItem = block.getCloneItemStack(srcWorld, srcPos, state);
+            ItemStack srcItem = block.getCloneItemStack(srcWorld, srcPos, state, false, null);
             if (isPlacable(srcItem)) {
                 for (int i = 0; i < inventory.getSlots(); i++) {
                     ItemStack stack = inventory.getStackInSlot(i);
@@ -1500,7 +1514,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private boolean checkFluidTank(FluidStack fluidStack, BlockPos up, Direction side) {
         BlockEntity te = level.getBlockEntity(up);
         if (te != null) {
-            IFluidHandler h = level.getCapability(Capabilities.FluidHandler.BLOCK, up, side);
+            IFluidHandler h = CapabilityTools.fluidHandler(level.getCapability(Capabilities.Fluid.BLOCK, up, side));
             if (h != null) {
                 int amount = h.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
                 if (amount == 1000) {
@@ -1524,13 +1538,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             couldntHandle.copyList(items);
             return;
         }
-        IItemHandler capability = te.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, te.getBlockPos(), direction);
+        IItemHandler capability = CapabilityTools.itemHandler(te.getLevel().getCapability(Capabilities.Item.BLOCK, te.getBlockPos(), direction));
         if (capability == null) {
             couldntHandle.copyList(items);
             return;
         }
         couldntHandle.clear();
-        capability = te.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, te.getBlockPos(), Direction.DOWN);
         if (capability != null) {
             for (ItemStack item : items) {
                 ItemStack overflow = ItemHandlerHelper.insertItem(capability, item, false);
@@ -1560,7 +1573,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     // Return what could not be inserted
-    private ItemStack insertItem(@Nonnull ItemStack s) {
+    private ItemStack insertItem(@NotNull ItemStack s) {
         s = InventoryTools.insertItem(level, getBlockPos(), Direction.UP, s);
         if (!s.isEmpty()) {
             s = InventoryTools.insertItem(level, getBlockPos(), Direction.DOWN, s);
@@ -1616,7 +1629,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private TakeableItem createTakeableItem(Direction direction, Level srcWorld, BlockPos srcPos, BlockState state) {
         BlockEntity te = level.getBlockEntity(getBlockPos().relative(direction));
         if (te != null) {
-            IItemHandler h = level.getCapability(Capabilities.ItemHandler.BLOCK, te.getBlockPos(), direction.getOpposite());
+            IItemHandler h = CapabilityTools.itemHandler(level.getCapability(Capabilities.Item.BLOCK, te.getBlockPos(), direction.getOpposite()));
             if (h != null) {
                 return findBlockTakeableItem(h, srcWorld, srcPos, state);
             }
@@ -1624,7 +1637,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return TakeableItem.EMPTY;
     }
 
-    @Nonnull
+    @NotNull
     private FluidStack consumeLiquid(Level srcWorld, BlockPos srcPos) {
         FluidStack b = consumeLiquid(Direction.UP, srcWorld, srcPos);
         if (b.isEmpty()) {
@@ -1633,13 +1646,13 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return b;
     }
 
-    @Nonnull
+    @NotNull
     private FluidStack consumeLiquid(Direction direction, Level srcWorld, BlockPos srcPos) {
         BlockEntity te = level.getBlockEntity(getBlockPos().relative(direction));
         if (te != null) {
-            IFluidHandler fluid = level.getCapability(Capabilities.FluidHandler.BLOCK, te.getBlockPos(), direction.getOpposite());
-            if (fluid != null) {
-                fluid = level.getCapability(Capabilities.FluidHandler.BLOCK, te.getBlockPos(), null);
+            IFluidHandler fluid = CapabilityTools.fluidHandler(level.getCapability(Capabilities.Fluid.BLOCK, te.getBlockPos(), direction.getOpposite()));
+            if (fluid == null) {
+                fluid = CapabilityTools.fluidHandler(level.getCapability(Capabilities.Fluid.BLOCK, te.getBlockPos(), null));
             }
             if (fluid != null) {
                 return findAndConsumeLiquid(fluid, srcWorld, srcPos);
@@ -1648,14 +1661,14 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return FluidStack.EMPTY;
     }
 
-    @Nonnull
+    @NotNull
     private FluidStack findAndConsumeLiquid(IFluidHandler tank, Level srcWorld, BlockPos srcPos) {
         for (int i = 0; i < tank.getTanks(); i++) {
             FluidStack contents = tank.getFluidInTank(i);
             if (!contents.isEmpty()) {
                 if (contents.getFluid() != null) {
                     if (contents.getAmount() >= 1000) {
-                        return tank.drain(new FluidStack(contents.getFluidHolder(), 1000), IFluidHandler.FluidAction.EXECUTE);
+                        return tank.drain(new FluidStack(contents.getFluid(), 1000), IFluidHandler.FluidAction.EXECUTE);
                     }
                 }
             }
@@ -1973,11 +1986,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private void configureTileEntityNBT(Level destWorld, CompoundTag tc, BlockPos destpos, BlockState newDestState) {
         BlockEntity tileEntity = destWorld.getBlockEntity(destpos);
         if (tileEntity != null) {
-            tileEntity.loadWithComponents(tc, destWorld.registryAccess());
+            tileEntity.loadWithComponents(BuilderSerialization.input(tc, destWorld.registryAccess()));
             tileEntity.setChanged();
             destWorld.sendBlockUpdated(destpos, newDestState, newDestState, Block.UPDATE_ALL);
         }
     }
+
     private void transferBlockNBTDataTo(Level destWorld, CompoundTag tc, BlockPos destpos, BlockState newDestState) {
         tc.putInt("x", destpos.getX());
         tc.putInt("y", destpos.getY());
@@ -2126,7 +2140,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private void chunkUnload() {
         if (forcedChunk != null) {
             if (getOwnerUUID() != null) {
-                RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
+                RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x(), forcedChunk.z(), false, false);
             }
             forcedChunk = null;
         }
@@ -2147,12 +2161,12 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
             if (forcedChunk != null) {
                 if (getOwnerUUID() != null) {
-                    RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
+                    RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x(), forcedChunk.z(), false, false);
                 }
             }
             forcedChunk = pair;
             if (getOwnerUUID() != null) {
-                RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x, forcedChunk.z, false, false);
+                RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x(), forcedChunk.z(), false, false);
             }
             return true;
         }
@@ -2263,34 +2277,40 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        CompoundTag tag = input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        HolderLookup.Provider provider = input.lookup();
+
         energyStorage.load(tag, "energy", provider);
         try {
             items.load(tag, "items", provider);
         } catch (Exception e) {
-            CompoundTag itemsTag = tag.getCompound("items");
-            ListTag tagsTag = itemsTag.getList("Items", Tag.TAG_COMPOUND);
-            CompoundTag compound0 = tagsTag.getCompound(0);
-            CompoundTag components = compound0.getCompound("components");
-            CompoundTag tags = components.getCompound("rftoolsbuilder:shapecard_data");
+            CompoundTag itemsTag = tag.getCompoundOrEmpty("items");
+            ListTag tagsTag = itemsTag.getListOrEmpty("Items");
+            CompoundTag compound0 = tagsTag.getCompoundOrEmpty(0);
+            CompoundTag components = compound0.getCompoundOrEmpty("components");
+            CompoundTag tags = components.getCompoundOrEmpty("rftoolsbuilder:shapecard_data");
             DataResult<com.mojang.datafixers.util.Pair<ShapeCardData, Tag>> data = ShapeCardData.CODEC.decode(NbtOps.INSTANCE, tags);
             throw new RuntimeException(e);
         }
         infusable.load(tag, "infusable");
 
         if (tag.contains("overflowItems")) {
-            ListTag overflowItemsNbt = tag.getList("overflowItems", Tag.TAG_COMPOUND);
+            ListTag overflowItemsNbt = tag.getListOrEmpty("overflowItems");
             overflowItems.clear();
             for (Tag overflowNbt : overflowItemsNbt) {
-                overflowItems.add(ItemStack.parseOptional(provider, (CompoundTag) overflowNbt));
+                overflowItems.add(BuilderSerialization.loadItem(provider, (CompoundTag) overflowNbt));
             }
         }
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        CompoundTag tag = new CompoundTag();
+        HolderLookup.Provider provider = level != null ? level.registryAccess() : RegistryAccess.EMPTY;
+
         energyStorage.save(tag, "energy", provider);
         items.save(tag, "items", provider);
         infusable.save(tag, "infusable");
@@ -2298,18 +2318,19 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (!overflowItems.isEmpty()) {
             ListTag overflowItemsNbt = new ListTag();
             for (ItemStack overflow : overflowItems.getList()) {
-                overflowItemsNbt.add(overflow.save(provider, new CompoundTag()));
+                overflowItemsNbt.add(BuilderSerialization.saveItem(overflow, provider));
             }
             tag.put("overflowItems", overflowItemsNbt);
         }
+        output.store(MapCodec.assumeMapUnsafe(CompoundTag.CODEC), tag);
     }
 
     @Override
-    protected void applyImplicitComponents(DataComponentInput input) {
+    protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        energyStorage.applyImplicitComponents(input.get(Registration.ITEM_ENERGY));
-        items.applyImplicitComponents(input.get(Registration.ITEM_INVENTORY));
-        infusable.applyImplicitComponents(input.get(Registration.ITEM_INFUSABLE));
+        energyStorage.applyImplicitComponents(input.get(ITEM_ENERGY));
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
+        infusable.applyImplicitComponents(input.get(ITEM_INFUSABLE));
         BuilderData builderData = input.get(BuilderModule.ITEM_BUILDER_DATA);
         if (builderData != null) {
             setData(BuilderModule.BUILDER_DATA, builderData);
@@ -2333,6 +2354,21 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         BuilderData data = getData(BuilderModule.BUILDER_DATA);
         return data.scan() == null ? -1 : data.scan().getY();
     }
+
+    public static final Key<Integer> PARAM_ANCHOR = new Key<>("anchor", Type.INTEGER);
+
+    @ServerCommand
+    public static final Command<?> CMD_ANCHOR = Command.<BuilderTileEntity>create("anchor", (te, player, params) -> {
+        Integer index = params.get(PARAM_ANCHOR);
+        if (index == null || index < 0 || index >= AnchorMode.values().length) {
+            return;
+        }
+        BuilderData data = te.getData(BuilderModule.BUILDER_DATA).withAnchor(AnchorMode.values()[index]);
+        // Shape cards must be repositioned on every click, even when this anchor is already selected.
+        data = te.onAnchorChanged(data);
+        te.setData(BuilderModule.BUILDER_DATA, data);
+        te.markDirtyQuick();
+    });
 
     @ServerCommand
     public static final Command<?> CMD_RESTART = Command.<BuilderTileEntity>create("restart", (te, player, params) -> {
@@ -2362,7 +2398,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     @Override
     public void rotateBlock(Rotation axis) {
         super.rotateBlock(axis);
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             if (hasSupportMode()) {
                 BuilderData data = getData(BuilderModule.BUILDER_DATA);
                 data = clearSupportBlocks(data);
@@ -2386,9 +2422,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return new GenericItemHandler(BuilderTileEntity.this, CONTAINER_FACTORY.get()) {
 
             // @todo all methods below could be avoided with a proper onUpdate method
-            @Nonnull
+            @NotNull
             @Override
-            public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+            public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
                 checkShapeCard(slot, stack);
                 return super.insertItem(slot, stack, simulate);
             }
@@ -2399,7 +2435,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 super.setInventorySlotContents(stackLimit, index, stack);
             }
 
-            @Nonnull
+            @NotNull
             @Override
             public ItemStack extractItem(int slot, int amount, boolean simulate) {
                 checkShapeCard(slot, ItemStack.EMPTY);
@@ -2413,7 +2449,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
 
             @Override
-            public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
+            public void setStackInSlot(int slot, @NotNull ItemStack stack) {
                 checkShapeCard(slot, stack);
                 super.setStackInSlot(slot, stack);
             }

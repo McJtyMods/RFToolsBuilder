@@ -6,13 +6,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record PacketNotifyServerClientReady(BlockPos pos) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "notify_server_client_ready");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "notify_server_client_ready");
     public static final CustomPacketPayload.Type<PacketNotifyServerClientReady> TYPE = new Type<>(ID);
 
     public static final StreamCodec<RegistryFriendlyByteBuf, PacketNotifyServerClientReady> CODEC = StreamCodec.composite(

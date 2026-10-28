@@ -1,5 +1,8 @@
 package mcjty.rftoolsbuilder.modules.scanner.blocks;
 
+import com.mojang.serialization.MapCodec;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.blockcommands.Command;
 import mcjty.lib.blockcommands.ServerCommand;
@@ -22,25 +25,30 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
 import mcjty.rftoolsbuilder.shapes.ScanDataManager;
+import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.StatePalette;
+import mcjty.rftoolsbuilder.tools.BuilderSerialization;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.common.util.Lazy;
-
-import javax.annotation.Nonnull;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import org.jetbrains.annotations.NotNull;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.container.SlotDefinition.specific;
+import static mcjty.lib.setup.Registration.ITEM_INVENTORY;
 
 public class ScannerTileEntity extends TickingTileEntity {
 
@@ -100,6 +108,12 @@ public class ScannerTileEntity extends TickingTileEntity {
 
     @Override
     protected void tickServer() {
+        // Initialize outside packet serialization: allocating a scan ID queues a block update.
+        if (renderStack.isEmpty() && items.getStackInSlot(SLOT_OUT).isEmpty()) {
+            renderStack = new ItemStack(BuilderModule.SHAPE_CARD_DEF.get());
+            updateScanCard(renderStack);
+            markDirtyClient();
+        }
         if (progress != null) {
             int done = 0;
             while (progress != null && done < ScannerConfiguration.surfaceAreaPerTick.get()) {
@@ -120,14 +134,8 @@ public class ScannerTileEntity extends TickingTileEntity {
 
     public ItemStack getRenderStack() {
         ItemStack stack = items.getStackInSlot(SLOT_OUT);
-        if (!stack.isEmpty()) {
-            return stack;
-        }
-        if (renderStack.isEmpty()) {
-            renderStack = new ItemStack(BuilderModule.SHAPE_CARD_DEF.get());
-            updateScanCard(renderStack);
-        }
-        return renderStack;
+        // Packet serialization calls this getter; it must not allocate IDs or schedule updates.
+        return stack.isEmpty() ? renderStack : stack;
     }
 
     public BlockPos getDataDim() {
@@ -147,7 +155,7 @@ public class ScannerTileEntity extends TickingTileEntity {
     }
 
     public int getScanId() {
-        if (scanId == 0 && level != null && !level.isClientSide) {
+        if (scanId == 0 && level != null && !level.isClientSide()) {
             scanId = ScanDataManager.get(level).newScan(level);
             setChanged();
             markDirtyClient();
@@ -168,10 +176,25 @@ public class ScannerTileEntity extends TickingTileEntity {
             }
             updateScanCard(renderStack);
         } else if (slot == SLOT_OUT && !stack.isEmpty()) {
-            updateScanCard(stack);
+            updateOutputCard();
         }
         setChanged();
         markDirtyClient();
+    }
+
+    private void updateOutputCard() {
+        if (level == null || level.isClientSide()) {
+            return;
+        }
+        ItemStack card = items.getStackInSlot(SLOT_OUT);
+        if (!card.isEmpty()) {
+            ItemStack updated = card.copy();
+            updateScanCard(updated);
+            // Inventory reads may return copies. Only write changes to avoid recursive slot updates.
+            if (!ItemStack.matches(card, updated)) {
+                items.setStackInSlot(SLOT_OUT, updated);
+            }
+        }
     }
 
     private void updateScanCard(ItemStack card) {
@@ -179,7 +202,7 @@ public class ScannerTileEntity extends TickingTileEntity {
             return;
         }
         if (!ShapeCardItem.getShape(card).isScan()) {
-            ShapeCardItem.setShape(card, mcjty.rftoolsbuilder.shapes.Shape.SHAPE_SCAN, ShapeCardItem.isSolid(card));
+            ShapeCardItem.setShape(card, Shape.SHAPE_SCAN, ShapeCardItem.isSolid(card));
         }
         ShapeCardItem.setDimension(card, dataDim.getX(), dataDim.getY(), dataDim.getZ());
         ShapeCardItem.setOffset(card, dataOffset.getX(), dataOffset.getY(), dataOffset.getZ());
@@ -230,7 +253,7 @@ public class ScannerTileEntity extends TickingTileEntity {
                 int c = 0;
                 if (!scanWorld.isEmptyBlock(mpos)) {
                     BlockState state = scanWorld.getBlockState(mpos);
-                    if (filter == null || filter.test(state.getBlock().getCloneItemStack(scanWorld, mpos, state))) {
+                    if (filter == null || filter.test(state.getBlock().getCloneItemStack(scanWorld, mpos, state, false, null))) {
                         c = progress.materialPalette.alloc(state, 0) + 1;
                     }
                 }
@@ -255,10 +278,7 @@ public class ScannerTileEntity extends TickingTileEntity {
             renderStack = new ItemStack(BuilderModule.SHAPE_CARD_DEF.get());
         }
         updateScanCard(renderStack);
-        ItemStack out = items.getStackInSlot(SLOT_OUT);
-        if (!out.isEmpty()) {
-            updateScanCard(out);
-        }
+        updateOutputCard();
         progress = null;
         progressBusy = -1;
         setChanged();
@@ -270,19 +290,25 @@ public class ScannerTileEntity extends TickingTileEntity {
     }
 
     @Override
-    protected void loadAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        CompoundTag tag = input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        HolderLookup.Provider provider = input.lookup();
+
         items.load(tag, "items", provider);
-        scanId = tag.getInt("scanid");
+        scanId = tag.getIntOr("scanid", 0);
         if (tag.contains("scandimx")) {
-            dataDim = new BlockPos(tag.getInt("scandimx"), tag.getInt("scandimy"), tag.getInt("scandimz"));
+            dataDim = new BlockPos(tag.getIntOr("scandimx", 0), tag.getIntOr("scandimy", 0), tag.getIntOr("scandimz", 0));
         }
-        dataOffset = new BlockPos(tag.getInt("scanoffx"), tag.getInt("scanoffy"), tag.getInt("scanoffz"));
+        dataOffset = new BlockPos(tag.getIntOr("scanoffx", 0), tag.getIntOr("scanoffy", 0), tag.getIntOr("scanoffz", 0));
     }
 
     @Override
-    protected void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        CompoundTag tag = new CompoundTag();
+        HolderLookup.Provider provider = level != null ? level.registryAccess() : RegistryAccess.EMPTY;
+
         items.save(tag, "items", provider);
         tag.putInt("scanid", scanId);
         tag.putInt("scandimx", dataDim.getX());
@@ -291,13 +317,14 @@ public class ScannerTileEntity extends TickingTileEntity {
         tag.putInt("scanoffx", dataOffset.getX());
         tag.putInt("scanoffy", dataOffset.getY());
         tag.putInt("scanoffz", dataOffset.getZ());
+        output.store(MapCodec.assumeMapUnsafe(CompoundTag.CODEC), tag);
     }
 
     @Override
     public void saveClientDataToNBT(CompoundTag tag, HolderLookup.Provider provider) {
         ItemStack render = getRenderStack();
         if (!render.isEmpty()) {
-            tag.put("render", render.save(provider, new CompoundTag()));
+            tag.put("render", BuilderSerialization.saveItem(render, provider));
         }
         tag.putInt("scanid", scanId);
         tag.putInt("scandimx", dataDim.getX());
@@ -310,9 +337,9 @@ public class ScannerTileEntity extends TickingTileEntity {
     }
 
     @Override
-    protected void applyImplicitComponents(DataComponentInput input) {
+    protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        items.applyImplicitComponents(input.get(mcjty.lib.setup.Registration.ITEM_INVENTORY));
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
     }
 
     @Override
@@ -323,11 +350,11 @@ public class ScannerTileEntity extends TickingTileEntity {
 
     @Override
     public void loadClientDataFromNBT(CompoundTag tag, HolderLookup.Provider provider) {
-        renderStack = ItemStack.parseOptional(provider, tag.getCompound("render"));
-        scanId = tag.getInt("scanid");
-        dataDim = new BlockPos(tag.getInt("scandimx"), tag.getInt("scandimy"), tag.getInt("scandimz"));
-        dataOffset = new BlockPos(tag.getInt("scanoffx"), tag.getInt("scanoffy"), tag.getInt("scanoffz"));
-        progressBusy = tag.getInt("progress");
+        renderStack = BuilderSerialization.loadItem(provider, tag.getCompoundOrEmpty("render"));
+        scanId = tag.getIntOr("scanid", 0);
+        dataDim = new BlockPos(tag.getIntOr("scandimx", 0), tag.getIntOr("scandimy", 0), tag.getIntOr("scandimz", 0));
+        dataOffset = new BlockPos(tag.getIntOr("scanoffx", 0), tag.getIntOr("scanoffy", 0), tag.getIntOr("scanoffz", 0));
+        progressBusy = tag.getIntOr("progress", 0);
     }
 
     public GenericItemHandler getItems() {
@@ -345,10 +372,7 @@ public class ScannerTileEntity extends TickingTileEntity {
         if (!renderStack.isEmpty()) {
             updateScanCard(renderStack);
         }
-        ItemStack out = items.getStackInSlot(SLOT_OUT);
-        if (!out.isEmpty()) {
-            updateScanCard(out);
-        }
+        updateOutputCard();
         setChanged();
         markDirtyClient();
     }
@@ -363,5 +387,16 @@ public class ScannerTileEntity extends TickingTileEntity {
         private int dimZ;
         private int x;
         private ResourceKey<Level> dimension;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null && !level.isClientSide()) {
+            var handler = getItems();
+            for (int slot = 0; slot < handler.getSlots(); slot++) {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), handler.getStackInSlot(slot));
+            }
+        }
+        super.preRemoveSideEffects(pos, state);
     }
 }

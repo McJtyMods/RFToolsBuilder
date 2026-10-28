@@ -1,5 +1,8 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import mcjty.lib.varia.Counter;
 import mcjty.lib.varia.LevelTools;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
@@ -9,10 +12,11 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketChamberInfoReady;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
+import mcjty.rftoolsbuilder.tools.BuilderSerialization;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -25,17 +29,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class BuilderTools {
 
     public static void returnChamberInfo(Player player) {
         SpaceChamberRepository.SpaceChamberChannel chamberChannel = getSpaceChamberChannel(player);
         if (chamberChannel == null) return;
 
-        Level world = LevelTools.getLevel(player.getCommandSenderWorld(), chamberChannel.getDimension());
+        Level world = LevelTools.getLevel(player.level(), chamberChannel.getDimension());
         if (world == null) {
             return;
         }
@@ -60,7 +60,7 @@ public class BuilderTools {
     @Nullable
     public static SpaceChamberRepository.SpaceChamberChannel getSpaceChamberChannel(Player player) {
         ItemStack cardItem = player.getItemInHand(InteractionHand.MAIN_HAND);
-        return getSpaceChamberChannel(player.getCommandSenderWorld(), cardItem);
+        return getSpaceChamberChannel(player.level(), cardItem);
     }
 
     @Nullable
@@ -103,13 +103,13 @@ public class BuilderTools {
                 }
             }
 
-            ResourceLocation registryName = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+            Identifier registryName = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
             entitiesWithCount.increment(registryName.toString());
 
             // @todo 1.21 what to do with canonicalName?
             if (!firstEntity.containsKey(registryName.toString())) {
                 CompoundTag entityNBT = new CompoundTag();
-                entity.saveWithoutId(entityNBT);
+                entityNBT = BuilderSerialization.saveEntity(entity);
 
                 firstEntity.put(registryName.toString(), entityNBT);
             }
@@ -133,7 +133,7 @@ public class BuilderTools {
                         blocks.increment(state);
 
                         if (!stacks.containsKey(state)) {
-                            ItemStack item = block.getCloneItemStack(world, p, state);
+                            ItemStack item = block.getCloneItemStack(world, p, state, false, null);
                             if (!item.isEmpty()) {
                                 stacks.put(state, item);
                             }

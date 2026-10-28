@@ -1,6 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import mcjty.lib.varia.TagTools;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import net.minecraft.client.Minecraft;
@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.neoforge.common.Tags;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -213,7 +213,7 @@ public class ShapeBlockInfo {
         return col;
     }
 
-    @Nonnull
+    @NotNull
     public static ShapeBlockInfo getBlockInfo(Map<BlockState, ShapeBlockInfo> palette, BlockState state) {
         ShapeBlockInfo info = palette.get(state);
         if (info != null) {
@@ -261,7 +261,7 @@ public class ShapeBlockInfo {
     }
 
     static interface IBlockRender {
-        void render(BufferBuilder buffer, int zoffset, float r, float g, float b);
+        void render(VertexConsumer buffer, int zoffset, float r, float g, float b);
     }
 
     static class DefaultRender implements IBlockRender {
@@ -274,7 +274,7 @@ public class ShapeBlockInfo {
         }
 
         @Override
-        public void render(BufferBuilder buffer, int z, float r, float g, float b) {
+        public void render(VertexConsumer buffer, int z, float r, float g, float b) {
             float a = 0.5f;
             // Up
             buffer.addVertex(offset, height, 1 - offset + z).setColor(r * .8f, g * .8f, b * .8f, a);
@@ -326,7 +326,7 @@ public class ShapeBlockInfo {
         }
 
         @Override
-        public void render(BufferBuilder buffer, int z, float r, float g, float b) {
+        public void render(VertexConsumer buffer, int z, float r, float g, float b) {
             float a = 0.5f;
             // Up
             buffer.addVertex(xoffset, height, 1 - zoffset + z).setColor(r * .8f, g * .8f, b * .8f, a);
@@ -376,7 +376,7 @@ public class ShapeBlockInfo {
         }
 
         @Override
-        public void render(BufferBuilder buffer, int z, float r, float g, float b) {
+        public void render(VertexConsumer buffer, int z, float r, float g, float b) {
             float a = 0.5f;
             // Up
             buffer.addVertex(offset, height + .5f, 1 - offset + z).setColor(r * .8f, g * .8f, b * .8f, a);

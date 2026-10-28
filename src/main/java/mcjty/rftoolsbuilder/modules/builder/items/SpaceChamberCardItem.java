@@ -1,35 +1,36 @@
 package mcjty.rftoolsbuilder.modules.builder.items;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 import mcjty.lib.builder.TooltipBuilder;
+import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.tooltips.ITooltipSettings;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.Tools;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiChamberDetails;
 import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData;
-import mcjty.lib.gui.ManualEntry;
-import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.common.util.Lazy;
-
-import javax.annotation.Nonnull;
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 import static mcjty.lib.builder.TooltipBuilder.*;
 
@@ -57,26 +58,28 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
         }
     }
 
-    public SpaceChamberCardItem() {
-        super(RFToolsBuilder.setup.defaultProperties().stacksTo(1).durability(0));
+    public SpaceChamberCardItem(Item.Properties properties) {
+        super(properties.stacksTo(1));
     }
 
     @Override
-    public void appendHoverText(@Nonnull ItemStack itemStack, TooltipContext context, @Nonnull List<Component> list, @Nonnull TooltipFlag flag) {
-        super.appendHoverText(itemStack, context, list, flag);
+    public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay display, Consumer<Component> consumer, TooltipFlag flag) {
+        List<Component> list = new ArrayList<>();
+        super.appendHoverText(itemStack, context, display, consumer, flag);
         tooltipBuilder.get().makeTooltip(Tools.getId(this), itemStack, list, flag);
+        list.forEach(consumer);
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public InteractionResultHolder<ItemStack> use(@Nonnull Level world, Player player, @Nonnull InteractionHand hand) {
+    public InteractionResult use(@NotNull Level world, Player player, @NotNull InteractionHand hand) {
         if (!player.isCrouching()) {
             showDetails(world, player, player.getItemInHand(hand));
         }
         return super.use(world, player, hand);
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
@@ -97,7 +100,7 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
             ShapeCardData data = stack.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA, ShapeCardData.DEFAULT);
             data = data.withChannel(channel);
             stack.set(BuilderModule.ITEM_SHAPECARD_DATA, data);
-            if (level.isClientSide) {
+            if (level.isClientSide()) {
                 Logging.message(player, "Card is set to channel '" + channel + "'");
             }
         }
@@ -115,7 +118,7 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
     }
 
     private void showDetailsGui(Level world, Player player) {
-        if (world.isClientSide) {
+        if (world.isClientSide()) {
             GuiChamberDetails.open();
         }
     }

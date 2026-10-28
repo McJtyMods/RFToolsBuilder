@@ -1,19 +1,10 @@
 {
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
-    "B": {
-      "item": "minecraft:bricks"
-    },
-    "F": {
-      "item": "rftoolsbase:machine_frame"
-    },
-    "o": {
-      "tag": "c:ender_pearls"
-    },
-    "r": {
-      "item": "minecraft:redstone"
-    }
+    "B": "minecraft:bricks",
+    "F": "rftoolsbase:machine_frame",
+    "o": "#c:ender_pearls",
+    "r": "minecraft:redstone"
   },
   "pattern": [
     "BoB",
@@ -21,7 +12,6 @@
     "BrB"
   ],
   "result": {
-    "count": 1,
     "id": "rftoolsbuilder:builder"
   }
 }

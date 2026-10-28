@@ -2,20 +2,20 @@ package mcjty.rftoolsbuilder.modules.builder;
 
 import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class BlockInformation {
 
-    private static Map<ResourceLocation,BlockInformation> blockInformationMap = null;
-    private static Map<ResourceLocation,Boolean> blackWhiteListedNBTBlocksMap = null;
+    private static Map<Identifier,BlockInformation> blockInformationMap = null;
+    private static Map<Identifier,Boolean> blackWhiteListedNBTBlocksMap = null;
 
-    private final ResourceLocation blockName;
+    private final Identifier blockName;
     private final SupportBlock.SupportStatus blockLevel;
     private final double costFactor;
     private final int rotateInfo;
@@ -49,7 +49,7 @@ public class BlockInformation {
                     block = split[0];
                     whitelist = Boolean.valueOf(split[1]);
                 }
-                ResourceLocation id = ResourceLocation.parse(block);
+                Identifier id = Identifier.parse(block);
                 blackWhiteListedNBTBlocksMap.put(id,whitelist);
             }
         }
@@ -67,7 +67,7 @@ public class BlockInformation {
                     costS = split[1];
                 }
                 double cost = Double.parseDouble(costS);
-                ResourceLocation id = ResourceLocation.parse(block);
+                Identifier id = Identifier.parse(block);
                 if (BuilderConfiguration.teMode.get() == BuilderTileEntityMode.MOVE_BLACKLIST) {
                     blockInformationMap.put(id, new BlockInformation(id, SupportBlock.SupportStatus.STATUS_ERROR, cost));
                 } else if (BuilderConfiguration.teMode.get() == BuilderTileEntityMode.MOVE_WHITELIST) {
@@ -77,14 +77,14 @@ public class BlockInformation {
         }
     }
 
-    public BlockInformation(ResourceLocation blockName, SupportBlock.SupportStatus blockLevel, double costFactor) {
+    public BlockInformation(Identifier blockName, SupportBlock.SupportStatus blockLevel, double costFactor) {
         this.blockName = blockName;
         this.blockLevel = blockLevel;
         this.costFactor = costFactor;
         this.rotateInfo = ROTATE_mmmm;
     }
 
-    public BlockInformation(ResourceLocation blockName, SupportBlock.SupportStatus blockLevel, double costFactor, int rotateInfo) {
+    public BlockInformation(Identifier blockName, SupportBlock.SupportStatus blockLevel, double costFactor, int rotateInfo) {
         this.blockName = blockName;
         this.blockLevel = blockLevel;
         this.costFactor = costFactor;
@@ -95,7 +95,7 @@ public class BlockInformation {
         this(other.blockName, other.blockLevel, other.costFactor, rotateStringToId(rotateInfo));
     }
 
-    public BlockInformation(BlockInformation other, ResourceLocation blockName, SupportBlock.SupportStatus blockLevel, double costFactor) {
+    public BlockInformation(BlockInformation other, Identifier blockName, SupportBlock.SupportStatus blockLevel, double costFactor) {
         this(blockName, blockLevel, costFactor, other.rotateInfo);
     }
 
@@ -114,7 +114,7 @@ public class BlockInformation {
         return blockLevel;
     }
 
-    public ResourceLocation getBlockName() {
+    public Identifier getBlockName() {
         return blockName;
     }
 
