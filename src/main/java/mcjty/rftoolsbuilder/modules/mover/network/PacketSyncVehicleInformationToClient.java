@@ -8,7 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.Optional;
 
 public record PacketSyncVehicleInformationToClient(BlockPos pos, List<String> platforms, String currentPlatform, Boolean valid, Boolean enoughPower) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "sync_vehicle_information_to_client");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "sync_vehicle_information_to_client");
     public static final CustomPacketPayload.Type<PacketSyncVehicleInformationToClient> TYPE = new Type<>(ID);
 
     public static final StreamCodec<FriendlyByteBuf, PacketSyncVehicleInformationToClient> CODEC = StreamCodec.composite(

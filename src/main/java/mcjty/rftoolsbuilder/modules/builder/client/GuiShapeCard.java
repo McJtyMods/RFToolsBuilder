@@ -1,10 +1,12 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import java.util.List;
+import java.util.stream.Collectors;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.client.GuiTools;
 import mcjty.lib.client.RenderHelper;
@@ -15,6 +17,7 @@ import mcjty.lib.gui.WindowManager;
 import mcjty.lib.gui.layout.HorizontalAlignment;
 import mcjty.lib.gui.layout.VerticalLayout;
 import mcjty.lib.gui.widgets.*;
+import mcjty.lib.varia.CapabilityTools;
 import mcjty.lib.varia.ComponentFactory;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
@@ -29,9 +32,13 @@ import mcjty.rftoolsbuilder.shapes.Shape;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.InteractionHand;
@@ -43,9 +50,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.lwjgl.opengl.GL11;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static mcjty.lib.gui.layout.AbstractLayout.DEFAULT_SPACING;
 import static mcjty.lib.gui.widgets.Widgets.*;
@@ -98,7 +102,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
 
 
     public GuiShapeCard(boolean fromTE) {
-        super(ComponentFactory.literal("Shapecard"));
+        super(Component.literal("Shapecard"));
         this.fromTE = fromTE;
     }
 
@@ -137,7 +141,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     private ItemStack getStackToEdit() {
         if (fromTE) {
             BlockEntity te = minecraft.level.getBlockEntity(fromTEPos);
-            IItemHandler capability = te.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, fromTEPos, null);
+            IItemHandler capability = CapabilityTools.itemHandler(te.getLevel().getCapability(Capabilities.Item.BLOCK, fromTEPos, null));
             if (capability == null) {
                 return ItemStack.EMPTY;
             } else {
@@ -388,7 +392,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         if (window == null) {
             return;
         }
-        window.mouseDragged(xx, yy, 0); // @todo 1.14 is this right? What button?
+        window.mouseDragged(xx, yy, InputConstants.MOUSE_BUTTON_LEFT); // @todo 1.14 is this right? What button?
 
         int x = GuiTools.getRelativeX(this);
         int y = GuiTools.getRelativeY(this);
@@ -400,42 +404,47 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
 
 
     @Override
-    public boolean mouseClicked(double x, double y, int button) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double x = event.x(), y = event.y(); int button = event.button();
         // If not initialized yet we do nothing
         if (window == null) {
             return false;
         }
-        if (button < buttons.length) {
-            buttons[button] = true;
+        int index = ShapeRenderer.mouseButtonIndex(button);
+        if (index >= 0 && index < buttons.length) {
+            buttons[index] = true;
         }
-        boolean rc = super.mouseClicked(x, y, button);
+        boolean rc = super.mouseClicked(event, doubleClick);
         window.mouseClicked(x, y, button);
         return rc;
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(MouseButtonEvent event) {
+        double mouseX = event.x(), mouseY = event.y(); int button = event.button();
         // If not initialized yet we do nothing
         if (window == null) {
             return false;
         }
-        if (button < buttons.length) {
-            buttons[button] = false;
+        int index = ShapeRenderer.mouseButtonIndex(button);
+        if (index >= 0 && index < buttons.length) {
+            buttons[index] = false;
         }
-        boolean rc = super.mouseReleased(mouseX, mouseY, button);
+        boolean rc = super.mouseReleased(event);
         window.mouseReleased(mouseX, mouseY, button);
         return rc;
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key(), scanCode = event.scancode(), modifiers = event.modifiers();
         // If not initialized yet we do nothing
         if (window == null) {
             return false;
         }
         boolean rc = false;
         if (!window.keyTyped(keyCode, scanCode)) {
-            rc = super.keyPressed(keyCode, scanCode, modifiers);
+            rc = super.keyPressed(event);
         }
         return rc;
     }
@@ -449,7 +458,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     public void keyTypedFromEvent(int keyCode, int scanCode) {
         if (window != null) {
             if (window.keyTyped(keyCode, scanCode)) {
-                super.keyPressed(keyCode, scanCode, 0); // @todo 1.14: modifiers?
+                super.keyPressed(new KeyEvent(keyCode, scanCode, 0)); // @todo 1.14: modifiers?
             }
         }
     }
@@ -458,7 +467,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     public void charTypedFromEvent(char codePoint) {
         if (window != null) {
             if (window.charTyped(codePoint)) {
-                super.charTyped(codePoint, 0); // @todo 1.14: modifiers?
+                super.charTyped(new CharacterEvent(codePoint)); // @todo 1.14: modifiers?
             }
         }
     }
@@ -497,7 +506,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     private static int updateCounter = 20;
 
     @Override
-    protected void renderInternal(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
+    protected void renderInternal(GuiGraphicsExtractor graphics, int pMouseX, int pMouseY, float pPartialTick) {
         // If not initialized yet we do nothing
         if (window == null) {
             return;
@@ -546,11 +555,11 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
             // @todo check on 1.16
             List<FormattedText> properties = tooltips.stream().map(ComponentFactory::literal).collect(Collectors.toList());
             List<FormattedCharSequence> processors = Language.getInstance().getVisualOrder(properties);
-            graphics.renderTooltip(Minecraft.getInstance().font, processors, x - guiLeft, y - guiTop);
+            graphics.setTooltipForNextFrame(Minecraft.getInstance().font, processors, x - guiLeft, y - guiTop);
         }
     }
 
-    private void renderVoidBlock(GuiGraphics graphics, int x, int y, ToggleButton button, Block block) {
+    private void renderVoidBlock(GuiGraphicsExtractor graphics, int x, int y, ToggleButton button, Block block) {
         x += (int) button.getBounds().getX();
         RenderHelper.renderObject(graphics, x, y, new ItemStack(block), button.isPressed());
         if (button.isPressed()) {

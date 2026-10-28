@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -40,7 +40,7 @@ public enum Shape implements StringRepresentable {
         }
     }
 
-    Shape(String description, @Nonnull Supplier<IFormula> formulaFactory) {
+    Shape(String description, @NotNull Supplier<IFormula> formulaFactory) {
         this.description = description;
         this.formulaFactory = formulaFactory;
     }
@@ -57,7 +57,7 @@ public enum Shape implements StringRepresentable {
         return this == SHAPE_SCAN;
     }
 
-    @Nonnull
+    @NotNull
     public Supplier<IFormula> getFormulaFactory() {
         return formulaFactory;
     }

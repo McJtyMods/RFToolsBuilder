@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "F": {
-      "item": "rftoolsbase:machine_frame"
-    },
-    "P": {
-      "item": "minecraft:paper"
-    },
-    "Q": {
-      "item": "minecraft:brick"
-    }
+    "F": "rftoolsbase:machine_frame",
+    "P": "minecraft:paper",
+    "Q": "minecraft:brick"
   },
   "pattern": [
     "PQP",
@@ -18,7 +12,6 @@
     "PQP"
   ],
   "result": {
-    "count": 1,
     "id": "rftoolsbuilder:composer"
   }
 }

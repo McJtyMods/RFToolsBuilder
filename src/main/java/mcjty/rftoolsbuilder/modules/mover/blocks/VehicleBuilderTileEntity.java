@@ -1,5 +1,11 @@
 package mcjty.rftoolsbuilder.modules.mover.blocks;
 
+import com.mojang.serialization.MapCodec;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.lib.bindings.GuiValue;
 import mcjty.lib.bindings.Value;
@@ -17,6 +23,7 @@ import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.lib.varia.ComponentFactory;
 import mcjty.lib.varia.LevelTools;
 import mcjty.rftoolsbase.tools.ManualHelper;
+import mcjty.rftoolsbase.tools.RegistryProperties;
 import mcjty.rftoolsbuilder.compat.RFToolsBuilderTOPDriver;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.BuilderTools;
@@ -27,8 +34,11 @@ import mcjty.rftoolsbuilder.modules.mover.data.VehicleBuilderData;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
@@ -36,21 +46,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.NotNull;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.header;
 import static mcjty.lib.builder.TooltipBuilder.key;
 import static mcjty.lib.container.SlotDefinition.specific;
+import static mcjty.lib.setup.Registration.ITEM_INVENTORY;
 
 public class VehicleBuilderTileEntity extends GenericTileEntity {
 
@@ -87,8 +94,8 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
             .itemHandler(() -> tile.items)
             .setupSync(tile);
 
-    public static BaseBlock createBlock() {
-        return new BaseBlock(new BlockBuilder()
+    public static BaseBlock createBlock(BlockBehaviour.Properties properties) {
+        return new BaseBlock(new BlockBuilder().properties(RegistryProperties.block(properties))
                 .tileEntitySupplier(VehicleBuilderTileEntity::new)
                 .topDriver(RFToolsBuilderTOPDriver.DRIVER)
                 .infusable()
@@ -211,15 +218,15 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
 
     private boolean checkValid(Player player, BlockPos minCorner, BlockPos maxCorner) {
         if (maxCorner.getX() - minCorner.getX() >= MAXDIM) {
-            player.sendSystemMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"));
+            player.sendSystemMessage(Component.literal("Space chamber too large (max 16x16x16)!"));
             return false;
         }
         if (maxCorner.getY() - minCorner.getY() >= MAXDIM) {
-            player.sendSystemMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"));
+            player.sendSystemMessage(Component.literal("Space chamber too large (max 16x16x16)!"));
             return false;
         }
         if (maxCorner.getZ() - minCorner.getZ() >= MAXDIM) {
-            player.sendSystemMessage(ComponentFactory.literal("Space chamber too large (max 16x16x16)!"));
+            player.sendSystemMessage(Component.literal("Space chamber too large (max 16x16x16)!"));
             return false;
         }
         return true;
@@ -240,21 +247,28 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        CompoundTag tag = new CompoundTag();
+        HolderLookup.Provider provider = level != null ? level.registryAccess() : RegistryAccess.EMPTY;
+
         items.save(tag, "items", provider);
+        output.store(MapCodec.assumeMapUnsafe(CompoundTag.CODEC), tag);
     }
 
     @Override
-    public void loadAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        CompoundTag tag = input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        HolderLookup.Provider provider = input.lookup();
+
         items.load(tag, "items", provider);
     }
 
     @Override
-    protected void applyImplicitComponents(DataComponentInput input) {
+    protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        items.applyImplicitComponents(input.get(Registration.ITEM_INVENTORY));
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
         VehicleBuilderData vehicleBuilderData = input.get(MoverModule.ITEM_VEHICLE_BUILDER_DATA);
         if (vehicleBuilderData != null) {
             setData(MoverModule.VEHICLE_BUILDER_DATA, vehicleBuilderData);

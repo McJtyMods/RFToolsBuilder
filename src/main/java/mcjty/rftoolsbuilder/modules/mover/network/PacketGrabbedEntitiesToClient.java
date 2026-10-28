@@ -8,7 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import java.util.Set;
 
 public record PacketGrabbedEntitiesToClient(BlockPos pos, Set<Integer> grabbedEntities) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "grabbed_entities_to_client");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "grabbed_entities_to_client");
     public static final CustomPacketPayload.Type<PacketGrabbedEntitiesToClient> TYPE = new Type<>(ID);
 
     public static final StreamCodec<FriendlyByteBuf, PacketGrabbedEntitiesToClient> CODEC = StreamCodec.composite(

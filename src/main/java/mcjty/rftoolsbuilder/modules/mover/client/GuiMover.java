@@ -6,13 +6,13 @@ import mcjty.lib.gui.Window;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class GuiMover extends GenericGuiContainer<MoverTileEntity, GenericContainer> {
 
@@ -26,7 +26,7 @@ public class GuiMover extends GenericGuiContainer<MoverTileEntity, GenericContai
 
     @Override
     public void init() {
-        window = new Window(this, getBE(), ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/mover.gui"));
+        window = new Window(this, getBE(), Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "gui/mover.gui"));
         super.init();
 
         initializeFields();
@@ -44,7 +44,7 @@ public class GuiMover extends GenericGuiContainer<MoverTileEntity, GenericContai
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(@NotNull GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
         updateFields();
         drawWindow(graphics, partialTicks, mouseX, mouseY);
     }

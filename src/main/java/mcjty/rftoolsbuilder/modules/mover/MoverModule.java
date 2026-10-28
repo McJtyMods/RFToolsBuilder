@@ -1,11 +1,14 @@
 package mcjty.rftoolsbuilder.modules.mover;
 
 
+import com.mojang.serialization.MapCodec;
+import java.util.function.Supplier;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RBlock;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.datagen.DataGen;
 import mcjty.lib.datagen.Dob;
+import mcjty.lib.items.BaseBlockItem;
 import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbase.modules.various.VariousModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.*;
@@ -39,11 +42,11 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
-import java.util.function.Supplier;
-
 import static mcjty.lib.datagen.BaseBlockStateProvider.RFTOOLSBASE_BOTTOM;
 import static mcjty.lib.datagen.BaseBlockStateProvider.RFTOOLSBASE_TOP;
 import static mcjty.lib.datagen.DataGen.has;
+import static mcjty.lib.setup.Registration.ITEM_INFUSABLE;
+import static mcjty.lib.setup.Registration.ITEM_INVENTORY;
 import static mcjty.rftoolsbuilder.RFToolsBuilder.tab;
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
@@ -52,7 +55,7 @@ public class MoverModule implements IModule {
     public static final RBlock<BaseBlock, BlockItem, MoverTileEntity> MOVER = RBLOCKS.registerBlock("mover",
             MoverTileEntity.class,
             MoverTileEntity::createBlock,
-            block -> new BlockItem(block.get(), createStandardProperties()),
+            (block, properties) -> new BaseBlockItem(block.get(), properties.useBlockDescriptionPrefix()),
             MoverTileEntity::new
     );
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_MOVER = CONTAINERS.register("mover", GenericContainer::createContainerType);
@@ -60,7 +63,7 @@ public class MoverModule implements IModule {
     public static final RBlock<BaseBlock, BlockItem, MoverControllerTileEntity> MOVER_CONTROLLER = RBLOCKS.registerBlock("mover_controller",
             MoverControllerTileEntity.class,
             MoverControllerTileEntity::createBlock,
-            block -> new BlockItem(block.get(), createStandardProperties()),
+            (block, properties) -> new BaseBlockItem(block.get(), properties.useBlockDescriptionPrefix()),
             MoverControllerTileEntity::new
     );
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_MOVER_CONTROLLER = CONTAINERS.register("mover_controller", GenericContainer::createContainerType);
@@ -68,25 +71,25 @@ public class MoverModule implements IModule {
     public static final RBlock<BaseBlock, BlockItem, VehicleBuilderTileEntity> VEHICLE_BUILDER = RBLOCKS.registerBlock("vehicle_builder",
             VehicleBuilderTileEntity.class,
             VehicleBuilderTileEntity::createBlock,
-            block -> new BlockItem(block.get(), createStandardProperties()),
+            (block, properties) -> new BaseBlockItem(block.get(), properties.useBlockDescriptionPrefix()),
             VehicleBuilderTileEntity::new
     );
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_VEHICLE_BUILDER = CONTAINERS.register("vehicle_builder", GenericContainer::createContainerType);
 
     public static final DeferredBlock<InvisibleMoverBlock> INVISIBLE_MOVER_BLOCK = BLOCKS.register("invisible_mover", InvisibleMoverBlock::new);
-    public static final Supplier<BlockEntityType<?>> TYPE_INVISIBLE_MOVER = TILES.register("invisible_mover", () -> BlockEntityType.Builder.of(InvisibleMoverBE::new, INVISIBLE_MOVER_BLOCK.get()).build(null));
+    public static final Supplier<BlockEntityType<?>> TYPE_INVISIBLE_MOVER = TILES.register("invisible_mover", () -> new BlockEntityType<>(InvisibleMoverBE::new, INVISIBLE_MOVER_BLOCK.get()));
 
-    public static final DeferredBlock<Block> MOVER_CONTROL_BLOCK = BLOCKS.register("mover_control", () -> new MoverControlBlock(0));
-    public static final DeferredItem<Item> MOVER_CONTROL_ITEM = ITEMS.register("mover_control", tab(() -> new BlockItem(MOVER_CONTROL_BLOCK.get(), createStandardProperties())));
-    public static final DeferredBlock<Block> MOVER_CONTROL2_BLOCK = BLOCKS.register("mover_control2", () -> new MoverControlBlock(1));
-    public static final DeferredItem<Item> MOVER_CONTROL2_ITEM = ITEMS.register("mover_control2", tab(() -> new BlockItem(MOVER_CONTROL2_BLOCK.get(), createStandardProperties())));
-    public static final DeferredBlock<Block> MOVER_CONTROL3_BLOCK = BLOCKS.register("mover_control3", () -> new MoverControlBlock(2));
-    public static final DeferredItem<Item> MOVER_CONTROL3_ITEM = ITEMS.register("mover_control3", tab(() -> new BlockItem(MOVER_CONTROL3_BLOCK.get(), createStandardProperties())));
-    public static final DeferredBlock<Block> MOVER_CONTROL4_BLOCK = BLOCKS.register("mover_control4", () -> new MoverControlBlock(3));
-    public static final DeferredItem<Item> MOVER_CONTROL4_ITEM = ITEMS.register("mover_control4", tab(() -> new BlockItem(MOVER_CONTROL4_BLOCK.get(), createStandardProperties())));
+    public static final DeferredBlock<Block> MOVER_CONTROL_BLOCK = BLOCKS.register("mover_control", properties -> new MoverControlBlock(properties, 0));
+    public static final DeferredItem<Item> MOVER_CONTROL_ITEM = ITEMS.register("mover_control", tab(properties -> new BaseBlockItem(MOVER_CONTROL_BLOCK.get(), properties.useBlockDescriptionPrefix())));
+    public static final DeferredBlock<Block> MOVER_CONTROL2_BLOCK = BLOCKS.register("mover_control2", properties -> new MoverControlBlock(properties, 1));
+    public static final DeferredItem<Item> MOVER_CONTROL2_ITEM = ITEMS.register("mover_control2", tab(properties -> new BaseBlockItem(MOVER_CONTROL2_BLOCK.get(), properties.useBlockDescriptionPrefix())));
+    public static final DeferredBlock<Block> MOVER_CONTROL3_BLOCK = BLOCKS.register("mover_control3", properties -> new MoverControlBlock(properties, 2));
+    public static final DeferredItem<Item> MOVER_CONTROL3_ITEM = ITEMS.register("mover_control3", tab(properties -> new BaseBlockItem(MOVER_CONTROL3_BLOCK.get(), properties.useBlockDescriptionPrefix())));
+    public static final DeferredBlock<Block> MOVER_CONTROL4_BLOCK = BLOCKS.register("mover_control4", properties -> new MoverControlBlock(properties, 3));
+    public static final DeferredItem<Item> MOVER_CONTROL4_ITEM = ITEMS.register("mover_control4", tab(properties -> new BaseBlockItem(MOVER_CONTROL4_BLOCK.get(), properties.useBlockDescriptionPrefix())));
 
     public static final DeferredBlock<Block> MOVER_STATUS_BLOCK = BLOCKS.register("mover_status", MoverStatusBlock::new);
-    public static final DeferredItem<Item> MOVER_STATUS_ITEM = ITEMS.register("mover_status", tab(() -> new BlockItem(MOVER_STATUS_BLOCK.get(), createStandardProperties())));
+    public static final DeferredItem<Item> MOVER_STATUS_ITEM = ITEMS.register("mover_status", tab(properties -> new BaseBlockItem(MOVER_STATUS_BLOCK.get(), properties.useBlockDescriptionPrefix())));
 
     public static final DeferredItem<VehicleCard> VEHICLE_CARD = ITEMS.register("vehicle_card", tab(VehicleCard::new));
     public static final DeferredItem<VehicleControlModuleItem> VEHICLE_CONTROL_MODULE = ITEMS.register("vehicle_control_module", tab(VehicleControlModuleItem::new));
@@ -94,7 +97,7 @@ public class MoverModule implements IModule {
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<MoverControllerData>> MOVER_CONTROLLER_DATA = ATTACHMENT_TYPES.register(
             "mover_controller_data", () -> AttachmentType.builder(() -> MoverControllerData.DEFAULT)
-                    .serialize(MoverControllerData.CODEC)
+                    .serialize(MapCodec.assumeMapUnsafe(MoverControllerData.CODEC))
                     .build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<MoverControllerData>> ITEM_MOVER_CONTROLLER_DATA = COMPONENTS.registerComponentType(
             "mover_controller_data",
@@ -104,7 +107,7 @@ public class MoverModule implements IModule {
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<MoverData>> MOVER_DATA = ATTACHMENT_TYPES.register(
             "mover_data", () -> AttachmentType.builder(() -> MoverData.DEFAULT)
-                    .serialize(MoverData.CODEC)
+                    .serialize(MapCodec.assumeMapUnsafe(MoverData.CODEC))
                     .build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<MoverData>> ITEM_MOVER_DATA = COMPONENTS.registerComponentType(
             "mover_data",
@@ -114,7 +117,7 @@ public class MoverModule implements IModule {
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<VehicleBuilderData>> VEHICLE_BUILDER_DATA = ATTACHMENT_TYPES.register(
             "vehicle_builder_data", () -> AttachmentType.builder(() -> VehicleBuilderData.DEFAULT)
-                    .serialize(VehicleBuilderData.CODEC)
+                    .serialize(MapCodec.assumeMapUnsafe(VehicleBuilderData.CODEC))
                     .build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<VehicleBuilderData>> ITEM_VEHICLE_BUILDER_DATA = COMPONENTS.registerComponentType(
             "vehicle_builder_data",
@@ -168,10 +171,14 @@ public class MoverModule implements IModule {
     @Override
     public void initDatagen(DataGen dataGen, HolderLookup.Provider provider) {
         dataGen.add(
+                Dob.blockBuilder(INVISIBLE_MOVER_BLOCK)
+                        .blockState(p -> p.simpleBlock(INVISIBLE_MOVER_BLOCK.get(), p.models().getBuilder("invisible_mover")
+                                .parent(p.models().getExistingFile(p.mcLoc("block/block")))
+                                .texture("particle", p.modLoc("block/effects/black")))),
                 Dob.blockBuilder(MOVER)
                         .ironPickaxeTags()
                         .parentedItem("block/mover")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_MOVER_DATA.get())
+                        .standardLoot(ITEM_INVENTORY.get(), ITEM_MOVER_DATA.get())
                         .blockState(p -> p.simpleBlock(MOVER.block().get(), p.frontBasedModel("mover", p.modLoc("block/machinemover"), p.modLoc("block/machinemover"), RFTOOLSBASE_TOP, RFTOOLSBASE_BOTTOM)))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
@@ -181,7 +188,7 @@ public class MoverModule implements IModule {
                 Dob.blockBuilder(MOVER_CONTROLLER)
                         .ironPickaxeTags()
                         .parentedItem("block/mover_controller")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get(), ITEM_MOVER_CONTROLLER_DATA.get())
+                        .standardLoot(ITEM_INFUSABLE.get(), ITEM_MOVER_CONTROLLER_DATA.get())
                         .blockState(p -> p.orientedBlock(MOVER_CONTROLLER.block().get(), p.frontBasedModel("mover_controller", p.modLoc("block/machinemovercontroller"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
@@ -191,7 +198,7 @@ public class MoverModule implements IModule {
                 Dob.blockBuilder(VEHICLE_BUILDER)
                         .ironPickaxeTags()
                         .parentedItem("block/vehicle_builder")
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INVENTORY.get(), ITEM_VEHICLE_BUILDER_DATA.get())
+                        .standardLoot(ITEM_INVENTORY.get(), ITEM_VEHICLE_BUILDER_DATA.get())
                         .blockState(p -> p.orientedBlock(VEHICLE_BUILDER.block().get(), p.frontBasedModel("vehicle_builder", p.modLoc("block/machinevehiclebuilder"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
@@ -200,7 +207,7 @@ public class MoverModule implements IModule {
                                 "iCi", "rFr", "iTi"),
                 Dob.blockBuilder(MOVER_CONTROL_BLOCK)
                         .ironPickaxeTags()
-                        .standardLoot(mcjty.lib.setup.Registration.ITEM_INFUSABLE.get())
+                        .standardLoot(ITEM_INFUSABLE.get())
                         .parentedItem("block/mover_control_0")
                         .blockState(p -> DataGenHelper.create24Model(p, MOVER_CONTROL_BLOCK.get(), "mover_control_", "block/movercontrol"))
                         .shaped(builder -> builder
@@ -246,19 +253,19 @@ public class MoverModule implements IModule {
                                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
                                 "rTr", "CFC", "iTi"),
                 Dob.itemBuilder(VEHICLE_CARD)
-                        .generatedItem("item/vehiclecard")
+                        .generatedItem("rftoolsbuilder:item/vehiclecard")
                         .shaped(builder -> builder
                                         .define('C', Items.MINECART)
                                         .unlockedBy("paper", has(Items.PAPER)),
                                 " C ", "rpr", " r "),
                 Dob.itemBuilder(VEHICLE_CONTROL_MODULE)
-                        .generatedItem("item/vehiclecontrolmoduleitem")
+                        .generatedItem("rftoolsbuilder:item/vehiclecontrolmoduleitem")
                         .shaped(builder -> builder
                                         .define('C', VEHICLE_CARD.get())
                                         .unlockedBy("paper", has(Items.PAPER)),
                                 " C ", "rpr", " r "),
                 Dob.itemBuilder(VEHICLE_STATUS_MODULE)
-                        .generatedItem("item/vehiclestatusmoduleitem")
+                        .generatedItem("rftoolsbuilder:item/vehiclestatusmoduleitem")
                         .shaped(builder -> builder
                                         .define('C', VEHICLE_CARD.get())
                                         .define('g', Items.COMPARATOR)

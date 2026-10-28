@@ -1,26 +1,31 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
+import com.google.gson.JsonObject;
 import mcjty.lib.datagen.BaseBlockStateProvider;
+import mcjty.lib.datagen.model.BlockModelBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SupportBlock;
-import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
-import net.neoforged.neoforge.client.model.generators.VariantBlockStateBuilder;
 
 public class DataGenHelper {
-
     public static void generateSupportModel(BaseBlockStateProvider provider) {
-        BlockModelBuilder support0 = provider.models().cubeAll("supportblock_status0", provider.modLoc("block/supportblock")).renderType("translucent");
-        BlockModelBuilder support1 = provider.models().cubeAll("supportblock_status1", provider.modLoc("block/supportyellowblock")).renderType("translucent");
-        BlockModelBuilder support2 = provider.models().cubeAll("supportblock_status2", provider.modLoc("block/supportredblock")).renderType("translucent");
-        VariantBlockStateBuilder builder = provider.getVariantBuilder(BuilderModule.SUPPORT.get());
-        builder.partialState().with(SupportBlock.STATUS, SupportBlock.SupportStatus.STATUS_OK)
-                .modelForState().modelFile(support0)
-                .addModel();
-        builder.partialState().with(SupportBlock.STATUS, SupportBlock.SupportStatus.STATUS_WARN)
-                .modelForState().modelFile(support1)
-                .addModel();
-        builder.partialState().with(SupportBlock.STATUS, SupportBlock.SupportStatus.STATUS_ERROR)
-                .modelForState().modelFile(support2)
-                .addModel();
+        var ok = supportModel(provider, "supportblock_status0", "block/supportblock");
+        var warn = supportModel(provider, "supportblock_status1", "block/supportyellowblock");
+        var error = supportModel(provider, "supportblock_status2", "block/supportredblock");
+        provider.variantBlock(BuilderModule.SUPPORT.get(), state -> switch (state.getValue(SupportBlock.STATUS)) {
+            case STATUS_OK -> ok;
+            case STATUS_WARN -> warn;
+            case STATUS_ERROR -> error;
+        }, state -> 0, state -> 0);
+    }
 
+    private static BlockModelBuilder supportModel(BaseBlockStateProvider provider, String name, String texture) {
+        var model = provider.models().getBuilder(name)
+                .parent(provider.models().getExistingFile(provider.modLoc("block/support_block")));
+        JsonObject material = new JsonObject();
+        material.addProperty("sprite", provider.modLoc(texture).toString());
+        material.addProperty("force_translucent", true);
+        JsonObject textures = new JsonObject();
+        textures.add("all", material);
+        model.toJson().add("textures", textures);
+        return model;
     }
 }

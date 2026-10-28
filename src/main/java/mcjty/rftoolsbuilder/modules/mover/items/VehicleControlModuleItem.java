@@ -1,7 +1,12 @@
 package mcjty.rftoolsbuilder.modules.mover.items;
 
 import com.mojang.serialization.Codec;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import mcjty.lib.crafting.IComponentsToPreserve;
+import mcjty.lib.gui.ManualEntry;
 import mcjty.lib.varia.BlockPosTools;
 import mcjty.lib.varia.Logging;
 import mcjty.lib.varia.ModuleTools;
@@ -11,12 +16,11 @@ import mcjty.rftoolsbase.api.screens.IModuleGuiBuilder;
 import mcjty.rftoolsbase.api.screens.IScreenModule;
 import mcjty.rftoolsbase.api.screens.TextAlign;
 import mcjty.rftoolsbase.tools.GenericModuleItem;
+import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
 import mcjty.rftoolsbuilder.setup.Registration;
-import mcjty.lib.gui.ManualEntry;
-import mcjty.rftoolsbase.tools.ManualHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponentType;
@@ -24,19 +28,15 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class VehicleControlModuleItem extends GenericModuleItem implements IComponentsToPreserve {
 
@@ -57,17 +57,20 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
     }
 
     @Override
-    public @Nullable Codec<? extends IScreenModule<?, ?>> codec() {
+    public @Nullable
+    Codec<? extends IScreenModule<?, ?>> codec() {
         return VehicleControlScreenModule.CODEC;
     }
 
     @Override
-    public @Nullable StreamCodec<RegistryFriendlyByteBuf, ? extends IScreenModule<?, ?>> streamCodec() {
+    public @Nullable
+    StreamCodec<RegistryFriendlyByteBuf, ? extends IScreenModule<?, ?>> streamCodec() {
         return VehicleControlScreenModule.STREAM_CODEC;
     }
 
     @Override
-    public @Nullable DataComponentType<? extends IScreenModule<?, ?>> componentType() {
+    public @Nullable
+    DataComponentType<? extends IScreenModule<?, ?>> componentType() {
         return MoverModule.MODULE_VEHICLECONTROL_DATA.get();
     }
 
@@ -81,11 +84,11 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
         return new VehicleControlClientScreenModule();
     }
 
-    public VehicleControlModuleItem() {
-        super(Registration.createStandardProperties().stacksTo(1));
+    public VehicleControlModuleItem(Item.Properties properties) {
+        super(properties.stacksTo(1));
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public InteractionResult useOn(UseOnContext context) {
         ItemStack stack = context.getItemInHand();
@@ -103,13 +106,13 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
             }
             data = data.withPos(GlobalPos.of(world.dimension(), pos));
             data = data.withMonitor(name);
-            if (world.isClientSide) {
+            if (world.isClientSide()) {
                 Logging.message(player, "Vehicle control module is set to block '" + name + "'");
             }
         } else {
             data = data.withPos(GlobalPos.of(Level.OVERWORLD, BlockPosTools.INVALID));
             data = data.withMonitor("");
-            if (world.isClientSide) {
+            if (world.isClientSide()) {
                 Logging.message(player, "Vehicle control module is cleared");
             }
         }

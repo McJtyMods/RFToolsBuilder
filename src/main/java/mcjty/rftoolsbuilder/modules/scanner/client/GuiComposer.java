@@ -24,15 +24,15 @@ import mcjty.rftoolsbuilder.shapes.ShapeModifier;
 import mcjty.rftoolsbuilder.shapes.ShapeOperation;
 import mcjty.rftoolsbuilder.shapes.ShapeRenderer;
 import mcjty.rftoolsbuilder.shapes.ShapeRotation;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 import static mcjty.lib.gui.widgets.Widgets.label;
 
@@ -42,8 +42,8 @@ public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, Generic
     private static final int SHAPER_WIDTH = 256;
     private static final int SHAPER_HEIGHT = 238;
 
-    private static final ResourceLocation SIDE_BACKGROUND = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "textures/gui/sidegui_projector.png");
-    private static final ResourceLocation MAIN_BACKGROUND = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "textures/gui/composer.png");
+    private static final Identifier SIDE_BACKGROUND = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "textures/gui/sidegui_projector.png");
+    private static final Identifier MAIN_BACKGROUND = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "textures/gui/composer.png");
 
     private final ChoiceLabel[] operationLabels = new ChoiceLabel[ComposerTileEntity.SLOT_COUNT];
     private final ChoiceLabel[] rotationLabels = new ChoiceLabel[ComposerTileEntity.SLOT_COUNT];
@@ -58,8 +58,7 @@ public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, Generic
     public GuiComposer(ComposerTileEntity tileEntity, GenericContainer container, Inventory inventory) {
         super(container, inventory, Component.literal("Composer"), ScannerModule.COMPOSER.block().get().getManualEntry());
         this.tileEntity = tileEntity;
-        imageWidth = SIDEWIDTH + SHAPER_WIDTH;
-        imageHeight = SHAPER_HEIGHT;
+        setWindowDimensions(SIDEWIDTH + SHAPER_WIDTH, SHAPER_HEIGHT);
     }
 
     public static void register(RegisterMenuScreensEvent event) {
@@ -177,8 +176,9 @@ public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, Generic
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        boolean result = super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        double mouseX = event.x(), mouseY = event.y(); int button = ShapeRenderer.mouseButtonIndex(event.button());
+        boolean result = super.mouseDragged(event, dragX, dragY);
         boolean[] buttons = new boolean[3];
         if (button >= 0 && button < buttons.length) {
             buttons[button] = true;
@@ -205,7 +205,7 @@ public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, Generic
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(@NotNull GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
         drawWindow(graphics, partialTicks, mouseX, mouseY);
         ItemStack stack = menu.getSlot(ComposerTileEntity.SLOT_OUT).getItem();
         if (!stack.isEmpty()) {

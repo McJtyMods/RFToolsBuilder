@@ -1,54 +1,47 @@
 package mcjty.rftoolsbuilder.modules.shield.client;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import mcjty.lib.client.BaseGeometry;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
-import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
+import com.mojang.serialization.MapCodec;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.neoforged.neoforge.client.event.RegisterBlockStateModels;
+import net.neoforged.neoforge.client.model.block.CustomBlockModelDefinition;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+/** Load cable models before Minecraft groups visually equivalent block states. */
+public final class ShieldModelLoader implements CustomBlockModelDefinition {
+    public static final MapCodec<ShieldModelLoader> CODEC = MapCodec.unit(ShieldModelLoader::new);
 
-public class ShieldModelLoader implements IGeometryLoader<ShieldModelLoader.TankModelGeometry> {
-
-    public static final ResourceLocation LOCATION = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "shieldloader");
-
-    public static void register(ModelEvent.RegisterGeometryLoaders event) {
-        event.register(LOCATION, new ShieldModelLoader());
+    public static void register(RegisterBlockStateModels event) {
+        event.registerDefinition(Identifier.fromNamespaceAndPath("rftoolsbuilder", "shield"), CODEC);
     }
 
     @Override
-    public TankModelGeometry read(JsonObject jsonObject, JsonDeserializationContext deserializationContext) throws JsonParseException {
-        return new TankModelGeometry();
+    public Map<BlockState, BlockStateModel.UnbakedRoot> instantiate(StateDefinition<Block, BlockState> states,
+            Supplier<String> source) {
+        var model = new ShieldBakedModel();
+        var root = new BlockStateModel.UnbakedRoot() {
+            @Override
+            public BlockStateModel bake(BlockState state, ModelBaker baker) { return model; }
+
+            // Connections and cable color change the geometry. Do not suppress their redraws.
+            @Override
+            public Object visualEqualityGroup(BlockState state) { return state; }
+
+            @Override
+            public void resolveDependencies(ResolvableModel.Resolver resolver) { }
+        };
+        Map<BlockState, BlockStateModel.UnbakedRoot> models = new IdentityHashMap<>();
+        states.getPossibleStates().forEach(state -> models.put(state, root));
+        return models;
     }
 
-    public static class TankModelGeometry extends BaseGeometry<TankModelGeometry> {
-
-        @Override
-        public BakedModel bake() {
-            return new ShieldBakedModel();
-        }
-
-        @Override
-        public Collection<Material> getMaterials() {
-            List<Material> materials = new ArrayList<>();
-            for (ShieldTexture texture : ShieldTexture.values()) {
-                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield0")));
-                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield1")));
-                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield2")));
-                materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/" + texture.getPath() + "/shield3")));
-            }
-            materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shield/shieldtransparent")));
-            materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "block/shield/shieldfull")));
-            return materials;
-        }
-    }
+    @Override
+    public MapCodec<ShieldModelLoader> codec() { return CODEC; }
 }

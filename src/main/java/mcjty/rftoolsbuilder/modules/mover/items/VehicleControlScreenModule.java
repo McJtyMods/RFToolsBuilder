@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.mover.items;
 
+import net.minecraft.network.chat.Component;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.lib.varia.BlockPosTools;
@@ -194,7 +195,7 @@ public record VehicleControlScreenModule(GlobalPos pos, String line, String move
                 });
             } else {
                 if (player != null) {
-                    player.displayClientMessage(ComponentFactory.literal(ChatFormatting.RED + "Module is not linked to mover controller!"), false);
+                    player.sendSystemMessage(Component.literal(ChatFormatting.RED + "Module is not linked to mover controller!"));
                 }
             }
         }

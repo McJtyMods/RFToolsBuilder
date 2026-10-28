@@ -1,3 +1,9 @@
+26.1.2-8.0.0:
+- Ported to Minecraft 26.1.2 with NeoForge
+- Fixed scanners causing broken blocks to remain visible on clients in the same chunk
+- Fixed scan previews and projectors crashing with dynamic block models such as XNet connectors
+- Builder previews are 75% transparent and hide internal faces
+
 1.21-7.0.7:
 - The mover, vehicle builder, and mover controller where not available in JEI or the creative inventory. This has been fixed
 

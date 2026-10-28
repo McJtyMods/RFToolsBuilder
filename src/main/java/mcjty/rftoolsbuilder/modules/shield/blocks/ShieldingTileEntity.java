@@ -1,10 +1,12 @@
 package mcjty.rftoolsbuilder.modules.shield.blocks;
 
+import com.mojang.serialization.MapCodec;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import mcjty.rftoolsbuilder.modules.shield.ShieldTexture;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldRenderData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -13,21 +15,21 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelProperty;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelProperty;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ShieldingTileEntity extends BlockEntity {
+
+    public static final ModelProperty<ShieldRenderData> RENDER_DATA = new ModelProperty<>();
+    public static final ModelProperty<BlockState> MIMIC = new ModelProperty<>();
 
     private BlockPos shieldProjector;
     private BlockState mimic;
 
-    public static final ModelProperty<Integer> ICON_TOPDOWN = new ModelProperty<>();
-    public static final ModelProperty<Integer> ICON_SIDE = new ModelProperty<>();
-    public static final ModelProperty<BlockState> MIMIC = new ModelProperty<>();
-    public static final ModelProperty<ShieldRenderData> RENDER_DATA = new ModelProperty<>();
 
     public ShieldingTileEntity(BlockPos pos, BlockState state) {
         super(ShieldModule.TYPE_SHIELDING.get(), pos, state);
@@ -41,7 +43,7 @@ public class ShieldingTileEntity extends BlockEntity {
         return ClientboundBlockEntityDataPacket.create(this, (blockEntity, provider) -> nbtTag);
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
@@ -50,11 +52,12 @@ public class ShieldingTileEntity extends BlockEntity {
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider provider) {
-        loadClient(pkt.getTag(), provider);
+    public void onDataPacket(Connection net, ValueInput input) {
+        loadClient(input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new), input.lookup());
+
         requestModelDataUpdate();
         BlockState state = level.getBlockState(worldPosition);
-        level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_ALL);
+        level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
     }
 
     public BlockPos getShieldProjector() {
@@ -76,45 +79,46 @@ public class ShieldingTileEntity extends BlockEntity {
         setChanged();
     }
 
-    private static final ShieldRenderData DEFAULT_RENDER_DATA = new ShieldRenderData(1.0f, 1.0f, 1.0f, 1.0f, ShieldTexture.SHIELD);
-
-    @Nonnull
     @Override
     public ModelData getModelData() {
-        int x = worldPosition.getX();
-        int y = worldPosition.getY();
-        int z = worldPosition.getZ();
-        int topdown = (z & 0x1) * 2 + (x & 0x1);
-        int side = (y & 0x1) * 2 + ((x + z) & 0x1);
-        ShieldRenderData renderData = DEFAULT_RENDER_DATA;
-        if (shieldProjector != null) {
-            BlockEntity te = level.getBlockEntity(shieldProjector);
-            if (te instanceof ShieldProjectorTileEntity shield) {
-                renderData = shield.getRenderData();
-            }
+        ModelData.Builder builder = ModelData.builder().with(RENDER_DATA, getRenderData());
+        if (mimic != null) {
+            builder.with(MIMIC, mimic);
         }
-        return ModelData.builder()
-                .with(ICON_SIDE, side)
-                .with(ICON_TOPDOWN, topdown)
-                .with(MIMIC, mimic)
-                .with(RENDER_DATA, renderData)
-                .build();
+        return builder.build();
+    }
+
+    public static final ShieldRenderData DEFAULT_RENDER_DATA = new ShieldRenderData(1.0f, 1.0f, 1.0f, 1.0f, ShieldTexture.SHIELD);
+
+    public ShieldRenderData getRenderData() {
+        if (shieldProjector != null && level != null && level.getBlockEntity(shieldProjector) instanceof ShieldProjectorTileEntity shield) {
+            return shield.getRenderData();
+        }
+        return DEFAULT_RENDER_DATA;
     }
 
     @Override
-    public void loadAdditional(@Nonnull CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
-        shieldProjector = new BlockPos(tag.getInt("sx"), tag.getInt("sy"), tag.getInt("sz"));
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        CompoundTag tag = input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        HolderLookup.Provider provider = input.lookup();
+
+        shieldProjector = new BlockPos(tag.getIntOr("sx", 0), tag.getIntOr("sy", 0), tag.getIntOr("sz", 0));
         if (tag.contains("mimic")) {
-            mimic = NbtUtils.readBlockState(provider.lookupOrThrow(Registries.BLOCK), tag.getCompound("mimic"));
+            mimic = NbtUtils.readBlockState(provider.lookupOrThrow(Registries.BLOCK), tag.getCompoundOrEmpty("mimic"));
         } else {
             mimic = null;
         }
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        CompoundTag tag = new CompoundTag();
+        HolderLookup.Provider provider = level != null ? level.registryAccess() : RegistryAccess.EMPTY;
+
         saveClient(tag);
+        output.store(MapCodec.assumeMapUnsafe(CompoundTag.CODEC), tag);
     }
 
     private void saveClient(CompoundTag tag) {
@@ -130,9 +134,9 @@ public class ShieldingTileEntity extends BlockEntity {
     }
 
     private void loadClient(CompoundTag tag, HolderLookup.Provider provider) {
-        shieldProjector = new BlockPos(tag.getInt("sx"), tag.getInt("sy"), tag.getInt("sz"));
+        shieldProjector = new BlockPos(tag.getIntOr("sx", 0), tag.getIntOr("sy", 0), tag.getIntOr("sz", 0));
         if (tag.contains("mimic")) {
-            mimic = NbtUtils.readBlockState(provider.lookup(Registries.BLOCK).get(), tag.getCompound("mimic"));
+            mimic = NbtUtils.readBlockState(provider.lookup(Registries.BLOCK).get(), tag.getCompoundOrEmpty("mimic"));
         } else {
             mimic = null;
         }

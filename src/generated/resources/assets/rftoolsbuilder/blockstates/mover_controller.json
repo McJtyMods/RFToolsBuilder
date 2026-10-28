@@ -17,7 +17,7 @@
     },
     "facing=up": {
       "model": "rftoolsbuilder:block/mover_controller",
-      "x": -90
+      "x": 270
     },
     "facing=west": {
       "model": "rftoolsbuilder:block/mover_controller",

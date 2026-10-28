@@ -8,7 +8,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,7 +25,7 @@ public record PacketChamberInfoReady(Map<BlockState, Integer> blocks,
                                      Map<String, CompoundTag> realEntities,
                                      Map<String, String> playerNames) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "chamberinfoready");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "chamberinfoready");
     public static final CustomPacketPayload.Type<PacketChamberInfoReady> TYPE = new Type<>(ID);
 
     private static final byte ENTITY_NONE = 0;

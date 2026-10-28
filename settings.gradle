@@ -8,5 +8,12 @@ pluginManagement {
 }
 
 plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.5.0'
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+// Use the local base mod when available; otherwise keep the shared Maven fallback.
+def localBase = file('../RFToolsBase_neo')
+if (new File(localBase, 'build.gradle').isFile()) {
+    include 'RFToolsBase'
+    project(':RFToolsBase').projectDir = localBase
 }

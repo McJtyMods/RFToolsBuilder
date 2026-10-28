@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -50,7 +50,7 @@ public enum ShieldRenderingMode implements StringRepresentable {
         }
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getSerializedName() {
         return name().toLowerCase(Locale.ENGLISH);

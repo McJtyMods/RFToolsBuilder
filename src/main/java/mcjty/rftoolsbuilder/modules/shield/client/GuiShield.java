@@ -17,13 +17,13 @@ import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.*;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity;
 import mcjty.rftoolsbuilder.modules.shield.filters.*;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,18 +62,18 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     private int listDirty = 0;
 
     private static List<ShieldFilter> fromServer_filters = new ArrayList<>();
+
     public static void storeFiltersForClient(List<ShieldFilter<?>> filters) {
         fromServer_filters = new ArrayList<>(filters);
     }
 
-    private static final ResourceLocation iconLocation = ResourceLocation.fromNamespaceAndPath(RFToolsBuilder.MODID, "textures/gui/shieldprojector.png");
-    private static final ResourceLocation iconGuiElements = ResourceLocation.fromNamespaceAndPath(RFToolsBase.MODID, "textures/gui/guielements.png");
+    private static final Identifier iconLocation = Identifier.fromNamespaceAndPath(RFToolsBuilder.MODID, "textures/gui/shieldprojector.png");
+    private static final Identifier iconGuiElements = Identifier.fromNamespaceAndPath(RFToolsBase.MODID, "textures/gui/guielements.png");
 
     public GuiShield(GenericContainer container, Inventory inventory, Component title) {
         super(container, inventory, title, ShieldModule.SHIELD_BLOCK1.block().get().getManualEntry());
 
-        imageWidth = SHIELD_WIDTH;
-        imageHeight = SHIELD_HEIGHT;
+        setWindowDimensions(SHIELD_WIDTH, SHIELD_HEIGHT);
     }
 
     public static void register(RegisterMenuScreensEvent event) {
@@ -383,7 +383,7 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(@NotNull GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
         requestListsIfNeeded();
         populateFilters();
         enableButtons();

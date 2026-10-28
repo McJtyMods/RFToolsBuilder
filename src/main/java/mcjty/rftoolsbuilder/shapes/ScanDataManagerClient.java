@@ -4,7 +4,7 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.setup.CommandHandler;
 import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +22,7 @@ public class ScanDataManagerClient {
         return instance;
     }
 
-    @Nonnull
+    @NotNull
     public Scan getOrCreateScan(int id) {
         Scan scan = scans.get(id);
         if (scan == null) {

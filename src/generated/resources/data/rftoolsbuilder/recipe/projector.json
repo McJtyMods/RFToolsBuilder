@@ -2,21 +2,11 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "E": {
-      "item": "minecraft:glowstone_dust"
-    },
-    "F": {
-      "item": "rftoolsbase:machine_frame"
-    },
-    "X": {
-      "item": "rftoolsbase:infused_diamond"
-    },
-    "o": {
-      "tag": "c:ender_pearls"
-    },
-    "r": {
-      "item": "minecraft:redstone"
-    }
+    "E": "minecraft:glowstone_dust",
+    "F": "rftoolsbase:machine_frame",
+    "X": "rftoolsbase:infused_diamond",
+    "o": "#c:ender_pearls",
+    "r": "minecraft:redstone"
   },
   "pattern": [
     "XoX",
@@ -24,7 +14,6 @@
     "XrX"
   ],
   "result": {
-    "count": 1,
     "id": "rftoolsbuilder:projector"
   }
 }
