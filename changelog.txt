@@ -1,3 +1,6 @@
+1.21-7.0.8:
+- Fixed scan previews and projectors exposing worldless block entities to dynamic block models, which could cause rendering crashes
+
 1.21-7.0.7:
 - The mover, vehicle builder, and mover controller where not available in JEI or the creative inventory. This has been fixed
 
