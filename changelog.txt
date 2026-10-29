@@ -1,3 +1,6 @@
+1.20-6.0.11:
+- Fixed scan previews and projectors exposing worldless block entities to dynamic block models, which could cause rendering crashes
+
 1.20-6.0.10:
 - Fixed a crash in the scanner in some rare situations
 

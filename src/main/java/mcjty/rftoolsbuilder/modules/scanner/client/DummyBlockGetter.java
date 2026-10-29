@@ -10,7 +10,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LightChunk;
@@ -27,7 +26,6 @@ import java.util.Map;
 public class DummyBlockGetter implements BlockAndTintGetter {
 
     private final RegistryAccess access;
-    private final transient Map<BlockPos, BlockEntity> teCache = new HashMap<>();
     private final Map<BlockPos, BlockState> states;
     private final BlockState air;
     private final LevelLightEngine lightEngine;
@@ -90,10 +88,9 @@ public class DummyBlockGetter implements BlockAndTintGetter {
     @Nullable
     @Override
     public BlockEntity getBlockEntity(BlockPos pos) {
-        BlockState state = getBlockState(pos);
-        if (state.getBlock() instanceof EntityBlock) {
-            return teCache.computeIfAbsent(pos.immutable(), p -> ((EntityBlock) state.getBlock()).newBlockEntity(pos, state));
-        }
+        // Scans contain block states, not block entity data or a backing Level.
+        // Synthetic entities have no level and can crash dynamic models that query
+        // capabilities or other world-dependent data. Let models use their fallback.
         return null;
     }
 
