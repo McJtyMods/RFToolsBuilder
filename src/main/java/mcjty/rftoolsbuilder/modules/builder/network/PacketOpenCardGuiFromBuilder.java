@@ -6,7 +6,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import mcjty.lib.network.PayloadContext;
 
 public record PacketOpenCardGuiFromBuilder() implements CustomPacketPayload {
 
@@ -22,7 +22,7 @@ public record PacketOpenCardGuiFromBuilder() implements CustomPacketPayload {
         return TYPE;
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             GuiShapeCard.open(true);
         });

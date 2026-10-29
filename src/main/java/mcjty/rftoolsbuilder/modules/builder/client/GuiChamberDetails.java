@@ -23,7 +23,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-
 import static mcjty.lib.gui.widgets.Widgets.*;
 
 public class GuiChamberDetails extends GuiItemScreen {
@@ -101,7 +100,7 @@ public class GuiChamberDetails extends GuiItemScreen {
             if (stacks.containsKey(bm)) {
                 stack = stacks.get(bm);
             } else {
-                stack = bm.getBlock().getCloneItemStack(Minecraft.getInstance().level, BlockPos.ZERO, bm, false, null);
+                stack = bm.getBlock().getCloneItemStack(Minecraft.getInstance().level, BlockPos.ZERO, bm, false);
                 if (stack.isEmpty()) {
                     stack = new ItemStack(bm.getBlock(), 0);
                 }
@@ -178,7 +177,6 @@ public class GuiChamberDetails extends GuiItemScreen {
             panel.children(blockRender, nameLabel, countLabel, costLabel);
             blockList.children(panel);
         }
-
 
         infoLabel.text("Total cost blocks: " + totalCost + " RF");
         info2Label.text("Total cost entities: " + totalCostEntities + " RF");

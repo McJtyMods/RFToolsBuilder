@@ -12,10 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemUtil;
-
+import mcjty.lib.container.IItemHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
@@ -32,9 +29,9 @@ public enum ShapeCardType {
             "a shield of that shape or in the builder to",
             "actually build the shape"}) {
         @Override
-        public void addHudLog(List<String> list, ResourceHandler<ItemResource> inventory) {
+        public void addHudLog(List<String> list, IItemHandler inventory) {
             list.add("    Shape card");
-            ItemStack shapeCard = ItemUtil.getStack(inventory, BuilderTileEntity.SLOT_TAB);
+            ItemStack shapeCard = inventory.getStackInSlot(BuilderTileEntity.SLOT_TAB);
             if (!shapeCard.isEmpty()) {
                 Shape shape = ShapeCardItem.getShape(shapeCard);
                 if (shape != null) {
@@ -176,7 +173,7 @@ public enum ShapeCardType {
         return rfNeeded.get();
     }
 
-    public void addHudLog(List<String> list, ResourceHandler<ItemResource> inventoryHelper) {
+    public void addHudLog(List<String> list, IItemHandler inventoryHelper) {
         if(hudLogEntry != null) {
             list.add(hudLogEntry);
         }

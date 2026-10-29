@@ -1,7 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
 import mcjty.lib.varia.CapabilityTools;
-import mcjty.lib.varia.InventoryTools;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
@@ -15,12 +14,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import net.neoforged.neoforge.transfer.IndexModifier;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.StacksResourceHandler;
-import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import mcjty.lib.container.IItemHandler;
+import mcjty.lib.container.IItemHandlerModifiable;
+import mcjty.lib.network.PayloadContext;
 
 public record PacketUpdateCardInInventory(BlockPos pos, int slotIndex, ItemStack stack) implements CustomPacketPayload {
 
@@ -45,13 +42,12 @@ public record PacketUpdateCardInInventory(BlockPos pos, int slotIndex, ItemStack
         return stack.getItem() instanceof ShapeCardItem;
     }
 
-
     @Override
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             Player player = ctx.player();
             Level world = player.level();
@@ -63,10 +59,9 @@ public record PacketUpdateCardInInventory(BlockPos pos, int slotIndex, ItemStack
                 if (!isValidItem(this.stack)) {
                     return;
                 }
-                ResourceHandler<ItemResource> h = CapabilityTools.itemHandler(world.getCapability(Capabilities.Item.BLOCK, pos, null));
-                if (h instanceof IndexModifier<?> || h instanceof StacksResourceHandler<?, ?>) {
-                    var modifiable = InventoryTools.modifier(h);
-                    modifiable.set(slotIndex, ItemResource.of(this.stack), this.stack.getCount());
+                IItemHandler h = CapabilityTools.itemHandler(ItemStorage.SIDED.find(world, pos, null));
+                if (h instanceof IItemHandlerModifiable modifiable) {
+                    modifiable.setStackInSlot(slotIndex, this.stack);
                 }
             }
         });

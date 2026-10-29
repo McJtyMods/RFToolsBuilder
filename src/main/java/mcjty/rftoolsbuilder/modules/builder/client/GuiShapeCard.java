@@ -43,11 +43,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemUtil;
-
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import mcjty.lib.container.IItemHandler;
 import static mcjty.lib.gui.layout.AbstractLayout.DEFAULT_SPACING;
 import static mcjty.lib.gui.widgets.Widgets.*;
 
@@ -97,7 +94,6 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     private ShapeID shapeID = null;
     private ShapeRenderer shapeRenderer = null;
 
-
     public GuiShapeCard(boolean fromTE) {
         super(Component.literal("Shapecard"));
         this.fromTE = fromTE;
@@ -138,11 +134,11 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     private ItemStack getStackToEdit() {
         if (fromTE) {
             BlockEntity te = minecraft.level.getBlockEntity(fromTEPos);
-            ResourceHandler<ItemResource> capability = CapabilityTools.itemHandler(te.getLevel().getCapability(Capabilities.Item.BLOCK, fromTEPos, null));
+            IItemHandler capability = CapabilityTools.itemHandler(ItemStorage.SIDED.find(te.getLevel(), fromTEPos, null));
             if (capability == null) {
                 return ItemStack.EMPTY;
             } else {
-                return ItemUtil.getStack(capability, fromTEStackSlot);
+                return capability.getStackInSlot(fromTEStackSlot);
             }
         } else {
             return minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
@@ -399,7 +395,6 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         getShapeRenderer().handleShapeDragging(x, y, buttons);
     }
 
-
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         double x = event.x(), y = event.y(); int button = event.button();
@@ -434,7 +429,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        int keyCode = event.key(), scanCode = event.keycode(), modifiers = event.modifiers();
+        int keyCode = event.key(), scanCode = event.key(), modifiers = event.modifiers();
         // If not initialized yet we do nothing
         if (window == null) {
             return false;

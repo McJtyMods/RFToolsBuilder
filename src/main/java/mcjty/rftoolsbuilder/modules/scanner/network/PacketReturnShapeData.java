@@ -15,8 +15,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-
+import mcjty.lib.network.PayloadContext;
 import org.jetbrains.annotations.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
@@ -246,7 +245,7 @@ public record PacketReturnShapeData(ShapeID shapeID, int checksum, @Nullable byt
         return new PacketReturnShapeData(id, checksum, payload.payload(), payload.codec(), payload.decodedLength(), statePalette, dimension, count, offsetY, msg);
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             RenderData.RenderPlane plane = decodePlane();
             ShapeRenderer.setRenderData(shapeID, checksum, plane, offsetY, dimension.getY(), msg);

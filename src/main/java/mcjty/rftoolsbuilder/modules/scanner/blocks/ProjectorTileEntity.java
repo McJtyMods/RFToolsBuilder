@@ -51,9 +51,8 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.util.Lazy;
+import mcjty.lib.varia.Lazy;
 import org.jetbrains.annotations.Nullable;
-
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.lib.setup.Registration.ITEM_INVENTORY;
@@ -602,7 +601,7 @@ public class ProjectorTileEntity extends TickingTileEntity {
     @Override
     protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY.get()));
     }
 
     @Override

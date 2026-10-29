@@ -50,12 +50,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.util.Lazy;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBlockTags;
+import mcjty.lib.varia.Lazy;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData.*;
 
@@ -226,7 +225,6 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.withDimension(new BlockPos(x, y, z)));
     }
 
-
     public static void setOffset(ItemStack card, int x, int y, int z) {
         ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
         card.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data.withOffset(new BlockPos(x, y, z)));
@@ -268,7 +266,6 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         return card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT).dimensions().selected();
     }
 
-
     @Override
     public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay display, Consumer<Component> consumer, TooltipFlag flag) {
         List<Component> list = new ArrayList<>();
@@ -307,26 +304,26 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         Set<Block> blocks = new HashSet<>();
         boolean tagMatching = isTagMatching(stack);
         if (isVoiding(stack, "stone")) {
-            addBlocks(blocks, Blocks.STONE, Tags.Blocks.STONES, tagMatching);
+            addBlocks(blocks, Blocks.STONE, ConventionalBlockTags.STONES, tagMatching);
         }
         if (isVoiding(stack, "cobble")) {
-            addBlocks(blocks, Blocks.COBBLESTONE, Tags.Blocks.COBBLESTONES, tagMatching);
+            addBlocks(blocks, Blocks.COBBLESTONE, ConventionalBlockTags.COBBLESTONES, tagMatching);
         }
         if (isVoiding(stack, "dirt")) {
             addBlocks(blocks, Blocks.DIRT, BlockTags.DIRT, tagMatching);
             addBlocks(blocks, Blocks.GRASS_BLOCK, null, tagMatching);
         }
         if (isVoiding(stack, "sand")) {
-            addBlocks(blocks, Blocks.SAND, Tags.Blocks.SANDS, tagMatching);
+            addBlocks(blocks, Blocks.SAND, ConventionalBlockTags.SANDS, tagMatching);
         }
         if (isVoiding(stack, "gravel")) {
-            addBlocks(blocks, Blocks.GRAVEL, Tags.Blocks.GRAVELS, tagMatching);
+            addBlocks(blocks, Blocks.GRAVEL, ConventionalBlockTags.GRAVELS, tagMatching);
         }
         if (isVoiding(stack, "netherrack")) {
-            addBlocks(blocks, Blocks.NETHERRACK, Tags.Blocks.NETHERRACKS, tagMatching);
+            addBlocks(blocks, Blocks.NETHERRACK, ConventionalBlockTags.NETHERRACKS, tagMatching);
         }
         if (isVoiding(stack, "endstone")) {
-            addBlocks(blocks, Blocks.END_STONE, Tags.Blocks.END_STONES, tagMatching);
+            addBlocks(blocks, Blocks.END_STONE, ConventionalBlockTags.END_STONES, tagMatching);
         }
         return blocks;
     }
@@ -454,8 +451,6 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
     public static Optional<Identifier> getGhostBlock(ItemStack card) {
         return card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT).ghostBlock();
     }
-
-
 
     public static void setShape(ItemStack stack, Shape shape, boolean solid) {
         ShapeCardData data = stack.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
@@ -608,7 +603,6 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         return cnt;
     }
 
-
     // Used for saving
     public static int getDataPositions(Level world, ItemStack stack, Shape shape, boolean solid, RLE positions, StatePalette statePalette) {
         BlockPos clamped = getShapeDataDimension(stack);
@@ -644,8 +638,6 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         }
         return cnt;
     }
-
-
 
     public static void composeFormula(ItemStack shapeCard, IFormula formula, Level worldObj, BlockPos thisCoord, BlockPos dimension, BlockPos offset, Map<BlockPos, BlockState> blocks, int maxSize, boolean solid, boolean forquarry, ChunkPos chunk) {
         int xCoord = thisCoord.getX();
@@ -686,7 +678,6 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         }
         return true;
     }
-
 
     public static void save(Player player, ItemStack card, String filename) {
         if (!validFile(player, filename)) {
@@ -822,7 +813,6 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
         CompoundTag tag = NbtIo.readCompressed(new ByteArrayInputStream(decoded), NbtAccounter.unlimitedHeap());
         return NbtUtils.readBlockState(BuiltInRegistries.BLOCK, tag);
     }
-
 
     private static BlockPos parse(String s) {
         String[] split = StringUtils.split(s, ',');

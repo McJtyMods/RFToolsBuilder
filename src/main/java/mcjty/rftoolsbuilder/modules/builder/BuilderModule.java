@@ -1,6 +1,8 @@
 package mcjty.rftoolsbuilder.modules.builder;
 
-import com.mojang.serialization.MapCodec;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.minecraft.resources.Identifier;
 import java.util.function.Supplier;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RBlock;
@@ -12,7 +14,6 @@ import mcjty.lib.items.BaseBlockItem;
 import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbase.modules.various.VariousModule;
 import mcjty.rftoolsbase.tools.ManualHelper;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerBlock;
 import mcjty.rftoolsbuilder.modules.builder.blocks.SpaceChamberControllerTileEntity;
@@ -27,31 +28,21 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
 import mcjty.rftoolsbuilder.modules.builder.items.SpaceChamberCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.SuperHarvestingTool;
 import mcjty.rftoolsbuilder.setup.Config;
-import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
-import net.neoforged.neoforge.common.world.chunk.TicketController;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-
+import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
+import mcjty.lib.setup.DeferredBlock;
+import mcjty.lib.setup.DeferredHolder;
+import mcjty.lib.setup.DeferredItem;
 import static mcjty.lib.datagen.Dob.has;
 import static mcjty.lib.setup.Registration.ITEM_INFUSABLE;
-import static mcjty.rftoolsbuilder.RFToolsBuilder.MODID;
 import static mcjty.rftoolsbuilder.RFToolsBuilder.tab;
 import static mcjty.rftoolsbuilder.setup.Registration.*;
 
@@ -69,7 +60,7 @@ public class BuilderModule implements IModule {
 
     public static final DeferredBlock<SpaceChamberControllerBlock> SPACE_CHAMBER_CONTROLLER = BLOCKS.register("space_chamber_controller", SpaceChamberControllerBlock::new);
     public static final DeferredItem<Item> SPACE_CHAMBER_CONTROLLER_ITEM = ITEMS.register("space_chamber_controller", tab(properties -> new BaseBlockItem(SPACE_CHAMBER_CONTROLLER.get(), properties.useBlockDescriptionPrefix())));
-    public static final Supplier<BlockEntityType<SpaceChamberControllerTileEntity>> TYPE_SPACE_CHAMBER_CONTROLLER = TILES.register("space_chamber_controller", () -> new BlockEntityType<>(SpaceChamberControllerTileEntity::new, SPACE_CHAMBER_CONTROLLER.get()));
+    public static final Supplier<BlockEntityType<SpaceChamberControllerTileEntity>> TYPE_SPACE_CHAMBER_CONTROLLER = TILES.register("space_chamber_controller", () -> FabricBlockEntityTypeBuilder.create(SpaceChamberControllerTileEntity::new, SPACE_CHAMBER_CONTROLLER.get()).build());
 
     public static final DeferredItem<Item> SPACE_CHAMBER_CARD = ITEMS.register("space_chamber_card", tab(SpaceChamberCardItem::new));
 
@@ -101,52 +92,40 @@ public class BuilderModule implements IModule {
                     .persistent(ShapeCardData.CODEC)
                     .networkSynchronized(ShapeCardData.STREAM_CODEC));
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<BuilderData>> BUILDER_DATA = ATTACHMENT_TYPES.register(
-            "builder_data", () -> AttachmentType.builder(() -> BuilderData.DEFAULT)
-                    .serialize(MapCodec.assumeMapUnsafe(BuilderData.CODEC))
-                    .build());
+    public static final AttachmentType<BuilderData> BUILDER_DATA = AttachmentRegistry.create(
+            Identifier.fromNamespaceAndPath("rftoolsbuilder", "builder_data"),
+            builder -> builder.initializer(() -> BuilderData.DEFAULT).persistent(BuilderData.CODEC));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<BuilderData>> ITEM_BUILDER_DATA = COMPONENTS.registerComponentType(
             "builder_data",
             builder -> builder
                     .persistent(BuilderData.CODEC)
                     .networkSynchronized(BuilderData.STREAM_CODEC));
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<ChamberControllerData>> CHAMBER_DATA = ATTACHMENT_TYPES.register(
-            "chamber_data", () -> AttachmentType.builder(() -> ChamberControllerData.DEFAULT)
-                    .serialize(MapCodec.assumeMapUnsafe(ChamberControllerData.CODEC))
-                    .build());
+    public static final AttachmentType<ChamberControllerData> CHAMBER_DATA = AttachmentRegistry.create(
+            Identifier.fromNamespaceAndPath("rftoolsbuilder", "chamber_data"),
+            builder -> builder.initializer(() -> ChamberControllerData.DEFAULT).persistent(ChamberControllerData.CODEC));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ChamberControllerData>> ITEM_CHAMBER_DATA = COMPONENTS.registerComponentType(
             "chamber_data",
             builder -> builder
                     .persistent(ChamberControllerData.CODEC)
                     .networkSynchronized(ChamberControllerData.STREAM_CODEC));
 
-    public BuilderModule(IEventBus bus) {
-        bus.addListener(this::registerMenuScreens);
-        bus.addListener(this::onRegisterTicketController);
+    @Override
+    public void init() {
     }
 
     @Override
-    public void init(FMLCommonSetupEvent event) {
-    }
-
-    private void onRegisterTicketController(RegisterTicketControllersEvent event) {
-        RFToolsBuilder.setup.ticketController = new TicketController(Identifier.fromNamespaceAndPath(MODID, "builder"));
-        event.register(RFToolsBuilder.setup.ticketController);
-    }
-
-    @Override
-    public void initClient(FMLClientSetupEvent event) {
+    public void initClient() {
+        registerMenuScreens();
         BuilderRenderer.register();
     }
 
-    public void registerMenuScreens(RegisterMenuScreensEvent event) {
-        GuiBuilder.register(event);
+    public void registerMenuScreens() {
+        GuiBuilder.register();
     }
 
-
     @Override
-    public void initConfig(IEventBus bus) {
+    public void initConfig() {
         BuilderConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
     }
 
@@ -169,7 +148,7 @@ public class BuilderModule implements IModule {
                         .blockState(p -> p.singleTextureBlock(SPACE_CHAMBER.get(), "space_chamber", "block/machinespacechamber"))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
-                                        .define('x', Tags.Items.DYES_BLUE)
+                                        .define('x', ConventionalItemTags.BLUE_DYES)
                                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
                                 "xGx", "GFG", "xGx"),
                 Dob.blockBuilder(SPACE_CHAMBER_CONTROLLER)
@@ -273,7 +252,7 @@ public class BuilderModule implements IModule {
                 Dob.itemBuilder(SHAPE_CARD_VOID)
                         .generatedItem("rftoolsbuilder:item/shapecardvoiditem")
                         .shapedComponentPreserve(builder -> builder
-                                        .define('x', Tags.Items.DYES_BLACK)
+                                        .define('x', ConventionalItemTags.BLACK_DYES)
                                         .define('M', SHAPE_CARD_DEF.get())
                                         .unlockedBy("shape_card", has(SHAPE_CARD_DEF.get())),
                                 "xOx", "OMO", "xOx")

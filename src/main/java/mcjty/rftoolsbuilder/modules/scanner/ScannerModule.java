@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.scanner;
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import java.util.function.Supplier;
 import mcjty.lib.blocks.RBlock;
 import mcjty.lib.container.GenericContainer;
@@ -19,19 +20,12 @@ import mcjty.rftoolsbuilder.modules.scanner.client.GuiProjector;
 import mcjty.rftoolsbuilder.modules.scanner.client.GuiScanner;
 import mcjty.rftoolsbuilder.modules.scanner.client.ProjectorRenderer;
 import mcjty.rftoolsbuilder.setup.Config;
-import mcjty.rftoolsbuilder.setup.Registration;
 import mcjty.rftoolsbuilder.shapes.ShapeDataManagerClient;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.common.NeoForge;
-
 import static mcjty.lib.datagen.Dob.has;
 import static mcjty.lib.setup.Registration.ITEM_INVENTORY;
 import static mcjty.rftoolsbuilder.setup.Registration.CONTAINERS;
@@ -63,29 +57,26 @@ public class ScannerModule implements IModule {
     public static final Supplier<BlockEntityType<ProjectorTileEntity>> TYPE_PROJECTOR = PROJECTOR.be();
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_PROJECTOR = CONTAINERS.register("projector", GenericContainer::createContainerType);
 
-    public ScannerModule(IEventBus bus) {
-        bus.addListener(this::registerMenuScreens);
+    @Override
+    public void init() {
+        ShapeHandler.register();
     }
 
     @Override
-    public void init(FMLCommonSetupEvent event) {
-        NeoForge.EVENT_BUS.register(new ShapeHandler());
-    }
-
-    @Override
-    public void initClient(FMLClientSetupEvent event) {
-        NeoForge.EVENT_BUS.addListener(ShapeDataManagerClient::cleanupOldRenderers);
+    public void initClient() {
+        registerMenuScreens();
+        ClientTickEvents.END_CLIENT_TICK.register(client -> ShapeDataManagerClient.cleanupOldRenderers());
         ProjectorRenderer.register();
     }
 
-    public void registerMenuScreens(RegisterMenuScreensEvent event) {
-        GuiComposer.register(event);
-        GuiProjector.register(event);
-        GuiScanner.register(event);
+    public void registerMenuScreens() {
+        GuiComposer.register();
+        GuiProjector.register();
+        GuiScanner.register();
     }
 
     @Override
-    public void initConfig(IEventBus bus) {
+    public void initConfig() {
         ScannerConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
     }
 

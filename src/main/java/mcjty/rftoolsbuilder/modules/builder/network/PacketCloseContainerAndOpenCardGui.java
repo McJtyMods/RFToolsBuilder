@@ -11,7 +11,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import mcjty.lib.network.PayloadContext;
 
 public record PacketCloseContainerAndOpenCardGui(BlockPos builderPos) implements CustomPacketPayload {
 
@@ -31,7 +31,7 @@ public record PacketCloseContainerAndOpenCardGui(BlockPos builderPos) implements
         return new PacketCloseContainerAndOpenCardGui(pos);
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             Player player = ctx.player();
             ((ServerPlayer) player).doCloseContainer();

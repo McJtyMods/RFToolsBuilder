@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
-
 import static mcjty.lib.builder.TooltipBuilder.*;
 
 public class SpaceChamberControllerBlock extends BaseBlock {
@@ -43,7 +42,7 @@ public class SpaceChamberControllerBlock extends BaseBlock {
     }
 
     private static String getChannelDescription(ItemStack stack) {
-        ChamberControllerData data = stack.getOrDefault(BuilderModule.ITEM_CHAMBER_DATA, ChamberControllerData.DEFAULT);
+        ChamberControllerData data = stack.getOrDefault(BuilderModule.ITEM_CHAMBER_DATA.get(), ChamberControllerData.DEFAULT);
         if (data.channel() == -1) {
             return "Channel is not set!";
         } else {
@@ -83,6 +82,5 @@ public class SpaceChamberControllerBlock extends BaseBlock {
 //            onNeighborBlockChange(world, pos, state, this);
         }
     }
-
 
 }

@@ -54,7 +54,7 @@ public class BuilderRenderer implements BlockEntityRenderer<BuilderTileEntity, B
     public static void register() { BlockEntityRenderers.register(BuilderModule.BUILDER.be().get(), BuilderRenderer::new); }
 
     @Override
-    public AABB getRenderBoundingBox(BuilderTileEntity tile) {
-        return new AABB(Vec3.atCenterOf(tile.getBlockPos()), Vec3.atCenterOf(tile.getBlockPos().offset(1, 2, 1)));
+    public boolean shouldRenderOffScreen() {
+        return true;
     }
 }

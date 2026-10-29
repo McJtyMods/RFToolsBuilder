@@ -14,8 +14,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
-import net.neoforged.neoforge.common.util.Lazy;
-
+import mcjty.lib.varia.Lazy;
 import static mcjty.lib.builder.TooltipBuilder.header;
 import static mcjty.lib.builder.TooltipBuilder.key;
 
@@ -52,6 +51,5 @@ public class ShieldTemplateBlock extends Block implements ITooltipSettings {
     public TemplateColor getColor() {
         return color;
     }
-
 
 }

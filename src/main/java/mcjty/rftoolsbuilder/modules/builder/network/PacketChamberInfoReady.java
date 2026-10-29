@@ -12,8 +12,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-
+import mcjty.lib.network.PayloadContext;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +56,7 @@ public record PacketChamberInfoReady(Map<BlockState, Integer> blocks,
                 new HashMap<>(realEntities), new HashMap<>());
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             GuiChamberDetails.setItemsWithCount(blocks, costs, stacks,
                     entities, entityCosts, realEntities, playerNames);

@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.shield.client;
 
+import net.minecraft.client.gui.screens.MenuScreens;
 import mcjty.lib.base.StyleConfig;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
@@ -21,15 +22,11 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
-
 import static mcjty.lib.gui.widgets.Widgets.*;
 import static mcjty.rftoolsbuilder.modules.shield.blocks.ShieldProjectorTileEntity.*;
-
 
 public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, GenericContainer> {
     public static final int SHIELD_WIDTH = 256;
@@ -76,8 +73,8 @@ public class GuiShield extends GenericGuiContainer<ShieldProjectorTileEntity, Ge
         setWindowDimensions(SHIELD_WIDTH, SHIELD_HEIGHT);
     }
 
-    public static void register(RegisterMenuScreensEvent event) {
-        event.register(ShieldModule.CONTAINER_SHIELD.get(), GuiShield::new);
+    public static void register() {
+        MenuScreens.register(ShieldModule.CONTAINER_SHIELD.get(), GuiShield::new);
     }
 
     @Override

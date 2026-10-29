@@ -27,9 +27,8 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.common.util.Lazy;
+import mcjty.lib.varia.Lazy;
 import org.jetbrains.annotations.NotNull;
-
 import static mcjty.lib.builder.TooltipBuilder.*;
 
 public class SpaceChamberCardItem extends Item implements ITooltipSettings {
@@ -47,7 +46,7 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
     }
 
     private String getChannelDescription(ItemStack card) {
-        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA, ShapeCardData.DEFAULT);
+        ShapeCardData data = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
         int channel = data.channel();
         if (channel != -1) {
             return "Channel: " + channel;
@@ -95,9 +94,9 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
         if (channel == -1) {
             showDetails(level, player, stack);
         } else {
-            ShapeCardData data = stack.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA, ShapeCardData.DEFAULT);
+            ShapeCardData data = stack.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
             data = data.withChannel(channel);
-            stack.set(BuilderModule.ITEM_SHAPECARD_DATA, data);
+            stack.set(BuilderModule.ITEM_SHAPECARD_DATA.get(), data);
             if (level.isClientSide()) {
                 Logging.message(player, "Card is set to channel '" + channel + "'");
             }
@@ -106,7 +105,7 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
     }
 
     private void showDetails(Level world, Player player, ItemStack stack) {
-        ShapeCardData data = stack.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA, ShapeCardData.DEFAULT);
+        ShapeCardData data = stack.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
         int channel = data.channel();
         if (channel != -1) {
             showDetailsGui(world, player);
@@ -120,7 +119,6 @@ public class SpaceChamberCardItem extends Item implements ITooltipSettings {
             GuiChamberDetails.open();
         }
     }
-
 
     @Override
     public ManualEntry getManualEntry() {

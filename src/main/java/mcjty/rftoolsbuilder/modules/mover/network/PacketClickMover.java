@@ -9,7 +9,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import mcjty.lib.network.PayloadContext;
 
 /**
  * Packet from client to sent to indicate that the player clicked on a mover button inside the platform
@@ -33,7 +33,7 @@ public record PacketClickMover(BlockPos pos, String mover) implements CustomPack
         return TYPE;
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             Player player = ctx.player();
             if (player.level().getBlockEntity(pos) instanceof MoverTileEntity mover) {

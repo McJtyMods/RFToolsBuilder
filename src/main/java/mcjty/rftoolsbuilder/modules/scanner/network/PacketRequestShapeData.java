@@ -15,7 +15,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import mcjty.lib.network.PayloadContext;
 
 public record PacketRequestShapeData(ItemStack card, ShapeID shapeID, int checksum) implements CustomPacketPayload {
 
@@ -37,7 +37,7 @@ public record PacketRequestShapeData(ItemStack card, ShapeID shapeID, int checks
         return new PacketRequestShapeData(card, id, checksum);
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             Player player = ctx.player();
             Shape shape = ShapeCardItem.getShape(card);

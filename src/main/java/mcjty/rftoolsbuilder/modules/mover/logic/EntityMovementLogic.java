@@ -54,7 +54,6 @@ public class EntityMovementLogic {
         }
     }
 
-
     // Return the actual offset moved for the current player. Only if the player is actually on the platform
     public Vec3 tryMoveVehicleThisPlayer(float partialTicks) {
         Vec3 result = Vec3.ZERO;
@@ -320,7 +319,6 @@ public class EntityMovementLogic {
     public void setSource(BlockPos source) {
         this.source = source;
     }
-
 
     @NotNull
     public Vec3 getMovingPosition(float partialTicks, long gameTick) {

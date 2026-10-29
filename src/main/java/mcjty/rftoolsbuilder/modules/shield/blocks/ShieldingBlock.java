@@ -46,7 +46,6 @@ public class ShieldingBlock extends Block implements EntityBlock {
     public static final BooleanProperty FLAG_OPAQUE = BooleanProperty.create("opaque");             // If the block is opaque or not
     public static final EnumProperty<ShieldRenderingMode> RENDER_MODE = EnumProperty.create("render", ShieldRenderingMode.class);
 
-
     public static final VoxelShape COLLISION_SHAPE = Shapes.box(0.002, 0.002, 0.002, 0.998, 0.998, 0.998);
 
     public ShieldingBlock(BlockBehaviour.Properties properties) {
@@ -101,11 +100,6 @@ public class ShieldingBlock extends Block implements EntityBlock {
         return super.getShadeBrightness(state, worldIn, pos);
     }
 
-    @Override
-    public boolean canEntityDestroy(BlockState state, BlockGetter world, BlockPos pos, Entity entity) {
-        return false;
-    }
-
     @NotNull
     @Override
     public VoxelShape getShape(@NotNull BlockState state, BlockGetter world, @NotNull BlockPos pos, @NotNull CollisionContext context) {
@@ -122,7 +116,6 @@ public class ShieldingBlock extends Block implements EntityBlock {
             return super.getShape(state, world, pos, context);
         }
     }
-
 
     @NotNull
     @Override
@@ -221,7 +214,6 @@ public class ShieldingBlock extends Block implements EntityBlock {
         }
         return false;
     }
-
 
     private boolean checkPlayerCD(BlockGetter world, BlockPos pos, Player entity) {
         ShieldProjectorTileEntity projector = getShieldProjector(world, pos);

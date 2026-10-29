@@ -13,8 +13,7 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.material.MapColor;
-import net.neoforged.neoforge.common.Tags;
-
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBlockTags;
 import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.HashSet;
@@ -154,7 +153,7 @@ public class ShapeBlockInfo {
             render = BD_FIRE;
         } else if (block == Blocks.REDSTONE_WIRE) {
             render = BD_REDSTONE;
-        } else if (tags.contains(Tags.Blocks.CHESTS)) {
+        } else if (tags.contains(ConventionalBlockTags.CHESTS)) {
             render = BD_CHEST;
         } else if (tags.contains(BlockTags.TRAPDOORS) ||
                 tags.contains(BlockTags.WOODEN_PRESSURE_PLATES) ||

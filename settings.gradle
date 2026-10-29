@@ -3,7 +3,7 @@ pluginManagement {
         mavenLocal()
         gradlePluginPortal()
         maven { url = 'https://maven.firstdark.dev/releases' }
-        maven { url = 'https://maven.neoforged.net/releases' }
+        maven { url = 'https://maven.fabricmc.net' }
     }
 }
 
@@ -11,9 +11,21 @@ plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
 
-// Use the local base mod when available; otherwise keep the shared Maven fallback.
-def localBase = file('../RFToolsBase_neo')
-if (new File(localBase, 'build.gradle').isFile()) {
+// Until RFToolsBase Fabric is published, use its sibling source checkout standalone.
+if (file('../RFToolsBase_fabric/build.gradle').isFile()) {
     include 'RFToolsBase'
-    project(':RFToolsBase').projectDir = localBase
+    project(':RFToolsBase').projectDir = file('../RFToolsBase_fabric')
+}
+
+// Use matching local library sources when developing this port standalone.
+['McJtyLib', 'TheOneProbe'].each { mod ->
+    if (file("../${mod}_fabric/build.gradle").isFile()) {
+        include mod
+        project(":${mod}").projectDir = file("../${mod}_fabric")
+    }
+}
+
+if (providers.gradleProperty('builderPortTests').isPresent() && file('../ModXNet_fabric/build.gradle').isFile()) {
+    include 'ModXNet'
+    project(':ModXNet').projectDir = file('../ModXNet_fabric')
 }

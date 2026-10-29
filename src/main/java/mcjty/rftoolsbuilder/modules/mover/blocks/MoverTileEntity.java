@@ -14,7 +14,6 @@ import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
-import mcjty.lib.setup.Registration;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.TickingTileEntity;
@@ -56,11 +55,10 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.util.Lazy;
+import mcjty.lib.varia.Lazy;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.lib.container.SlotDefinition.specific;
@@ -344,7 +342,6 @@ public class MoverTileEntity extends TickingTileEntity {
         return false;
     }
 
-
     @NotNull
     public Map<BlockPos, MoverTileEntity> traverseAndCollect() {
         Map<BlockPos, MoverTileEntity> alreadyHandled = new HashMap<>();
@@ -426,7 +423,6 @@ public class MoverTileEntity extends TickingTileEntity {
         return null;
     }
 
-
     // The position of the current mover (in the function) is not included
     @Nullable
     public <T> T traverseBreadthFirstWithPath(BiFunction<List<BlockPos>, MoverTileEntity, T> function) {
@@ -464,7 +460,6 @@ public class MoverTileEntity extends TickingTileEntity {
         }
         return null;
     }
-
 
     /**
      * Return true if this mover is valid and connected to a network
@@ -768,8 +763,8 @@ public class MoverTileEntity extends TickingTileEntity {
     @Override
     protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
-        MoverData moverData = input.get(MoverModule.ITEM_MOVER_DATA);
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY.get()));
+        MoverData moverData = input.get(MoverModule.ITEM_MOVER_DATA.get());
         if (moverData != null) {
             setData(MoverModule.MOVER_DATA, moverData);
         }
@@ -779,7 +774,7 @@ public class MoverTileEntity extends TickingTileEntity {
     protected void collectImplicitComponents(DataComponentMap.Builder builder) {
         super.collectImplicitComponents(builder);
         items.collectImplicitComponents(builder);
-        builder.set(MoverModule.ITEM_MOVER_DATA, getData(MoverModule.MOVER_DATA));
+        builder.set(MoverModule.ITEM_MOVER_DATA.get(), getData(MoverModule.MOVER_DATA));
     }
 
     @Override

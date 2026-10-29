@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.mover.client;
 
+import net.minecraft.client.gui.screens.MenuScreens;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
@@ -12,8 +13,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-
 import org.jetbrains.annotations.NotNull;
 
 public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEntity, GenericContainer> {
@@ -24,8 +23,8 @@ public class GuiVehicleBuilder extends GenericGuiContainer<VehicleBuilderTileEnt
         super(container, inventory, title, MoverModule.VEHICLE_BUILDER.block().get().getManualEntry());
     }
 
-    public static void register(RegisterMenuScreensEvent event) {
-        event.register(MoverModule.CONTAINER_VEHICLE_BUILDER.get(), GuiVehicleBuilder::new);
+    public static void register() {
+        MenuScreens.register(MoverModule.CONTAINER_VEHICLE_BUILDER.get(), GuiVehicleBuilder::new);
     }
 
     @Override

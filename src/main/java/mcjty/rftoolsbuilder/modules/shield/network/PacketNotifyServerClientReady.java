@@ -8,7 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import mcjty.lib.network.PayloadContext;
 
 public record PacketNotifyServerClientReady(BlockPos pos) implements CustomPacketPayload {
 
@@ -28,7 +28,7 @@ public record PacketNotifyServerClientReady(BlockPos pos) implements CustomPacke
         return new PacketNotifyServerClientReady(worldPosition);
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             Player player = ctx.player();
             if (player.level().getBlockEntity(pos) instanceof ShieldProjectorTileEntity projector) {

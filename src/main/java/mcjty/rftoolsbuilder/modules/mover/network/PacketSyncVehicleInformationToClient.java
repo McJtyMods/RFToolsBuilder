@@ -9,8 +9,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-
+import mcjty.lib.network.PayloadContext;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +35,7 @@ public record PacketSyncVehicleInformationToClient(BlockPos pos, List<String> pl
         return TYPE;
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             if (SafeClientTools.getClientWorld().getBlockEntity(pos) instanceof MoverTileEntity mover) {
                 mover.setClientRenderInfo(platforms, currentPlatform, valid, enoughPower);

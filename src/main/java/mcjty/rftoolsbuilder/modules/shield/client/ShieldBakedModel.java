@@ -1,6 +1,10 @@
 package mcjty.rftoolsbuilder.modules.shield.client;
 
 import java.util.*;
+import java.util.function.Predicate;
+import mcjty.rftoolsbuilder.shapes.ScanModels;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.client.renderer.v1.model.FabricBlockStateModel;
 import mcjty.lib.client.AbstractDynamicBakedModel;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.ShieldRenderingMode;
@@ -50,8 +54,8 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
     @Override
     public void collectParts(BlockAndTintGetter world, BlockPos pos,
             BlockState state, RandomSource random, List<BlockStateModelPart> parts) {
-        var modelData = world.getModelData(pos);
-        ShieldRenderData renderData = modelData.get(ShieldingTileEntity.RENDER_DATA);
+        var shield = world.getBlockEntity(pos) instanceof ShieldingTileEntity te ? te : null;
+        ShieldRenderData renderData = shield == null ? null : shield.getRenderData();
         if (renderData == null) {
             renderData = ShieldingTileEntity.DEFAULT_RENDER_DATA;
         }
@@ -59,9 +63,9 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
         ShieldRenderingMode mode = state.getValue(ShieldingBlock.RENDER_MODE);
         if (mode == ShieldRenderingMode.INVISIBLE) return;
         if (mode == ShieldRenderingMode.MIMIC) {
-            BlockState mimic = modelData.get(ShieldingTileEntity.MIMIC);
+            BlockState mimic = shield == null ? null : shield.getMimic();
             if (mimic != null && !(mimic.getBlock() instanceof ShieldingBlock)) {
-                Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(mimic).collectParts(world, pos, mimic, random, parts);
+                ScanModels.collectParts(world, pos, mimic, random, parts);
             }
             return;
         }
@@ -73,6 +77,22 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
             faces.forEach(quad -> quads.addCulledFace(side, quad));
         }
         parts.add(new SimpleModelWrapper(quads.build(), true, particleMaterial()));
+    }
+
+    @Override
+    public void emitQuads(QuadEmitter emitter, BlockAndTintGetter world, BlockPos pos, BlockState state,
+                          RandomSource random, Predicate<Direction> cullTest) {
+        if (state.getValue(ShieldingBlock.RENDER_MODE) == ShieldRenderingMode.MIMIC) {
+            if (world.getBlockEntity(pos) instanceof ShieldingTileEntity shield) {
+                BlockState mimic = shield.getMimic();
+                if (mimic != null && !(mimic.getBlock() instanceof ShieldingBlock)) {
+                    var model = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(mimic);
+                    ((FabricBlockStateModel) model).emitQuads(emitter, world, pos, mimic, random, cullTest);
+                }
+            }
+        } else {
+            super.emitQuads(emitter, world, pos, state, random, cullTest);
+        }
     }
 
     private List<BakedQuad> getQuadsShield(@Nullable Direction side, BlockPos pos, ShieldRenderData renderData) {
@@ -121,7 +141,6 @@ public class ShieldBakedModel extends AbstractDynamicBakedModel {
         }
         return quads;
     }
-
 
     @Override
     public Material.Baked particleMaterial() {

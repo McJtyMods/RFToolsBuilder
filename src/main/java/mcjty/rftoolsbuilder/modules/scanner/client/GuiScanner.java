@@ -22,7 +22,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class GuiScanner extends GenericGuiContainer<ScannerTileEntity, GenericContainer> implements IShapeParentGui {
@@ -46,8 +45,8 @@ public class GuiScanner extends GenericGuiContainer<ScannerTileEntity, GenericCo
         setWindowDimensions(SCANNER_WIDTH, SCANNER_HEIGHT);
     }
 
-    public static void register(RegisterMenuScreensEvent event) {
-        register(event, ScannerModule.CONTAINER_SCANNER.get(), GuiScanner::new);
+    public static void register() {
+        register(ScannerModule.CONTAINER_SCANNER.get(), GuiScanner::new);
     }
 
     @Override
