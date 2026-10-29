@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -13,8 +14,6 @@ import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix4f;
 
@@ -39,12 +38,12 @@ public final class ScanPreviewRenderer extends PictureInPictureRenderer<ScanPrev
         }
     }
 
-    public static void register(RegisterPictureInPictureRenderersEvent event) {
-        event.register(State.class, ScanPreviewRenderer::new);
+    public static void register() {
+        PictureInPictureRendererRegistry.register(context -> new ScanPreviewRenderer());
     }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) {
-        event.registerPipeline(PIPELINE);
+    public static void registerPipelines() {
+        RenderPipelines.register(PIPELINE);
     }
 
     @Override

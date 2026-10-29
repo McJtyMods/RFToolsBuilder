@@ -12,7 +12,6 @@ import mcjty.lib.varia.Tools;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.data.VehicleData;
-import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -20,10 +19,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.util.Lazy;
-import org.jetbrains.annotations.NotNull;
+import mcjty.lib.varia.Lazy;
 import org.jetbrains.annotations.Nullable;
-
 import static mcjty.lib.builder.TooltipBuilder.parameter;
 
 /**
@@ -86,7 +83,6 @@ public class VehicleCard extends Item implements ITooltipSettings {
         vehicleCard.set(MoverModule.ITEM_VEHICLE_DATA.get(), data);
     }
 
-
     @Nullable
     public static BlockPos getDesiredDestination(ItemStack vehicleCard) {
         VehicleData data = vehicleCard.getOrDefault(MoverModule.ITEM_VEHICLE_DATA.get(), VehicleData.DEFAULT);
@@ -135,7 +131,6 @@ public class VehicleCard extends Item implements ITooltipSettings {
                 min.getY() + ((current >> 10) & 0x3f),
                 min.getZ() + (current & 0x3f));
     }
-
 
     @Override
     public ManualEntry getManualEntry() {

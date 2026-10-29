@@ -1,3 +1,5 @@
 {
-  "neoforge:definition_type": "rftoolsbuilder:shield"
+  "variants": {
+    "": { "model": "minecraft:block/air" }
+  }
 }

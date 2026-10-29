@@ -4,8 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
-
+import mcjty.lib.network.StreamCodecs;
 import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Locale;
@@ -25,7 +24,7 @@ public enum ShieldRenderingMode implements StringRepresentable {
     private final boolean translucent;
 
     public static final Codec<ShieldRenderingMode> CODEC = StringRepresentable.fromEnum(ShieldRenderingMode::values);
-    public static final StreamCodec<FriendlyByteBuf, ShieldRenderingMode> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(ShieldRenderingMode.class);
+    public static final StreamCodec<FriendlyByteBuf, ShieldRenderingMode> STREAM_CODEC = StreamCodecs.enumCodec(ShieldRenderingMode.class);
 
     ShieldRenderingMode(String description, boolean translucent) {
         this.description = description;

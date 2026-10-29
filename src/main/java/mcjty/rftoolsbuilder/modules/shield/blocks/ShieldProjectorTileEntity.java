@@ -17,7 +17,6 @@ import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
-import mcjty.lib.setup.Registration;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
@@ -48,8 +47,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -79,10 +76,9 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.util.Lazy;
+import mcjty.lib.varia.Lazy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.container.SlotDefinition.generic;
 import static mcjty.lib.container.SlotDefinition.specific;
@@ -246,20 +242,6 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             renderData = new ShieldRenderData(r, g, b, 1.0f, getShieldTexture());
         }
         return renderData;
-    }
-
-    @Override
-    public void onDataPacket(Connection net, ValueInput input) {
-        int shieldColor = getShieldColor();
-        int oldColor = shieldColor;
-        ShieldTexture oldTexture = getShieldTexture();
-        super.onDataPacket(net, input);
-        if (oldColor != getShieldColor() || oldTexture != getShieldTexture()) {
-            renderData = null;
-            // @todo this doesn't help to automatically update the color
-            BlockState state = level.getBlockState(worldPosition);
-            level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_ALL);
-        }
     }
 
     public boolean isPowered() {
@@ -809,7 +791,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
             } else if (!templateState.isAir()) {
                 if (!isShapedShield()) {
                     // No room, just spawn the block
-                    Containers.dropItemStack(getLevel(), cx, cy, cz, templateState.getBlock().getCloneItemStack(getLevel(), new BlockPos(cx, cy, cz), templateState, false, null));
+                    Containers.dropItemStack(getLevel(), cx, cy, cz, templateState.getBlock().getCloneItemStack(getLevel(), new BlockPos(cx, cy, cz), templateState, false));
                 }
             }
         }
@@ -1038,10 +1020,10 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
     @Override
     protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        energyStorage.applyImplicitComponents(input.get(ITEM_ENERGY));
-        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
-        infusable.applyImplicitComponents(input.get(ITEM_INFUSABLE));
-        ShieldData shieldData = input.get(ShieldModule.ITEM_SHIELD_DATA);
+        energyStorage.applyImplicitComponents(input.get(ITEM_ENERGY.get()));
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY.get()));
+        infusable.applyImplicitComponents(input.get(ITEM_INFUSABLE.get()));
+        ShieldData shieldData = input.get(ShieldModule.ITEM_SHIELD_DATA.get());
         if (shieldData != null) {
             setData(ShieldModule.SHIELD_DATA, shieldData);
         }
@@ -1053,7 +1035,7 @@ public class ShieldProjectorTileEntity extends TickingTileEntity implements ISma
         energyStorage.collectImplicitComponents(builder);
         items.collectImplicitComponents(builder);
         infusable.collectImplicitComponents(builder);
-        builder.set(ShieldModule.ITEM_SHIELD_DATA, getData(ShieldModule.SHIELD_DATA));
+        builder.set(ShieldModule.ITEM_SHIELD_DATA.get(), getData(ShieldModule.SHIELD_DATA));
     }
 
     @Override

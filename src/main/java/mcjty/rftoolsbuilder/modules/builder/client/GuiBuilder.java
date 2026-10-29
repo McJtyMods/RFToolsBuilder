@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
+import net.minecraft.client.gui.screens.MenuScreens;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
@@ -21,11 +22,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import mcjty.lib.container.IItemHandler;
 import org.jetbrains.annotations.NotNull;
-
 import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity.SLOT_TAB;
 import static mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity.getCurrentLevelClientSide;
 
@@ -39,8 +38,8 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         super(container, inventory, title, BuilderModule.BUILDER.block().get().getManualEntry());
     }
 
-    public static void register(RegisterMenuScreensEvent event) {
-        event.register(BuilderModule.CONTAINER_BUILDER.get(), GuiBuilder::new);
+    public static void register() {
+        MenuScreens.register(BuilderModule.CONTAINER_BUILDER.get(), GuiBuilder::new);
     }
 
     @Override
@@ -77,7 +76,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         currentLevel.text("Y: " + (cury == -1 ? "stop" : cury));
 
         BuilderTileEntity tileEntity = getBE();
-        IItemHandler capability = CapabilityTools.itemHandler(this.minecraft.level.getCapability(Capabilities.Item.BLOCK, tileEntity.getBlockPos(), null));
+        IItemHandler capability = CapabilityTools.itemHandler(ItemStorage.SIDED.find(this.minecraft.level, tileEntity.getBlockPos(), null));
         ItemStack card = capability == null ? ItemStack.EMPTY : capability.getStackInSlot(SLOT_TAB);
         if (card.isEmpty()) {
             window.setFlag("!validcard");
@@ -103,8 +102,8 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
     private void selectAnchor(String name) {
         int index = name.charAt(name.length()-1)-48;
         updateAnchorSettings(AnchorMode.values()[index]);
-        BuilderData data = getBE().getData(BuilderModule.BUILDER_DATA.get()).withAnchor(AnchorMode.values()[index]);
-        getBE().setData(BuilderModule.BUILDER_DATA.get(), data);
+        BuilderData data = getBE().getData(BuilderModule.BUILDER_DATA).withAnchor(AnchorMode.values()[index]);
+        getBE().setData(BuilderModule.BUILDER_DATA, data);
         window.sendServerCommand(BuilderTileEntity.CMD_ANCHOR,
                 TypedMap.builder().put(BuilderTileEntity.PARAM_ANCHOR, index).build());
     }
@@ -121,7 +120,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
 
     private boolean isShapeCard() {
         BuilderTileEntity tileEntity = getBE();
-        IItemHandler capability = CapabilityTools.itemHandler(tileEntity.getLevel().getCapability(Capabilities.Item.BLOCK, tileEntity.getBlockPos(), null));
+        IItemHandler capability = CapabilityTools.itemHandler(ItemStorage.SIDED.find(tileEntity.getLevel(), tileEntity.getBlockPos(), null));
         ItemStack card = capability == null ? ItemStack.EMPTY : capability.getStackInSlot(SLOT_TAB);
         return !card.isEmpty() && card.getItem() instanceof ShapeCardItem;
     }

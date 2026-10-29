@@ -1,26 +1,24 @@
 package mcjty.rftoolsbuilder.modules.shield;
 
-import com.mojang.serialization.MapCodec;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.minecraft.resources.Identifier;
 import java.util.function.Supplier;
 import mcjty.lib.blocks.RBlock;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.datagen.DataGen;
 import mcjty.lib.datagen.Dob;
-import mcjty.lib.datagen.model.ModelFile;
 import mcjty.lib.items.BaseBlockItem;
 import mcjty.lib.modules.IModule;
 import mcjty.rftoolsbase.modules.various.VariousModule;
-import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.shield.blocks.*;
 import mcjty.rftoolsbuilder.modules.shield.client.GuiShield;
 import mcjty.rftoolsbuilder.modules.shield.client.ShieldModelLoader;
 import mcjty.rftoolsbuilder.modules.shield.data.ShieldData;
 import mcjty.rftoolsbuilder.setup.Config;
-import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -28,23 +26,16 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
+import mcjty.lib.setup.DeferredBlock;
+import mcjty.lib.setup.DeferredHolder;
+import mcjty.lib.setup.DeferredItem;
 import org.jetbrains.annotations.NotNull;
-
 import static mcjty.lib.datagen.DataGen.has;
 import static mcjty.lib.setup.Registration.ITEM_INFUSABLE;
 import static mcjty.rftoolsbuilder.RFToolsBuilder.tab;
 import static mcjty.rftoolsbuilder.setup.Registration.*;
-
 
 public class ShieldModule implements IModule {
 
@@ -83,13 +74,12 @@ public class ShieldModule implements IModule {
     public static final DeferredBlock<ShieldingBlock> SHIELDING_SOLID = BLOCKS.register("shielding_solid", ShieldingBlock::new);
     public static final DeferredBlock<ShieldingBlock> SHIELDING_TRANSLUCENT = BLOCKS.register("shielding_translucent", ShieldingBlock::new);
     public static final DeferredBlock<ShieldingBlock> SHIELDING_CUTOUT = BLOCKS.register("shielding_cutout", ShieldingBlock::new);
-    public static final Supplier<BlockEntityType<?>> TYPE_SHIELDING = TILES.register("shielding", () -> new BlockEntityType<>(ShieldingTileEntity::new,
-            SHIELDING_SOLID.get(), SHIELDING_TRANSLUCENT.get(), SHIELDING_CUTOUT.get()));
+    public static final Supplier<BlockEntityType<?>> TYPE_SHIELDING = TILES.register("shielding", () -> FabricBlockEntityTypeBuilder.create(ShieldingTileEntity::new,
+            SHIELDING_SOLID.get(), SHIELDING_TRANSLUCENT.get(), SHIELDING_CUTOUT.get()).build());
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<ShieldData>> SHIELD_DATA = ATTACHMENT_TYPES.register(
-            "shield_data", () -> AttachmentType.builder(() -> ShieldData.DEFAULT)
-                    .serialize(MapCodec.assumeMapUnsafe(ShieldData.CODEC))
-                    .build());
+    public static final AttachmentType<ShieldData> SHIELD_DATA = AttachmentRegistry.create(
+            Identifier.fromNamespaceAndPath("rftoolsbuilder", "shield_data"),
+            builder -> builder.initializer(() -> ShieldData.DEFAULT).persistent(ShieldData.CODEC));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ShieldData>> ITEM_SHIELD_DATA = COMPONENTS.registerComponentType(
             "shield_data",
             builder -> builder
@@ -141,29 +131,23 @@ public class ShieldModule implements IModule {
 //        }
 //    }
 
-
-    public ShieldModule(IEventBus bus, Dist dist) {
-        if (dist.isClient()) {
-            bus.addListener(ShieldModelLoader::register);
-            bus.addListener(this::registerMenuScreens);
-        }
-    }
-
     @Override
-    public void init(FMLCommonSetupEvent event) {
+    public void init() {
 
     }
 
     @Override
-    public void initClient(FMLClientSetupEvent event) {
+    public void initClient() {
+        registerMenuScreens();
+        ShieldModelLoader.register();
     }
 
-    public void registerMenuScreens(RegisterMenuScreensEvent event) {
-        GuiShield.register(event);
+    public void registerMenuScreens() {
+        GuiShield.register();
     }
 
     @Override
-    public void initConfig(IEventBus bus) {
+    public void initConfig() {
         ShieldConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
     }
 
@@ -176,7 +160,7 @@ public class ShieldModule implements IModule {
                         .blockState(p -> p.singleTextureBlockC(TEMPLATE_BLUE.get(), "blue_shield_template", "block/shieldtemplate", builder -> { }))
                         .shaped(builder -> builder
                                         .define('w', ItemTags.WOOL)
-                                        .define('l', Tags.Items.DYES_BLUE)
+                                        .define('l', ConventionalItemTags.BLUE_DYES)
                                         .unlockedBy("glass", has(Items.GLASS)),
                                 8,
                                 "www", "lGl", "www"),
@@ -186,7 +170,7 @@ public class ShieldModule implements IModule {
                         .blockState(p -> p.singleTextureBlockC(TEMPLATE_RED.get(), "red_shield_template", "block/shieldtemplate1", builder -> { }))
                         .shaped(builder -> builder
                                         .define('w', ItemTags.WOOL)
-                                        .define('l', Tags.Items.DYES_RED)
+                                        .define('l', ConventionalItemTags.RED_DYES)
                                         .unlockedBy("glass", has(Items.GLASS)),
                                 8,
                                 "www", "lGl", "www"),
@@ -196,7 +180,7 @@ public class ShieldModule implements IModule {
                         .blockState(p -> p.singleTextureBlockC(TEMPLATE_GREEN.get(), "green_shield_template", "block/shieldtemplate2", builder -> { }))
                         .shaped(builder -> builder
                                         .define('w', ItemTags.WOOL)
-                                        .define('l', Tags.Items.DYES_GREEN)
+                                        .define('l', ConventionalItemTags.GREEN_DYES)
                                         .unlockedBy("glass", has(Items.GLASS)),
                                 8,
                                 "www", "lGl", "www"),
@@ -206,7 +190,7 @@ public class ShieldModule implements IModule {
                         .blockState(p -> p.singleTextureBlockC(TEMPLATE_YELLOW.get(), "yellow_shield_template", "block/shieldtemplate3", builder -> { }))
                         .shaped(builder -> builder
                                         .define('w', ItemTags.WOOL)
-                                        .define('l', Tags.Items.DYES_YELLOW)
+                                        .define('l', ConventionalItemTags.YELLOW_DYES)
                                         .unlockedBy("glass", has(Items.GLASS)),
                                 8,
                                 "www", "lGl", "www"),
@@ -217,7 +201,7 @@ public class ShieldModule implements IModule {
                         .blockState(p -> p.simpleBlock(SHIELD_BLOCK1.block().get(), p.models().cubeAll("shield_block", p.modLoc("block/machineshieldprojector"))))
                         .shaped(builder -> builder
                                         .define('F', VariousModule.MACHINE_FRAME.get())
-                                        .define('g', Tags.Items.INGOTS_GOLD)
+                                        .define('g', ConventionalItemTags.GOLD_INGOTS)
                                         .unlockedBy("machine_frame", has(VariousModule.MACHINE_FRAME.get())),
                                 "gTg", "rFr", "OOO"),
                 Dob.blockBuilder(SHIELD_BLOCK2)

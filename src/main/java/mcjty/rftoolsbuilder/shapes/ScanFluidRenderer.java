@@ -7,8 +7,6 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.pipeline.VertexConsumerWrapper;
-
 import java.util.Map;
 
 /** Capture connected fluid surfaces against the scanned neighbours, including waterlogged blocks. */
@@ -33,11 +31,6 @@ final class ScanFluidRenderer {
         // FluidRenderer emits section-local vertices. Restore scan coordinates,
         // including negative coordinates and sections beyond the first 16 blocks.
         int x = pos.getX() & ~15, y = pos.getY() & ~15, z = pos.getZ() & ~15;
-        return new VertexConsumerWrapper(buffer) {
-            @Override
-            public VertexConsumer addVertex(float vx, float vy, float vz) {
-                return super.addVertex(vx + x, vy + y, vz + z);
-            }
-        };
+        return ShapeRenderer.translated(buffer, x, y, z);
     }
 }

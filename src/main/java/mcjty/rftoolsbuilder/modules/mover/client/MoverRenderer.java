@@ -1,7 +1,8 @@
 package mcjty.rftoolsbuilder.modules.mover.client;
 
+import mcjty.rftoolsbuilder.shapes.ScanModels;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
@@ -16,15 +17,11 @@ import mcjty.rftoolsbuilder.modules.mover.blocks.MoverTileEntity;
 import mcjty.rftoolsbuilder.modules.mover.items.VehicleCard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,8 +33,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -291,7 +286,6 @@ public class MoverRenderer {
         matrixStack.popPose();
     }
 
-
     /**
      * Add code that is called very early in rendering
      */
@@ -318,18 +312,19 @@ public class MoverRenderer {
     /**
      * Hook to allow us to move the entities very early in rendering (before entities are rendered)
      */
-    public static void onCameraSetup(ViewportEvent.ComputeCameraAngles event) {
+    public static void onCameraSetup() {
         preRender();
     }
 
     private record ActiveMover(MoverTileEntity mover, ItemStack vehicle) { }
+
     private static final Map<BlockPos, ActiveMover> ACTIVE = new HashMap<>();
 
     public static void addMover(MoverTileEntity mover, ItemStack vehicle) {
         ACTIVE.put(mover.getBlockPos(), new ActiveMover(mover, vehicle.copy()));
     }
 
-    public static void submitMovers(SubmitCustomGeometryEvent event) {
+    public static void submitMovers(LevelRenderContext event) {
         var level = Minecraft.getInstance().level;
         ACTIVE.entrySet().removeIf(entry -> level == null || entry.getValue().mover().getLevel() != level
                 || !entry.getValue().mover().isMoverThere(level, entry.getKey()) || entry.getValue().mover().isRemoved());
@@ -345,15 +340,15 @@ public class MoverRenderer {
                 current = mover.getLogic().getMovingPosition(partialTicks, level.getGameTime());
                 mover.setLastDestination(mover.getLogic().getDestination());
             }
-            actualRender(mover, event.getPoseStack(), event.getLevelRenderState().cameraRenderState.pos,
-                    active.vehicle(), current, offset, event.getSubmitNodeCollector());
+            actualRender(mover, event.poseStack(), event.levelState().cameraRenderState.pos,
+                    active.vehicle(), current, offset, event.submitNodeCollector());
         }
     }
 
     private static void submitBlock(BlockState state, Level level, BlockPos pos, PoseStack pose, SubmitNodeCollector collector, int light) {
         List<BlockStateModelPart> parts = new ArrayList<>();
         var minecraft = Minecraft.getInstance();
-        minecraft.getModelManager().getBlockStateModelSet().get(state).collectParts((ClientLevel) level, pos, state, RandomSource.create(42), parts);
+        ScanModels.collectParts((ClientLevel) level, pos, state, RandomSource.create(42), parts);
         int[] tints = minecraft.getBlockColors().getTintSources(state).stream().mapToInt(tint -> tint.colorInWorld(state, (ClientLevel) level, pos)).toArray();
         collector.submitBlockModel(pose, RenderTypes.translucentMovingBlock(), List.copyOf(parts), tints, light, OverlayTexture.NO_OVERLAY, 0);
     }

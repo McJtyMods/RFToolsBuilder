@@ -9,7 +9,6 @@ import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +17,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
 public class EntityMovementLogic {
@@ -55,7 +53,6 @@ public class EntityMovementLogic {
             }
         }
     }
-
 
     // Return the actual offset moved for the current player. Only if the player is actually on the platform
     public Vec3 tryMoveVehicleThisPlayer(float partialTicks) {
@@ -322,7 +319,6 @@ public class EntityMovementLogic {
     public void setSource(BlockPos source) {
         this.source = source;
     }
-
 
     @NotNull
     public Vec3 getMovingPosition(float partialTicks, long gameTick) {

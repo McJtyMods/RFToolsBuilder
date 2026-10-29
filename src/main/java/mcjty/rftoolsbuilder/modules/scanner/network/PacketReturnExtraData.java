@@ -8,7 +8,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import mcjty.lib.network.PayloadContext;
 
 public record PacketReturnExtraData(int scanId, ScanExtraData data) implements CustomPacketPayload {
 
@@ -29,7 +29,7 @@ public record PacketReturnExtraData(int scanId, ScanExtraData data) implements C
         return new PacketReturnExtraData(scanId, extraData);
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             ScanDataManagerClient.getScansClient().registerExtraDataFromServer(scanId, data);
         });

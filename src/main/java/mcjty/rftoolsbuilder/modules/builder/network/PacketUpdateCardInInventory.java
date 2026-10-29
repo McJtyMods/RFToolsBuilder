@@ -14,10 +14,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import mcjty.lib.container.IItemHandler;
+import mcjty.lib.container.IItemHandlerModifiable;
+import mcjty.lib.network.PayloadContext;
 
 public record PacketUpdateCardInInventory(BlockPos pos, int slotIndex, ItemStack stack) implements CustomPacketPayload {
 
@@ -42,13 +42,12 @@ public record PacketUpdateCardInInventory(BlockPos pos, int slotIndex, ItemStack
         return stack.getItem() instanceof ShapeCardItem;
     }
 
-
     @Override
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             Player player = ctx.player();
             Level world = player.level();
@@ -60,7 +59,7 @@ public record PacketUpdateCardInInventory(BlockPos pos, int slotIndex, ItemStack
                 if (!isValidItem(this.stack)) {
                     return;
                 }
-                IItemHandler h = CapabilityTools.itemHandler(world.getCapability(Capabilities.Item.BLOCK, pos, null));
+                IItemHandler h = CapabilityTools.itemHandler(ItemStorage.SIDED.find(world, pos, null));
                 if (h instanceof IItemHandlerModifiable modifiable) {
                     modifiable.setStackInSlot(slotIndex, this.stack);
                 }

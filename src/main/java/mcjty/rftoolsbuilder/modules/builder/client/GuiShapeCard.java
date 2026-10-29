@@ -1,9 +1,6 @@
 package mcjty.rftoolsbuilder.modules.builder.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 import mcjty.lib.base.StyleConfig;
@@ -46,10 +43,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
-import org.lwjgl.opengl.GL11;
-
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import mcjty.lib.container.IItemHandler;
 import static mcjty.lib.gui.layout.AbstractLayout.DEFAULT_SPACING;
 import static mcjty.lib.gui.widgets.Widgets.*;
 
@@ -99,7 +94,6 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     private ShapeID shapeID = null;
     private ShapeRenderer shapeRenderer = null;
 
-
     public GuiShapeCard(boolean fromTE) {
         super(Component.literal("Shapecard"));
         this.fromTE = fromTE;
@@ -140,7 +134,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     private ItemStack getStackToEdit() {
         if (fromTE) {
             BlockEntity te = minecraft.level.getBlockEntity(fromTEPos);
-            IItemHandler capability = CapabilityTools.itemHandler(te.getLevel().getCapability(Capabilities.Item.BLOCK, fromTEPos, null));
+            IItemHandler capability = CapabilityTools.itemHandler(ItemStorage.SIDED.find(te.getLevel(), fromTEPos, null));
             if (capability == null) {
                 return ItemStack.EMPTY;
             } else {
@@ -400,7 +394,6 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
 
         getShapeRenderer().handleShapeDragging(x, y, buttons);
     }
-
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {

@@ -79,7 +79,7 @@ public class BuilderTools {
         if (card.isEmpty() || !(card.getItem() instanceof ShapeCardItem || card.getItem() instanceof SpaceChamberCardItem)) {
             return null;
         }
-        ShapeCardData data = card.get(BuilderModule.ITEM_SHAPECARD_DATA);
+        ShapeCardData data = card.get(BuilderModule.ITEM_SHAPECARD_DATA.get());
         if (data == null) {
             return null;
         }
@@ -133,7 +133,7 @@ public class BuilderTools {
                         blocks.increment(state);
 
                         if (!stacks.containsKey(state)) {
-                            ItemStack item = block.getCloneItemStack(world, p, state, false, null);
+                            ItemStack item = block.getCloneItemStack(world, p, state, false);
                             if (!item.isEmpty()) {
                                 stacks.put(state, item);
                             }

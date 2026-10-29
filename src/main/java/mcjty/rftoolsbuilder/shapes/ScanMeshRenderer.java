@@ -11,11 +11,10 @@ import net.minecraft.client.renderer.feature.FeatureRendererType;
 import net.minecraft.client.renderer.feature.submit.SubmitNode;
 import net.minecraft.client.renderer.rendertype.PreparedRenderType;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.neoforged.neoforge.client.event.RegisterFeatureRenderersEvent;
-import net.neoforged.neoforge.client.submit.RenderPhaseKeys;
+import net.fabricmc.fabric.api.client.rendering.v1.FeatureRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.SubmitRenderPhases;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryUtil;
-
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -52,8 +51,8 @@ public final class ScanMeshRenderer implements FeatureRenderer<ScanMeshRenderer.
 
     private record Draw(PreparedRenderType type, GpuBuffer vertices, int indexCount) { }
 
-    public static void register(RegisterFeatureRenderersEvent event) {
-        event.register(TYPE, new ScanMeshRenderer());
+    public static void register() {
+        FeatureRendererRegistry.register(TYPE, ScanMeshRenderer::new);
     }
 
     public static void submit(List<ScanMesh> meshes, PoseStack pose, SubmitNodeCollector collector, boolean gui) {
@@ -62,9 +61,9 @@ public final class ScanMeshRenderer implements FeatureRenderer<ScanMeshRenderer.
         for (ScanMesh mesh : meshes) {
             (gui || !mesh.renderType.hasBlending() ? solid : translucent).add(mesh);
         }
-        if (!solid.isEmpty()) collector.submitSpecial(RenderPhaseKeys.SOLID,
+        if (!solid.isEmpty()) collector.order(0).submitCustom(SubmitRenderPhases.SOLID,
                 new Submit(List.copyOf(solid), new Matrix4f(pose.last().pose())));
-        if (!translucent.isEmpty()) collector.submitSpecial(RenderPhaseKeys.TRANSLUCENT_CUSTOM_GEOMETRY,
+        if (!translucent.isEmpty()) collector.order(0).submitCustom(SubmitRenderPhases.TRANSLUCENT_CUSTOM_GEOMETRY,
                 new Submit(List.copyOf(translucent), new Matrix4f(pose.last().pose())));
     }
 

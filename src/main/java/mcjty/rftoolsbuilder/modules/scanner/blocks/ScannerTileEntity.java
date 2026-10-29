@@ -20,7 +20,6 @@ import mcjty.lib.varia.RLE;
 import mcjty.lib.varia.RedstoneMode;
 import mcjty.rftoolsbase.modules.filter.items.FilterModuleItem;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
-import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerConfiguration;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
@@ -43,9 +42,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.common.util.Lazy;
-import org.jetbrains.annotations.NotNull;
-
+import mcjty.lib.varia.Lazy;
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.container.SlotDefinition.specific;
 import static mcjty.lib.setup.Registration.ITEM_INVENTORY;
@@ -253,7 +250,7 @@ public class ScannerTileEntity extends TickingTileEntity {
                 int c = 0;
                 if (!scanWorld.isEmptyBlock(mpos)) {
                     BlockState state = scanWorld.getBlockState(mpos);
-                    if (filter == null || filter.test(state.getBlock().getCloneItemStack(scanWorld, mpos, state, false, null))) {
+                    if (filter == null || filter.test(state.getBlock().getCloneItemStack(scanWorld, mpos, state, false))) {
                         c = progress.materialPalette.alloc(state, 0) + 1;
                     }
                 }
@@ -339,7 +336,7 @@ public class ScannerTileEntity extends TickingTileEntity {
     @Override
     protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY.get()));
     }
 
     @Override
