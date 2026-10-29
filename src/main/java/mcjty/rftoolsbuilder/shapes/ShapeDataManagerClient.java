@@ -1,7 +1,5 @@
 package mcjty.rftoolsbuilder.shapes;
 
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
@@ -32,7 +30,7 @@ public class ShapeDataManagerClient {
     }
 
     // Expire unused previews on client ticks, independently of render stages.
-    public static void cleanupOldRenderers(ClientTickEvent.Post event) {
+    public static void cleanupOldRenderers() {
         cleanupCounter--;
         if (cleanupCounter >= 0) {
             return;

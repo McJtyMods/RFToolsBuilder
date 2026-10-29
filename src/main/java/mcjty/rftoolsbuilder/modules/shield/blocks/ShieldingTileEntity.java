@@ -10,26 +10,18 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.model.data.ModelData;
-import net.neoforged.neoforge.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ShieldingTileEntity extends BlockEntity {
 
-    public static final ModelProperty<ShieldRenderData> RENDER_DATA = new ModelProperty<>();
-    public static final ModelProperty<BlockState> MIMIC = new ModelProperty<>();
-
     private BlockPos shieldProjector;
     private BlockState mimic;
-
 
     public ShieldingTileEntity(BlockPos pos, BlockState state) {
         super(ShieldModule.TYPE_SHIELDING.get(), pos, state);
@@ -51,15 +43,6 @@ public class ShieldingTileEntity extends BlockEntity {
         return tag;
     }
 
-    @Override
-    public void onDataPacket(Connection net, ValueInput input) {
-        loadClient(input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new), input.lookup());
-
-        requestModelDataUpdate();
-        BlockState state = level.getBlockState(worldPosition);
-        level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
-    }
-
     public BlockPos getShieldProjector() {
         return shieldProjector;
     }
@@ -77,15 +60,6 @@ public class ShieldingTileEntity extends BlockEntity {
     public void setMimic(BlockState mimic) {
         this.mimic = mimic;
         setChanged();
-    }
-
-    @Override
-    public ModelData getModelData() {
-        ModelData.Builder builder = ModelData.builder().with(RENDER_DATA, getRenderData());
-        if (mimic != null) {
-            builder.with(MIMIC, mimic);
-        }
-        return builder.build();
     }
 
     public static final ShieldRenderData DEFAULT_RENDER_DATA = new ShieldRenderData(1.0f, 1.0f, 1.0f, 1.0f, ShieldTexture.SHIELD);

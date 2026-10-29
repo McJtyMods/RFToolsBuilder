@@ -4,8 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
-
+import mcjty.lib.network.StreamCodecs;
 import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +20,7 @@ public enum ShieldTexture implements StringRepresentable {
     private final String path;
 
     public static final Codec<ShieldTexture> CODEC = StringRepresentable.fromEnum(ShieldTexture::values);
-    public static final StreamCodec<FriendlyByteBuf, ShieldTexture> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(ShieldTexture.class);
+    public static final StreamCodec<FriendlyByteBuf, ShieldTexture> STREAM_CODEC = StreamCodecs.enumCodec(ShieldTexture.class);
 
     ShieldTexture(String description, String path) {
         this.description = description;

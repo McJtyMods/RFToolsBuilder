@@ -1,5 +1,9 @@
 package mcjty.rftoolsbuilder.setup;
 
+import mcjty.lib.network.PayloadContext;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import mcjty.lib.network.Networking;
 import mcjty.lib.network.PacketSendClientCommand;
 import mcjty.lib.network.PacketSendServerCommand;
@@ -16,38 +20,41 @@ import mcjty.rftoolsbuilder.modules.shield.network.PacketNotifyServerClientReady
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.jetbrains.annotations.NotNull;
 
 public class RFToolsBuilderMessages {
 
-    public static void registerMessages(RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar(RFToolsBuilder.MODID)
-                .versioned("1.0")
-                .optional();
-
-        registrar.playToServer(PacketUpdateCardInInventory.TYPE, PacketUpdateCardInInventory.CODEC, PacketUpdateCardInInventory::handle);
-        registrar.playToServer(PacketUpdateCardInPlayer.TYPE, PacketUpdateCardInPlayer.CODEC, PacketUpdateCardInPlayer::handle);
-
-        registrar.playToServer(PacketCloseContainerAndOpenCardGui.TYPE, PacketCloseContainerAndOpenCardGui.CODEC, PacketCloseContainerAndOpenCardGui::handle);
-        registrar.playToServer(PacketOpenBuilderGui.TYPE, PacketOpenBuilderGui.CODEC, PacketOpenBuilderGui::handle);
-        registrar.playToServer(PacketNotifyServerClientReady.TYPE, PacketNotifyServerClientReady.CODEC, PacketNotifyServerClientReady::handle);
-        registrar.playToServer(PacketClickMover.TYPE, PacketClickMover.CODEC, PacketClickMover::handle);
-        registrar.playToServer(PacketRequestShapeData.TYPE, PacketRequestShapeData.CODEC, PacketRequestShapeData::handle);
-
-        registrar.playToClient(PacketOpenCardGuiFromBuilder.TYPE, PacketOpenCardGuiFromBuilder.CODEC, PacketOpenCardGuiFromBuilder::handle);
-        registrar.playToClient(PacketChamberInfoReady.TYPE, PacketChamberInfoReady.CODEC, PacketChamberInfoReady::handle);
-        registrar.playToClient(PacketSyncVehicleInformationToClient.TYPE, PacketSyncVehicleInformationToClient.CODEC, PacketSyncVehicleInformationToClient::handle);
-        registrar.playToClient(PacketGrabbedEntitiesToClient.TYPE, PacketGrabbedEntitiesToClient.CODEC, PacketGrabbedEntitiesToClient::handle);
-        registrar.playToClient(PacketReturnShapeData.TYPE, PacketReturnShapeData.CODEC, PacketReturnShapeData::handle);
-        registrar.playToClient(PacketReturnExtraData.TYPE, PacketReturnExtraData.CODEC, PacketReturnExtraData::handle);
+    public static void registerMessages() {
+        PayloadTypeRegistry.serverboundPlay().register(PacketUpdateCardInInventory.TYPE, PacketUpdateCardInInventory.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(PacketUpdateCardInInventory.TYPE, (packet, context) ->
+                packet.handle(new PayloadContext(context.player(), context.server())));
+        PayloadTypeRegistry.serverboundPlay().register(PacketUpdateCardInPlayer.TYPE, PacketUpdateCardInPlayer.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(PacketUpdateCardInPlayer.TYPE, (packet, context) ->
+                packet.handle(new PayloadContext(context.player(), context.server())));
+        PayloadTypeRegistry.serverboundPlay().register(PacketCloseContainerAndOpenCardGui.TYPE, PacketCloseContainerAndOpenCardGui.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(PacketCloseContainerAndOpenCardGui.TYPE, (packet, context) ->
+                packet.handle(new PayloadContext(context.player(), context.server())));
+        PayloadTypeRegistry.serverboundPlay().register(PacketOpenBuilderGui.TYPE, PacketOpenBuilderGui.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(PacketOpenBuilderGui.TYPE, (packet, context) ->
+                packet.handle(new PayloadContext(context.player(), context.server())));
+        PayloadTypeRegistry.serverboundPlay().register(PacketNotifyServerClientReady.TYPE, PacketNotifyServerClientReady.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(PacketNotifyServerClientReady.TYPE, (packet, context) ->
+                packet.handle(new PayloadContext(context.player(), context.server())));
+        PayloadTypeRegistry.serverboundPlay().register(PacketClickMover.TYPE, PacketClickMover.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(PacketClickMover.TYPE, (packet, context) ->
+                packet.handle(new PayloadContext(context.player(), context.server())));
+        PayloadTypeRegistry.serverboundPlay().register(PacketRequestShapeData.TYPE, PacketRequestShapeData.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(PacketRequestShapeData.TYPE, (packet, context) ->
+                packet.handle(new PayloadContext(context.player(), context.server())));
+        PayloadTypeRegistry.clientboundPlay().register(PacketOpenCardGuiFromBuilder.TYPE, PacketOpenCardGuiFromBuilder.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PacketChamberInfoReady.TYPE, PacketChamberInfoReady.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PacketSyncVehicleInformationToClient.TYPE, PacketSyncVehicleInformationToClient.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PacketGrabbedEntitiesToClient.TYPE, PacketGrabbedEntitiesToClient.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PacketReturnShapeData.TYPE, PacketReturnShapeData.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PacketReturnExtraData.TYPE, PacketReturnExtraData.CODEC);
     }
 
     public static void sendToServer(String command, @NotNull TypedMap.Builder argumentBuilder) {
@@ -67,18 +74,18 @@ public class RFToolsBuilderMessages {
     }
 
     public static <T extends CustomPacketPayload> void sendToPlayer(T packet, Player player) {
-        PacketDistributor.sendToPlayer((ServerPlayer)player, packet);
+        Networking.sendToPlayer(packet, player);
     }
 
     public static <T extends CustomPacketPayload> void sendToServer(T packet) {
-        ClientPacketDistributor.sendToServer(packet);
+        Networking.sendToServer(packet);
     }
 
     public static <T extends CustomPacketPayload> void sendToChunk(T packet, ServerLevel level, BlockPos pos) {
-        PacketDistributor.sendToPlayersTrackingChunk(level, new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4), packet);
+        PlayerLookup.tracking(level, new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4)).forEach(player -> ServerPlayNetworking.send(player, packet));
     }
 
     public static <T extends CustomPacketPayload> void sendToChunk(T packet, LevelChunk chunk) {
-        PacketDistributor.sendToPlayersTrackingChunk((ServerLevel) chunk.getLevel(), chunk.getPos(), packet);
+        PlayerLookup.tracking((ServerLevel) chunk.getLevel(), chunk.getPos()).forEach(player -> ServerPlayNetworking.send(player, packet));
     }
 }

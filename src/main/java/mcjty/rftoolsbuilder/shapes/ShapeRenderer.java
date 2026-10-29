@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import mcjty.rftoolsbuilder.shapes.ScanModels;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
@@ -36,7 +37,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.model.pipeline.VertexConsumerWrapper;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
@@ -58,8 +58,6 @@ public class ShapeRenderer {
     private ShapeID shapeID;
 
     private int waitForNewRequest = 0;
-
-
 
     public ShapeRenderer(ShapeID shapeID) {
         this.shapeID = shapeID;
@@ -199,6 +197,7 @@ public class ShapeRenderer {
     }
 
     public record Vertex(float x, float y, float z, int color) { }
+
     public record Quad(List<Vertex> vertices) { public Quad { vertices = List.copyOf(vertices); } }
     public record Frame(List<ScanMesh> meshes, boolean scanning) {
         public static final Frame EMPTY = new Frame(List.of(), false);
@@ -210,7 +209,9 @@ public class ShapeRenderer {
     private record PlaneSource(RenderData.RenderStrip[] strips, int y, int startz) {
         PlaneSource(RenderData.RenderPlane plane) { this(plane.getStrips(), plane.getY(), plane.getStartz()); }
     }
+
     private record CachedPlane(PlaneSource source, boolean grayscale, boolean gui, List<ScanMesh> meshes) { }
+
     private final Map<Integer, CachedPlane> planeCache = new HashMap<>();
     private final Map<Integer, List<ScanMesh>> modelCache = new HashMap<>();
     private final Map<Integer, PlaneSource> modelSources = new HashMap<>();
@@ -358,14 +359,14 @@ public class ShapeRenderer {
                 ScanFluidRenderer.render(fluids, modelWorld, pos, state, builders);
                 parts.clear();
                 random.setSeed(state.getSeed(pos));
-                mc.getModelManager().getBlockStateModelSet().get(state).collectParts(modelWorld, pos, state, random, parts);
+                ScanModels.collectParts(modelWorld, pos, state, random, parts);
                 int[] tints = mc.getBlockColors().getTintSources(state).stream()
                         .mapToInt(tint -> tint.colorInWorld(state, modelWorld, pos)).toArray();
                 pose.pushPose();
                 pose.translate(pos.getX(), pos.getY(), pos.getZ());
                 for (var part : parts) {
                     for (var direction : directions) {
-                        if (Block.shouldRenderFace(modelWorld, pos, state,
+                        if (Block.shouldRenderFace(state,
                                 modelWorld.getBlockState(pos.relative(direction)), direction)) {
                             writeModelQuads(part.getQuads(direction), tints, pose, instance, builders);
                         }
@@ -409,8 +410,8 @@ public class ShapeRenderer {
                 .rotateZ((float) Math.toRadians(zangle)).scale(-scale, scale, scale);
         int left = gui.getPreviewLeft() + 84, top = gui.getPreviewTop() + 6;
         graphics.enableScissor(left, top, left + 161, top + 130);
-        graphics.submitPictureInPictureRenderState(new ScanPreviewRenderer.State(frame.meshes(), transform,
-                left, top, left + 161, top + 130, new Matrix3x2f(graphics.pose()), graphics.peekScissorStack()));
+        graphics.guiRenderState.addPicturesInPictureState(new ScanPreviewRenderer.State(frame.meshes(), transform,
+                left, top, left + 161, top + 130, new Matrix3x2f(graphics.pose()), graphics.scissorStack.peek()));
         BlockPos dim = ShapeCardItem.getDimension(stack);
         if (showAxis) {
             line(graphics, transform, 0, 0, 0, Math.max(1, dim.getX() / 2f), 0, 0, 0xffff0000);
@@ -460,8 +461,8 @@ public class ShapeRenderer {
         float nx = (b.y - a.y) / length * .5f, ny = (a.x - b.x) / length * .5f;
         var quad = new Quad(List.of(new Vertex(a.x + nx, a.y + ny, 0, color), new Vertex(b.x + nx, b.y + ny, 0, color),
                 new Vertex(b.x - nx, b.y - ny, 0, color), new Vertex(a.x - nx, a.y - ny, 0, color)));
-        var bounds = graphics.peekScissorStack();
-        graphics.submitGuiElementRenderState(new Preview(List.of(quad), new Matrix3x2f(graphics.pose()), bounds, bounds));
+        var bounds = graphics.scissorStack.peek();
+        graphics.guiRenderState.addGuiElement(new Preview(List.of(quad), new Matrix3x2f(graphics.pose()), bounds, bounds));
     }
 
     private static Vec3 offset = Vec3.ZERO;
@@ -527,12 +528,34 @@ public class ShapeRenderer {
         }
     }
 
-    private static VertexConsumer translated(VertexConsumer buffer, float x, float y, float z) {
-        return new VertexConsumerWrapper(buffer) {
+    static VertexConsumer translated(VertexConsumer buffer, float x, float y, float z) {
+        return new VertexConsumer() {
             @Override
             public VertexConsumer addVertex(float vx, float vy, float vz) {
-                return super.addVertex(vx + x, vy + y, vz + z);
+                buffer.addVertex(vx + x, vy + y, vz + z);
+                return this;
             }
+
+            @Override
+            public VertexConsumer setColor(int r, int g, int b, int a) { buffer.setColor(r, g, b, a); return this; }
+
+            @Override
+            public VertexConsumer setColor(int color) { buffer.setColor(color); return this; }
+
+            @Override
+            public VertexConsumer setUv(float u, float v) { buffer.setUv(u, v); return this; }
+
+            @Override
+            public VertexConsumer setUv1(int u, int v) { buffer.setUv1(u, v); return this; }
+
+            @Override
+            public VertexConsumer setUv2(int u, int v) { buffer.setUv2(u, v); return this; }
+
+            @Override
+            public VertexConsumer setNormal(float nx, float ny, float nz) { buffer.setNormal(nx, ny, nz); return this; }
+
+            @Override
+            public VertexConsumer setLineWidth(float width) { buffer.setLineWidth(width); return this; }
         };
     }
 
@@ -632,9 +655,6 @@ public class ShapeRenderer {
         buffer.addVertex(matrix, (float) offset.x, (float) offset.y, (float) (cnt + offset.z)).setColor(r, g, b, a);
     }
 
-
-
-
     public static void addSideD(VertexConsumer buffer, float r, float g, float b, float size) {
         float a = 0.5f;
         float l = -size;
@@ -694,10 +714,6 @@ public class ShapeRenderer {
         buffer.addVertex(l, h, h).setColor(r, g, b, a);
         buffer.addVertex(l, l, h).setColor(r, g, b, a);
     }
-
-
-
-
 
     public static void addSideE(VertexConsumer buffer, float r, float g, float b, float size, float height) {
         float a = 0.5f;

@@ -21,9 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.jetbrains.annotations.NotNull;
-
 import static mcjty.lib.gui.widgets.Widgets.label;
 import static mcjty.rftoolsbuilder.modules.scanner.blocks.ProjectorTileEntity.*;
 
@@ -62,8 +60,8 @@ public class GuiProjector extends GenericGuiContainer<ProjectorTileEntity, Gener
         setWindowDimensions(SIDEWIDTH + PROJECTOR_WIDTH, PROJECTOR_HEIGHT);
     }
 
-    public static void register(RegisterMenuScreensEvent event) {
-        register(event, ScannerModule.CONTAINER_PROJECTOR.get(), GuiProjector::new);
+    public static void register() {
+        register(ScannerModule.CONTAINER_PROJECTOR.get(), GuiProjector::new);
     }
 
     private ShapeRenderer getShapeRenderer() {

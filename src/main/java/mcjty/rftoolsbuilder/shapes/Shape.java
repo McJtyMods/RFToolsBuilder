@@ -4,8 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
-
+import mcjty.lib.network.StreamCodecs;
 import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +28,7 @@ public enum Shape implements StringRepresentable {
     private final Supplier<IFormula> formulaFactory;
 
     public static final Codec<Shape> CODEC = StringRepresentable.fromEnum(Shape::values);
-    public static final StreamCodec<FriendlyByteBuf, Shape> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(Shape.class);
+    public static final StreamCodec<FriendlyByteBuf, Shape> STREAM_CODEC = StreamCodecs.enumCodec(Shape.class);
 
     private static final Map<String, Shape> SHAPES_BY_DESCRIPTION;
 
@@ -65,7 +64,6 @@ public enum Shape implements StringRepresentable {
     public static Shape getShape(String description) {
         return SHAPES_BY_DESCRIPTION.get(description);
     }
-
 
     @Override
     public String getSerializedName() {

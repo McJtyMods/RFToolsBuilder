@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.mover.client;
 
+import net.minecraft.client.gui.screens.MenuScreens;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.GuiPopupTools;
@@ -20,12 +21,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.apache.commons.lang3.tuple.Pair;
-
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
-
 import static mcjty.lib.gui.widgets.Widgets.horizontal;
 import static mcjty.lib.gui.widgets.Widgets.label;
 import static mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity.CMD_GETNODES;
@@ -42,8 +40,8 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         super(container, inventory, title, MoverModule.MOVER_CONTROLLER.block().get().getManualEntry());
     }
 
-    public static void register(RegisterMenuScreensEvent event) {
-        event.register(MoverModule.CONTAINER_MOVER_CONTROLLER.get(), GuiMoverController::new);
+    public static void register() {
+        MenuScreens.register(MoverModule.CONTAINER_MOVER_CONTROLLER.get(), GuiMoverController::new);
     }
 
     @Override
@@ -144,7 +142,6 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         }
     }
 
-
     private void requestVehicles() {
         Networking.sendToServer(PacketGetListFromServer.create(getBE().getBlockPos(), CMD_GETVEHICLES.name()));
     }
@@ -164,7 +161,6 @@ public class GuiMoverController extends GenericGuiContainer<MoverControllerTileE
         panel.children(label(node.getRight()));
         return panel;
     }
-
 
     @Override
     protected void renderBg(@NotNull GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {

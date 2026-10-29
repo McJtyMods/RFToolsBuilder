@@ -1,38 +1,28 @@
-# RFToolsBuilder — NeoForge 26.1.2
+# RFToolsBuilder — Minecraft 26.1.2 Fabric
 
-The Builder, Shield, Scanner, Projector, Composer, and Mover, ported from `1.21_neo` using Java 25, McJtyLib, and RFToolsBase.
+This branch contains the Builder, shape cards, space chambers, shields, Scanner, Composer, Projector, and vehicle machines for Fabric. It uses Java 25, Fabric API, Forge Config API Port, McJtyLib, and RFToolsBase. TOP and JEI integrations are optional.
 
-## Building
+## Building and development
 
-Use Java 25 and the checked-in Gradle wrapper. The matching MultiWorkspace `gradletools.gradle` supplies dependencies, runs, datagen, and publishing settings. Integrated, sibling `../Multi_neo`, nested parent, and remote `26.1.2_neo` script layouts are supported.
+Use the included Gradle wrapper and Java 25:
 
-- Standalone: `./gradlew build`.
-- From `../Multi_neo`: `./gradlew :RFToolsBuilder:build :workspace:classes`.
-- Regenerate resources: `./gradlew :RFToolsBuilder:runClientData` from Multi_neo.
-- Integrated client: `./gradlew :workspace:runClient`.
+```sh
+./gradlew build
+./gradlew runDatagen
+```
 
-The dependency helpers select local projects when included and Jenkins artifacts otherwise. Standalone builds also include the sibling RFToolsBase checkout when it is available. NeoForge 26.1.2.99 matches the workspace's JEI requirement.
+The matching `Multi_fabric` workspace includes this sibling checkout as `:RFToolsBuilder`. Build there with `./gradlew :RFToolsBuilder:build` or launch all included mods with `./gradlew :workspace:runClient`.
 
-## Port details
+Build scripts use the root workspace script, sibling `../Multi_fabric/gradletools.gradle`, or nested parent script before falling back to the remote `26.1.2_fabric` script. Standalone settings include matching sibling McJtyLib, RFToolsBase, and TheOneProbe sources when available; published Fabric artifacts are the fallback when the sources are absent. Isolated CI must select an available RFToolsBase Fabric artifact with `-Prftoolsbase_version=<artifact-version>`. Generated resources belong in `src/generated/resources`.
 
-Maintain shared fixes across `26.1.2_neo`, `26.2_neo`, and `26.3_neo`. Compare behavior and regression tests across the three checkouts while preserving each version's rendering, input, inventory, and resource APIs.
+## Fabric implementation
 
-Registry IDs, component keys, and existing NBT fields are retained. Legacy `RFToolsSpaceChambers.dat` and `RFToolsScanData.dat` are imported through RFToolsBase into `rftoolsbuilder:space_chambers` and `rftoolsbuilder:scans`; scan files keep their existing `rftoolsscans/` location. Persistence uses ValueInput/ValueOutput and registry-aware codecs. Machine removal cleanup runs before block entities disappear. Shape previews, shield models, projectors, and vehicles use the current render-state and geometry APIs; item models have client item definitions.
+Common and client entrypoints are separate. Registration, payload receivers, persistent attachments, extended menus, model loading, and render callbacks use Fabric APIs. Inventory helpers wrap native Fabric storage. Fluid pumping and placement commit only complete buckets in native transactions. Builder chunk tickets are non-persistent and shared by builders operating in the same chunk.
 
-Generated resources belong in `src/generated/resources`; custom shield blockstate definitions remain in `src/main/resources`. Do not duplicate generated files there.
+Registry IDs, item component keys, NBT fields, legacy chamber and scan imports, and the `rftoolsscans/` directory are preserved. Scanners keep the NeoForge synchronization fix. Scan previews use bounded GPU meshes and retain world/state context for dynamic models. Builder support previews retain 25% opacity and hide internal faces.
 
 ## Validation
 
-Scan rendering uses cached GPU meshes capped at 65,536 vertices per batch and a depth-buffered GUI preview. The common scan tests cover geometry beyond Minecraft's single-buffer vertex limit, block-model attributes across batch boundaries, GUI opacity, and GUI transforms. Run them with `./gradlew test` or `./gradlew :RFToolsBuilder:test` in the workspace.
+`./gradlew test` runs the existing scan mesh, preview, and fluid rendering regression tests. `./gradlew -PbuilderPortTests runClientGameTest` exercises registration of all 27 blocks, block entity save/load, Builder attachment persistence, shield camouflage persistence, complete-bucket transfer rollback, extended menus, XNet connector preview geometry, scanner removal synchronization, and live projector settings, geometry, and rotation between block updates in Minecraft.
 
-Standalone and targeted multiworkspace builds and client datagen pass. Headless runtime checks verified placement of all 27 blocks, save/load of all 16 block-entity types, legacy chamber/scan imports, shape-card component serialization, and Builder energy rollback. Interactive gameplay and rendering still require the checks below.
-
-The complete workspace also passes `:workspace:classes`.
-
-## Manual verification
-
-Check Builder shape cards, quarry/silk/fortune modes, filters, fluid pumping, cross-dimension moves, and chunk loading. Reload saved machines and cards. Exercise shield modes, damage filters, camouflage, and projector removal. Scan a structure, compose scans, and check GUI rotation/zoom, projector block-model mode, scan flashes, and beacons. Build a vehicle and inspect movement, passenger/camera behavior, control/status panels, sound, and saved destinations. Check creative/JEI visibility and the Patchouli manual where available.
-
-For scan-rendering regression checks, use a 200×50×200 scan in solid and blockstate projector modes. Check GUI pan/rotation/zoom at several GUI scales, transparent blocks and fluids, scan updates, scan flashes, beacons, multiple projectors, resource reload, and world reload. Include XNet connectors next to machines and cables: scan views expose block states without synthesizing worldless block entities. Entity-dependent details such as capability connections and facades use the model fallback because scans do not store block entity data. Automated mesh tests do not measure in-game FPS or verify GPU output.
-
-For block synchronization, place a fresh empty Scanner, then mine it and nearby Dimensional Cells and Projectors in the same chunk. Their outlines and collision must disappear on both sides. Scanner preview initialization runs during the server tick; packet serialization only reads its cached preview and must never queue another block update.
+For manual validation, exercise quarry/silk/fortune cards, filters, cross-dimension moves, chunk loading, shield collision and damage modes, camouflage, scan composition, large projector previews, vehicle movement and passengers, and resource/world reloads. Check GUI tooltip colors, inline item icons, and Shift-expanded block descriptions with JEI installed.

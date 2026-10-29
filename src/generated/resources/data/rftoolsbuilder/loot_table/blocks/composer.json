@@ -24,7 +24,6 @@
           "name": "rftoolsbuilder:composer"
         }
       ],
-      "name": "composer",
       "rolls": 1.0
     }
   ],

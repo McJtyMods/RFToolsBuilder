@@ -5,7 +5,7 @@ import mcjty.lib.varia.NamedEnum;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
+import mcjty.lib.network.StreamCodecs;
 
 public enum RotateMode implements NamedEnum<RotateMode> {
     ROTATE_0("0"),
@@ -16,7 +16,7 @@ public enum RotateMode implements NamedEnum<RotateMode> {
     private final String name;
 
     public static final Codec<RotateMode> CODEC = StringRepresentable.fromEnum(RotateMode::values);
-    public static final StreamCodec<FriendlyByteBuf, RotateMode> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(RotateMode.class);
+    public static final StreamCodec<FriendlyByteBuf, RotateMode> STREAM_CODEC = StreamCodecs.enumCodec(RotateMode.class);
 
     RotateMode(String name) {
         this.name = name;
@@ -31,7 +31,6 @@ public enum RotateMode implements NamedEnum<RotateMode> {
     public String[] getDescription() {
         return new String[] { name };
     }
-
 
     @Override
     public String getSerializedName() {

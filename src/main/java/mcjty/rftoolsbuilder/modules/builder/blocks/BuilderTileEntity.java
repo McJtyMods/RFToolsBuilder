@@ -1,7 +1,12 @@
 package mcjty.rftoolsbuilder.modules.builder.blocks;
 
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.FluidTags;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import mcjty.rftoolsbuilder.setup.BuilderChunkTickets;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
+import net.minecraft.sounds.SoundSource;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -19,7 +24,6 @@ import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
-import mcjty.lib.setup.Registration;
 import mcjty.lib.tileentity.*;
 import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
@@ -85,24 +89,22 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.SpecialPlantable;
-import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import mcjty.lib.varia.Lazy;
+import mcjty.lib.varia.FluidStack;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import mcjty.lib.container.IItemHandler;
+import mcjty.lib.container.ItemHandlerHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.lib.container.SlotDefinition.specific;
@@ -203,7 +205,6 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         super(BuilderModule.BUILDER.be().get(), pos, state);
         setRSMode(RedstoneMode.REDSTONE_ONREQUIRED);
     }
-
 
     public static BaseBlock createBlock(BlockBehaviour.Properties properties) {
         return new BaseBlock(new BlockBuilder().properties(RegistryProperties.block(properties))
@@ -428,7 +429,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     @Override
     public void onDataChanged(AttachmentType<?> type, Object oldData, Object newData) {
-        if (type == BuilderModule.BUILDER_DATA.get()) {
+        if (type == BuilderModule.BUILDER_DATA) {
             onDataChanged((BuilderData) oldData, (BuilderData) newData);
         }
     }
@@ -600,7 +601,6 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return new BlockPos(x, y, z);
     }
 
-
     public RotateMode getRotate() {
         return getData(BuilderModule.BUILDER_DATA).rotate();
     }
@@ -707,7 +707,6 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         setData(BuilderModule.BUILDER_DATA, data);
     }
 
-
     @Override
     public void tickServer() {
         if (!overflowItems.isEmpty()) {
@@ -773,7 +772,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             int y = data.scan().getY();
             int z = data.scan().getZ();
             double sqradius = 30 * 30;
-            for (ServerPlayer player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
+            for (ServerPlayer player : ((ServerLevel) level).getServer().getPlayerList().getPlayers()) {
                 if (Objects.equals(player.level().dimension(), level.dimension())) {
                     double d0 = x - player.getX();
                     double d1 = y - player.getY();
@@ -929,7 +928,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return Pair.of(data, null);
         }
 
-        ShapeCardData shapeData = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA, ShapeCardData.DEFAULT);
+        ShapeCardData shapeData = card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT);
         if (shapeData.channel() == -1) {
             return Pair.of(data, null);
         }
@@ -1081,7 +1080,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
 
             if (!isSilent()) {
-                SoundType sound = newState.getBlock().getSoundType(newState, level, srcPos, fakePlayer);
+                SoundType sound = newState.getSoundType();
                 playPlaceSoundSafe(sound, level, newState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
             }
 
@@ -1118,7 +1117,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private void clearOrDirtBlock(int rfNeeded, BlockPos spos, BlockState srcState, boolean clear) {
         energyStorage.consumeEnergy(rfNeeded);
         if (!isSilent()) {
-            SoundType soundType = srcState.getBlock().getSoundType(srcState, level, spos, null);
+            SoundType soundType = srcState.getSoundType();
             playBreakSoundSafe(soundType, level, srcState, spos.getX(), spos.getY(), spos.getZ());
         }
         if (srcState.is(DONT_REMOVE_ME_TAG)) {
@@ -1144,24 +1143,20 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     private Pair<BuilderData, Boolean> allowedToBreak(BuilderData data, BlockState state, Level world, BlockPos pos, Player player) {
-        if (!state.getBlock().canEntityDestroy(state, world, pos, player)) {
+        if (state.getDestroySpeed(world, pos) < 0 || !world.mayInteract(player, pos)) {
             return skip(data, "Cannot destroy!\nAre fake players\nallowed?");
         }
-        BreakBlockEvent event = new BreakBlockEvent(world, pos, state, player);
-        NeoForge.EVENT_BUS.post(event);
-        if (event.isCanceled()) {
+        if (!PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pos, state, world.getBlockEntity(pos))) {
             return skip(data, "Break was canceled!");
         }
         return Pair.of(data, true);
     }
 
     private static boolean allowedToBreakS(BlockState state, Level world, BlockPos pos, Player player) {
-        if (!state.getBlock().canEntityDestroy(state, world, pos, player)) {
+        if (state.getDestroySpeed(world, pos) < 0 || !world.mayInteract(player, pos)) {
             return false;
         }
-        BreakBlockEvent event = new BreakBlockEvent(world, pos, state, player);
-        NeoForge.EVENT_BUS.post(event);
-        return !event.isCanceled();
+        return PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pos, state, world.getBlockEntity(pos));
     }
 
     public boolean quarryBlock(int rfNeeded, BlockPos srcPos, BlockState srcState, BlockState pickState) {
@@ -1228,7 +1223,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                     if (filterCache.get() != null) {
                         boolean match;
                         try {
-                            match = filterCache.get().test(block.getCloneItemStack(level, srcPos, srcState, false, null));
+                            match = filterCache.get().test(block.getCloneItemStack(level, srcPos, srcState, false));
                         } catch (Exception e) {
                             // In case block.getItem() fails (like can happen for banner blocks because the getItem()
                             // for that fails on servers due to calling a client-side method)
@@ -1290,8 +1285,8 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
 
             Fluid fluid = stack.getFluid();
-            if (fluid.getFluidType().isVaporizedOnPlacement(level, srcPos, stack) && level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, srcPos)) {
-                fluid.getFluidType().onVaporize(null, level, srcPos, stack);
+            if (fluid.is(FluidTags.WATER) && level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, srcPos)) {
+                level.playSound(null, srcPos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 2.6f);
             } else {
                 // We assume here the liquid is placable.
                 Block block = fluid.defaultFluidState().createLegacyBlock().getBlock();   // @todo 1.14 check blockstate
@@ -1299,7 +1294,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 level.setBlock(srcPos, block.defaultBlockState(), Block.UPDATE_ALL_IMMEDIATE);
 
                 if (!isSilent()) {
-                    SoundType soundType = block.getSoundType(block.defaultBlockState(), level, srcPos, fakePlayer);
+                    SoundType soundType = block.defaultBlockState().getSoundType();
                     playPlaceSoundSafe(soundType, level, block.defaultBlockState(), srcPos.getX(), srcPos.getY(), srcPos.getZ());
                 }
             }
@@ -1356,7 +1351,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                         }
                     });
                     if (!isSilent()) {
-                        SoundType soundType = block.getSoundType(srcState, level, srcPos, fakePlayer);
+                        SoundType soundType = srcState.getSoundType();
                         playBreakSoundSafe(soundType, level, srcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
                     }
                     return skip(data);
@@ -1392,7 +1387,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 ItemStack filter = items.getStackInSlot(SLOT_FILTER);
                 if (!filter.isEmpty()) {
                     if (filterCache.get() != null) {
-                        boolean match = filterCache.get().test(block.getCloneItemStack(level, srcPos, srcState, false, null));
+                        boolean match = filterCache.get().test(block.getCloneItemStack(level, srcPos, srcState, false));
                         if (!match) {
                             energyStorage.consumeEnergy(Math.min(rfNeeded, BuilderConfiguration.builderRfPerSkipped.get()));
                             return skip(data);   // Skip this
@@ -1401,7 +1396,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 }
 
                 if (!isSilent()) {
-                    SoundType soundType = block.getSoundType(srcState, level, srcPos, fakePlayer);
+                    SoundType soundType = srcState.getSoundType();
                     playBreakSoundSafe(soundType, level, srcState, sx, sy, sz);
                 }
                 level.setBlockAndUpdate(srcPos, Blocks.AIR.defaultBlockState());
@@ -1466,7 +1461,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
         } else {
             Block block = state.getBlock();
-            ItemStack srcItem = block.getCloneItemStack(srcWorld, srcPos, state, false, null);
+            ItemStack srcItem = block.getCloneItemStack(srcWorld, srcPos, state, false);
             if (isPlacable(srcItem)) {
                 for (int i = 0; i < inventory.getSlots(); i++) {
                     ItemStack stack = inventory.getStackInSlot(i);
@@ -1484,7 +1479,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return false;
         }
         Item item = stack.getItem();
-        return item instanceof BlockItem || item instanceof SpecialPlantable;
+        return item instanceof BlockItem;
     }
 
     // the items that we try to insert.
@@ -1511,20 +1506,16 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return false;
     }
 
-    private boolean checkFluidTank(FluidStack fluidStack, BlockPos up, Direction side) {
-        BlockEntity te = level.getBlockEntity(up);
-        if (te != null) {
-            IFluidHandler h = CapabilityTools.fluidHandler(level.getCapability(Capabilities.Fluid.BLOCK, up, side));
-            if (h != null) {
-                int amount = h.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
-                if (amount == 1000) {
-                    h.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
-                    return true;
-                }
-                return false;
-            }
+    private boolean checkFluidTank(FluidStack fluidStack, BlockPos pos, Direction side) {
+        var storage = FluidStorage.SIDED.find(level, pos, side);
+        if (storage == null || fluidStack.isEmpty()) return false;
+        long amount = fluidStack.getAmount() * (FluidConstants.BUCKET / 1000);
+        // Do not remove a world fluid block unless its full contents fit.
+        try (var transaction = Transaction.openOuter()) {
+            if (storage.insert(fluidStack.variant(), amount, transaction) != amount) return false;
+            transaction.commit();
+            return true;
         }
-        return false;
     }
 
     private final LazyList<ItemStack> couldntHandle1 = new LazyList<>();
@@ -1538,7 +1529,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             couldntHandle.copyList(items);
             return;
         }
-        IItemHandler capability = CapabilityTools.itemHandler(te.getLevel().getCapability(Capabilities.Item.BLOCK, te.getBlockPos(), direction));
+        IItemHandler capability = CapabilityTools.itemHandler(ItemStorage.SIDED.find(te.getLevel(), te.getBlockPos(), direction));
         if (capability == null) {
             couldntHandle.copyList(items);
             return;
@@ -1629,7 +1620,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private TakeableItem createTakeableItem(Direction direction, Level srcWorld, BlockPos srcPos, BlockState state) {
         BlockEntity te = level.getBlockEntity(getBlockPos().relative(direction));
         if (te != null) {
-            IItemHandler h = CapabilityTools.itemHandler(level.getCapability(Capabilities.Item.BLOCK, te.getBlockPos(), direction.getOpposite()));
+            IItemHandler h = CapabilityTools.itemHandler(ItemStorage.SIDED.find(level, te.getBlockPos(), direction.getOpposite()));
             if (h != null) {
                 return findBlockTakeableItem(h, srcWorld, srcPos, state);
             }
@@ -1650,9 +1641,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private FluidStack consumeLiquid(Direction direction, Level srcWorld, BlockPos srcPos) {
         BlockEntity te = level.getBlockEntity(getBlockPos().relative(direction));
         if (te != null) {
-            IFluidHandler fluid = CapabilityTools.fluidHandler(level.getCapability(Capabilities.Fluid.BLOCK, te.getBlockPos(), direction.getOpposite()));
+            Storage<FluidVariant> fluid = FluidStorage.SIDED.find(level, te.getBlockPos(), direction.getOpposite());
             if (fluid == null) {
-                fluid = CapabilityTools.fluidHandler(level.getCapability(Capabilities.Fluid.BLOCK, te.getBlockPos(), null));
+                fluid = FluidStorage.SIDED.find(level, te.getBlockPos(), null);
             }
             if (fluid != null) {
                 return findAndConsumeLiquid(fluid, srcWorld, srcPos);
@@ -1662,15 +1653,14 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     }
 
     @NotNull
-    private FluidStack findAndConsumeLiquid(IFluidHandler tank, Level srcWorld, BlockPos srcPos) {
-        for (int i = 0; i < tank.getTanks(); i++) {
-            FluidStack contents = tank.getFluidInTank(i);
-            if (!contents.isEmpty()) {
-                if (contents.getFluid() != null) {
-                    if (contents.getAmount() >= 1000) {
-                        return tank.drain(new FluidStack(contents.getFluid(), 1000), IFluidHandler.FluidAction.EXECUTE);
-                    }
-                }
+    private FluidStack findAndConsumeLiquid(Storage<FluidVariant> tank, Level srcWorld, BlockPos srcPos) {
+        for (var view : tank) {
+            if (view.isResourceBlank() || view.getAmount() < FluidConstants.BUCKET) continue;
+            FluidVariant fluid = view.getResource();
+            try (var transaction = Transaction.openOuter()) {
+                if (tank.extract(fluid, FluidConstants.BUCKET, transaction) != FluidConstants.BUCKET) continue;
+                transaction.commit();
+                return new FluidStack(fluid, 1000);
             }
         }
         return FluidStack.EMPTY;
@@ -1816,7 +1806,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
 
             if (!isSilent()) {
-                SoundType soundType = newState.getBlock().getSoundType(newState, destWorld, destPos, fakePlayer);
+                SoundType soundType = newState.getSoundType();
                 playPlaceSoundSafe(soundType, destWorld, newState, destPos.getX(), destPos.getY(), destPos.getZ());
             }
 
@@ -1908,7 +1898,6 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         TeleportationTools.teleportEntity(entity, destWorld, newX, newY, newZ, null);
     }
 
-
     private boolean isEntityInBlock(int x, int y, int z, Entity entity) {
         if (entity.getX() >= x && entity.getX() < x + 1 && entity.getY() >= y && entity.getY() < y + 1 && entity.getZ() >= z && entity.getZ() < z + 1) {
             return true;
@@ -1963,9 +1952,9 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
                 configureTileEntityNBT(destWorld, tc, destPos, srcState);
             }
             if (!isSilent()) {
-                SoundType srcSoundType = srcBlock.getSoundType(srcState, srcWorld, srcPos, null);
+                SoundType srcSoundType = srcState.getSoundType();
                 playBreakSoundSafe(srcSoundType, srcWorld, srcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
-                SoundType dstSoundtype = srcBlock.getSoundType(srcState, destWorld, destPos, null);
+                SoundType dstSoundtype = srcState.getSoundType();
                 playPlaceSoundSafe(dstSoundtype, destWorld, srcState, destPos.getX(), destPos.getY(), destPos.getZ());
             }
         }
@@ -2063,15 +2052,15 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
         if (!isSilent()) {
             if (!isEmpty(oldSrcState, srcBlock)) {
-                SoundType srcSoundType = srcBlock.getSoundType(oldSrcState, srcWorld, srcPos, null);
+                SoundType srcSoundType = oldSrcState.getSoundType();
                 playBreakSoundSafe(srcSoundType, srcWorld, oldSrcState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
-                SoundType dstSoundType = srcBlock.getSoundType(oldSrcState, destWorld, dstPos, null);
+                SoundType dstSoundType = oldSrcState.getSoundType();
                 playPlaceSoundSafe(dstSoundType, destWorld, oldSrcState, dstPos.getX(), dstPos.getY(), dstPos.getZ());
             }
             if (!isEmpty(oldDstState, dstBlock)) {
-                SoundType srcSoundType = dstBlock.getSoundType(oldDstState, destWorld, dstPos, null);
+                SoundType srcSoundType = oldDstState.getSoundType();
                 playBreakSoundSafe(srcSoundType, destWorld, oldDstState, dstPos.getX(), dstPos.getY(), dstPos.getZ());
-                SoundType dstSoundType = dstBlock.getSoundType(oldDstState, srcWorld, srcPos, null);
+                SoundType dstSoundType = oldDstState.getSoundType();
                 playPlaceSoundSafe(dstSoundType, srcWorld, oldDstState, srcPos.getX(), srcPos.getY(), srcPos.getZ());
             }
         }
@@ -2099,7 +2088,6 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         rotate(source, dest);
         dest.set(dest.getX() + projDx, dest.getY() + projDy, dest.getZ() + projDz);
     }
-
 
     private void rotate(BlockPos c, BlockPos.MutableBlockPos dest) {
         switch (getRotate()) {
@@ -2140,7 +2128,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private void chunkUnload() {
         if (forcedChunk != null) {
             if (getOwnerUUID() != null) {
-                RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x(), forcedChunk.z(), false, false);
+                BuilderChunkTickets.release((ServerLevel) level, forcedChunk, worldPosition);
             }
             forcedChunk = null;
         }
@@ -2161,19 +2149,18 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             }
             if (forcedChunk != null) {
                 if (getOwnerUUID() != null) {
-                    RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x(), forcedChunk.z(), false, false);
+                    BuilderChunkTickets.release((ServerLevel) level, forcedChunk, worldPosition);
                 }
             }
             forcedChunk = pair;
             if (getOwnerUUID() != null) {
-                RFToolsBuilder.setup.ticketController.forceChunk((ServerLevel) level, getOwnerUUID(), forcedChunk.x(), forcedChunk.z(), false, false);
+                BuilderChunkTickets.acquire((ServerLevel) level, forcedChunk, worldPosition);
             }
             return true;
         }
         // Chunk is not loaded and we don't do chunk loading so we cannot proceed.
         return false;
     }
-
 
     public static void setScanLocationClient(BlockPos tePos, BlockPos scanPos) {
         scanLocClient.put(tePos, Pair.of(System.currentTimeMillis(), scanPos));
@@ -2328,10 +2315,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     @Override
     protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        energyStorage.applyImplicitComponents(input.get(ITEM_ENERGY));
-        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
-        infusable.applyImplicitComponents(input.get(ITEM_INFUSABLE));
-        BuilderData builderData = input.get(BuilderModule.ITEM_BUILDER_DATA);
+        energyStorage.applyImplicitComponents(input.get(ITEM_ENERGY.get()));
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY.get()));
+        infusable.applyImplicitComponents(input.get(ITEM_INFUSABLE.get()));
+        BuilderData builderData = input.get(BuilderModule.ITEM_BUILDER_DATA.get());
         if (builderData != null) {
             setData(BuilderModule.BUILDER_DATA, builderData);
         }
@@ -2343,7 +2330,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         energyStorage.collectImplicitComponents(builder);
         items.collectImplicitComponents(builder);
         infusable.collectImplicitComponents(builder);
-        builder.set(BuilderModule.ITEM_BUILDER_DATA, getData(BuilderModule.BUILDER_DATA));
+        builder.set(BuilderModule.ITEM_BUILDER_DATA.get(), getData(BuilderModule.BUILDER_DATA));
     }
 
     public static int getCurrentLevelClientSide() {

@@ -1,7 +1,8 @@
 package mcjty.rftoolsbuilder.modules.mover;
 
-
-import com.mojang.serialization.MapCodec;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.minecraft.resources.Identifier;
 import java.util.function.Supplier;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.blocks.RBlock;
@@ -32,16 +33,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-
+import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
+import mcjty.lib.setup.DeferredBlock;
+import mcjty.lib.setup.DeferredHolder;
+import mcjty.lib.setup.DeferredItem;
 import static mcjty.lib.datagen.BaseBlockStateProvider.RFTOOLSBASE_BOTTOM;
 import static mcjty.lib.datagen.BaseBlockStateProvider.RFTOOLSBASE_TOP;
 import static mcjty.lib.datagen.DataGen.has;
@@ -77,7 +72,7 @@ public class MoverModule implements IModule {
     public static final Supplier<MenuType<GenericContainer>> CONTAINER_VEHICLE_BUILDER = CONTAINERS.register("vehicle_builder", GenericContainer::createContainerType);
 
     public static final DeferredBlock<InvisibleMoverBlock> INVISIBLE_MOVER_BLOCK = BLOCKS.register("invisible_mover", InvisibleMoverBlock::new);
-    public static final Supplier<BlockEntityType<?>> TYPE_INVISIBLE_MOVER = TILES.register("invisible_mover", () -> new BlockEntityType<>(InvisibleMoverBE::new, INVISIBLE_MOVER_BLOCK.get()));
+    public static final Supplier<BlockEntityType<?>> TYPE_INVISIBLE_MOVER = TILES.register("invisible_mover", () -> FabricBlockEntityTypeBuilder.create(InvisibleMoverBE::new, INVISIBLE_MOVER_BLOCK.get()).build());
 
     public static final DeferredBlock<Block> MOVER_CONTROL_BLOCK = BLOCKS.register("mover_control", properties -> new MoverControlBlock(properties, 0));
     public static final DeferredItem<Item> MOVER_CONTROL_ITEM = ITEMS.register("mover_control", tab(properties -> new BaseBlockItem(MOVER_CONTROL_BLOCK.get(), properties.useBlockDescriptionPrefix())));
@@ -95,30 +90,27 @@ public class MoverModule implements IModule {
     public static final DeferredItem<VehicleControlModuleItem> VEHICLE_CONTROL_MODULE = ITEMS.register("vehicle_control_module", tab(VehicleControlModuleItem::new));
     public static final DeferredItem<VehicleStatusModuleItem> VEHICLE_STATUS_MODULE = ITEMS.register("vehicle_status_module", tab(VehicleStatusModuleItem::new));
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<MoverControllerData>> MOVER_CONTROLLER_DATA = ATTACHMENT_TYPES.register(
-            "mover_controller_data", () -> AttachmentType.builder(() -> MoverControllerData.DEFAULT)
-                    .serialize(MapCodec.assumeMapUnsafe(MoverControllerData.CODEC))
-                    .build());
+    public static final AttachmentType<MoverControllerData> MOVER_CONTROLLER_DATA = AttachmentRegistry.create(
+            Identifier.fromNamespaceAndPath("rftoolsbuilder", "mover_controller_data"),
+            builder -> builder.initializer(() -> MoverControllerData.DEFAULT).persistent(MoverControllerData.CODEC));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<MoverControllerData>> ITEM_MOVER_CONTROLLER_DATA = COMPONENTS.registerComponentType(
             "mover_controller_data",
             builder -> builder
                     .persistent(MoverControllerData.CODEC)
                     .networkSynchronized(MoverControllerData.STREAM_CODEC));
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<MoverData>> MOVER_DATA = ATTACHMENT_TYPES.register(
-            "mover_data", () -> AttachmentType.builder(() -> MoverData.DEFAULT)
-                    .serialize(MapCodec.assumeMapUnsafe(MoverData.CODEC))
-                    .build());
+    public static final AttachmentType<MoverData> MOVER_DATA = AttachmentRegistry.create(
+            Identifier.fromNamespaceAndPath("rftoolsbuilder", "mover_data"),
+            builder -> builder.initializer(() -> MoverData.DEFAULT).persistent(MoverData.CODEC));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<MoverData>> ITEM_MOVER_DATA = COMPONENTS.registerComponentType(
             "mover_data",
             builder -> builder
                     .persistent(MoverData.CODEC)
                     .networkSynchronized(MoverData.STREAM_CODEC));
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<VehicleBuilderData>> VEHICLE_BUILDER_DATA = ATTACHMENT_TYPES.register(
-            "vehicle_builder_data", () -> AttachmentType.builder(() -> VehicleBuilderData.DEFAULT)
-                    .serialize(MapCodec.assumeMapUnsafe(VehicleBuilderData.CODEC))
-                    .build());
+    public static final AttachmentType<VehicleBuilderData> VEHICLE_BUILDER_DATA = AttachmentRegistry.create(
+            Identifier.fromNamespaceAndPath("rftoolsbuilder", "vehicle_builder_data"),
+            builder -> builder.initializer(() -> VehicleBuilderData.DEFAULT).persistent(VehicleBuilderData.CODEC));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<VehicleBuilderData>> ITEM_VEHICLE_BUILDER_DATA = COMPONENTS.registerComponentType(
             "vehicle_builder_data",
             builder -> builder
@@ -143,28 +135,28 @@ public class MoverModule implements IModule {
                     .persistent(VehicleStatusScreenModule.CODEC)
                     .networkSynchronized(VehicleStatusScreenModule.STREAM_CODEC));
 
-    public MoverModule(IEventBus bus, Dist dist) {
+    public MoverModule() {
         Sounds.init();
-        bus.addListener(this::registerMenuScreens);
     }
 
     @Override
-    public void init(FMLCommonSetupEvent event) {
+    public void init() {
     }
 
     @Override
-    public void initClient(FMLClientSetupEvent event) {
+    public void initClient() {
+        registerMenuScreens();
         ClientSetup.initClient();
     }
 
-    public void registerMenuScreens(RegisterMenuScreensEvent event) {
-        GuiMover.register(event);
-        GuiMoverController.register(event);
-        GuiVehicleBuilder.register(event);
+    public void registerMenuScreens() {
+        GuiMover.register();
+        GuiMoverController.register();
+        GuiVehicleBuilder.register();
     }
 
     @Override
-    public void initConfig(IEventBus bus) {
+    public void initConfig() {
         MoverConfiguration.init(Config.SERVER_BUILDER, Config.CLIENT_BUILDER);
     }
 

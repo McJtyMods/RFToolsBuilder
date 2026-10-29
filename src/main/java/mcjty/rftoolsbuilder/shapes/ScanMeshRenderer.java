@@ -1,5 +1,7 @@
 package mcjty.rftoolsbuilder.shapes;
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -9,14 +11,10 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import net.neoforged.neoforge.client.event.lifecycle.ClientStoppingEvent;
-import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryUtil;
-
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -47,8 +45,8 @@ public final class ScanMeshRenderer {
     }
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(ScanMeshRenderer::endFrame);
-        NeoForge.EVENT_BUS.addListener(ScanMeshRenderer::stop);
+        ClientTickEvents.END_CLIENT_TICK.register(client -> endFrame());
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> stop());
     }
 
     public static void submit(List<ScanMesh> meshes, PoseStack pose, SubmitNodeCollector collector, boolean gui) {
@@ -99,7 +97,7 @@ public final class ScanMeshRenderer {
         }
     }
 
-    private static void endFrame(RenderFrameEvent.Post event) {
+    private static void endFrame() {
         long oldest = System.nanoTime() - 2_000_000_000L;
         BUFFERS.values().removeIf(buffer -> {
             if (buffer.lastUsed >= oldest) return false;
@@ -108,7 +106,7 @@ public final class ScanMeshRenderer {
         });
     }
 
-    private static void stop(ClientStoppingEvent event) {
+    private static void stop() {
         BUFFERS.values().forEach(Uploaded::close);
         BUFFERS.clear();
     }

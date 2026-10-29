@@ -16,11 +16,9 @@ import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.container.GenericItemHandler;
-import mcjty.lib.setup.Registration;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericTileEntity;
-import mcjty.lib.varia.ComponentFactory;
 import mcjty.lib.varia.LevelTools;
 import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbase.tools.RegistryProperties;
@@ -50,9 +48,8 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.common.util.Lazy;
+import mcjty.lib.varia.Lazy;
 import org.jetbrains.annotations.NotNull;
-
 import static mcjty.lib.api.container.DefaultContainerProvider.container;
 import static mcjty.lib.builder.TooltipBuilder.header;
 import static mcjty.lib.builder.TooltipBuilder.key;
@@ -87,7 +84,6 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
     @Cap(type = CapType.ITEMS_AUTOMATION)
     private final static Function<VehicleBuilderTileEntity, GenericItemHandler> ITEM_CAP = tile -> tile.items;
 
-
     @Cap(type = CapType.CONTAINER)
     private static final Function<VehicleBuilderTileEntity, MenuProvider> screenHandler = (tile) -> new DefaultContainerProvider<GenericContainer>("Vehicle Builder")
             .containerSupplier(container(MoverModule.CONTAINER_VEHICLE_BUILDER, CONTAINER_FACTORY, tile))
@@ -104,7 +100,6 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
                 .infoShift(header()));
     }
 
-
     public VehicleBuilderTileEntity(BlockPos pos, BlockState state) {
         super(MoverModule.VEHICLE_BUILDER.be().get(), pos, state);
     }
@@ -116,14 +111,13 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
     private static final int MAXDIM = 16;
 
     public RotateMode getRotate() {
-        return getData(MoverModule.VEHICLE_BUILDER_DATA.get()).rotate();
+        return getData(MoverModule.VEHICLE_BUILDER_DATA).rotate();
     }
 
     public void setRotate(RotateMode rotate) {
-        VehicleBuilderData data = getData(MoverModule.VEHICLE_BUILDER_DATA.get()).withRotate(rotate);
-        setData(MoverModule.VEHICLE_BUILDER_DATA.get(), data);
+        VehicleBuilderData data = getData(MoverModule.VEHICLE_BUILDER_DATA).withRotate(rotate);
+        setData(MoverModule.VEHICLE_BUILDER_DATA, data);
     }
-
 
     private void copyVehicle(Player player) {
         ItemStack spaceCard = items.getStackInSlot(SLOT_SPACE_CARD);
@@ -268,8 +262,8 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
     @Override
     protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        items.applyImplicitComponents(input.get(ITEM_INVENTORY));
-        VehicleBuilderData vehicleBuilderData = input.get(MoverModule.ITEM_VEHICLE_BUILDER_DATA);
+        items.applyImplicitComponents(input.get(ITEM_INVENTORY.get()));
+        VehicleBuilderData vehicleBuilderData = input.get(MoverModule.ITEM_VEHICLE_BUILDER_DATA.get());
         if (vehicleBuilderData != null) {
             setData(MoverModule.VEHICLE_BUILDER_DATA, vehicleBuilderData);
         }
@@ -279,7 +273,7 @@ public class VehicleBuilderTileEntity extends GenericTileEntity {
     protected void collectImplicitComponents(DataComponentMap.Builder builder) {
         super.collectImplicitComponents(builder);
         items.collectImplicitComponents(builder);
-        builder.set(MoverModule.ITEM_VEHICLE_BUILDER_DATA, getData(MoverModule.VEHICLE_BUILDER_DATA));
+        builder.set(MoverModule.ITEM_VEHICLE_BUILDER_DATA.get(), getData(MoverModule.VEHICLE_BUILDER_DATA));
     }
 
     @ServerCommand

@@ -3,7 +3,6 @@ package mcjty.rftoolsbuilder.modules.mover.items;
 import com.mojang.serialization.Codec;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import mcjty.lib.crafting.IComponentsToPreserve;
 import mcjty.lib.gui.ManualEntry;
@@ -20,7 +19,6 @@ import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
-import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponentType;
@@ -116,7 +114,7 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
                 Logging.message(player, "Vehicle control module is cleared");
             }
         }
-        stack.set(MoverModule.MODULE_VEHICLECONTROL_DATA, data);
+        stack.set(MoverModule.MODULE_VEHICLECONTROL_DATA.get(), data);
         return InteractionResult.SUCCESS;
     }
 
@@ -126,7 +124,7 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
     }
 
     public static VehicleControlScreenModule data(ItemStack stack) {
-        VehicleControlScreenModule data = stack.get(MoverModule.MODULE_VEHICLECONTROL_DATA);
+        VehicleControlScreenModule data = stack.get(MoverModule.MODULE_VEHICLECONTROL_DATA.get());
         if (data == null) {
             data = VehicleControlScreenModule.DEFAULT;
         }
@@ -136,7 +134,7 @@ public class VehicleControlModuleItem extends GenericModuleItem implements IComp
     public static void data(ItemStack stack, Function<VehicleControlScreenModule, VehicleControlScreenModule> setter) {
         VehicleControlScreenModule data = data(stack);
         data = setter.apply(data);
-        stack.set(MoverModule.MODULE_VEHICLECONTROL_DATA, data);
+        stack.set(MoverModule.MODULE_VEHICLECONTROL_DATA.get(), data);
     }
 
     @Override

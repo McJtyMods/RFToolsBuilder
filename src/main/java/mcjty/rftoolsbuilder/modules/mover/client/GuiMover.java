@@ -1,5 +1,6 @@
 package mcjty.rftoolsbuilder.modules.mover.client;
 
+import net.minecraft.client.gui.screens.MenuScreens;
 import mcjty.lib.container.GenericContainer;
 import mcjty.lib.gui.GenericGuiContainer;
 import mcjty.lib.gui.Window;
@@ -10,8 +11,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-
 import org.jetbrains.annotations.NotNull;
 
 public class GuiMover extends GenericGuiContainer<MoverTileEntity, GenericContainer> {
@@ -20,8 +19,8 @@ public class GuiMover extends GenericGuiContainer<MoverTileEntity, GenericContai
         super(container, inventory, title, MoverModule.MOVER.block().get().getManualEntry());
     }
 
-    public static void register(RegisterMenuScreensEvent event) {
-        event.register(MoverModule.CONTAINER_MOVER.get(), GuiMover::new);
+    public static void register() {
+        MenuScreens.register(MoverModule.CONTAINER_MOVER.get(), GuiMover::new);
     }
 
     @Override

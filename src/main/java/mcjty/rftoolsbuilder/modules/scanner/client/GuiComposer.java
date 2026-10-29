@@ -31,9 +31,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.jetbrains.annotations.NotNull;
-
 import static mcjty.lib.gui.widgets.Widgets.label;
 
 public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, GenericContainer> implements IShapeParentGui {
@@ -61,8 +59,8 @@ public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, Generic
         setWindowDimensions(SIDEWIDTH + SHAPER_WIDTH, SHAPER_HEIGHT);
     }
 
-    public static void register(RegisterMenuScreensEvent event) {
-        register(event, ScannerModule.CONTAINER_COMPOSER.get(), GuiComposer::new);
+    public static void register() {
+        register(ScannerModule.CONTAINER_COMPOSER.get(), GuiComposer::new);
     }
 
     @Override

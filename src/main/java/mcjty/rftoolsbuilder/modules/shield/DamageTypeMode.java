@@ -4,8 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
-
+import mcjty.lib.network.StreamCodecs;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +18,7 @@ public enum DamageTypeMode implements StringRepresentable {
     private final String description;
 
     public static final Codec<DamageTypeMode> CODEC = StringRepresentable.fromEnum(DamageTypeMode::values);
-    public static final StreamCodec<FriendlyByteBuf, DamageTypeMode> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(DamageTypeMode.class);
+    public static final StreamCodec<FriendlyByteBuf, DamageTypeMode> STREAM_CODEC = StreamCodecs.enumCodec(DamageTypeMode.class);
 
     DamageTypeMode(String description) {
         this.description = description;
@@ -38,7 +37,6 @@ public enum DamageTypeMode implements StringRepresentable {
             modeToMode.put(mode.description, mode);
         }
     }
-
 
     @Override
     public String getSerializedName() {

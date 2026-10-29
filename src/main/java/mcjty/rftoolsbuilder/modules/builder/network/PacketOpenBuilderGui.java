@@ -1,6 +1,7 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
 import mcjty.lib.api.container.CapabilityContainerProvider;
+import mcjty.lib.container.MenuTools;
 import mcjty.lib.api.container.DefaultContainerProvider;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import net.minecraft.core.BlockPos;
@@ -12,7 +13,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import mcjty.lib.network.PayloadContext;
 
 public record PacketOpenBuilderGui(BlockPos pos) implements CustomPacketPayload {
 
@@ -32,7 +33,7 @@ public record PacketOpenBuilderGui(BlockPos pos) implements CustomPacketPayload 
         return new PacketOpenBuilderGui(fromTEPos);
     }
 
-    public void handle(IPayloadContext ctx) {
+    public void handle(PayloadContext ctx) {
         ctx.enqueueWork(() -> {
             Player player = ctx.player();
             Level world = player.level();
@@ -40,13 +41,13 @@ public record PacketOpenBuilderGui(BlockPos pos) implements CustomPacketPayload 
             if (te == null) {
                 return;
             }
-            MenuProvider h = world.getCapability(CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY, te.getBlockPos(), null);
-            player.openMenu(h, buf -> {
-                buf.writeBlockPos(pos);
-                if (h instanceof DefaultContainerProvider<?> provider) {
-                    provider.writeExtraData(buf, te);
-                }
-            });
+            MenuProvider h = CapabilityContainerProvider.CONTAINER_PROVIDER_CAPABILITY.find(world, te.getBlockPos(), null);
+            if (h != null) {
+                MenuTools.open(player, h, buffer -> {
+                    buffer.writeBlockPos(pos);
+                    if (h instanceof DefaultContainerProvider<?> provider) provider.writeExtraData(buffer, te);
+                });
+            }
         });
     }
 }

@@ -14,33 +14,32 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.1.38'
+    id 'net.fabricmc.fabric-loom' version '1.17.17'
 }
 
 apply plugin: 'com.hypherionmc.modutils.modpublisher'
 
-// Use the matching workspace script for standalone and integrated builds.
 def sharedTools = [rootProject.file('gradletools.gradle'),
-                   file('../Multi_neo/gradletools.gradle'),
+                   file('../Multi_fabric/gradletools.gradle'),
                    file('../gradletools.gradle')].find { it.isFile() }
 if (sharedTools != null) {
     apply from: sharedTools
 } else {
-    apply from: 'https://raw.githubusercontent.com/McJtyMods/MultiWorkspace/26.1.2_neo/gradletools.gradle'
+    apply from: 'https://raw.githubusercontent.com/McJtyMods/MultiWorkspace/26.1.2_fabric/gradletools.gradle'
 }
 
 group = "com.github.mcjty"
-base.archivesName = "rftoolsbuilder"
+base.archivesName = "rftoolsbuilder-fabric"
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
-// The JEI version in the shared script requires NeoForge 26.1.2.99.
-neo_version = '26.1.2.99'
 
+// CI revisions identify the artifact; the runtime version stays stable.
+def modVersion = project.version.toString()
 if (System.getenv('BUILD_NUMBER') != null) {
     version += "-${System.getenv('BUILD_NUMBER')}"
 }
 
 repos()
-at()
+access()
 runs()
 jars()
 
@@ -49,19 +48,37 @@ sourceSets.main.resources {
 }
 
 dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
     mc()
+    config()
+    energy()
     top()
     jei()
     mcjtylib()
     rftoolsbase()
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
 }
 
-modpublisher(['the-one-probe'], ['mcjtylib', 'rftools-base'], ['the-one-probe'], ['mcjtylib', 'rftools-base'], [])
+modpublisher(['the-one-probe'], ['mcjtylib', 'rftools-base', 'fabric-api', 'forge-config-api-port'], ['the-one-probe'], ['mcjtylib', 'rftools-base', 'fabric-api', 'forge-config-api-port'], [])
 
-// Exercise scan batches larger than Minecraft's single-buffer vertex limit.
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    inputs.property 'version', modVersion
+    filesMatching('fabric.mod.json') { expand version: modVersion }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
     maxHeapSize = '1G'
+}
+
+if (providers.gradleProperty('builderPortTests').isPresent()) {
+    fabricApi.configureTests {
+        createSourceSet = true
+        modId = 'rftoolsbuilder_fabric_test'
+        enableGameTests = false
+    }
+    dependencies {
+        gametestImplementation project(':ModXNet')
+    }
 }

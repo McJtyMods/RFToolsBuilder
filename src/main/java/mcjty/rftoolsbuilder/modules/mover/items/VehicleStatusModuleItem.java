@@ -19,7 +19,6 @@ import mcjty.rftoolsbase.tools.ManualHelper;
 import mcjty.rftoolsbuilder.modules.mover.MoverConfiguration;
 import mcjty.rftoolsbuilder.modules.mover.MoverModule;
 import mcjty.rftoolsbuilder.modules.mover.blocks.MoverControllerTileEntity;
-import mcjty.rftoolsbuilder.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -120,7 +119,7 @@ public class VehicleStatusModuleItem extends GenericModuleItem implements ICompo
     }
 
     public static VehicleStatusScreenModule data(ItemStack stack) {
-        VehicleStatusScreenModule data = stack.get(MoverModule.MODULE_VEHICLESTATUS_DATA);
+        VehicleStatusScreenModule data = stack.get(MoverModule.MODULE_VEHICLESTATUS_DATA.get());
         if (data == null) {
             data = VehicleStatusScreenModule.DEFAULT;
         }
@@ -130,9 +129,8 @@ public class VehicleStatusModuleItem extends GenericModuleItem implements ICompo
     public static void data(ItemStack stack, Consumer<VehicleStatusScreenModule> setter) {
         VehicleStatusScreenModule data = data(stack);
         setter.accept(data);
-        stack.set(MoverModule.MODULE_VEHICLESTATUS_DATA, data);
+        stack.set(MoverModule.MODULE_VEHICLESTATUS_DATA.get(), data);
     }
-
 
     @Override
     public void createGui(IModuleGuiBuilder guiBuilder) {

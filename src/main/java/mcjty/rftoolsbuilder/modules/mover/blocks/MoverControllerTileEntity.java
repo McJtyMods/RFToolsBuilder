@@ -16,7 +16,6 @@ import mcjty.lib.blockcommands.ServerCommand;
 import mcjty.lib.blocks.BaseBlock;
 import mcjty.lib.builder.BlockBuilder;
 import mcjty.lib.container.GenericContainer;
-import mcjty.lib.setup.Registration;
 import mcjty.lib.tileentity.Cap;
 import mcjty.lib.tileentity.CapType;
 import mcjty.lib.tileentity.GenericEnergyStorage;
@@ -46,10 +45,9 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.attachment.AttachmentType;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
-
 import static mcjty.lib.api.container.DefaultContainerProvider.empty;
 import static mcjty.lib.builder.TooltipBuilder.*;
 import static mcjty.lib.setup.Registration.ITEM_ENERGY;
@@ -67,7 +65,6 @@ public class MoverControllerTileEntity extends GenericTileEntity {
             .energyHandler(() -> tile.energyStorage)
             .data(MoverModule.MOVER_CONTROLLER_DATA, MoverControllerData.STREAM_CODEC, MoverControllerData.CODEC)
             .setupSync(tile);
-
 
     private final DefaultInfusable infusable = new DefaultInfusable(MoverControllerTileEntity.this);
     @Cap(type = CapType.INFUSABLE)
@@ -89,7 +86,6 @@ public class MoverControllerTileEntity extends GenericTileEntity {
                 .infoShift(header(), gold()));
     }
 
-
     public MoverControllerTileEntity(BlockPos pos, BlockState state) {
         super(MoverModule.MOVER_CONTROLLER.be().get(), pos, state);
     }
@@ -109,7 +105,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
 
     @Override
     public void onDataChanged(AttachmentType<?> type, Object oldData, Object newData) {
-        if (type == MoverModule.MOVER_CONTROLLER_DATA.get()) {
+        if (type == MoverModule.MOVER_CONTROLLER_DATA) {
             onDataChanged((MoverControllerData) oldData, (MoverControllerData) newData);
         }
     }
@@ -279,7 +275,6 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         return movers;
     }
 
-
     private List<String> getVehicles() {
         List<String> vehicles = new ArrayList<>();
         traverseDepthFirst((p, mover) -> {
@@ -335,9 +330,9 @@ public class MoverControllerTileEntity extends GenericTileEntity {
     @Override
     protected void applyImplicitComponents(DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        energyStorage.applyImplicitComponents(input.get(ITEM_ENERGY));
-        infusable.applyImplicitComponents(input.get(ITEM_INFUSABLE));
-        MoverControllerData moverControllerData = input.get(MoverModule.ITEM_MOVER_CONTROLLER_DATA);
+        energyStorage.applyImplicitComponents(input.get(ITEM_ENERGY.get()));
+        infusable.applyImplicitComponents(input.get(ITEM_INFUSABLE.get()));
+        MoverControllerData moverControllerData = input.get(MoverModule.ITEM_MOVER_CONTROLLER_DATA.get());
         if (moverControllerData != null) {
             setData(MoverModule.MOVER_CONTROLLER_DATA, moverControllerData);
         }
@@ -348,7 +343,7 @@ public class MoverControllerTileEntity extends GenericTileEntity {
         super.collectImplicitComponents(builder);
         energyStorage.collectImplicitComponents(builder);
         infusable.collectImplicitComponents(builder);
-        builder.set(MoverModule.ITEM_MOVER_CONTROLLER_DATA, getData(MoverModule.MOVER_CONTROLLER_DATA));
+        builder.set(MoverModule.ITEM_MOVER_CONTROLLER_DATA.get(), getData(MoverModule.MOVER_CONTROLLER_DATA));
     }
 
     public static final Key<BlockPos> SELECTED_NODE = new Key<>("node", Type.BLOCKPOS);
