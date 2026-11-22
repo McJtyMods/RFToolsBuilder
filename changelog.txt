@@ -1,4 +1,5 @@
 26.3-10.0.1-fabric:
+- The in-game manual now explains how to form a shield with the Smart Wrench (#177)
 - Fixed Shape Card edits failing to save or update the composition in the Composer (#176)
 - The Builder now reports an error for Shape Card offsets beyond its configured limit and leaves the target area untouched (#2)
 
