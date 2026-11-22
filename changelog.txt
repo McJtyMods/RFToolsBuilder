@@ -1,5 +1,6 @@
 26.3-10.0.1:
 - Fixed Shape Card edits failing to save or update the composition in the Composer (#176)
+- The Builder now reports an error for Shape Card offsets beyond its configured limit and leaves the target area untouched (#2)
 
 26.3-10.0.0:
 - Ported to Minecraft 26.3 with NeoForge
