@@ -20,6 +20,7 @@ import mcjty.lib.varia.ComponentFactory;
 import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardType;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenCardGui;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketOpenBuilderGui;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTItemInventoryShape;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateNBTShapeCard;
@@ -42,8 +43,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -89,26 +88,26 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     private ToggleButton endstone;
     private ToggleButton tagMatching;
 
-    public final boolean fromTE;
+    private record BlockCard(BlockPos pos, int slot, ItemStack stack, boolean compositionOutput) {
+    }
 
-    // For GuiComposer, GuiBuilder, etc.: the current card to edit
-    public static BlockPos fromTEPos = null;
-    public static int fromTEStackSlot = 0;
+    private static BlockCard pendingBlockCard;
+    private final BlockCard blockCard;
 
     private ShapeID shapeID = null;
     private ShapeRenderer shapeRenderer = null;
 
 
-    public GuiShapeCard(boolean fromTE) {
+    private GuiShapeCard(BlockCard blockCard) {
         super(ComponentFactory.literal("Shapecard"));
-        this.fromTE = fromTE;
+        this.blockCard = blockCard;
     }
 
     @Override
     public void removed() {
         super.removed();
-        if (fromTE) {
-            RFToolsBuilderMessages.sendToServer(PacketOpenBuilderGui.create(fromTEPos));
+        if (blockCard != null) {
+            RFToolsBuilderMessages.sendToServer(PacketOpenBuilderGui.create(blockCard.pos()));
         }
     }
 
@@ -137,12 +136,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     }
 
     private ItemStack getStackToEdit() {
-        if (fromTE) {
-            BlockEntity te = minecraft.level.getBlockEntity(fromTEPos);
-            return te.getCapability(ForgeCapabilities.ITEM_HANDLER).map(h -> h.getStackInSlot(fromTEStackSlot)).orElse(ItemStack.EMPTY);
-        } else {
-            return minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
-        }
+        return blockCard == null ? minecraft.player.getItemInHand(InteractionHand.MAIN_HAND) : blockCard.stack();
     }
 
     @Override
@@ -191,6 +185,10 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
                 Shape.SHAPE_SCAN.getDescription()
         ).event((newChoice) -> updateSettings());
 
+        if (blockCard != null && blockCard.compositionOutput()) {
+            shapeLabel.enabled(false);
+        }
+
         solidLabel = new ChoiceLabel().desiredWidth(50).desiredHeight(16).choices(
                 "Hollow",
                 "Solid"
@@ -198,7 +196,8 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
 
         Panel shapePanel = horizontal().children(shapeLabel, solidLabel);
 
-        Shape shape = ShapeCardItem.getShape(heldItem);
+        Shape shape = blockCard != null && blockCard.compositionOutput()
+                ? Shape.SHAPE_COMPOSITION : ShapeCardItem.getShape(heldItem);
         shapeLabel.choice(shape.getDescription());
         boolean solid = ShapeCardItem.isSolid(heldItem);
         solidLabel.choice(solid ? "Solid" : "Hollow");
@@ -330,18 +329,14 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         if (isTorus()) {
             dimZ.text(dimX.getText());
         }
-        if (fromTE) {
+        if (blockCard != null) {
             ItemStack stack = getStackToEdit();
             if (!stack.isEmpty()) {
-                CompoundTag tag = stack.getTag();
-                if (tag == null) {
-                    tag = new CompoundTag();
-                }
                 ShapeCardItem.setShape(stack, getCurrentShape(), isSolid());
                 ShapeCardItem.setDimension(stack, dx, dy, dz);
                 ShapeCardItem.setOffset(stack, parseInt(offsetX.getText()), parseInt(offsetY.getText()), parseInt(offsetZ.getText()));
                 RFToolsBuilderMessages.sendToServer(PacketUpdateNBTItemInventoryShape.create(
-                        fromTEPos, fromTEStackSlot, tag));
+                        blockCard.pos(), blockCard.slot(), stack.getOrCreateTag().copy()));
             }
         } else {
             RFToolsBuilderMessages.sendToServer(PacketUpdateNBTShapeCard.create(
@@ -359,13 +354,10 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
     }
 
     private void updateVoidSettings() {
-        if (fromTE) {
+        if (blockCard != null) {
             ItemStack stack = getStackToEdit();
             if (!stack.isEmpty()) {
-                CompoundTag tag = stack.getTag();
-                if (tag == null) {
-                    tag = new CompoundTag();
-                }
+                CompoundTag tag = stack.getOrCreateTag();
                 tag.putBoolean("voidstone", stone.isPressed());
                 tag.putBoolean("voidcobble", cobble.isPressed());
                 tag.putBoolean("voiddirt", dirt.isPressed());
@@ -375,7 +367,7 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
                 tag.putBoolean("voidendstone", endstone.isPressed());
                 tag.putBoolean("tagMatching", tagMatching.isPressed());
                 RFToolsBuilderMessages.sendToServer(PacketUpdateNBTItemInventoryShape.create(
-                        fromTEPos, fromTEStackSlot, tag));
+                        blockCard.pos(), blockCard.slot(), tag.copy()));
             }
         } else {
             RFToolsBuilderMessages.sendToServer(PacketUpdateNBTShapeCard.create(
@@ -592,8 +584,19 @@ public class GuiShapeCard extends BaseScreen implements IShapeParentGui, IKeyRec
         GlStateManager._disableBlend();
     }
 
+    public static void requestOpenFromBlock(BlockPos pos, int slot, ItemStack stack, boolean compositionOutput) {
+        // The menu has the synchronized stack. Keep a working copy when the menu closes.
+        pendingBlockCard = new BlockCard(pos, slot, stack.copy(), compositionOutput);
+        RFToolsBuilderMessages.sendToServer(PacketCloseContainerAndOpenCardGui.create(pos));
+    }
+
     public static void open(boolean fromTE) {
-        Minecraft.getInstance().setScreen(new GuiShapeCard(fromTE));
+        BlockCard card = fromTE ? pendingBlockCard : null;
+        if (fromTE && card == null) {
+            return;
+        }
+        pendingBlockCard = null;
+        Minecraft.getInstance().setScreen(new GuiShapeCard(card));
     }
 
 }

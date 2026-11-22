@@ -113,6 +113,10 @@ public class ComposerTileEntity extends TickingTileEntity {
         return modifiers;
     }
 
+    public GenericItemHandler getItems() {
+        return items;
+    }
+
     private void markComposerDirty() {
         composeDirty = true;
         setChanged();

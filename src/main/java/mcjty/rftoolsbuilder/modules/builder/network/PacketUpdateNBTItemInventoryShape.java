@@ -1,20 +1,29 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
+import mcjty.lib.container.GenericItemHandler;
 import mcjty.lib.network.CustomPacketPayload;
 import mcjty.lib.network.PlayPayloadContext;
+import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
+import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.blocks.ComposerTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
+
+import java.util.List;
 
 public record PacketUpdateNBTItemInventoryShape(BlockPos pos, int slotIndex, CompoundTag tagCompound) implements CustomPacketPayload {
+
+    private static final List<String> EDITABLE_TAGS = List.of(
+            "shape", "solid", "dimX", "dimY", "dimZ", "offsetX", "offsetY", "offsetZ",
+            "voidstone", "voidcobble", "voiddirt", "voidgravel", "voidsand", "voidnetherrack", "voidendstone", "tagMatching");
 
     public static ResourceLocation ID = new ResourceLocation(RFToolsBuilder.MODID, "updatenbtiteminventoryshape");
 
@@ -26,8 +35,21 @@ public record PacketUpdateNBTItemInventoryShape(BlockPos pos, int slotIndex, Com
         return new PacketUpdateNBTItemInventoryShape(pos, slotIndex, tagCompound);
     }
 
-    protected boolean isValidBlock(Level world, BlockPos blockPos, BlockEntity tileEntity) {
-        return tileEntity instanceof BuilderTileEntity || tileEntity instanceof ComposerTileEntity;
+    private GenericItemHandler getCardInventory(Level world, Player player) {
+        if (!world.hasChunkAt(pos)) {
+            return null;
+        }
+        if (!(world.getBlockEntity(pos) instanceof GenericTileEntity tile) || !tile.canPlayerAccess(player)) {
+            return null;
+        }
+        if (tile instanceof BuilderTileEntity builder && slotIndex == BuilderTileEntity.SLOT_TAB) {
+            return builder.getItems();
+        }
+        if (tile instanceof ComposerTileEntity composer && (slotIndex == ComposerTileEntity.SLOT_OUT
+                || slotIndex >= ComposerTileEntity.SLOT_TABS && slotIndex < ComposerTileEntity.SLOT_GHOSTS)) {
+            return composer.getItems();
+        }
+        return null;
     }
 
     @Override
@@ -43,22 +65,26 @@ public record PacketUpdateNBTItemInventoryShape(BlockPos pos, int slotIndex, Com
     }
 
     public void handle(PlayPayloadContext ctx) {
-        ctx.workHandler().submitAsync(() -> {
-            ctx.player().ifPresent(player -> {
-                Level world = player.getCommandSenderWorld();
-                BlockEntity te = world.getBlockEntity(pos);
-                if (te != null) {
-                    if (!isValidBlock(world, pos, te)) {
-                        return;
-                    }
-                    te.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(h -> {
-                        ItemStack stack = h.getStackInSlot(slotIndex);
-                        if (!stack.isEmpty()) {
-                            stack.setTag(tagCompound);
-                        }
-                    });
+        ctx.workHandler().submitAsync(() -> ctx.player().ifPresent(player -> {
+            Level world = player.getCommandSenderWorld();
+            GenericItemHandler items = getCardInventory(world, player);
+            if (items == null || tagCompound == null) {
+                return;
+            }
+
+            ItemStack current = items.getStackInSlot(slotIndex);
+            if (!(current.getItem() instanceof ShapeCardItem)) {
+                return;
+            }
+            ItemStack updated = current.copy();
+            CompoundTag tag = updated.getOrCreateTag();
+            for (String key : EDITABLE_TAGS) {
+                Tag value = tagCompound.get(key);
+                if (value != null) {
+                    tag.put(key, value.copy());
                 }
-            });
-        });
+            }
+            items.setStackInSlot(slotIndex, updated);
+        }));
     }
 }
