@@ -67,8 +67,12 @@ dependencies {
     jei()
     mcjtylib()
     rftoolsbase()
-    runtimeOnly(fg.deobf("curse.maven:rftools-utility-342466:5283900"))
-    runtimeOnly(fg.deobf("curse.maven:rftools-power-290209:5283901"))
+    if (findProject(':RFToolsUtility') == null) {
+        runtimeOnly(fg.deobf("curse.maven:rftools-utility-342466:5283900"))
+    }
+    if (findProject(':RFToolsPower') == null) {
+        runtimeOnly(fg.deobf("curse.maven:rftools-power-290209:5283901"))
+    }
 }
 
 modpublisher(['the-one-probe'], ['mcjtylib', 'rftools-base'], ['the-one-probe'], ['mcjtylib', 'rftools-base'], [])
