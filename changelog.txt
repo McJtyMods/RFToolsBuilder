@@ -1,3 +1,6 @@
+26.1.2-8.0.1-fabric:
+- Fixed Shape Card edits failing to save or update the composition in the Composer (#176)
+
 26.1.2-8.0.0-fabric:
 - Ported to Minecraft 26.1.2 with Fabric
 

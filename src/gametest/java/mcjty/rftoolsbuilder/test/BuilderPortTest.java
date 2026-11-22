@@ -1,5 +1,13 @@
 package mcjty.rftoolsbuilder.test;
 
+import mcjty.lib.gui.widgets.Button;
+import mcjty.lib.gui.widgets.ChoiceLabel;
+import mcjty.lib.gui.widgets.TextField;
+import mcjty.lib.gui.widgets.ToggleButton;
+import mcjty.rftoolsbuilder.modules.builder.client.GuiShapeCard;
+import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
+import mcjty.rftoolsbuilder.modules.scanner.blocks.ComposerTileEntity;
+import mcjty.rftoolsbuilder.modules.scanner.client.GuiComposer;
 import mcjty.lib.varia.FluidStack;
 import mcjty.rftoolsbuilder.modules.scanner.blocks.ProjectorTileEntity;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
@@ -23,6 +31,7 @@ import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
 import mcjty.rftoolsbuilder.modules.scanner.client.GuiScanner;
 import mcjty.lib.api.container.CapabilityContainerProvider;
 import mcjty.lib.api.container.DefaultContainerProvider;
+import mcjty.lib.container.ContainerFactory;
 import mcjty.lib.container.MenuTools;
 import mcjty.rftoolsbuilder.modules.shield.ShieldModule;
 import mcjty.rftoolsbuilder.modules.shield.blocks.ShieldingTileEntity;
@@ -112,12 +121,103 @@ public class BuilderPortTest implements FabricClientGameTest {
             context.waitForScreen(GuiScanner.class);
             context.waitTicks(3);
             context.setScreen(() -> null);
+            testComposerCardEditor(context, world.getServer());
             testProjectorSynchronization(context, world.getServer());
             world.getServer().runOnServer(server -> {
                 server.overworld().destroyBlock(SCANNER, false);
                 server.overworld().destroyBlock(BUILDER, false);
             });
             context.waitFor(client -> client.level.getBlockState(SCANNER).isAir() && client.level.getBlockState(BUILDER).isAir());
+        }
+    }
+
+    private static void testComposerCardEditor(ClientGameTestContext context, TestServerContext server) {
+        BlockPos pos = new BlockPos(2, -59, 2);
+        server.runOnServer(instance -> {
+            var level = instance.overworld();
+            level.setBlockAndUpdate(pos, ScannerModule.COMPOSER.block().get().defaultBlockState());
+            var composer = (ComposerTileEntity) level.getBlockEntity(pos);
+            composer.getItems().setStackInSlot(ComposerTileEntity.SLOT_TABS, new ItemStack(BuilderModule.SHAPE_CARD_DEF.get()));
+            composer.getItems().setStackInSlot(ComposerTileEntity.SLOT_OUT, new ItemStack(BuilderModule.SHAPE_CARD_QUARRY.get()));
+            composer.tick();
+        });
+        context.waitFor(client -> client.level.getBlockEntity(pos) instanceof ComposerTileEntity);
+        server.runOnServer(instance -> new PacketOpenBuilderGui(pos).handle(
+                new PayloadContext(instance.getPlayerList().getPlayers().getFirst(), Runnable::run)));
+        context.waitForScreen(GuiComposer.class);
+        context.waitFor(client -> !((GuiComposer) client.screen).getMenu()
+                .getSlotByInventoryAndIndex(ContainerFactory.CONTAINER_CONTAINER, ComposerTileEntity.SLOT_TABS).getItem().isEmpty());
+
+        context.runOnClient(client -> {
+            var gui = (GuiComposer) client.screen;
+            clickComposerEditor(gui, 14);
+        });
+        context.waitForScreen(GuiShapeCard.class);
+        context.runOnClient(client -> {
+            var editor = (GuiShapeCard) client.screen;
+            TextField dimX = editorWidget(editor, "dimX", TextField.class);
+            dimX.selectAll();
+            check(dimX.charTyped('9'), "The Composer input card dimension is editable");
+        });
+        context.setScreen(() -> null);
+        context.waitForScreen(GuiComposer.class);
+        context.waitFor(client -> {
+            var composer = (GuiComposer) client.screen;
+            ItemStack output = composer.getMenu().getSlot(ComposerTileEntity.SLOT_OUT).getItem();
+            var children = ShapeCardItem.getChildren(output);
+            return children.size() == 1 && ShapeCardItem.getDimension(children.getFirst().stack()).getX() == 9;
+        });
+
+        context.runOnClient(client -> {
+            var gui = (GuiComposer) client.screen;
+            clickComposerEditor(gui, 208);
+        });
+        context.waitForScreen(GuiShapeCard.class);
+        context.runOnClient(client -> {
+            var editor = (GuiShapeCard) client.screen;
+            check(!editorWidget(editor, "shapeLabel", ChoiceLabel.class).isEnabled(), "The output shape stays a composition");
+            editorWidget(editor, "solidLabel", ChoiceLabel.class).mouseClick(0, 0, 0);
+            editorWidget(editor, "tagMatching", ToggleButton.class).mouseClick(0, 0, 0);
+        });
+        context.setScreen(() -> null);
+        context.waitForScreen(GuiComposer.class);
+        context.waitFor(client -> {
+            var gui = (GuiComposer) client.screen;
+            ItemStack output = gui.getMenu().getSlot(ComposerTileEntity.SLOT_OUT).getItem();
+            return ShapeCardItem.isTagMatching(output) && !ShapeCardItem.isSolid(output);
+        });
+        server.runOnServer(instance -> {
+            var level = instance.overworld();
+            var composer = (ComposerTileEntity) level.getBlockEntity(pos);
+            var saved = composer.saveWithFullMetadata(level.registryAccess());
+            var restored = (ComposerTileEntity) BlockEntity.loadStatic(pos, composer.getBlockState(), saved, level.registryAccess());
+            ItemStack input = restored.getItems().getStackInSlot(ComposerTileEntity.SLOT_TABS);
+            ItemStack output = restored.getItems().getStackInSlot(ComposerTileEntity.SLOT_OUT);
+            check(ShapeCardItem.getDimension(input).getX() == 9, "The Composer input card edit survives save/load");
+            check(ShapeCardItem.isTagMatching(output) && !ShapeCardItem.isSolid(output), "The Composer output edits survive save/load");
+            var children = ShapeCardItem.getChildren(output);
+            check(ShapeCardItem.getShape(output).isComposition() && children.size() == 1
+                    && ShapeCardItem.getDimension(children.getFirst().stack()).getX() == 9, "The edited composition survives save/load");
+        });
+        context.setScreen(() -> null);
+    }
+
+    private static void clickComposerEditor(GuiComposer gui, int buttonY) {
+        int x = gui.getPreviewLeft() + 9;
+        int y = gui.getPreviewTop() + buttonY;
+        var window = gui.getWindow();
+        check(window.getWidgetAtPosition(x, y) instanceof Button, "Found the Composer edit button");
+        window.mouseClicked(x, y, 0);
+        window.mouseReleased(x, y, 0);
+    }
+
+    private static <T> T editorWidget(GuiShapeCard editor, String fieldName, Class<T> type) {
+        try {
+            var field = GuiShapeCard.class.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return type.cast(field.get(editor));
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError(exception);
         }
     }
 
