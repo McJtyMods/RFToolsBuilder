@@ -212,6 +212,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return true;
     }
 
+    public GenericItemHandler getItems() {
+        return items;
+    }
+
     @Override
     public Direction getBlockOrientation() {
         BlockState state = level.getBlockState(worldPosition);

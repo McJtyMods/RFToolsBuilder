@@ -1,3 +1,6 @@
+1.21-7.0.9:
+- Fixed Shape Card edits failing to save or update the composition in the Composer (#176)
+
 1.21-7.0.8:
 - Fixed scan previews and projectors exposing worldless block entities to dynamic block models, which could cause rendering crashes
 
