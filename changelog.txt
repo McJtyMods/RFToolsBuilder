@@ -1,5 +1,6 @@
 1.20-6.0.12:
 - Fixed Shape Card edits failing to save or update the composition in the Composer (#176)
+- The Builder now reports an error for Shape Card offsets beyond its configured limit and leaves the target area untouched (#2)
 
 1.20-6.0.11:
 - Fixed scan previews and projectors exposing worldless block entities to dynamic block models, which could cause rendering crashes

@@ -281,10 +281,11 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             int curChunk = (curZ - minChunkZ) * (maxChunkX - minChunkX) + curX - minChunkX;
             list.add("    Chunk:  " + curChunk + " of " + totChunks);
         }
-        if (lastError != null && !lastError.isEmpty()) {
-            String[] errors = StringUtils.split(lastError, "\n");
-            for (String error : errors) {
-                list.add(ChatFormatting.RED + error);
+        String offsetError = getShapeOffsetError();
+        String error = offsetError == null ? lastError : offsetError;
+        if (error != null && !error.isEmpty()) {
+            for (String line : StringUtils.split(error, "\n")) {
+                list.add(ChatFormatting.RED + line);
             }
         }
         return list;
@@ -309,14 +310,21 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return items.getStackInSlot(SLOT_TAB).getItem() instanceof ShapeCardItem;
     }
 
+    private String getShapeOffsetError() {
+        return isShapeCard() ? ShapeCardItem.getBuilderOffsetError(items.getStackInSlot(SLOT_TAB)) : null;
+    }
+
     private CompoundTag hasCard() {
         return items.getStackInSlot(SLOT_TAB).getTag();
     }
 
     private void makeSupportBlocksShaped() {
         ItemStack shapeCard = items.getStackInSlot(SLOT_TAB);
+        if (ShapeCardItem.getBuilderOffsetError(shapeCard) != null) {
+            return;
+        }
         BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
-        BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
+        BlockPos offset = ShapeCardItem.getOffset(shapeCard);
         Shape shape = ShapeCardItem.getShape(shapeCard);
         Map<BlockPos, BlockState> blocks = new HashMap<>();
         ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), level, getBlockPos(), dimension, offset, blocks, BuilderConfiguration.maxBuilderDimension.get() * 256 * BuilderConfiguration.maxBuilderDimension.get(), false, false, null);
@@ -378,8 +386,11 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     private void clearSupportBlocksShaped() {
         ItemStack shapeCard = items.getStackInSlot(SLOT_TAB);
+        if (ShapeCardItem.getBuilderOffsetError(shapeCard) != null) {
+            return;
+        }
         BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
-        BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
+        BlockPos offset = ShapeCardItem.getOffset(shapeCard);
         Shape shape = ShapeCardItem.getShape(shapeCard);
         Map<BlockPos, BlockState> blocks = new HashMap<>();
         ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), level, getBlockPos(), dimension, offset, blocks, BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get(), false, false, null);
@@ -720,6 +731,10 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         if (scan == null) {
             return;
         }
+        if (getShapeOffsetError() != null) {
+            stopInvalidShapeScan();
+            return;
+        }
 
         if (isHilightMode()) {
             updateHilight();
@@ -877,7 +892,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             return;
         }
         BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
-        BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
+        BlockPos offset = ShapeCardItem.getOffset(shapeCard);
 
         BlockPos minCorner = ShapeCardItem.getMinCorner(getBlockPos(), dimension, offset);
         BlockPos maxCorner = ShapeCardItem.getMaxCorner(getBlockPos(), dimension, offset);
@@ -949,7 +964,7 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
             Shape shape = ShapeCardItem.getShape(shapeCard);
             boolean solid = ShapeCardItem.isSolid(shapeCard);
             BlockPos dimension = ShapeCardItem.getClampedDimension(shapeCard, BuilderConfiguration.maxBuilderDimension.get());
-            BlockPos offset = ShapeCardItem.getClampedOffset(shapeCard, BuilderConfiguration.maxBuilderOffset.get());
+            BlockPos offset = ShapeCardItem.getOffset(shapeCard);
             boolean forquarry = !ShapeCardItem.isNormalShapeCard(shapeCard);
             ShapeCardItem.composeFormula(shapeCard, shape.getFormulaFactory().get(), level, getBlockPos(), dimension, offset, cachedBlocks, BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get() * BuilderConfiguration.maxSpaceChamberDimension.get(), solid, forquarry, chunk);
             cachedChunk = chunk;
@@ -2073,7 +2088,19 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         }
     }
 
+    private void stopInvalidShapeScan() {
+        boxValid = false;
+        scan = null;
+        lastError = null;
+        chunkUnload();
+        setChanged();
+    }
+
     private void restartScan() {
+        if (getShapeOffsetError() != null) {
+            stopInvalidShapeScan();
+            return;
+        }
         lastError = null;
         chunkUnload();
         if (loopMode || (isMachineEnabled() && scan == null)) {
