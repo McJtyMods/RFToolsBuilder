@@ -14,8 +14,6 @@ import mcjty.rftoolsbuilder.modules.builder.blocks.AnchorMode;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.data.BuilderData;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
-import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenCardGui;
-import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -94,9 +92,7 @@ public class GuiBuilder extends GenericGuiContainer<BuilderTileEntity, GenericCo
         ItemStack cardStack = menu.getSlot(SLOT_TAB).getItem();
         if (!cardStack.isEmpty()) {
             BuilderTileEntity tileEntity = getBE();
-            GuiShapeCard.fromTEPos = tileEntity.getBlockPos();
-            GuiShapeCard.fromTEStackSlot = SLOT_TAB;
-            RFToolsBuilderMessages.sendToServer(PacketCloseContainerAndOpenCardGui.create(tileEntity.getBlockPos()));
+            GuiShapeCard.requestOpenFromBlock(tileEntity.getBlockPos(), SLOT_TAB, cardStack, false);
         }
     }
 
