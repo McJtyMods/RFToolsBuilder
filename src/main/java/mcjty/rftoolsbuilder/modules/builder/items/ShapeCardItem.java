@@ -169,7 +169,6 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
                         Logging.message(player, ChatFormatting.RED + "Cleared area selection mode!");
                         setMode(stack, MODE_NONE);
                     } else {
-                        Logging.message(player, ChatFormatting.GREEN + "New settings copied to the shape card!");
                         BlockPos center = new BlockPos((int) Math.ceil((c1.getX() + pos.getX()) / 2.0f), (int) Math.ceil((c1.getY() + pos.getY()) / 2.0f), (int) Math.ceil((c1.getZ() + pos.getZ()) / 2.0f));
                         setDimension(stack, Math.abs(c1.getX() - pos.getX()) + 1, Math.abs(c1.getY() - pos.getY()) + 1, Math.abs(c1.getZ() - pos.getZ()) + 1);
                         setOffset(stack, center.getX() - currentBlock.pos().getX(), center.getY() - currentBlock.pos().getY(), center.getZ() - currentBlock.pos().getZ());
@@ -177,6 +176,13 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
                         setMode(stack, MODE_NONE);
                         setCorner1(stack, null);
                         setShape(stack, Shape.SHAPE_BOX, true);
+
+                        String offsetError = getBuilderOffsetError(stack);
+                        if (offsetError == null) {
+                            Logging.message(player, ChatFormatting.GREEN + "New settings copied to the shape card!");
+                        } else {
+                            Logging.message(player, ChatFormatting.RED + offsetError);
+                        }
                     }
                 }
             }
@@ -495,6 +501,17 @@ public class ShapeCardItem extends Item implements IComponentsToPreserve, IToolt
 
     public static BlockPos getOffset(ItemStack card) {
         return card.getOrDefault(BuilderModule.ITEM_SHAPECARD_DATA.get(), ShapeCardData.DEFAULT).dimensions().offset();
+    }
+
+    @Nullable
+    public static String getBuilderOffsetError(ItemStack card) {
+        int maxOffset = BuilderConfiguration.maxBuilderOffset.get();
+        BlockPos offset = getOffset(card);
+        if (Math.abs((long) offset.getX()) > maxOffset || Math.abs((long) offset.getY()) > maxOffset
+                || Math.abs((long) offset.getZ()) > maxOffset) {
+            return "Shape Card offset exceeds the Builder limit of " + maxOffset + " blocks per axis.";
+        }
+        return null;
     }
 
     public static BlockPos getClampedOffset(ItemStack card, int maximum) {
