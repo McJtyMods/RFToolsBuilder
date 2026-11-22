@@ -9,6 +9,7 @@ import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
 import mcjty.rftoolsbuilder.modules.scanner.blocks.ComposerTileEntity;
 import mcjty.rftoolsbuilder.modules.scanner.client.GuiComposer;
 import mcjty.lib.varia.FluidStack;
+import mcjty.lib.varia.RedstoneMode;
 import mcjty.rftoolsbuilder.modules.scanner.blocks.ProjectorTileEntity;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
 import net.minecraft.nbt.CompoundTag;
@@ -22,11 +23,14 @@ import mcjty.xnet.modules.cables.CableModule;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.util.RandomSource;
 import mcjty.lib.network.PayloadContext;
+import mcjty.rftoolsbuilder.modules.builder.BuilderConfiguration;
 import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiBuilder;
 import mcjty.rftoolsbuilder.modules.builder.data.BuilderData;
 import mcjty.rftoolsbuilder.modules.builder.network.PacketOpenBuilderGui;
+import mcjty.rftoolsbuilder.modules.builder.network.PacketUpdateCardInInventory;
+import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
 import mcjty.rftoolsbuilder.modules.scanner.client.GuiScanner;
 import mcjty.lib.api.container.CapabilityContainerProvider;
@@ -42,6 +46,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -51,6 +56,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluids;
+import team.reborn.energy.api.EnergyStorage;
 
 /** Exercise registration, save data, native transfers, menu payloads and scanner synchronization in Minecraft. */
 public class BuilderPortTest implements FabricClientGameTest {
@@ -121,6 +127,7 @@ public class BuilderPortTest implements FabricClientGameTest {
             context.waitForScreen(GuiScanner.class);
             context.waitTicks(3);
             context.setScreen(() -> null);
+            testBuilderOffset(context, world.getServer());
             testComposerCardEditor(context, world.getServer());
             testProjectorSynchronization(context, world.getServer());
             world.getServer().runOnServer(server -> {
@@ -129,6 +136,79 @@ public class BuilderPortTest implements FabricClientGameTest {
             });
             context.waitFor(client -> client.level.getBlockState(SCANNER).isAir() && client.level.getBlockState(BUILDER).isAir());
         }
+    }
+
+    private static void testBuilderOffset(ClientGameTestContext context, TestServerContext server) {
+        BlockPos pos = new BlockPos(1, -59, 2);
+        server.runOnServer(instance -> {
+            var level = instance.overworld();
+            level.setBlockAndUpdate(pos, BuilderModule.BUILDER.block().get().defaultBlockState());
+            var builder = (BuilderTileEntity) level.getBlockEntity(pos);
+            builder.setRSMode(RedstoneMode.REDSTONE_ONREQUIRED);
+            int limit = BuilderConfiguration.maxBuilderOffset.get();
+            BlockPos boundary = pos.above(limit);
+            ItemStack card = new ItemStack(BuilderModule.SHAPE_CARD_QUARRY_CLEAR.get());
+            ShapeCardItem.setDimension(card, 1, 1, 1);
+            ShapeCardItem.setOffset(card, 0, limit + 1, 0);
+            builder.getItems().setStackInSlot(BuilderTileEntity.SLOT_TAB, card);
+
+            builder.setSupportMode(true);
+            check(level.isEmptyBlock(boundary), "An invalid offset cannot show support blocks in the clamped area");
+            builder.setSupportMode(false);
+
+            level.setBlockAndUpdate(boundary, Blocks.STONE.defaultBlockState());
+            level.setBlockAndUpdate(pos.above(), Blocks.CHEST.defaultBlockState());
+            var energy = EnergyStorage.SIDED.find(level, pos, Direction.DOWN);
+            try (var tx = Transaction.openOuter()) {
+                check(energy != null && energy.insert(20000, tx) > 0, "The quarry has power");
+                tx.commit();
+            }
+            builder.setPowerInput(15);
+            var data = builder.getData(BuilderModule.BUILDER_DATA);
+            check(data.scan() == null, "The Builder refuses to start with an invalid offset");
+            check(builder.getHudLog().stream().anyMatch(line -> line.contains("offset exceeds the Builder limit")),
+                    "The Builder reports the offset error");
+
+            // Simulate a saved job that was running before the offset check was added.
+            builder.setData(BuilderModule.BUILDER_DATA, data.withMinBox(boundary).withMaxBox(boundary).withScan(boundary));
+            builder.tickServer();
+            check(builder.getData(BuilderModule.BUILDER_DATA).scan() == null, "An invalid saved scan stops");
+            check(level.getBlockState(boundary).is(Blocks.STONE), "The clamped quarry target stays intact");
+
+            ShapeCardItem.setOffset(card, 0, limit, 0);
+            builder.getItems().setStackInSlot(BuilderTileEntity.SLOT_TAB, card);
+            builder.setPowerInput(0);
+            builder.setPowerInput(15);
+            data = builder.getData(BuilderModule.BUILDER_DATA);
+            check(data.scan() != null && boundary.equals(data.minBox()), "The exact offset limit is accepted");
+            check(builder.getHudLog().stream().noneMatch(line -> line.contains("offset exceeds the Builder limit")),
+                    "Correcting the offset clears the error");
+            builder.tickServer();
+            check(level.isEmptyBlock(boundary), "A valid quarry works at the exact configured limit");
+            builder.setPowerInput(0);
+            builder.setData(BuilderModule.BUILDER_DATA, builder.getData(BuilderModule.BUILDER_DATA).withScan(null));
+        });
+
+        context.waitFor(client -> client.level.getBlockEntity(pos) instanceof BuilderTileEntity);
+        server.runOnServer(instance -> new PacketOpenBuilderGui(pos).handle(
+                new PayloadContext(instance.getPlayerList().getPlayers().getFirst(), Runnable::run)));
+        context.waitForScreen(GuiBuilder.class);
+        context.runOnClient(client -> {
+            ItemStack card = new ItemStack(BuilderModule.SHAPE_CARD_QUARRY_CLEAR.get());
+            ShapeCardItem.setOffset(card, 0, 4096, 0);
+            RFToolsBuilderMessages.sendToServer(PacketUpdateCardInInventory.create(pos, BuilderTileEntity.SLOT_TAB, card));
+        });
+        context.waitFor(client -> {
+            var gui = (GuiBuilder) client.screen;
+            return ShapeCardItem.getOffset(gui.getMenu().getSlot(BuilderTileEntity.SLOT_TAB).getItem()).getY() == 4096;
+        });
+        server.runOnServer(instance -> {
+            var builder = (BuilderTileEntity) instance.overworld().getBlockEntity(pos);
+            builder.setPowerInput(15);
+            check(builder.getData(BuilderModule.BUILDER_DATA).scan() == null, "A large networked offset cannot wrap into range");
+        });
+        context.setScreen(() -> null);
+        server.runOnServer(instance -> instance.overworld().destroyBlock(pos, false));
     }
 
     private static void testComposerCardEditor(ClientGameTestContext context, TestServerContext server) {

@@ -1,5 +1,6 @@
 26.1.2-8.0.1-fabric:
 - Fixed Shape Card edits failing to save or update the composition in the Composer (#176)
+- The Builder now reports an error for Shape Card offsets beyond its configured limit and leaves the target area untouched (#2)
 
 26.1.2-8.0.0-fabric:
 - Ported to Minecraft 26.1.2 with Fabric
