@@ -13,10 +13,8 @@ import mcjty.lib.typed.TypedMap;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
 import mcjty.rftoolsbuilder.modules.builder.client.GuiShapeCard;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
-import mcjty.rftoolsbuilder.modules.builder.network.PacketCloseContainerAndOpenCardGui;
 import mcjty.rftoolsbuilder.modules.scanner.ScannerModule;
 import mcjty.rftoolsbuilder.modules.scanner.blocks.ComposerTileEntity;
-import mcjty.rftoolsbuilder.setup.RFToolsBuilderMessages;
 import mcjty.rftoolsbuilder.shapes.IShapeParentGui;
 import mcjty.rftoolsbuilder.shapes.ShapeGuiTools;
 import mcjty.rftoolsbuilder.shapes.ShapeID;
@@ -34,6 +32,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.jetbrains.annotations.NotNull;
 
+import static mcjty.lib.container.ContainerFactory.CONTAINER_CONTAINER;
 import static mcjty.lib.gui.widgets.Widgets.label;
 
 public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, GenericContainer> implements IShapeParentGui {
@@ -157,11 +156,9 @@ public class GuiComposer extends GenericGuiContainer<ComposerTileEntity, Generic
 
     private void openCardGui(int index) {
         int slot = index == -1 ? ComposerTileEntity.SLOT_OUT : ComposerTileEntity.SLOT_TABS + index;
-        ItemStack cardStack = menu.getSlot(slot).getItem();
-        if (!cardStack.isEmpty()) {
-            GuiShapeCard.fromTEPos = tileEntity.getBlockPos();
-            GuiShapeCard.fromTEStackSlot = slot;
-            RFToolsBuilderMessages.sendToServer(PacketCloseContainerAndOpenCardGui.create(tileEntity.getBlockPos()));
+        var cardSlot = menu.getSlotByInventoryAndIndex(CONTAINER_CONTAINER, slot);
+        if (cardSlot != null && cardSlot.getItem().getItem() instanceof ShapeCardItem) {
+            GuiShapeCard.requestOpenFromBlock(tileEntity.getBlockPos(), slot, cardSlot.getItem(), index == -1);
         }
     }
 

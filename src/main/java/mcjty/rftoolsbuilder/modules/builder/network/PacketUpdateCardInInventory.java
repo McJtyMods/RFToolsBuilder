@@ -1,9 +1,13 @@
 package mcjty.rftoolsbuilder.modules.builder.network;
 
-import mcjty.lib.varia.CapabilityTools;
+import mcjty.lib.container.GenericItemHandler;
+import mcjty.lib.tileentity.GenericTileEntity;
 import mcjty.rftoolsbuilder.RFToolsBuilder;
+import mcjty.rftoolsbuilder.modules.builder.BuilderModule;
 import mcjty.rftoolsbuilder.modules.builder.blocks.BuilderTileEntity;
+import mcjty.rftoolsbuilder.modules.builder.data.ShapeCardData;
 import mcjty.rftoolsbuilder.modules.builder.items.ShapeCardItem;
+import mcjty.rftoolsbuilder.modules.scanner.blocks.ComposerTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -13,10 +17,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record PacketUpdateCardInInventory(BlockPos pos, int slotIndex, ItemStack stack) implements CustomPacketPayload {
@@ -34,14 +34,22 @@ public record PacketUpdateCardInInventory(BlockPos pos, int slotIndex, ItemStack
         return new PacketUpdateCardInInventory(pos, slotIndex, stack);
     }
 
-    private boolean isValidBlock(Level world, BlockPos blockPos, BlockEntity tileEntity) {
-        return /* @todo 1.14 tileEntity instanceof ComposerTileEntity || */tileEntity instanceof BuilderTileEntity;
+    private GenericItemHandler getCardInventory(Level world, Player player) {
+        if (!world.hasChunkAt(pos)) {
+            return null;
+        }
+        if (!(world.getBlockEntity(pos) instanceof GenericTileEntity tile) || !tile.canPlayerAccess(player)) {
+            return null;
+        }
+        if (tile instanceof BuilderTileEntity builder && slotIndex == BuilderTileEntity.SLOT_TAB) {
+            return builder.getItems();
+        }
+        if (tile instanceof ComposerTileEntity composer && (slotIndex == ComposerTileEntity.SLOT_OUT
+                || slotIndex >= ComposerTileEntity.SLOT_TABS && slotIndex < ComposerTileEntity.SLOT_GHOSTS)) {
+            return composer.getItems();
+        }
+        return null;
     }
-
-    private boolean isValidItem(ItemStack stack) {
-        return stack.getItem() instanceof ShapeCardItem;
-    }
-
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
@@ -52,19 +60,26 @@ public record PacketUpdateCardInInventory(BlockPos pos, int slotIndex, ItemStack
         ctx.enqueueWork(() -> {
             Player player = ctx.player();
             Level world = player.level();
-            BlockEntity te = world.getBlockEntity(pos);
-            if (te != null) {
-                if (!isValidBlock(world, pos, te)) {
-                    return;
-                }
-                if (!isValidItem(this.stack)) {
-                    return;
-                }
-                IItemHandler h = CapabilityTools.itemHandler(world.getCapability(Capabilities.Item.BLOCK, pos, null));
-                if (h instanceof IItemHandlerModifiable modifiable) {
-                    modifiable.setStackInSlot(slotIndex, this.stack);
-                }
+            GenericItemHandler items = getCardInventory(world, player);
+            if (items == null || !(stack.getItem() instanceof ShapeCardItem)) {
+                return;
             }
+
+            ItemStack current = items.getStackInSlot(slotIndex);
+            if (!current.is(stack.getItem())) {
+                return;
+            }
+            var component = BuilderModule.ITEM_SHAPECARD_DATA.get();
+            ShapeCardData edited = stack.getOrDefault(component, ShapeCardData.DEFAULT);
+            ShapeCardData data = current.getOrDefault(component, ShapeCardData.DEFAULT);
+            ItemStack updated = current.copy();
+            updated.set(component, data.withShape(edited.shape())
+                    .withSolid(edited.solid())
+                    .withDimension(edited.dimensions().dimension())
+                    .withOffset(edited.dimensions().offset())
+                    .withVoiding(edited.voiding())
+                    .withTagMatching(edited.tagMatching()));
+            items.setStackInSlot(slotIndex, updated);
         });
     }
 }
