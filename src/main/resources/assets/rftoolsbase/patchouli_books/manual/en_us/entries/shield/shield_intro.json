@@ -12,7 +12,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "The Shield Projector can be used to protect areas against mobs or keep mobs in some area. It can also cause damage"
+      "text": "The Shield Projector keeps mobs in or out and can damage them.$(br2)Place Shield Template blocks next to it or insert a Shape Card. Right-click the projector with a Smart Wrench in wrench mode to form the shield. Right-click again to dismantle it."
     }
   ]
 }
