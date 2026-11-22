@@ -10,7 +10,7 @@
     },
     {
       "type": "text",
-      "text": "You can directly enter the size and offset in the Shape Card.$(br2)The offset is always relative to the Builder. An offset of 0,0,0 places the area with the Builder in the center."
+      "text": "You can directly enter the size and offset in the Shape Card.$(br2)The offset is always relative to the Builder. An offset of 0,0,0 places the area with the Builder in the center.$(br2)The Builder reports an error and stops if any axis exceeds the server's configured offset limit."
     },
     {
       "type": "text",

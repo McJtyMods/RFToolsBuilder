@@ -2,6 +2,7 @@ package mcjty.rftoolsbuilder.modules.builder.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import mcjty.rftoolsbuilder.shapes.Shape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -70,9 +71,16 @@ public record ShapeCardData(int channel, ShapeCardDimensions dimensions, boolean
             GlobalPos.CODEC.optionalFieldOf("selected").forGetter(o -> Optional.ofNullable(o.selected))
     ).apply(instance, (dim, offs, m, c1, sel) -> new ShapeCardDimensions(dim, offs, m, c1.orElse(null), sel.orElse(null))));
 
+    // A relative offset can exceed the range of a packed BlockPos.
+    private static final StreamCodec<ByteBuf, BlockPos> OFFSET_STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, BlockPos::getX,
+            ByteBufCodecs.VAR_INT, BlockPos::getY,
+            ByteBufCodecs.VAR_INT, BlockPos::getZ,
+            BlockPos::new);
+
     public static final StreamCodec<RegistryFriendlyByteBuf, ShapeCardDimensions> DIMENSIONS_STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, ShapeCardDimensions::dimension,
-            BlockPos.STREAM_CODEC, ShapeCardDimensions::offset,
+            OFFSET_STREAM_CODEC, ShapeCardDimensions::offset,
             ByteBufCodecs.INT, ShapeCardDimensions::mode,
             ByteBufCodecs.optional(BlockPos.STREAM_CODEC), s -> Optional.ofNullable(s.corner1()),
             ByteBufCodecs.optional(GlobalPos.STREAM_CODEC), s -> Optional.ofNullable(s.selected()),
