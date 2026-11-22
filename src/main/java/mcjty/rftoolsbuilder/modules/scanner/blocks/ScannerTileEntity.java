@@ -100,6 +100,12 @@ public class ScannerTileEntity extends TickingTileEntity {
 
     @Override
     protected void tickServer() {
+        // Allocating a scan ID queues a block update, so initialize the preview outside packet serialization.
+        if (renderStack.isEmpty() && items.getStackInSlot(SLOT_OUT).isEmpty()) {
+            renderStack = new ItemStack(BuilderModule.SHAPE_CARD_DEF.get());
+            updateScanCard(renderStack);
+            markDirtyClient();
+        }
         if (progress != null) {
             int done = 0;
             while (progress != null && done < ScannerConfiguration.surfaceAreaPerTick.get()) {
@@ -120,14 +126,7 @@ public class ScannerTileEntity extends TickingTileEntity {
 
     public ItemStack getRenderStack() {
         ItemStack stack = items.getStackInSlot(SLOT_OUT);
-        if (!stack.isEmpty()) {
-            return stack;
-        }
-        if (renderStack.isEmpty()) {
-            renderStack = new ItemStack(BuilderModule.SHAPE_CARD_DEF.get());
-            updateScanCard(renderStack);
-        }
-        return renderStack;
+        return stack.isEmpty() ? renderStack : stack;
     }
 
     public BlockPos getDataDim() {
