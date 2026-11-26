@@ -1,3 +1,6 @@
+26.1.2-8.0.2:
+- Fixed the Builder using stale block targets after editing an installed Shape Card, which could place blocks outside the updated shape.
+
 26.1.2-8.0.1:
 - The in-game manual now explains how to form a shield with the Smart Wrench (#177)
 - Fixed Shape Card edits failing to save or update the composition in the Composer (#176)
