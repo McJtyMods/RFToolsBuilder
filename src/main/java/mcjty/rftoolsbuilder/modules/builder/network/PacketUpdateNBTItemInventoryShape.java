@@ -35,13 +35,7 @@ public record PacketUpdateNBTItemInventoryShape(BlockPos pos, int slotIndex, Com
         return new PacketUpdateNBTItemInventoryShape(pos, slotIndex, tagCompound);
     }
 
-    private GenericItemHandler getCardInventory(Level world, Player player) {
-        if (!world.hasChunkAt(pos)) {
-            return null;
-        }
-        if (!(world.getBlockEntity(pos) instanceof GenericTileEntity tile) || !tile.canPlayerAccess(player)) {
-            return null;
-        }
+    private GenericItemHandler getCardInventory(GenericTileEntity tile) {
         if (tile instanceof BuilderTileEntity builder && slotIndex == BuilderTileEntity.SLOT_TAB) {
             return builder.getItems();
         }
@@ -67,7 +61,12 @@ public record PacketUpdateNBTItemInventoryShape(BlockPos pos, int slotIndex, Com
     public void handle(PlayPayloadContext ctx) {
         ctx.workHandler().submitAsync(() -> ctx.player().ifPresent(player -> {
             Level world = player.getCommandSenderWorld();
-            GenericItemHandler items = getCardInventory(world, player);
+            if (!world.hasChunkAt(pos)
+                    || !(world.getBlockEntity(pos) instanceof GenericTileEntity tile)
+                    || !tile.canPlayerAccess(player)) {
+                return;
+            }
+            GenericItemHandler items = getCardInventory(tile);
             if (items == null || tagCompound == null) {
                 return;
             }
@@ -84,7 +83,11 @@ public record PacketUpdateNBTItemInventoryShape(BlockPos pos, int slotIndex, Com
                     tag.put(key, value.copy());
                 }
             }
-            items.setStackInSlot(slotIndex, updated);
+            if (tile instanceof BuilderTileEntity builder) {
+                builder.applyShapeCardEdit(updated);
+            } else {
+                items.setStackInSlot(slotIndex, updated);
+            }
         }));
     }
 }

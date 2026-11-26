@@ -240,6 +240,33 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return items;
     }
 
+    public void applyShapeCardEdit(ItemStack editedCard) {
+        ItemStack currentCard = items.getStackInSlot(SLOT_TAB);
+        if (ItemStack.matches(currentCard, editedCard)) {
+            return;
+        }
+
+        boolean outlineChanged = ShapeCardItem.getShape(currentCard) != ShapeCardItem.getShape(editedCard)
+                || !ShapeCardItem.getDimension(currentCard).equals(ShapeCardItem.getDimension(editedCard))
+                || !ShapeCardItem.getOffset(currentCard).equals(ShapeCardItem.getOffset(editedCard));
+        boolean refreshSupport = outlineChanged && supportMode;
+        if (refreshSupport) {
+            clearSupportBlocksShaped();
+        }
+        items.setStackInSlot(SLOT_TAB, editedCard);
+        cachedVoidableBlocks.clear();
+        if (outlineChanged || ShapeCardItem.isSolid(currentCard) != ShapeCardItem.isSolid(editedCard)) {
+            invalidateBoxAndTargets();
+            if (scan != null) {
+                scan = null;
+                restartScan();
+            }
+        }
+        if (refreshSupport) {
+            makeSupportBlocksShaped();
+        }
+    }
+
     @Override
     public Direction getBlockOrientation() {
         BlockState state = level.getBlockState(worldPosition);
@@ -2248,12 +2275,16 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
 
     private void refreshSettings() {
         clearSupportBlocks();
-        cachedBlocks = null;
-        cachedChunk = null;
+        invalidateBoxAndTargets();
         cachedVoidableBlocks.clear();
-        boxValid = false;
         scan = null;
         cardType = ShapeCardType.CARD_UNKNOWN;
+    }
+
+    private void invalidateBoxAndTargets() {
+        cachedBlocks = null;
+        cachedChunk = null;
+        boxValid = false;
     }
 
     @Override

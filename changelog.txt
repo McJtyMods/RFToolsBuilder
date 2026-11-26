@@ -1,3 +1,6 @@
+1.20-6.0.13:
+- Fixed the Builder using stale block targets after editing an installed Shape Card, which could place blocks outside the updated shape.
+
 1.20-6.0.12:
 - The in-game manual now explains how to form a shield with the Smart Wrench (#177)
 - Fixed Scanners causing ghost blocks in their chunk and failing to update the offset and scan progress in the GUI (#178)
