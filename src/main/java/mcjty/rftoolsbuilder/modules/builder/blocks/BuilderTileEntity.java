@@ -216,6 +216,37 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
         return items;
     }
 
+    public void applyShapeCardEdit(ItemStack editedCard) {
+        ItemStack currentCard = items.getStackInSlot(SLOT_TAB);
+        if (ItemStack.matches(currentCard, editedCard)) {
+            return;
+        }
+
+        var component = BuilderModule.ITEM_SHAPECARD_DATA.get();
+        ShapeCardData current = currentCard.getOrDefault(component, ShapeCardData.DEFAULT);
+        ShapeCardData edited = editedCard.getOrDefault(component, ShapeCardData.DEFAULT);
+        boolean outlineChanged = current.shape() != edited.shape()
+                || !current.dimensions().dimension().equals(edited.dimensions().dimension())
+                || !current.dimensions().offset().equals(edited.dimensions().offset());
+
+        BuilderData data = getData(BuilderModule.BUILDER_DATA);
+        boolean refreshSupport = outlineChanged && data.flags().supportMode();
+        if (refreshSupport) {
+            clearSupportBlocksShaped();
+        }
+        items.setStackInSlot(SLOT_TAB, editedCard);
+        cachedVoidableBlocks.clear();
+        if (outlineChanged || current.solid() != edited.solid()) {
+            invalidateBoxAndTargets();
+            if (data.scan() != null) {
+                setData(BuilderModule.BUILDER_DATA, restartScan(data.withScan(null)));
+            }
+        }
+        if (refreshSupport) {
+            makeSupportBlocksShaped();
+        }
+    }
+
     @Override
     public Direction getBlockOrientation() {
         BlockState state = level.getBlockState(worldPosition);
@@ -2282,12 +2313,16 @@ public class BuilderTileEntity extends TickingTileEntity implements IHudSupport 
     private void refreshSettings() {
         BuilderData data = getData(BuilderModule.BUILDER_DATA);
         data = clearSupportBlocks(data);
-        cachedBlocks = null;
-        cachedChunk = null;
+        invalidateBoxAndTargets();
         cachedVoidableBlocks.clear();
-        boxValid = false;
         setData(BuilderModule.BUILDER_DATA, data.withScan(null));
         cardType = ShapeCardType.CARD_UNKNOWN;
+    }
+
+    private void invalidateBoxAndTargets() {
+        cachedBlocks = null;
+        cachedChunk = null;
+        boxValid = false;
     }
 
     @Override
